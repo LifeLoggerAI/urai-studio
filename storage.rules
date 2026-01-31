@@ -1,0 +1,20 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow anyone to write to the uploads folder for the MVP.
+    // This should be locked down with authentication in a real app.
+    match /uploads/{allPaths=**} {
+      allow read, write: if true;
+    }
+
+    match /exports/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Disallow everything else by default
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}
