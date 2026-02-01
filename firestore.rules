@@ -1,12 +1,50 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /jobs/{jobId} {
-      // Users can create a job if they are signed in and the job's uid matches their own.
-      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
 
-      // Users can read, update, or delete their own jobs.
-      allow read, update, delete: if request.auth != null && resource.data.uid == request.auth.uid;
+    // Deny all reads and writes by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Allow users to read and write their own data
+    match /studioUsers/{userId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+
+    // Allow users to read and write their own projects
+    match /studioProjects/{projectId} {
+      allow read, write: if request.auth.uid == resource.data.ownerId;
+    }
+
+    // Allow users to read and write their own jobs
+    match /studioJobs/{jobId} {
+      allow read, write: if request.auth.uid == resource.data.ownerId;
+    }
+
+    // Allow public read for recipes
+    match /studioRecipes/{recipeId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Allow public read for shareable outputs
+    match /studioShares/{shareId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Allow logged-in users to read their outputs
+    match /studioOutputs/{outputId} {
+      allow read: if request.auth.uid == resource.data.ownerId;
+      allow write: if false; // Only backend can write
+    }
+
+    // Allow backend to write audit logs
+    match /auditLogs/{logId} {
+        allow write: if get(/databases/$(database)/documents/studioUsers/$(request.auth.uid)).data.roles.hasAny(['admin','service-account']);
+        allow read: if get(/databases/$(database)/documents/studioUsers/$(request.auth.uid)).data.roles.hasAny(['admin']);
     }
   }
 }

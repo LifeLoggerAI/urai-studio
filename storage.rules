@@ -1,20 +1,19 @@
 rules_version = '2';
+
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow anyone to write to the uploads folder for the MVP.
-    // This should be locked down with authentication in a real app.
-    match /uploads/{allPaths=**} {
-      allow read, write: if true;
-    }
-
-    match /exports/{allPaths=**} {
-      allow read: if true;
-      allow write: if false;
-    }
-
-    // Disallow everything else by default
-    match /{path=**} {
+    // Deny all reads and writes by default
+    match /{allPaths=**} {
       allow read, write: if false;
     }
+
+    // Allow users to write to their own input folder
+    match /inputs/{userId}/{fileName} {
+      allow write: if request.auth.uid == userId;
+    }
+
+    // Allow public read for outputs via a share token
+    // This will be enforced by the backend API, not by storage rules directly
+    // for this tier, to avoid complex token logic in rules.
   }
 }
