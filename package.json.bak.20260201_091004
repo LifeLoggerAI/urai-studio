@@ -1,7 +1,6 @@
 {
   "name": "urai-studio-monorepo",
   "private": true,
-  "packageManager": "pnpm@9.5.0",
   "scripts": {
     "build": "pnpm --filter ./apps/* --filter ./packages/* build",
     "dev": "pnpm --filter studio dev",

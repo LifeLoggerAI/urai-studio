@@ -1,16 +1,8 @@
 {
-  "firestore": {
-    "rules": "firestore.rules"
-  },
-  "storage": {
-    "rules": "storage.rules"
-  },
   "hosting": {
-    "public": "apps/studio/out",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ]
+    "source": "apps/studio",
+    "frameworksBackend": {
+      "region": "us-central1"
+    }
   }
 }

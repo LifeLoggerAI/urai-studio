@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@urai/ui'],
+  experimental: {
+    appDir: true,
+    transpilePackages: ['@urai/ui'],
+  },
 };
 
 module.exports = nextConfig;
