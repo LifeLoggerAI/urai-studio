@@ -1,16 +1,12 @@
 {
   "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
-  "functions": {
-    "source": "functions"
+    "rules": "firestore.rules"
   },
   "storage": {
     "rules": "storage.rules"
   },
   "hosting": {
-    "public": "uraistudio-app/.next",
+    "public": "apps/studio/out",
     "ignore": [
       "firebase.json",
       "**/.*",

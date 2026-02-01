@@ -1,12 +1,14 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { Job } from '../../lib/types';
 
 export default function StatusPage() {
   const searchParams = useSearchParams();
   const jobId = searchParams.get('jobId');
-  const [job, setJob] = useState(null);
+  const [job, setJob] = useState<Job | null>(null);
 
   useEffect(() => {
     if (jobId) {

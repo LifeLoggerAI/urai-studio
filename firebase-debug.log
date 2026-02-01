@@ -1,0 +1,491 @@
+[debug] [2026-02-01T03:38:46.552Z] ----------------------------------------------------------------------
+[debug] [2026-02-01T03:38:46.581Z] Command:       /nix/store/ws50yvm6vzlzf7jzz6n7xh4szddrack1-nodejs-20.19.1/bin/node /nix/store/c776mhyhgykcld7p90ajrka149ifn61a-firebase-tools-14.26.0/lib/node_modules/firebase-tools/lib/bin/firebase.js deploy --only hosting,functions,firestore,storage
+[debug] [2026-02-01T03:38:46.582Z] CLI Version:   14.26.0
+[debug] [2026-02-01T03:38:46.584Z] Platform:      linux
+[debug] [2026-02-01T03:38:46.584Z] Node Version:  v20.19.1
+[debug] [2026-02-01T03:38:46.585Z] Time:          Sun Feb 01 2026 03:38:46 GMT+0000 (Coordinated Universal Time)
+[debug] [2026-02-01T03:38:46.585Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-02-01T03:38:47.205Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T03:38:47.206Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T03:38:47.207Z] > refreshing access token with scopes: []
+[debug] [2026-02-01T03:38:47.210Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-01T03:38:47.210Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T03:38:47.356Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-02-01T03:38:47.357Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T03:38:47.358Z] >>> [apiv2][query] GET https://monospace-pa.googleapis.com/v1/workspaces/urai-studio-86479605 [none]
+[debug] [2026-02-01T03:38:47.463Z] <<< [apiv2][status] GET https://monospace-pa.googleapis.com/v1/workspaces/urai-studio-86479605 401
+[debug] [2026-02-01T03:38:47.464Z] <<< [apiv2][body] GET https://monospace-pa.googleapis.com/v1/workspaces/urai-studio-86479605 {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED"}}
+[debug] [2026-02-01T03:38:47.465Z] Got a 401 Unauthenticated error for a call that required authentication. Refreshing tokens.
+[debug] [2026-02-01T03:38:47.465Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T03:38:47.466Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T03:38:47.466Z] > refreshing access token with scopes: []
+[debug] [2026-02-01T03:38:47.466Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-01T03:38:47.467Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T03:38:47.510Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-02-01T03:38:47.511Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[error] Failed to fetch Firebase Project from current Studio Workspace: Request to https://monospace-pa.googleapis.com/v1/workspaces/urai-studio-86479605 had HTTP Error: 401, Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[debug] [2026-02-01T03:38:47.515Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-02-01T03:38:47.516Z] > authorizing via signed-in user (lifeloggerai@gmail.com)
+[debug] [2026-02-01T03:38:47.516Z] [iam] checking project urai-studio for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]
+[debug] [2026-02-01T03:38:47.517Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T03:38:47.517Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T03:38:47.517Z] > refreshing access token with scopes: []
+[debug] [2026-02-01T03:38:47.518Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-01T03:38:47.518Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T03:38:47.560Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-02-01T03:38:47.561Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T03:38:47.561Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/urai-studio:testIamPermissions [none]
+[debug] [2026-02-01T03:38:47.561Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/urai-studio:testIamPermissions x-goog-quota-user=projects/urai-studio
+[debug] [2026-02-01T03:38:47.561Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/urai-studio:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[debug] [2026-02-01T03:38:47.599Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/urai-studio:testIamPermissions 401
+[debug] [2026-02-01T03:38:47.599Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/urai-studio:testIamPermissions {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"ACCESS_TOKEN_TYPE_UNSUPPORTED","metadata":{"method":"google.cloudresourcemanager.v1.Projects.TestIamPermissions","service":"cloudresourcemanager.googleapis.com"}}]}}
+[debug] [2026-02-01T03:38:47.599Z] Got a 401 Unauthenticated error for a call that required authentication. Refreshing tokens.
+[debug] [2026-02-01T03:38:47.599Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T03:38:47.600Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T03:38:47.600Z] > refreshing access token with scopes: []
+[debug] [2026-02-01T03:38:47.601Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-01T03:38:47.601Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T03:38:47.650Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-02-01T03:38:47.650Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T03:38:47.651Z] [iam] error while checking permissions, command may fail: Request to https://cloudresourcemanager.googleapis.com/v1/projects/urai-studio:testIamPermissions had HTTP Error: 401, Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[debug] [2026-02-01T03:38:47.651Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T03:38:47.652Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T03:38:47.652Z] > refreshing access token with scopes: []
+[debug] [2026-02-01T03:38:47.652Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-01T03:38:47.652Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T03:38:47.705Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-02-01T03:38:47.705Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T03:38:47.705Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/urai-studio/serviceAccounts/urai-studio@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-02-01T03:38:47.706Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/urai-studio/serviceAccounts/urai-studio@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-02-01T03:38:47.736Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/urai-studio/serviceAccounts/urai-studio@appspot.gserviceaccount.com:testIamPermissions 401
+[debug] [2026-02-01T03:38:47.736Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/urai-studio/serviceAccounts/urai-studio@appspot.gserviceaccount.com:testIamPermissions {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"ACCESS_TOKEN_TYPE_UNSUPPORTED","metadata":{"method":"google.iam.admin.v1.IAM.TestIamPermissions","service":"iam.googleapis.com"}}]}}
+[debug] [2026-02-01T03:38:47.736Z] Got a 401 Unauthenticated error for a call that required authentication. Refreshing tokens.
+[debug] [2026-02-01T03:38:47.737Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T03:38:47.737Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T03:38:47.737Z] > refreshing access token with scopes: []
+[debug] [2026-02-01T03:38:47.738Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-01T03:38:47.738Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T03:38:47.786Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-02-01T03:38:47.786Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T03:38:47.787Z] [functions] service account IAM check errored, deploy may fail:Request to https://iam.googleapis.com/v1/projects/urai-studio/serviceAccounts/urai-studio@appspot.gserviceaccount.com:testIamPermissions had HTTP Error: 401, Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project. {"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"ACCESS_TOKEN_TYPE_UNSUPPORTED","metadata":{"method":"google.iam.admin.v1.IAM.TestIamPermissions","service":"iam.googleapis.com"}}]}},"response":{"statusCode":401}},"exit":1,"message":"Request to https://iam.googleapis.com/v1/projects/urai-studio/serviceAccounts/urai-studio@appspot.gserviceaccount.com:testIamPermissions had HTTP Error: 401, Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":401}
+[debug] [2026-02-01T03:38:47.789Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T03:38:47.789Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T03:38:47.789Z] > refreshing access token with scopes: []
+[debug] [2026-02-01T03:38:47.790Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-01T03:38:47.790Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T03:38:47.831Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-02-01T03:38:47.831Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T03:38:47.831Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/urai-studio [none]
+[debug] [2026-02-01T03:38:47.876Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/urai-studio 401
+[debug] [2026-02-01T03:38:47.877Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/urai-studio {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED"}}
+[debug] [2026-02-01T03:38:47.877Z] Got a 401 Unauthenticated error for a call that required authentication. Refreshing tokens.
+[debug] [2026-02-01T03:38:47.877Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T03:38:47.877Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T03:38:47.877Z] > refreshing access token with scopes: []
+[debug] [2026-02-01T03:38:47.878Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-01T03:38:47.878Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T03:38:47.920Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-02-01T03:38:47.921Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T03:38:47.921Z] Request to https://firebase.googleapis.com/v1beta1/projects/urai-studio had HTTP Error: 401, Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[error] 
+[error] Error: Assertion failed: resolving hosting target of a site with no site name or target name. This should have caused an error earlier
+[debug] [2026-02-01T05:00:40.461Z] ----------------------------------------------------------------------
+[debug] [2026-02-01T05:00:40.483Z] Command:       /nix/store/ws50yvm6vzlzf7jzz6n7xh4szddrack1-nodejs-20.19.1/bin/node /nix/store/c776mhyhgykcld7p90ajrka149ifn61a-firebase-tools-14.26.0/lib/node_modules/firebase-tools/lib/bin/firebase.js emulators:start
+[debug] [2026-02-01T05:00:40.484Z] CLI Version:   14.26.0
+[debug] [2026-02-01T05:00:40.484Z] Platform:      linux
+[debug] [2026-02-01T05:00:40.484Z] Node Version:  v20.19.1
+[debug] [2026-02-01T05:00:40.485Z] Time:          Sun Feb 01 2026 05:00:40 GMT+0000 (Coordinated Universal Time)
+[debug] [2026-02-01T05:00:40.485Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-02-01T05:00:41.102Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T05:00:41.102Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T05:00:41.103Z] > refreshing access token with scopes: []
+[debug] [2026-02-01T05:00:41.106Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-01T05:00:41.106Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T05:00:41.214Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-02-01T05:00:41.215Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T05:00:41.216Z] >>> [apiv2][query] GET https://monospace-pa.googleapis.com/v1/workspaces/urai-studio-86479605 [none]
+[debug] [2026-02-01T05:00:41.299Z] <<< [apiv2][status] GET https://monospace-pa.googleapis.com/v1/workspaces/urai-studio-86479605 401
+[debug] [2026-02-01T05:00:41.300Z] <<< [apiv2][body] GET https://monospace-pa.googleapis.com/v1/workspaces/urai-studio-86479605 {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED"}}
+[debug] [2026-02-01T05:00:41.300Z] Got a 401 Unauthenticated error for a call that required authentication. Refreshing tokens.
+[debug] [2026-02-01T05:00:41.302Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T05:00:41.302Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T05:00:41.303Z] > refreshing access token with scopes: []
+[debug] [2026-02-01T05:00:41.304Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-01T05:00:41.304Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T05:00:41.352Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-02-01T05:00:41.353Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[error] Failed to fetch Firebase Project from current Studio Workspace: Request to https://monospace-pa.googleapis.com/v1/workspaces/urai-studio-86479605 had HTTP Error: 401, Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[debug] [2026-02-01T05:00:41.359Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-02-01T05:00:41.359Z] > authorizing via signed-in user (lifeloggerai@gmail.com)
+[debug] [2026-02-01T05:00:46.401Z] openjdk version "21.0.7" 2025-04-15
+OpenJDK Runtime Environment (build 21.0.7+6-nixos)
+OpenJDK 64-Bit Server VM (build 21.0.7+6-nixos, mixed mode, sharing)
+
+[debug] [2026-02-01T05:00:47.243Z] Parsed Java major version: 21
+[info] i  emulators: Starting emulators: functions, firestore, storage, extensions {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: functions, firestore, storage, extensions"}}
+[debug] [2026-02-01T05:00:47.265Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T05:00:47.265Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T05:00:47.265Z] > refreshing access token with scopes: []
+[debug] [2026-02-01T05:00:47.268Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-01T05:00:47.269Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T05:00:47.346Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-02-01T05:00:47.348Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T05:00:47.352Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/urai-studio [none]
+[debug] [2026-02-01T05:00:47.416Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/urai-studio 401
+[debug] [2026-02-01T05:00:47.416Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/urai-studio {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"ACCESS_TOKEN_TYPE_UNSUPPORTED","metadata":{"method":"google.cloudresourcemanager.v1.Projects.GetProject","service":"cloudresourcemanager.googleapis.com"}}]}}
+[debug] [2026-02-01T05:00:47.416Z] Got a 401 Unauthenticated error for a call that required authentication. Refreshing tokens.
+[debug] [2026-02-01T05:00:47.416Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T05:00:47.416Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T05:00:47.417Z] > refreshing access token with scopes: []
+[debug] [2026-02-01T05:00:47.423Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-01T05:00:47.424Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T05:00:47.458Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-02-01T05:00:47.458Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[error] ⬢  extensions: Unable to look up project number for urai-studio.
+ If this is a real project, ensure that you are logged in and have access to it.
+ If this is a fake project, please use a project ID starting with 'demo-' to skip production calls.
+ Continuing with a fake project number - secrets and other features that require production access may behave unexpectedly. {"metadata":{"emulator":{"name":"extensions"},"message":"Unable to look up project number for urai-studio.\n If this is a real project, ensure that you are logged in and have access to it.\n If this is a fake project, please use a project ID starting with 'demo-' to skip production calls.\n Continuing with a fake project number - secrets and other features that require production access may behave unexpectedly."}}
+[warn] ⚠  hub: Error when trying to check port 4400 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:4400 {"metadata":{"emulator":{"name":"hub"},"message":"Error when trying to check port 4400 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:4400"}}
+[warn] ⚠  hub: Port 4400 is available on 127.0.0.1 but not ::1. This may cause issues with some clients. {"metadata":{"emulator":{"name":"hub"},"message":"Port 4400 is available on 127.0.0.1 but not ::1. This may cause issues with some clients."}}
+[warn] ⚠  hub: If you encounter connectivity issues, consider switching to a different port or explicitly specifying "host": "<ip address>" instead of hostname in firebase.json {"metadata":{"emulator":{"name":"hub"},"message":"If you encounter connectivity issues, consider switching to a different port or explicitly specifying \u001b[33m\"host\": \"<ip address>\"\u001b[39m instead of hostname in firebase.json"}}
+[warn] ⚠  ui: Error when trying to check port 4000 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:4000 {"metadata":{"emulator":{"name":"ui"},"message":"Error when trying to check port 4000 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:4000"}}
+[warn] ⚠  ui: Port 4000 is available on 127.0.0.1 but not ::1. This may cause issues with some clients. {"metadata":{"emulator":{"name":"ui"},"message":"Port 4000 is available on 127.0.0.1 but not ::1. This may cause issues with some clients."}}
+[warn] ⚠  ui: If you encounter connectivity issues, consider switching to a different port or explicitly specifying "host": "<ip address>" instead of hostname in firebase.json {"metadata":{"emulator":{"name":"ui"},"message":"If you encounter connectivity issues, consider switching to a different port or explicitly specifying \u001b[33m\"host\": \"<ip address>\"\u001b[39m instead of hostname in firebase.json"}}
+[warn] ⚠  logging: Error when trying to check port 4500 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:4500 {"metadata":{"emulator":{"name":"logging"},"message":"Error when trying to check port 4500 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:4500"}}
+[warn] ⚠  logging: Port 4500 is available on 127.0.0.1 but not ::1. This may cause issues with some clients. {"metadata":{"emulator":{"name":"logging"},"message":"Port 4500 is available on 127.0.0.1 but not ::1. This may cause issues with some clients."}}
+[warn] ⚠  logging: If you encounter connectivity issues, consider switching to a different port or explicitly specifying "host": "<ip address>" instead of hostname in firebase.json {"metadata":{"emulator":{"name":"logging"},"message":"If you encounter connectivity issues, consider switching to a different port or explicitly specifying \u001b[33m\"host\": \"<ip address>\"\u001b[39m instead of hostname in firebase.json"}}
+[warn] ⚠  firestore: Error when trying to check port 8080 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:8080 {"metadata":{"emulator":{"name":"firestore"},"message":"Error when trying to check port 8080 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:8080"}}
+[warn] ⚠  firestore: Port 8080 is available on 127.0.0.1 but not ::1. This may cause issues with some clients. {"metadata":{"emulator":{"name":"firestore"},"message":"Port 8080 is available on 127.0.0.1 but not ::1. This may cause issues with some clients."}}
+[warn] ⚠  firestore: If you encounter connectivity issues, consider switching to a different port or explicitly specifying "host": "<ip address>" instead of hostname in firebase.json {"metadata":{"emulator":{"name":"firestore"},"message":"If you encounter connectivity issues, consider switching to a different port or explicitly specifying \u001b[33m\"host\": \"<ip address>\"\u001b[39m instead of hostname in firebase.json"}}
+[warn] ⚠  firestore.websocket: Error when trying to check port 9150 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:9150 {"metadata":{"emulator":{"name":"firestore"},"message":"Error when trying to check port 9150 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:9150"}}
+[warn] ⚠  firestore: Port 9150 is available on 127.0.0.1 but not ::1. This may cause issues with some clients. {"metadata":{"emulator":{"name":"firestore"},"message":"Port 9150 is available on 127.0.0.1 but not ::1. This may cause issues with some clients."}}
+[warn] ⚠  firestore: If you encounter connectivity issues, consider switching to a different port or explicitly specifying "host": "<ip address>" instead of hostname in firebase.json {"metadata":{"emulator":{"name":"firestore"},"message":"If you encounter connectivity issues, consider switching to a different port or explicitly specifying \u001b[33m\"host\": \"<ip address>\"\u001b[39m instead of hostname in firebase.json"}}
+[warn] ⚠  storage: Error when trying to check port 9199 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:9199 {"metadata":{"emulator":{"name":"storage"},"message":"Error when trying to check port 9199 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:9199"}}
+[warn] ⚠  storage: Port 9199 is available on 127.0.0.1 but not ::1. This may cause issues with some clients. {"metadata":{"emulator":{"name":"storage"},"message":"Port 9199 is available on 127.0.0.1 but not ::1. This may cause issues with some clients."}}
+[warn] ⚠  storage: If you encounter connectivity issues, consider switching to a different port or explicitly specifying "host": "<ip address>" instead of hostname in firebase.json {"metadata":{"emulator":{"name":"storage"},"message":"If you encounter connectivity issues, consider switching to a different port or explicitly specifying \u001b[33m\"host\": \"<ip address>\"\u001b[39m instead of hostname in firebase.json"}}
+[debug] [2026-02-01T05:00:47.542Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"storage":[{"address":"127.0.0.1","family":"IPv4","port":9199}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2026-02-01T05:00:47.567Z] Emulator locator file path: /tmp/hub-urai-studio.json
+[debug] [2026-02-01T05:00:47.573Z] [hub] writing locator at /tmp/hub-urai-studio.json
+[debug] [2026-02-01T05:00:47.674Z] [Extensions] Started Extensions emulator, this is a noop.
+[warn] ⚠  functions: Error when trying to check port 5001 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:5001 {"metadata":{"emulator":{"name":"functions"},"message":"Error when trying to check port 5001 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:5001"}}
+[warn] ⚠  functions: Port 5001 is available on 127.0.0.1 but not ::1. This may cause issues with some clients. {"metadata":{"emulator":{"name":"functions"},"message":"Port 5001 is available on 127.0.0.1 but not ::1. This may cause issues with some clients."}}
+[warn] ⚠  functions: If you encounter connectivity issues, consider switching to a different port or explicitly specifying "host": "<ip address>" instead of hostname in firebase.json {"metadata":{"emulator":{"name":"functions"},"message":"If you encounter connectivity issues, consider switching to a different port or explicitly specifying \u001b[33m\"host\": \"<ip address>\"\u001b[39m instead of hostname in firebase.json"}}
+[warn] ⚠  eventarc: Error when trying to check port 9299 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:9299 {"metadata":{"emulator":{"name":"eventarc"},"message":"Error when trying to check port 9299 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:9299"}}
+[warn] ⚠  eventarc: Port 9299 is available on 127.0.0.1 but not ::1. This may cause issues with some clients. {"metadata":{"emulator":{"name":"eventarc"},"message":"Port 9299 is available on 127.0.0.1 but not ::1. This may cause issues with some clients."}}
+[warn] ⚠  eventarc: If you encounter connectivity issues, consider switching to a different port or explicitly specifying "host": "<ip address>" instead of hostname in firebase.json {"metadata":{"emulator":{"name":"eventarc"},"message":"If you encounter connectivity issues, consider switching to a different port or explicitly specifying \u001b[33m\"host\": \"<ip address>\"\u001b[39m instead of hostname in firebase.json"}}
+[warn] ⚠  tasks: Error when trying to check port 9499 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:9499 {"metadata":{"emulator":{"name":"tasks"},"message":"Error when trying to check port 9499 on ::1: Error: listen EADDRNOTAVAIL: address not available ::1:9499"}}
+[warn] ⚠  tasks: Port 9499 is available on 127.0.0.1 but not ::1. This may cause issues with some clients. {"metadata":{"emulator":{"name":"tasks"},"message":"Port 9499 is available on 127.0.0.1 but not ::1. This may cause issues with some clients."}}
+[warn] ⚠  tasks: If you encounter connectivity issues, consider switching to a different port or explicitly specifying "host": "<ip address>" instead of hostname in firebase.json {"metadata":{"emulator":{"name":"tasks"},"message":"If you encounter connectivity issues, consider switching to a different port or explicitly specifying \u001b[33m\"host\": \"<ip address>\"\u001b[39m instead of hostname in firebase.json"}}
+[debug] [2026-02-01T05:00:47.700Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"storage":[{"address":"127.0.0.1","family":"IPv4","port":9199}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":5001}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}],"tasks":[{"address":"127.0.0.1","family":"IPv4","port":9499}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
+[warn] ⚠  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, auth, database, hosting, pubsub, dataconnect {"metadata":{"emulator":{"name":"functions"},"message":"The following emulators are not running, calls to these services from the Functions emulator will affect production: \u001b[1mapphosting, auth, database, hosting, pubsub, dataconnect\u001b[22m"}}
+[warn] ⚠  functions: Application Default Credentials detected. Non-emulated services will access production using these credentials. Be careful! {"metadata":{"emulator":{"name":"functions"},"message":"Application Default Credentials detected. Non-emulated services will access production using these credentials. Be careful!"}}
+[debug] [2026-02-01T05:01:08.386Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T05:01:08.386Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T05:01:08.387Z] > refreshing access token with scopes: []
+[debug] [2026-02-01T05:01:08.387Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-01T05:01:08.387Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T05:01:08.450Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-02-01T05:01:08.451Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T05:01:08.451Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/urai-studio/adminSdkConfig [none]
+[debug] [2026-02-01T05:01:08.589Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/urai-studio/adminSdkConfig 401
+[debug] [2026-02-01T05:01:08.589Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/urai-studio/adminSdkConfig {"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED"}}
+[debug] [2026-02-01T05:01:08.590Z] Got a 401 Unauthenticated error for a call that required authentication. Refreshing tokens.
+[debug] [2026-02-01T05:01:08.590Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T05:01:08.590Z] Checked if tokens are valid: false, expires at: 1769824366788
+[debug] [2026-02-01T05:01:08.590Z] > refreshing access token with scopes: []
+[debug] [2026-02-01T05:01:08.591Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-01T05:01:08.591Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T05:01:08.633Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-02-01T05:01:08.633Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-01T05:01:08.634Z] Failed to get Admin SDK config for urai-studio, falling back to cacheFailed to get Admin SDK for Firebase project urai-studio. Please make sure the project exists and your account has permission to access it. {"name":"FirebaseError","children":[],"exit":2,"message":"Failed to get Admin SDK for Firebase project urai-studio. Please make sure the project exists and your account has permission to access it.","original":{"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":401,"message":"Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":"UNAUTHENTICATED"}},"response":{"statusCode":401}},"exit":1,"message":"Request to https://firebase.googleapis.com/v1beta1/projects/urai-studio/adminSdkConfig had HTTP Error: 401, Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.","status":401},"status":500}
+[warn] ⚠  functions: Unable to fetch project Admin SDK configuration, Admin SDK behavior in Cloud Functions emulator may be incorrect. {"metadata":{"emulator":{"name":"functions"},"message":"Unable to fetch project Admin SDK configuration, Admin SDK behavior in Cloud Functions emulator may be incorrect."}}
+[debug] [2026-02-01T05:01:08.680Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: auto_download"}}
+[debug] [2026-02-01T05:01:08.680Z] Ignoring unsupported arg: single_project_mode_error {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: single_project_mode_error"}}
+[debug] [2026-02-01T05:01:08.681Z] Starting Firestore Emulator with command {"binary":"java","args":["-Dgoogle.cloud_firestore.debug_log_level=FINE","-Duser.language=en","-jar","/nix/store/53qihpgb9xq019hq0fdjlvs5avy06z6n-emulators/cloud-firestore-emulator-v1.19.8.jar","--host","127.0.0.1","--port",8080,"--websocket_port",9150,"--project_id","urai-studio","--rules","/home/user/urai-studio/firestore.rules","--single_project_mode",true,"--functions_emulator","127.0.0.1:5001"],"optionalArgs":["port","webchannel_port","host","rules","websocket_port","functions_emulator","seed_from_export","project_id","single_project_mode"],"joinArgs":false,"shell":false,"port":8080} {"metadata":{"emulator":{"name":"firestore"},"message":"Starting Firestore Emulator with command {\"binary\":\"java\",\"args\":[\"-Dgoogle.cloud_firestore.debug_log_level=FINE\",\"-Duser.language=en\",\"-jar\",\"/nix/store/53qihpgb9xq019hq0fdjlvs5avy06z6n-emulators/cloud-firestore-emulator-v1.19.8.jar\",\"--host\",\"127.0.0.1\",\"--port\",8080,\"--websocket_port\",9150,\"--project_id\",\"urai-studio\",\"--rules\",\"/home/user/urai-studio/firestore.rules\",\"--single_project_mode\",true,\"--functions_emulator\",\"127.0.0.1:5001\"],\"optionalArgs\":[\"port\",\"webchannel_port\",\"host\",\"rules\",\"websocket_port\",\"functions_emulator\",\"seed_from_export\",\"project_id\",\"single_project_mode\"],\"joinArgs\":false,\"shell\":false,\"port\":8080}"}}
+[info] i  firestore: Firestore Emulator logging to firestore-debug.log {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator logging to \u001b[1mfirestore-debug.log\u001b[22m"}}
+[debug] [2026-02-01T05:01:12.540Z] Eventarc emulator received unknown request at path / {"metadata":{"emulator":{"name":"eventarc"},"message":"Eventarc emulator received unknown request at path /"}}
+[debug] [2026-02-01T05:01:12.587Z] Functions emulator received unknown request at path /
+[debug] [2026-02-01T05:01:16.669Z] Feb 01, 2026 5:01:16 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
+INFO: Started WebSocket server on ws://127.0.0.1:9150
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 01, 2026 5:01:16 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start\nINFO: Started WebSocket server on ws://127.0.0.1:9150\n"}}
+[debug] [2026-02-01T05:01:16.798Z] API endpoint: http://127.0.0.1:8080
+If you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:
+
+   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+
+If you are running a Firestore in Datastore Mode project, run:
+
+   export DATASTORE_EMULATOR_HOST=127.0.0.1:8080
+
+Note: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.
+Dev App Server is now running.
+
+ {"metadata":{"emulator":{"name":"firestore"},"message":"API endpoint: http://127.0.0.1:8080\nIf you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:\n\n   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080\n\nIf you are running a Firestore in Datastore Mode project, run:\n\n   export DATASTORE_EMULATOR_HOST=127.0.0.1:8080\n\nNote: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.\nDev App Server is now running.\n\n"}}
+[info] ✔  firestore: Firestore Emulator UI websocket is running on 9150. {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator UI websocket is running on 9150."}}
+[debug] [2026-02-01T05:01:17.000Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"storage"},"message":"Ignoring unsupported arg: port"}}
+[debug] [2026-02-01T05:01:19.089Z] Feb 01, 2026 5:01:19 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel
+INFO: Connected to new websocket client
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 01, 2026 5:01:19 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel\nINFO: Connected to new websocket client\n"}}
+[debug] [2026-02-01T05:01:19.337Z] Feb 01, 2026 5:01:19 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 01, 2026 5:01:19 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-01T05:01:20.306Z] Feb 01, 2026 5:01:20 AM io.grpc.netty.NettyServerTransport notifyTerminated
+INFO: Transport failed
+io.netty.handler.codec.http2.Http2Exception: Unexpected HTTP/1.x request: GET / 
+	at io.netty.handler.codec.http2.Http2Exception.connectionError(Http2Exception.java:107)
+	at io.netty.handler.codec.http2.Http2ConnectionHandler$PrefaceDecoder.readClientPrefaceString(Http2ConnectionHandler.java:315)
+	at io.netty.handler.codec.http2.Http2ConnectionHandler$PrefaceDecoder.decode(Http2ConnectionHandler.java:245)
+	at io.netty.handler.codec.http2.Http2ConnectionHandler.decode(Http2ConnectionHandler.java:451)
+	at io.netty.handler.codec.ByteToMessageDecoder.decodeRemovalReentryProtection(ByteToMessageDecoder.java:530)
+	at io.netty.handler.codec.ByteToMessageDecoder.callDecode(ByteToMessageDecoder.java:469)
+	at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:290)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1407)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:440)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:918)
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:166)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:994)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 01, 2026 5:01:20 AM io.grpc.netty.NettyServerTransport notifyTerminated\nINFO: Transport failed\nio.netty.handler.codec.http2.Http2Exception: Unexpected HTTP/1.x request: GET / \n\tat io.netty.handler.codec.http2.Http2Exception.connectionError(Http2Exception.java:107)\n\tat io.netty.handler.codec.http2.Http2ConnectionHandler$PrefaceDecoder.readClientPrefaceString(Http2ConnectionHandler.java:315)\n\tat io.netty.handler.codec.http2.Http2ConnectionHandler$PrefaceDecoder.decode(Http2ConnectionHandler.java:245)\n\tat io.netty.handler.codec.http2.Http2ConnectionHandler.decode(Http2ConnectionHandler.java:451)\n\tat io.netty.handler.codec.ByteToMessageDecoder.decodeRemovalReentryProtection(ByteToMessageDecoder.java:530)\n\tat io.netty.handler.codec.ByteToMessageDecoder.callDecode(ByteToMessageDecoder.java:469)\n\tat io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:290)\n\tat io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)\n\tat io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)\n\tat io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)\n\tat io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1407)\n\tat io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:440)\n\tat io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)\n\tat io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:918)\n\tat io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:166)\n\tat io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788)\n\tat io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724)\n\tat io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650)\n\tat io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)\n\tat io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:994)\n\tat io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)\n\tat io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\n\n"}}
+[debug] [2026-02-01T05:01:20.487Z] Feb 01, 2026 5:01:20 AM io.grpc.netty.NettyServerTransport notifyTerminated
+INFO: Transport failed
+io.netty.handler.codec.http2.Http2Exception: HTTP/2 client preface string missing or corrupt. Hex dump for received bytes: 16030105a8010005a40303362fe9bd9d924639cc80a3aebb
+	at io.netty.handler.codec.http2.Http2Exception.connectionError(Http2Exception.java:107)
+	at io.netty.handler.codec.http2.Http2ConnectionHandler$PrefaceDecoder.readClientPrefaceString(Http2ConnectionHandler.java:319)
+	at io.netty.handler.codec.http2.Http2ConnectionHandler$PrefaceDecoder.decode(Http2ConnectionHandler.java:245)
+	at io.netty.handler.codec.http2.Http2ConnectionHandler.decode(Http2ConnectionHandler.java:451)
+	at io.netty.handler.codec.ByteToMessageDecoder.decodeRemovalReentryProtection(ByteToMessageDecoder.java:530)
+	at io.netty.handler.codec.ByteToMessageDecoder.callDecode(ByteToMessageDecoder.java:469)
+	at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:290)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1407)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:440)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:918)
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:166)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:994)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 01, 2026 5:01:20 AM io.grpc.netty.NettyServerTransport notifyTerminated\nINFO: Transport failed\nio.netty.handler.codec.http2.Http2Exception: HTTP/2 client preface string missing or corrupt. Hex dump for received bytes: 16030105a8010005a40303362fe9bd9d924639cc80a3aebb\n\tat io.netty.handler.codec.http2.Http2Exception.connectionError(Http2Exception.java:107)\n\tat io.netty.handler.codec.http2.Http2ConnectionHandler$PrefaceDecoder.readClientPrefaceString(Http2ConnectionHandler.java:319)\n\tat io.netty.handler.codec.http2.Http2ConnectionHandler$PrefaceDecoder.decode(Http2ConnectionHandler.java:245)\n\tat io.netty.handler.codec.http2.Http2ConnectionHandler.decode(Http2ConnectionHandler.java:451)\n\tat io.netty.handler.codec.ByteToMessageDecoder.decodeRemovalReentryProtection(ByteToMessageDecoder.java:530)\n\tat io.netty.handler.codec.ByteToMessageDecoder.callDecode(ByteToMessageDecoder.java:469)\n\tat io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:290)\n\tat io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)\n\tat io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)\n\tat io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)\n\tat io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1407)\n\tat io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:440)\n\tat io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)\n\tat io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:918)\n\tat io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:166)\n\tat io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788)\n\tat io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724)\n\tat io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650)\n\tat io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)\n\tat io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:994)\n\tat io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)\n\tat io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\n\n"}}
+[debug] [2026-02-01T05:01:24.668Z] Temp file directory for storage emulator: /tmp/firebase/storage/blobs {"metadata":{"emulator":{"name":"storage"},"message":"Temp file directory for storage emulator: /tmp/firebase/storage/blobs"}}
+[debug] [2026-02-01T05:01:24.744Z] [Extensions] Connecting Extensions emulator, this is a noop.
+[info] i  functions: Watching "/home/user/urai-studio/functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"/home/user/urai-studio/functions\" for Cloud Functions..."}}
+[debug] [2026-02-01T05:01:24.785Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-02-01T05:01:28.668Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "firebase-admin": "^11.11.1",
+    "firebase-functions": "^4.9.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "eslint": "^8.57.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.29.1",
+    "typescript": "^4.9.5"
+  },
+  "private": true
+}
+[error] ⬢  functions: Failed to load function definition from source: FirebaseError: There was an error reading functions/package.json:
+
+ functions/lib/index.js does not exist, can't deploy Cloud Functions {"metadata":{"emulator":{"name":"functions"},"message":"Failed to load function definition from source: FirebaseError: There was an error reading functions/package.json:\n\n functions/lib/index.js does not exist, can't deploy Cloud Functions"}}
+[debug] [2026-02-01T05:01:28.705Z] Could not find VSCode notification endpoint: FetchError: request to http://localhost:40001/vscode/notify failed, reason: connect ECONNREFUSED 127.0.0.1:40001. If you are not running the Firebase Data Connect VSCode extension, this is expected and not an issue.
+[info] 
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://127.0.0.1:4000/               │
+└─────────────────────────────────────────────────────────────┘
+
+┌────────────┬────────────────┬──────────────────────────────────┐
+│ Emulator   │ Host:Port      │ View in Emulator UI              │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Functions  │ 127.0.0.1:5001 │ http://127.0.0.1:4000/functions  │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Firestore  │ 127.0.0.1:8080 │ http://127.0.0.1:4000/firestore  │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Storage    │ 127.0.0.1:9199 │ http://127.0.0.1:4000/storage    │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Extensions │ 127.0.0.1:5001 │ http://127.0.0.1:4000/extensions │
+└────────────┴────────────────┴──────────────────────────────────┘
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500, 9150
+┌─────────────────────────┬───────────────┬─────────────────────┐
+│ Extension Instance Name │ Extension Ref │ View in Emulator UI │
+└─────────────────────────┴───────────────┴─────────────────────┘
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+[info] i  firestore: Change detected, updating rules... 
+[debug] [2026-02-01T05:01:29.181Z] >>> [apiv2][query] PUT http://127.0.0.1:8080/emulator/v1/projects/urai-studio:securityRules [none]
+[debug] [2026-02-01T05:01:29.181Z] >>> [apiv2][body] PUT http://127.0.0.1:8080/emulator/v1/projects/urai-studio:securityRules {"ignore_errors":true,"rules":{"files":[{"name":"security.rules","content":"\nrules_version = '2';\n\nservice cloud.firestore {\n  match /databases/{database}/documents {\n\n    // Helper function to check for admin role\n    function isAdmin() {\n      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n    }\n\n    // Helper function to check ownership\n    function isOwner(uid) {\n      return request.auth.uid == uid;\n    }\n\n    // Default deny all access\n    match /{document=**} {\n      allow read, write: if false;\n    }\n\n    // Users can read/write their own profile, admins can read any profile\n    match /users/{uid} {\n      allow read: if isOwner(uid) || isAdmin();\n      allow update: if isOwner(uid) && !(\"roles\" in request.resource.data); // Prevent users from changing their own roles\n      allow create: if isOwner(uid);\n    }\n\n    // Content Items, Uploads, and Versions\n    match /contentItems/{itemId} {\n      allow read, write: if isOwner(resource.data.ownerUid) || (request.method == 'create' && isOwner(request.resource.data.ownerUid));\n      allow read: if isAdmin();\n\n      match /uploads/{uploadId} {\n        allow read, write: if get(/databases/$(database)/documents/contentItems/$(itemId)).data.ownerUid == request.auth.uid;\n        allow read: if isAdmin();\n      }\n\n      match /versions/{versionId} {\n        allow read, write: if get(/databases/$(database)/documents/contentItems/$(itemId)).data.ownerUid == request.auth.uid;\n        allow read: if isAdmin();\n      }\n    }\n\n    // Jobs and Job Runs\n    // Owners can read. Only system/admin can create/update.\n    function isSystemOrAdmin() {\n      // Allow functions to have \"system\" role by checking for a special claim, or check admin role.\n      // For this version, we will only check for Admin. A service account would be better.\n      return isAdmin();\n    }\n\n    match /jobs/{jobId} {\n      allow read: if isOwner(resource.data.ownerUid) || isAdmin();\n      allow create, update: if isSystemOrAdmin();\n    }\n\n    match /jobRuns/{runId} {\n      allow read: if isAdmin(); // Only admins for now, can be expanded to owners\n      allow create, update: if isSystemOrAdmin();\n    }\n\n    // Audit Logs: Admins read all. System writes. Users cannot access.\n    match /auditLogs/{logId} {\n      allow read: if isAdmin();\n      allow create: if isSystemOrAdmin();\n    }\n  }\n}\n"}]}}
+[debug] [2026-02-01T05:01:29.229Z] Feb 01, 2026 5:01:29 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 01, 2026 5:01:29 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-01T05:01:30.984Z] Feb 01, 2026 5:01:30 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 01, 2026 5:01:30 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected HTTP/2 connection.\n"}}
+[debug] [2026-02-01T05:01:35.364Z] <<< [apiv2][status] PUT http://127.0.0.1:8080/emulator/v1/projects/urai-studio:securityRules 200
+[debug] [2026-02-01T05:01:35.366Z] <<< [apiv2][body] PUT http://127.0.0.1:8080/emulator/v1/projects/urai-studio:securityRules {}
+[info] ✔  firestore: Rules updated. 
+[info] i  storage: Change detected, updating rules for Cloud Storage... {"metadata":{"emulator":{"name":"storage"},"message":"Change detected, updating rules for Cloud Storage..."}}
+[debug] [2026-02-01T05:07:06.882Z] File /home/user/urai-studio/functions/package.json changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/user/urai-studio/functions/package.json changed, reloading triggers"}}
+[debug] [2026-02-01T05:07:07.885Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-02-01T05:07:09.315Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint .",
+    "build": "tsc",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.8.0",
+    "@typescript-eslint/parser": "^7.8.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-import": "^2.29.1",
+    "typescript": "^5.4.5"
+  },
+  "private": true
+}
+[error] ⬢  functions: Failed to load function definition from source: FirebaseError: There was an error reading functions/package.json:
+
+ functions/lib/index.js does not exist, can't deploy Cloud Functions {"metadata":{"emulator":{"name":"functions"},"message":"Failed to load function definition from source: FirebaseError: There was an error reading functions/package.json:\n\n functions/lib/index.js does not exist, can't deploy Cloud Functions"}}
+[debug] [2026-02-01T05:07:12.384Z] File /home/user/urai-studio/functions/tsconfig.json changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/user/urai-studio/functions/tsconfig.json changed, reloading triggers"}}
+[debug] [2026-02-01T05:07:13.389Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-02-01T05:07:15.915Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint .",
+    "build": "tsc",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.8.0",
+    "@typescript-eslint/parser": "^7.8.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-import": "^2.29.1",
+    "typescript": "^5.4.5"
+  },
+  "private": true
+}
+[error] ⬢  functions: Failed to load function definition from source: FirebaseError: There was an error reading functions/package.json:
+
+ functions/lib/index.js does not exist, can't deploy Cloud Functions {"metadata":{"emulator":{"name":"functions"},"message":"Failed to load function definition from source: FirebaseError: There was an error reading functions/package.json:\n\n functions/lib/index.js does not exist, can't deploy Cloud Functions"}}
+[info] i  firestore: Change detected, updating rules... 
+[debug] [2026-02-01T05:08:09.303Z] >>> [apiv2][query] PUT http://127.0.0.1:8080/emulator/v1/projects/urai-studio:securityRules [none]
+[debug] [2026-02-01T05:08:09.305Z] >>> [apiv2][body] PUT http://127.0.0.1:8080/emulator/v1/projects/urai-studio:securityRules {"ignore_errors":true,"rules":{"files":[{"name":"security.rules","content":"rules_version = '2';\n\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    // Deny all reads and writes by default.\n    match /{document=**} {\n      allow read, write: if false;\n    }\n\n    // Users can read and write their own user document.\n    match /users/{uid} {\n      allow read, write: if request.auth.uid == uid;\n    }\n\n    // Admins can read all user documents.\n    match /users/{uid} {\n      allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n    }\n\n    // Content items, uploads, and versions can be read and written by the owner.\n    match /contentItems/{itemId} {\n      allow read, write: if request.auth.uid == resource.data.ownerUid;\n\n      match /uploads/{uploadId} {\n        allow read, write: if request.auth.uid == get(/databases/$(database)/documents/contentItems/$(itemId)).data.ownerUid;\n      }\n\n      match /versions/{versionId} {\n        allow read, write: if request.auth.uid == get(/databases/$(database)/documents/contentItems/$(itemId)).data.ownerUid;\n      }\n    }\n\n    // Admins can read all content items, uploads, and versions.\n    match /contentItems/{itemId}/{document=**} {\n      allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n    }\n\n    // Jobs and job runs can be read by the owner.\n    match /jobs/{jobId} {\n      allow read: if request.auth.uid == resource.data.ownerUid;\n    }\n\n    match /jobRuns/{runId} {\n      allow read: if request.auth.uid == get(/databases/$(database)/documents/jobs/$(resource.data.jobId)).data.ownerUid;\n    }\n\n    // Only system/admin can create and update jobs and job runs.\n    match /jobs/{jobId} {\n      allow create, update: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n    }\n\n    match /jobRuns/{runId} {\n      allow create, update: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n    }\n\n    // Audit logs can be read by admins.\n    match /auditLogs/{logId} {\n      allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n    }\n  }\n}\n"}]}}
+[debug] [2026-02-01T05:08:09.319Z] Feb 01, 2026 5:08:09 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 01, 2026 5:08:09 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-01T05:08:09.549Z] <<< [apiv2][status] PUT http://127.0.0.1:8080/emulator/v1/projects/urai-studio:securityRules 200
+[debug] [2026-02-01T05:08:09.549Z] <<< [apiv2][body] PUT http://127.0.0.1:8080/emulator/v1/projects/urai-studio:securityRules {}
+[info] ✔  firestore: Rules updated. 
+[info] i  storage: Change detected, updating rules for Cloud Storage... {"metadata":{"emulator":{"name":"storage"},"message":"Change detected, updating rules for Cloud Storage..."}}
+[debug] [2026-02-01T05:10:53.980Z] File /home/user/urai-studio/functions/package.json changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/user/urai-studio/functions/package.json changed, reloading triggers"}}
+[error] ⬢  functions: Failed to load function definition from source: FirebaseError: `runtime` field is required but was not found in firebase.json or package.json.
+To fix this, add the following lines to the `functions` section of your firebase.json:
+"runtime": "nodejs24" or set the "engine" field in package.json
+ {"metadata":{"emulator":{"name":"functions"},"message":"Failed to load function definition from source: FirebaseError: `runtime` field is required but was not found in firebase.json or package.json.\nTo fix this, add the following lines to the `functions` section of your firebase.json:\n\"runtime\": \"nodejs24\" or set the \"engine\" field in package.json\n"}}
+[info] i  firestore: Change detected, updating rules... 
+[debug] [2026-02-01T05:13:34.992Z] >>> [apiv2][query] PUT http://127.0.0.1:8080/emulator/v1/projects/urai-studio:securityRules [none]
+[debug] [2026-02-01T05:13:34.993Z] >>> [apiv2][body] PUT http://127.0.0.1:8080/emulator/v1/projects/urai-studio:securityRules {"ignore_errors":true,"rules":{"files":[{"name":"security.rules","content":"rules_version = '2';\n\nservice cloud.firestore {\n  match /databases/{database}/documents {\n\n    // Default deny all access\n    match /{document=**} {\n      allow read, write: if false;\n    }\n\n    // Users can manage their own profile, admins can read all profiles\n    match /users/{uid} {\n      allow read, update: if request.auth.uid == uid;\n      allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n    }\n\n    // Content items, uploads, and versions can be managed by the owner, and read by admins\n    match /contentItems/{itemId} {\n      allow read, write: if request.auth.uid == resource.data.ownerUid;\n      allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n\n      match /uploads/{uploadId} {\n        allow read, write: if request.auth.uid == resource.data.ownerUid;\n        allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n      }\n\n      match /versions/{versionId} {\n        allow read, write: if request.auth.uid == resource.data.ownerUid;\n        allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n      }\n    }\n\n    // Jobs and job runs can be read by the owner, but only created/updated by the system/admin\n    match /jobs/{jobId} {\n      allow read: if request.auth.uid == resource.data.ownerUid;\n      allow create, update: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n    }\n\n    match /jobRuns/{runId} {\n      allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n    }\n\n    // Audit logs are only readable by admins\n    match /auditLogs/{logId} {\n      allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n    }\n  }\n}\n"}]}}
+[debug] [2026-02-01T05:13:35.018Z] Feb 01, 2026 5:13:35 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 01, 2026 5:13:35 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-01T05:13:35.197Z] <<< [apiv2][status] PUT http://127.0.0.1:8080/emulator/v1/projects/urai-studio:securityRules 200
+[debug] [2026-02-01T05:13:35.198Z] <<< [apiv2][body] PUT http://127.0.0.1:8080/emulator/v1/projects/urai-studio:securityRules {}
+[info] ✔  firestore: Rules updated. 
+[info] i  storage: Change detected, updating rules for Cloud Storage... {"metadata":{"emulator":{"name":"storage"},"message":"Change detected, updating rules for Cloud Storage..."}}
+[debug] [2026-02-01T05:13:48.341Z] File /home/user/urai-studio/functions/package.json changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/user/urai-studio/functions/package.json changed, reloading triggers"}}
+[error] ⬢  functions: Failed to load function definition from source: FirebaseError: `runtime` field is required but was not found in firebase.json or package.json.
+To fix this, add the following lines to the `functions` section of your firebase.json:
+"runtime": "nodejs24" or set the "engine" field in package.json
+ {"metadata":{"emulator":{"name":"functions"},"message":"Failed to load function definition from source: FirebaseError: `runtime` field is required but was not found in firebase.json or package.json.\nTo fix this, add the following lines to the `functions` section of your firebase.json:\n\"runtime\": \"nodejs24\" or set the \"engine\" field in package.json\n"}}
+[debug] [2026-02-01T05:16:03.689Z] File /home/user/urai-studio/functions/package.json changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/user/urai-studio/functions/package.json changed, reloading triggers"}}
+[error] ⬢  functions: Failed to load function definition from source: FirebaseError: `runtime` field is required but was not found in firebase.json or package.json.
+To fix this, add the following lines to the `functions` section of your firebase.json:
+"runtime": "nodejs24" or set the "engine" field in package.json
+ {"metadata":{"emulator":{"name":"functions"},"message":"Failed to load function definition from source: FirebaseError: `runtime` field is required but was not found in firebase.json or package.json.\nTo fix this, add the following lines to the `functions` section of your firebase.json:\n\"runtime\": \"nodejs24\" or set the \"engine\" field in package.json\n"}}
+[debug] [2026-02-01T06:09:07.772Z] File /home/user/urai-studio/functions/src/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/user/urai-studio/functions/src/index.ts changed, reloading triggers"}}
+[error] ⬢  functions: Failed to load function definition from source: FirebaseError: `runtime` field is required but was not found in firebase.json or package.json.
+To fix this, add the following lines to the `functions` section of your firebase.json:
+"runtime": "nodejs24" or set the "engine" field in package.json
+ {"metadata":{"emulator":{"name":"functions"},"message":"Failed to load function definition from source: FirebaseError: `runtime` field is required but was not found in firebase.json or package.json.\nTo fix this, add the following lines to the `functions` section of your firebase.json:\n\"runtime\": \"nodejs24\" or set the \"engine\" field in package.json\n"}}
+[info] i  firestore: Change detected, updating rules... 
+[debug] [2026-02-01T06:32:31.179Z] >>> [apiv2][query] PUT http://127.0.0.1:8080/emulator/v1/projects/urai-studio:securityRules [none]
+[debug] [2026-02-01T06:32:31.180Z] >>> [apiv2][body] PUT http://127.0.0.1:8080/emulator/v1/projects/urai-studio:securityRules {"ignore_errors":true,"rules":{"files":[{"name":"security.rules","content":"rules_version = '2';\n\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    // Default deny all access\n    match /{document=**} {\n      allow read, write: if false;\n    }\n\n    // Users can read/write their own profile, admins can read all\n    match /users/{uid} {\n      allow read: if request.auth.uid == uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n      allow write: if request.auth.uid == uid;\n    }\n\n    // ContentItems, Uploads, and Versions can only be read/written by the owner, admins can read all\n    match /contentItems/{itemId} {\n      allow read: if resource.data.ownerUid == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n      allow write: if resource.data.ownerUid == request.auth.uid;\n\n      match /uploads/{uploadId} {\n        allow read: if get(/databases/$(database)/documents/contentItems/$(itemId)).data.ownerUid == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n        allow write: if get(/databases/$(database)/documents/contentItems/$(itemId)).data.ownerUid == request.auth.uid;\n      }\n\n      match /versions/{versionId} {\n        allow read: if get(/databases/$(database)/documents/contentItems/$(itemId)).data.ownerUid == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n        allow write: if get(/databases/$(database)/documents/contentItems/$(itemId)).data.ownerUid == request.auth.uid;\n      }\n    }\n\n    // Jobs and JobRuns can only be read by the owner, only system/admin can create/update\n    match /jobs/{jobId} {\n      allow read: if resource.data.ownerUid == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n      allow create, update: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true; // System access is handled by service accounts\n    }\n\n    match /jobRuns/{runId} {\n      allow read: if get(/databases/$(database)/documents/jobs/$(resource.data.jobId)).data.ownerUid == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n      allow create, update: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true; // System access is handled by service accounts\n    }\n\n    // AuditLogs can be read by admins, users can only read their own (or deny all user access)\n    match /auditLogs/{logId} {\n      allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;\n      // Optional: allow users to read their own audit logs\n      // allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true || resource.data.actorUid == request.auth.uid;\n    }\n  }\n}\n"}]}}
+[debug] [2026-02-01T06:32:31.256Z] Feb 01, 2026 6:32:31 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 01, 2026 6:32:31 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-01T06:32:31.527Z] Feb 01, 2026 6:32:31 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 01, 2026 6:32:31 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected HTTP/2 connection.\n"}}
+[debug] [2026-02-01T06:32:32.438Z] <<< [apiv2][status] PUT http://127.0.0.1:8080/emulator/v1/projects/urai-studio:securityRules 200
+[debug] [2026-02-01T06:32:32.445Z] <<< [apiv2][body] PUT http://127.0.0.1:8080/emulator/v1/projects/urai-studio:securityRules {}
+[info] ✔  firestore: Rules updated. 
+[info] i  storage: Change detected, updating rules for Cloud Storage... {"metadata":{"emulator":{"name":"storage"},"message":"Change detected, updating rules for Cloud Storage..."}}
+                                                                                                                                                                                                                                                                                                                                                                                                                      

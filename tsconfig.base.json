@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "noEmit": true,
+    "isolatedModules": true,
+    "incremental": true,
+    "paths": {
+      "@/*": ["./apps/studio/src/*"],
+      "@urai/ui": ["./packages/ui/src"],
+      "@urai/utils": ["./packages/utils/src"]
+    }
+  },
+  "exclude": ["node_modules"]
+}

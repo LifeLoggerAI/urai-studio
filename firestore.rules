@@ -2,49 +2,49 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Deny all reads and writes by default
+    // Default deny all access
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Allow users to read and write their own data
-    match /studioUsers/{userId} {
-      allow read, write: if request.auth.uid == userId;
+    // Users can read/write their own profile, admins can read all
+    match /users/{uid} {
+      allow read: if request.auth.uid == uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+      allow write: if request.auth.uid == uid;
     }
 
-    // Allow users to read and write their own projects
-    match /studioProjects/{projectId} {
-      allow read, write: if request.auth.uid == resource.data.ownerId;
+    // ContentItems, Uploads, and Versions can only be read/written by the owner, admins can read all
+    match /contentItems/{itemId} {
+      allow read: if resource.data.ownerUid == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+      allow write: if resource.data.ownerUid == request.auth.uid;
+
+      match /uploads/{uploadId} {
+        allow read: if get(/databases/$(database)/documents/contentItems/$(itemId)).data.ownerUid == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+        allow write: if get(/databases/$(database)/documents/contentItems/$(itemId)).data.ownerUid == request.auth.uid;
+      }
+
+      match /versions/{versionId} {
+        allow read: if get(/databases/$(database)/documents/contentItems/$(itemId)).data.ownerUid == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+        allow write: if get(/databases/$(database)/documents/contentItems/$(itemId)).data.ownerUid == request.auth.uid;
+      }
     }
 
-    // Allow users to read and write their own jobs
-    match /studioJobs/{jobId} {
-      allow read, write: if request.auth.uid == resource.data.ownerId;
+    // Jobs and JobRuns can only be read by the owner, only system/admin can create/update
+    match /jobs/{jobId} {
+      allow read: if resource.data.ownerUid == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+      allow create, update: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true; // System access is handled by service accounts
     }
 
-    // Allow public read for recipes
-    match /studioRecipes/{recipeId} {
-      allow read: if true;
-      allow write: if false;
+    match /jobRuns/{runId} {
+      allow read: if get(/databases/$(database)/documents/jobs/$(resource.data.jobId)).data.ownerUid == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+      allow create, update: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true; // System access is handled by service accounts
     }
 
-    // Allow public read for shareable outputs
-    match /studioShares/{shareId} {
-      allow read: if true;
-      allow write: if false;
-    }
-
-    // Allow logged-in users to read their outputs
-    match /studioOutputs/{outputId} {
-      allow read: if request.auth.uid == resource.data.ownerId;
-      allow write: if false; // Only backend can write
-    }
-
-    // Allow backend to write audit logs
+    // AuditLogs can be read by admins, users can only read their own (or deny all user access)
     match /auditLogs/{logId} {
-        allow write: if get(/databases/$(database)/documents/studioUsers/$(request.auth.uid)).data.roles.hasAny(['admin','service-account']);
-        allow read: if get(/databases/$(database)/documents/studioUsers/$(request.auth.uid)).data.roles.hasAny(['admin']);
+      allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+      // Optional: allow users to read their own audit logs
+      // allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true || resource.data.actorUid == request.auth.uid;
     }
   }
 }

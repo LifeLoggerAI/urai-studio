@@ -1,10 +1,11 @@
-import * as admin from "firebase-admin";
+import * as admin from 'firebase-admin';
 
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.applicationDefault(),
-    databaseURL: "https://demo-urai-studio.firebaseio.com",
   });
 }
 
+export const adminAuth = admin.auth();
 export const adminDb = admin.firestore();
+export const adminStorage = admin.storage();

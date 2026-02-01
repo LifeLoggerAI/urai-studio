@@ -2,18 +2,20 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Deny all reads and writes by default
+    // Default deny all access
     match /{allPaths=**} {
       allow read, write: if false;
     }
 
-    // Allow users to write to their own input folder
-    match /inputs/{userId}/{fileName} {
-      allow write: if request.auth.uid == userId;
+    // Raw media can only be read/written by the owner
+    match /raw/{uid}/{allPaths=**} {
+      allow read, write: if request.auth.uid == uid;
     }
 
-    // Allow public read for outputs via a share token
-    // This will be enforced by the backend API, not by storage rules directly
-    // for this tier, to avoid complex token logic in rules.
+    // Outputs can only be read by the owner, only the system can write
+    match /outputs/{uid}/{allPaths=**} {
+      allow read: if request.auth.uid == uid;
+      allow write: if get(/databases/d/documents/users/$(request.auth.uid)).data.roles.admin == true; // System access is handled by service accounts
+    }
   }
 }

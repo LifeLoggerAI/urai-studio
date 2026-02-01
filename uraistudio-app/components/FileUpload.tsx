@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useCallback } from "react";
@@ -28,8 +29,8 @@ export default function FileUpload({ setFiles }: FileUploadProps) {
   });
 
   const uploadedFiles = localFiles.map((file) => (
-    <li key={file.path} className="text-sm text-gray-400">
-      {file.path} - {(file.size / 1024 / 1024).toFixed(2)} MB
+    <li key={file.name} className="text-sm text-gray-400">
+      {file.name} - {(file.size / 1024 / 1024).toFixed(2)} MB
     </li>
   ));
 

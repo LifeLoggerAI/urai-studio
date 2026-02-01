@@ -1,0 +1,23 @@
+{
+  "name": "urai-studio-monorepo",
+  "private": true,
+  "scripts": {
+    "build": "pnpm --filter ./apps/* --filter ./packages/* build",
+    "dev": "pnpm --filter studio dev",
+    "lint": "pnpm --filter ./apps/* --filter ./packages/* lint",
+    "typecheck": "pnpm --filter ./apps/* --filter ./packages/* typecheck",
+    "test": "pnpm --filter ./apps/* --filter ./packages/* test",
+    "emulators": "firebase emulators:start"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "^18.3.1",
+      "react-dom": "^18.3.1"
+    }
+  }
+}

@@ -1,12 +1,17 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 
+interface Output {
+  url: string;
+}
+
 export default function OutputsPage() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get('projectId');
-  const [outputs, setOutputs] = useState([]);
+  const [outputs, setOutputs] = useState<Output[]>([]);
 
   useEffect(() => {
     if (projectId) {
