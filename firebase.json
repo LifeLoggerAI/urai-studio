@@ -1,8 +1,26 @@
+
 {
   "hosting": {
-    "source": "apps/studio",
-    "frameworksBackend": {
-      "region": "us-central1"
-    }
+    "public": "apps/studio/out",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "functions": {
+    "source": "functions"
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }

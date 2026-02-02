@@ -1,10 +1,21 @@
-import { AuthProvider } from '../context/AuthContext';
+import "tailwindcss/tailwind.css";
+import { Inter, Roboto_Mono } from 'next/font/google';
+import { AuthProvider } from "@/context/AuthContext";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const roboto_mono = Roboto_Mono({ subsets: ['latin'], variable: '--font-roboto-mono' });
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} ${roboto_mono.variable}`}>
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

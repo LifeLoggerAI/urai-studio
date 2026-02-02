@@ -1,0 +1,249 @@
+
+import { initializeApp } from "firebase-admin/app";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
+import {HttpsError, onCall} from "firebase-functions/v2/https";
+import { onDocumentUpdated } from "firebase-functions/v2/firestore";
+import * as logger from "firebase-functions/logger";
+import * as sharp from "sharp";
+
+
+initializeApp();
+
+const db = getFirestore();
+const storage = getStorage();
+const bucket = storage.bucket();
+
+const MAX_UPLOAD_BYTES = 500 * 1024 * 1024; // 500 MB
+
+export const createUploadUrl = onCall(async (request) => {
+    if (!request.auth) {
+        throw new HttpsError("unauthenticated", "You must be logged in to upload content.");
+    }
+
+    const { uid } = request.auth;
+    const { fileName, mimeType, bytes, title, description } = request.data;
+
+    if (bytes > MAX_UPLOAD_BYTES) {
+        throw new HttpsError("invalid-argument", `File size exceeds ${MAX_UPLOAD_BYTES / 1024 / 1024} MB limit.`);
+    }
+
+    const contentRef = db.collection("contentItems").doc();
+    const contentId = contentRef.id;
+
+    const storagePath = `uploads/${uid}/${contentId}/${fileName}`;
+
+    await contentRef.set({
+        ownerUid: uid,
+        title: title || "Untitled",
+        description: description || null,
+        status: "draft",
+        storagePath: storagePath,
+        fileName: fileName,
+        mimeType: mimeType,
+        bytes: bytes,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    const [uploadUrl] = await bucket.file(storagePath).getSignedUrl({
+        action: "write",
+        expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+        contentType: mimeType,
+        version: "v4",
+    });
+
+    await db.collection("auditLogs").add({
+        actorUid: uid,
+        action: "createUploadUrl",
+        target: `contentItems/${contentId}`,
+        metadata: { fileName, mimeType, bytes },
+        createdAt: FieldValue.serverTimestamp(),
+    });
+
+    return { contentId, uploadUrl, storagePath };
+});
+
+export const finalizeUpload = onCall(async (request) => {
+    if (!request.auth) {
+        throw new HttpsError("unauthenticated", "You must be logged in.");
+    }
+
+    const { uid } = request.auth;
+    const { contentId, storagePath, mimeType, bytes } = request.data;
+
+    const contentRef = db.collection("contentItems").doc(contentId);
+    const contentDoc = await contentRef.get();
+
+    if (!contentDoc.exists || contentDoc.data()?.ownerUid !== uid) {
+        throw new HttpsError("not-found", "Content item not found or you do not have permission.");
+    }
+
+    await contentRef.update({
+        status: "uploaded",
+        input: {
+            storagePath: storagePath,
+            mimeType: mimeType,
+            bytes: bytes,
+        },
+        updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    const jobRef = db.collection("jobs").doc();
+    const jobId = jobRef.id;
+
+    await jobRef.set({
+        type: "processContent",
+        contentId: contentId,
+        ownerUid: uid,
+        status: "queued",
+        attempt: 1,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+    });
+    
+     await contentRef.update({
+        jobId: jobId
+    });
+
+
+    await db.collection("auditLogs").add({
+        actorUid: uid,
+        action: "finalizeUpload",
+        target: `contentItems/${contentId}`,
+        metadata: { jobId },
+        createdAt: FieldValue.serverTimestamp(),
+    });
+
+    return { ok: true, jobId };
+});
+
+
+export const runJob = onDocumentUpdated("jobs/{jobId}", async (event) => {
+    const snapshot = event.data;
+    if (!snapshot) {
+        return;
+    }
+
+    const job = snapshot.after.data();
+    const previousJob = snapshot.before.data();
+
+    if (job.status === "queued" && previousJob.status !== "queued") {
+        const { jobId } = event.params;
+        const { contentId } = job;
+
+        const jobRef = db.collection("jobs").doc(jobId);
+        const contentRef = db.collection("contentItems").doc(contentId);
+
+        try {
+            await jobRef.update({ status: "running", updatedAt: FieldValue.serverTimestamp() });
+
+            const contentDoc = await contentRef.get();
+            const content = contentDoc.data();
+            const { ownerUid, storagePath, mimeType } = content;
+
+            const outputs = [];
+            const outputPrefix = `outputs/${ownerUid}/${contentId}`;
+
+            if (mimeType.startsWith("image/")) {
+                const sizes = { thumb: 100, medium: 600, large: 1200 };
+                for (const [name, size] of Object.entries(sizes)) {
+                    const outputFileName = `${name}.jpg`;
+                    const outputStoragePath = `${outputPrefix}/${outputFileName}`;
+                    
+                    const tempFilePath = `/tmp/${outputFileName}`;
+
+                    await bucket.file(storagePath).download({ destination: tempFilePath });
+
+                    await sharp(tempFilePath)
+                        .resize(size, size, { fit: "inside" })
+                        .toFormat("jpeg")
+                        .toFile(`/tmp/processed-${outputFileName}`);
+
+                    await bucket.upload(`/tmp/processed-${outputFileName}`, { 
+                        destination: outputStoragePath,
+                        metadata: { contentType: "image/jpeg" },
+                    });
+                    
+                    const file = bucket.file(outputStoragePath);
+                    const [metadata] = await file.getMetadata();
+                    const [url] = await file.getSignedUrl({ action: "read", expires: Date.now() + 60 * 60 * 1000 });
+
+                    outputs.push({
+                        type: `image/jpeg`,
+                        storagePath: outputStoragePath,
+                        url: url,
+                        bytes: metadata.size,
+                        createdAt: FieldValue.serverTimestamp(),
+                    });
+                }
+            } else {
+                const outputFileName = `normalized-${content.fileName}`;
+                const outputStoragePath = `${outputPrefix}/${outputFileName}`;
+                await bucket.copy(storagePath, outputStoragePath);
+                const file = bucket.file(outputStoragePath);
+                const [metadata] = await file.getMetadata();
+                const [url] = await file.getSignedUrl({ action: "read", expires: Date.now() + 60 * 60 * 1000 });
+
+                outputs.push({
+                    type: mimeType,
+                    storagePath: outputStoragePath,
+                    url: url,
+                    bytes: metadata.size,
+                    createdAt: FieldValue.serverTimestamp(),
+                });
+            }
+
+            await contentRef.update({
+                status: "ready",
+                outputs: outputs,
+                updatedAt: FieldValue.serverTimestamp(),
+            });
+
+            await jobRef.update({ 
+                status: "succeeded",
+                result: { outputs: outputs.map(o => o.storagePath) }, 
+                updatedAt: FieldValue.serverTimestamp() 
+            });
+
+        } catch (error) {
+            logger.error(`Job ${jobId} failed:`, error);
+            const errorMessage = error instanceof Error ? error.message : "Unknown error";
+            await jobRef.update({ status: "failed", error: errorMessage, updatedAt: FieldValue.serverTimestamp() });
+            await contentRef.update({ status: "failed", error: errorMessage, updatedAt: FieldValue.serverTimestamp() });
+        }
+    }
+});
+
+
+export const refreshOutputUrls = onCall(async (request) => {
+    if (!request.auth) {
+        throw new HttpsError("unauthenticated", "You must be logged in.");
+    }
+
+    const { contentId } = request.data;
+    const contentRef = db.collection("contentItems").doc(contentId);
+    const contentDoc = await contentRef.get();
+
+    if (!contentDoc.exists || contentDoc.data()?.ownerUid !== request.auth.uid) {
+        throw new HttpsError("not-found", "Content item not found or you do not have permission.");
+    }
+
+    const content = contentDoc.data();
+    const updatedOutputs = [];
+
+    if (content.outputs) {
+        for (const output of content.outputs) {
+            const [url] = await bucket.file(output.storagePath).getSignedUrl({
+                action: "read",
+                expires: Date.now() + 60 * 60 * 1000, // 1 hour
+            });
+            updatedOutputs.push({ ...output, url });
+        }
+    }
+
+    await contentRef.update({ outputs: updatedOutputs, updatedAt: FieldValue.serverTimestamp() });
+
+    return { outputs: updatedOutputs };
+});
+

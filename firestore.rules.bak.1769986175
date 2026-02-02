@@ -1,0 +1,33 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Deny all reads and writes by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Allow users to read and write their own user data
+    match /studioUsers/{uid} {
+      allow read: if request.auth.uid == uid;
+      allow write: if request.auth.uid == uid && request.resource.data.keys().hasOnly(['email', 'plan', 'isActive', 'updatedAt']);
+    }
+
+    // Allow users to read and write their own content items
+    match /contentItems/{contentId} {
+      allow read, write: if request.auth.uid == request.resource.data.ownerUid;
+    }
+
+    // Allow users to read their own jobs
+    match /jobs/{jobId} {
+      allow read: if request.auth.uid == get(/databases/$(database)/documents/contentItems/$(request.resource.data.contentId)).data.ownerUid;
+    }
+
+    // Allow admin to read audit logs
+    match /auditLogs/{logId} {
+      allow read: if get(/databases/$(database)/documents/studioUsers/$(request.auth.uid)).data.role == 'admin';
+    }
+  }
+}

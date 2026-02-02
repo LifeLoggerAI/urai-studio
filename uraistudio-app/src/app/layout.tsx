@@ -1,12 +1,14 @@
+
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Fira_Code } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const firaCode = Fira_Code({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
   title: "URAI Studio",
-  description: "Content creation and rendering portal",
+  description: "Next-gen content creation and processing",
 };
 
 export default function RootLayout({
@@ -16,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.variable} ${firaCode.variable} font-sans`}>{children}</body>
     </html>
   );
 }

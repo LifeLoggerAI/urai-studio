@@ -1,0 +1,21 @@
+
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Default deny all
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // Uploads
+    match /uploads/{uid}/{contentId}/{fileName} {
+      allow write: if request.auth.uid == uid;
+    }
+
+    // Outputs
+    match /outputs/{uid}/{contentId}/{fileName} {
+      allow read: if request.auth.uid == uid;
+    }
+  }
+}

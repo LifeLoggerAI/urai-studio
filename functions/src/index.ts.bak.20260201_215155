@@ -1,0 +1,301 @@
+
+import * as functions from "firebase-functions";
+import * as admin from "firebase-admin";
+import {getStorage} from "firebase-admin/storage";
+
+admin.initializeApp();
+
+const db = admin.firestore();
+const storage = getStorage();
+const bucket = storage.bucket();
+
+const MAX_UPLOAD_SIZE_MB = 500;
+
+// 1A: createUploadUrl
+export const createUploadUrl = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "You must be logged in to upload files."
+    );
+  }
+
+  const {fileName, mimeType, bytes, title, description} = data;
+
+  if (bytes > MAX_UPLOAD_SIZE_MB * 1024 * 1024) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      `File size exceeds ${MAX_UPLOAD_SIZE_MB}MB.`
+    );
+  }
+
+  const contentRef = db.collection("contentItems").doc();
+  const contentId = contentRef.id;
+
+  const storagePath = `uploads/${uid}/${contentId}/${fileName}`;
+
+  await contentRef.set({
+    ownerUid: uid,
+    title: title || "Untitled",
+    description: description || null,
+    status: "draft",
+    fileName,
+    mimeType,
+    bytes,
+    storagePath,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  const [uploadUrl] = await bucket.file(storagePath).getSignedUrl({
+    action: "write",
+    expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+    contentType: mimeType,
+    version: "v4",
+  });
+
+  await db.collection("auditLogs").add({
+    actorUid: uid,
+    action: "createUploadUrl",
+    target: contentId,
+    metadata: {fileName, mimeType, bytes},
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {contentId, uploadUrl, storagePath};
+});
+
+// 1B: finalizeUpload
+export const finalizeUpload = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "You must be logged in to finalize uploads."
+    );
+  }
+
+  const {contentId, storagePath, mimeType, bytes} = data;
+
+  const contentRef = db.collection("contentItems").doc(contentId);
+  const contentDoc = await contentRef.get();
+
+  if (!contentDoc.exists || contentDoc.data()?.ownerUid !== uid) {
+    throw new functions.https.HttpsError(
+      "not-found",
+      "Content item not found or you do not have permission."
+    );
+  }
+
+  await contentRef.update({
+    status: "uploaded",
+    input: {storagePath, mimeType, bytes},
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  const jobRef = db.collection("jobs").doc();
+  await jobRef.set({
+    type: "processContent",
+    contentId,
+    ownerUid: uid,
+    status: "queued",
+    attempt: 1,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await db.collection("auditLogs").add({
+    actorUid: uid,
+    action: "finalizeUpload",
+    target: contentId,
+    metadata: {jobId: jobRef.id},
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {ok: true, jobId: jobRef.id};
+});
+
+// 1C: runJob
+export const runJob = functions.firestore
+  .document("jobs/{jobId}")
+  .onUpdate(async (change, context) => {
+    const jobData = change.after.data();
+    const jobId = context.params.jobId;
+
+    if (jobData.status !== "queued") {
+      return;
+    }
+
+    const contentId = jobData.contentId;
+    const contentRef = db.collection("contentItems").doc(contentId);
+
+    try {
+      await db.collection("jobs").doc(jobId).update({
+        status: "running",
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      await contentRef.update({
+        status: "processing",
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      const contentDoc = await contentRef.get();
+      const content = contentDoc.data();
+      if (!content) return;
+
+      const inputFile = bucket.file(content.storagePath);
+      const [metadata] = await inputFile.getMetadata();
+
+      const outputs = [];
+
+      const tempFilePath = `/tmp/${content.fileName}`;
+      await inputFile.download({destination: tempFilePath});
+
+      if (metadata.contentType?.startsWith("image/")) {
+        const sharp = require("sharp");
+        const sizes = [
+          {name: "thumb", width: 100, height: 100},
+          {name: "medium", width: 600, height: 600},
+          {name: "large", width: 1200, height: 1200},
+        ];
+        for (const size of sizes) {
+          const outputFileName = `${size.name}-${content.fileName}`;
+          const outputPath = `outputs/${content.ownerUid}/${contentId}/${outputFileName}`;
+          const tempOutputPath = `/tmp/${outputFileName}`;
+
+          await sharp(tempFilePath)
+            .resize(size.width, size.height, {fit: "inside"})
+            .toFile(tempOutputPath);
+
+          const [file] = await bucket.upload(tempOutputPath, {destination: outputPath});
+          const [outputUrl] = await file.getSignedUrl({
+            action: "read",
+            expires: Date.now() + 60 * 60 * 1000, // 1 hour
+            version: "v4",
+          });
+          const [outputMetadata] = await file.getMetadata();
+
+          outputs.push({
+            type: outputMetadata.contentType,
+            storagePath: outputPath,
+            url: outputUrl,
+            bytes: outputMetadata.size,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        }
+      } else if (metadata.contentType?.startsWith("audio/") || metadata.contentType?.startsWith("video/")) {
+        const ffmpegPath = require("fluent-ffmpeg");
+        if (ffmpegPath) {
+          const posterPath = `outputs/${content.ownerUid}/${contentId}/poster.jpg`;
+          const tempPosterPath = "/tmp/poster.jpg";
+          await new Promise<void>((resolve, reject) => {
+            ffmpegPath(tempFilePath)
+              .screenshots({
+                timestamps: [0],
+                filename: "poster.jpg",
+                folder: "/tmp",
+              })
+              .on("end", () => resolve())
+              .on("error", (err: any) => reject(err));
+          });
+          const [file] = await bucket.upload(tempPosterPath, {destination: posterPath});
+          const [posterUrl] = await file.getSignedUrl({
+            action: "read",
+            expires: Date.now() + 60 * 60 * 1000, // 1 hour
+            version: "v4",
+          });
+          const [outputMetadata] = await file.getMetadata();
+          outputs.push({
+            type: "image/jpeg",
+            storagePath: posterPath,
+            url: posterUrl,
+            bytes: outputMetadata.size,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        }
+      }
+
+      if (outputs.length === 0) {
+        const normalizedPath = `outputs/${content.ownerUid}/${contentId}/normalized-${content.fileName}`;
+        const [file] = await bucket.copy(content.storagePath, normalizedPath);
+        const [outputUrl] = await file.getSignedUrl({
+          action: "read",
+          expires: Date.now() + 60 * 60 * 1000, // 1 hour
+          version: "v4",
+        });
+        const [outputMetadata] = await file.getMetadata();
+        outputs.push({
+          type: content.mimeType,
+          storagePath: normalizedPath,
+          url: outputUrl,
+          bytes: outputMetadata.size,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+
+      await contentRef.update({
+        status: "ready",
+        outputs,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      await db.collection("jobs").doc(jobId).update({
+        status: "succeeded",
+        result: {outputs: outputs.length},
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    } catch (error: any) {
+      await db.collection("jobs").doc(jobId).update({
+        status: "failed",
+        error: error.message,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      await contentRef.update({
+        status: "failed",
+        error: error.message,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+  });
+
+// 1D: refreshOutputUrls
+export const refreshOutputUrls = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "You must be logged in to refresh URLs."
+    );
+  }
+
+  const {contentId} = data;
+  const contentRef = db.collection("contentItems").doc(contentId);
+  const contentDoc = await contentRef.get();
+
+  if (!contentDoc.exists || contentDoc.data()?.ownerUid !== uid) {
+    throw new functions.https.HttpsError(
+      "not-found",
+      "Content item not found or you do not have permission."
+    );
+  }
+
+  const content = contentDoc.data();
+  if (!content || !content.outputs) {
+    return {outputs: []};
+  }
+
+  const refreshedOutputs = [];
+  for (const output of content.outputs) {
+    const [url] = await bucket.file(output.storagePath).getSignedUrl({
+      action: "read",
+      expires: Date.now() + 60 * 60 * 1000, // 1 hour
+      version: "v4",
+    });
+    refreshedOutputs.push({...output, url});
+  }
+
+  await contentRef.update({outputs: refreshedOutputs});
+
+  return {outputs: refreshedOutputs};
+});

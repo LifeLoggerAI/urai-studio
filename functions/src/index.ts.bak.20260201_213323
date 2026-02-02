@@ -1,0 +1,331 @@
+
+import { https, logger, firestore } from "firebase-functions";
+import { initializeApp } from "firebase-admin/app";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
+import * as sharp from "sharp";
+import { exec } from "child_process";
+import { promisify } from "util";
+
+const execPromise = promisify(exec);
+
+initializeApp();
+
+const db = getFirestore();
+const storage = getStorage();
+
+const MAX_UPLOAD_SIZE = 500 * 1024 * 1024; // 500MB
+
+export const createUploadUrl = https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new https.HttpsError(
+      "unauthenticated",
+      "You must be authenticated to make this request."
+    );
+  }
+
+  const { fileName, mimeType, bytes, title, description } = data;
+
+  if (bytes > MAX_UPLOAD_SIZE) {
+    throw new https.HttpsError(
+      "invalid-argument",
+      `File size exceeds the limit of ${MAX_UPLOAD_SIZE / 1024 / 1024}MB.`
+    );
+  }
+
+  const uid = context.auth.uid;
+  const contentRef = await db.collection("contentItems").add({
+    ownerUid: uid,
+    title: title || "Untitled",
+    description: description || null,
+    status: "draft",
+    fileName,
+    mimeType,
+    bytes,
+    createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+
+  const contentId = contentRef.id;
+  const storagePath = `uploads/${uid}/${contentId}/${fileName}`;
+
+  const [uploadUrl] = await storage
+    .bucket()
+    .file(storagePath)
+    .getSignedUrl({
+      action: "write",
+      expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+      version: "v4",
+      contentType: mimeType,
+    });
+
+  await db.collection("auditLogs").add({
+    actorUid: uid,
+    action: "createUploadUrl",
+    target: contentId,
+    metadata: { fileName, mimeType, bytes },
+    createdAt: FieldValue.serverTimestamp(),
+  });
+
+  return { contentId, uploadUrl, storagePath };
+});
+
+export const finalizeUpload = https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new https.HttpsError(
+      "unauthenticated",
+      "You must be authenticated to make this request."
+    );
+  }
+
+  const { contentId, storagePath, mimeType, bytes } = data;
+  const uid = context.auth.uid;
+
+  const contentRef = db.collection("contentItems").doc(contentId);
+  const contentDoc = await contentRef.get();
+
+  if (!contentDoc.exists || contentDoc.data()?.ownerUid !== uid) {
+    throw new https.HttpsError("not-found", "Content not found.");
+  }
+
+  await contentRef.update({
+    status: "uploaded",
+    input: {
+      storagePath,
+      mimeType,
+      bytes,
+    },
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+
+  const jobRef = await db.collection("jobs").add({
+    type: "processContent",
+    contentId,
+    ownerUid: uid,
+    status: "queued",
+    attempt: 1,
+    createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+
+  await db.collection("auditLogs").add({
+    actorUid: uid,
+    action: "finalizeUpload",
+    target: contentId,
+    metadata: { storagePath, mimeType, bytes },
+    createdAt: FieldValue.serverTimestamp(),
+  });
+
+  return { ok: true, jobId: jobRef.id };
+});
+
+export const runJob = firestore
+  .document("jobs/{jobId}")
+  .onCreate(async (snap, context) => {
+    const job = snap.data();
+    const jobId = snap.id;
+
+    await db.collection("jobs").doc(jobId).update({
+      status: "running",
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    try {
+      const contentRef = db.collection("contentItems").doc(job.contentId);
+      const contentDoc = await contentRef.get();
+      const content = contentDoc.data();
+
+      if (!content) {
+        throw new Error("Content not found.");
+      }
+
+      const bucket = storage.bucket();
+      const inputFile = bucket.file(content.input.storagePath);
+      const [fileContents] = await inputFile.download();
+
+      let outputs: any[] = [];
+
+      if (content.mimeType.startsWith("image/")) {
+        const sizes = [
+          { name: "thumb", width: 100 },
+          { name: "medium", width: 600 },
+          { name: "large", width: 1200 },
+        ];
+
+        for (const size of sizes) {
+          const outputFileName = `${size.name}.jpg`;
+          const outputStoragePath = `outputs/${content.ownerUid}/${job.contentId}/${outputFileName}`;
+          const outputFile = bucket.file(outputStoragePath);
+
+          const resizedImage = await sharp(fileContents)
+            .resize(size.width)
+            .jpeg()
+            .toBuffer();
+
+          await outputFile.save(resizedImage, { contentType: "image/jpeg" });
+
+          const [url] = await outputFile.getSignedUrl({
+            action: "read",
+            expires: Date.now() + 60 * 60 * 1000, // 1 hour
+          });
+
+          outputs.push({
+            type: `image/jpeg`,
+            storagePath: outputStoragePath,
+            url,
+            bytes: resizedImage.length,
+            createdAt: FieldValue.serverTimestamp(),
+          });
+        }
+      } else if (content.mimeType.startsWith("audio/")) {
+        try {
+          const { stdout } = await execPromise(
+            `ffprobe -v quiet -print_format json -show_format -show_streams ${inputFile.publicUrl()}`
+          );
+          const metadata = JSON.parse(stdout);
+          outputs.push({
+            type: "metadata",
+            metadata,
+            createdAt: FieldValue.serverTimestamp(),
+          });
+        } catch (error) {
+          logger.warn("ffprobe not available, skipping metadata extraction.");
+          // Copy the original file as 'normalized' output
+          const outputStoragePath = `outputs/${content.ownerUid}/${job.contentId}/normalized`
+          const outputFile = bucket.file(outputStoragePath);
+          await inputFile.copy(outputFile)
+          const [url] = await outputFile.getSignedUrl({
+            action: "read",
+            expires: Date.now() + 60 * 60 * 1000, // 1 hour
+          });
+          outputs.push({
+            type: content.mimeType,
+            storagePath: outputStoragePath,
+            url,
+            bytes: content.bytes,
+            createdAt: FieldValue.serverTimestamp(),
+          });
+
+        }
+      } else if (content.mimeType.startsWith("video/")) {
+        try {
+          const outputFileName = `poster.jpg`;
+          const outputStoragePath = `outputs/${content.ownerUid}/${job.contentId}/${outputFileName}`;
+          const outputFile = bucket.file(outputStoragePath);
+          await execPromise(
+            `ffmpeg -i ${inputFile.publicUrl()} -ss 00:00:01.000 -vframes 1 ${outputFile.publicUrl()}`
+          );
+          const [posterFile] = await outputFile.download();
+
+          const [url] = await outputFile.getSignedUrl({
+            action: "read",
+            expires: Date.now() + 60 * 60 * 1000, // 1 hour
+          });
+
+          outputs.push({
+            type: `image/jpeg`,
+            storagePath: outputStoragePath,
+            url,
+            bytes: posterFile.length,
+            createdAt: FieldValue.serverTimestamp(),
+          });
+        } catch (error) {
+          logger.warn("ffmpeg not available, skipping poster generation.");
+          // Copy the original file as 'normalized' output
+          const outputStoragePath = `outputs/${content.ownerUid}/${job.contentId}/normalized`
+          const outputFile = bucket.file(outputStoragePath);
+          await inputFile.copy(outputFile)
+          const [url] = await outputFile.getSignedUrl({
+            action: "read",
+            expires: Date.now() + 60 * 60 * 1000, // 1 hour
+          });
+          outputs.push({
+            type: content.mimeType,
+            storagePath: outputStoragePath,
+            url,
+            bytes: content.bytes,
+            createdAt: FieldValue.serverTimestamp(),
+          });
+        }
+      } else {
+        const outputStoragePath = `outputs/${content.ownerUid}/${job.contentId}/normalized`;
+        const outputFile = bucket.file(outputStoragePath);
+        await inputFile.copy(outputFile);
+        const [url] = await outputFile.getSignedUrl({
+          action: "read",
+          expires: Date.now() + 60 * 60 * 1000, // 1 hour
+        });
+        outputs.push({
+          type: content.mimeType,
+          storagePath: outputStoragePath,
+          url,
+          bytes: content.bytes,
+          createdAt: FieldValue.serverTimestamp(),
+        });
+      }
+
+      await contentRef.update({
+        status: "ready",
+        outputs,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+
+      await db.collection("jobs").doc(jobId).update({
+        status: "succeeded",
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    } catch (error: any) {
+      logger.error("Job failed", error);
+      await db.collection("jobs").doc(jobId).update({
+        status: "failed",
+        error: error.message,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      await db
+        .collection("contentItems")
+        .doc(job.contentId)
+        .update({
+          status: "failed",
+          error: error.message,
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+    }
+  });
+
+export const refreshOutputUrls = https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new https.HttpsError(
+      "unauthenticated",
+      "You must be authenticated to make this request."
+    );
+  }
+
+  const { contentId } = data;
+  const uid = context.auth.uid;
+
+  const contentRef = db.collection("contentItems").doc(contentId);
+  const contentDoc = await contentRef.get();
+
+  if (!contentDoc.exists || contentDoc.data()?.ownerUid !== uid) {
+    throw new https.HttpsError("not-found", "Content not found.");
+  }
+
+  const content = contentDoc.data()!;
+
+  const newOutputs = await Promise.all(
+    content.outputs.map(async (output: any) => {
+      const [url] = await storage
+        .bucket()
+        .file(output.storagePath)
+        .getSignedUrl({
+          action: "read",
+          expires: Date.now() + 60 * 60 * 1000, // 1 hour
+        });
+      return { ...output, url };
+    })
+  );
+
+  await contentRef.update({ outputs: newOutputs });
+
+  return { outputs: newOutputs };
+});

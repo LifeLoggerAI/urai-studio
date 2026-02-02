@@ -1,60 +1,97 @@
 
-'use client';
+import { useState } from "react";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { getStorage, ref, uploadBytes } from "firebase/storage";
+import { app } from "@/app/firebase";
 
-import { useState, useCallback } from "react";
-import { useDropzone } from "react-dropzone";
-import React from 'react';
+const functions = getFunctions(app);
+const storage = getStorage(app);
 
-interface FileUploadProps {
-  setFiles: React.Dispatch<React.SetStateAction<File[]>>;
-}
+const createUploadUrl = httpsCallable(functions, "createUploadUrl");
+const finalizeUpload = httpsCallable(functions, "finalizeUpload");
 
-export default function FileUpload({ setFiles }: FileUploadProps) {
-  const [localFiles, setLocalFiles] = useState<File[]>([]);
+export default function FileUpload() {
+  const [file, setFile] = useState<File | null>(null);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    setLocalFiles(prevFiles => {
-        const newFiles = [...prevFiles, ...acceptedFiles];
-        setFiles(newFiles); // Lift state up to the parent component
-        return newFiles;
-    });
-  }, [setFiles]);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFile(e.target.files[0]);
+    }
+  };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      "image/*": [".jpeg", ".png", ".gif", ".webp"],
-      "video/*": [".mp4", ".mov", ".avi"],
-    },
-  });
+  const handleUpload = async () => {
+    if (!file) return;
 
-  const uploadedFiles = localFiles.map((file) => (
-    <li key={file.name} className="text-sm text-gray-400">
-      {file.name} - {(file.size / 1024 / 1024).toFixed(2)} MB
-    </li>
-  ));
+    setUploading(true);
+    setError(null);
+
+    try {
+      const { data: uploadData }: any = await createUploadUrl({
+        fileName: file.name,
+        mimeType: file.type,
+        bytes: file.size,
+        title,
+        description,
+      });
+
+      const { contentId, uploadUrl, storagePath } = uploadData;
+
+      await fetch(uploadUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+
+      await finalizeUpload({
+        contentId,
+        storagePath,
+        mimeType: file.type,
+        bytes: file.size,
+      });
+
+      setFile(null);
+      setTitle("");
+      setDescription("");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
-    <section>
-      <div
-        {...getRootProps()}
-        className={`flex flex-col items-center justify-center p-10 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
-          isDragActive ? "border-blue-500 bg-gray-700" : "border-gray-600 hover:border-gray-500"
-        }`}
-      >
-        <input {...getInputProps()} />
-        {isDragActive ? (
-          <p className="text-blue-400">Drop the files here ...</p>
-        ) : (
-          <p className="text-gray-400">Drag & drop files here, or click to select</p>
-        )}
+    <div className="border p-4 rounded mb-8">
+      <h2 className="text-xl font-bold mb-4">Upload New Content</h2>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      <div className="flex flex-col space-y-4">
+        <input
+          type="text"
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="border p-2 rounded"
+        />
+        <textarea
+          placeholder="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="border p-2 rounded"
+        />
+        <input type="file" onChange={handleFileChange} />
+        <button
+          onClick={handleUpload}
+          disabled={!file || uploading}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-400"
+        >
+          {uploading ? "Uploading..." : "Upload"}
+        </button>
       </div>
-      {localFiles.length > 0 && (
-          <aside className="mt-4">
-            <h4 className="text-md font-semibold text-gray-300">Files to process:</h4>
-            <ul className="mt-2 list-disc list-inside">{uploadedFiles}</ul>
-          </aside>
-      )}
-    </section>
+    </div>
   );
 }

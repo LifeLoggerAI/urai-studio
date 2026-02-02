@@ -1,0 +1,19 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Deny all reads and writes by default.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // Allow users to write to their own upload folder.
+    match /uploads/{uid}/{allPaths=**} {
+      allow write: if request.auth.uid == uid;
+    }
+
+    // Allow users to read from their own output folder.
+    match /outputs/{uid}/{allPaths=**} {
+      allow read: if request.auth.uid == uid;
+    }
+  }
+}

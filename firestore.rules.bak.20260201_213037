@@ -1,0 +1,39 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Studio Users
+    match /studioUsers/{uid} {
+      allow read: if request.auth.uid == uid;
+      allow create: if request.auth.uid == uid;
+      allow update: if request.auth.uid == uid
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.plan == resource.data.plan;
+    }
+
+    // Content Items
+    match /contentItems/{contentId} {
+      allow read: if resource.data.ownerUid == request.auth.uid;
+      allow create: if request.resource.data.ownerUid == request.auth.uid;
+      allow update: if resource.data.ownerUid == request.auth.uid;
+      allow delete: if resource.data.ownerUid == request.auth.uid;
+    }
+
+    // Jobs
+    match /jobs/{jobId} {
+      allow read: if get(/databases/$(database)/documents/jobs/$(jobId)).data.ownerUid == request.auth.uid;
+      allow write: if false;
+    }
+
+    // Audit Logs
+    match /auditLogs/{logId} {
+      allow read: if get(/databases/$(database)/documents/studioUsers/$(request.auth.uid)).data.role == 'admin';
+    }
+  }
+}

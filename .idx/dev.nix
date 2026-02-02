@@ -1,3 +1,4 @@
+
 { pkgs, ... }: {
   # Use the stable Nix channel for reproducibility. This ensures that the same
   # package versions are used every time the workspace is created.
@@ -7,7 +8,6 @@
   # will be available in the development environment's shell.
   packages = [
     pkgs.nodejs_20      # The required Node.js version for the project.
-    pkgs.pnpm           # The package manager used in the monorepo.
     pkgs.firebase-tools # Provides the Firebase CLI for deployment and emulation.
     pkgs.ffmpeg         # A dependency for media processing, used by the job pipeline.
   ];
@@ -21,27 +21,13 @@
       "bradlc.vscode-tailwindcss" # For Tailwind CSS autocompletion and linting.
       "Firebase.firebase-vscode"  # For better integration with Firebase services.
     ];
-
-    # Workspace lifecycle hooks to automate setup and startup tasks.
     workspace = {
-      # The 'onCreate' hook runs only when the workspace is first created.
-      # It's used here to install all pnpm dependencies automatically.
-      onCreate = {
-        install-deps = "pnpm install";
-      };
-    };
-
-    # Configure a web preview for the Next.js application. This allows for
-    # a live preview of the web app within the IDE.
-    previews = {
-      enable = true;
-      previews = {
-        web = {
-          # This command starts the Next.js development server for the 'studio' app.
-          # The '-- --port $PORT' part is essential for the preview to work correctly.
-          command = ["pnpm", "--filter", "studio", "run", "dev", "--", "--port", "$PORT"];
-          manager = "web";
-        };
+      # The onStart hook runs commands every time the workspace is (re)started.
+      onStart = {
+        # Enable corepack for pnpm support.
+        enable-corepack = "corepack enable";
+        # Prepare pnpm version.
+        prepare-pnpm = "corepack prepare pnpm@9.15.0 --activate";
       };
     };
   };

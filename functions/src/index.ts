@@ -1,192 +1,299 @@
+
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { Upload, Job, Version, ContentItem } from "@urai/types";
+import {getStorage} from "firebase-admin/storage";
+import {v4 as uuidv4} from "uuid";
+import * as sharp from "sharp";
+import {spawn} from "child_process";
 
 admin.initializeApp();
 
 const db = admin.firestore();
-const storage = admin.storage();
+const storage = getStorage();
 
-// Allowed mime types for uploads
-const ALLOWED_MIME_TYPES = ["video/mp4", "video/quicktime", "video/webm", "audio/mpeg", "audio/wav"];
-const MAX_SIZE_BYTES = 1024 * 1024 * 1024; // 1GB
+const MAX_UPLOAD_SIZE_MB = 500;
 
-/**
- * Validates an upload when a new upload document is created.
- */
-export const validateUpload = functions.firestore
-  .document("contentItems/{itemId}/uploads/{uploadId}")
-  .onCreate(async (snap, context) => {
-    const upload = snap.data() as Upload;
-    const { itemId, uploadId } = context.params;
-
-    const updates: Partial<Upload> = {};
-
-    // Check mime type
-    if (!ALLOWED_MIME_TYPES.includes(upload.contentType)) {
-      updates.status = "rejected";
-      updates.rejectReason = `Invalid content type: ${upload.contentType}`;
-    }
-    // Check size
-    else if (upload.size > MAX_SIZE_BYTES) {
-      updates.status = "rejected";
-      updates.rejectReason = `File size exceeds limit of ${MAX_SIZE_BYTES} bytes`;
-    } else {
-      updates.status = "validated";
-    }
-
-    await db.collection("contentItems").doc(itemId).collection("uploads").doc(uploadId).update(updates);
-
-    // Create audit log
-    await db.collection("auditLogs").add({
-      actorUid: upload.ownerUid,
-      actorRole: "user",
-      action: "upload",
-      targetType: "upload",
-      targetId: uploadId,
-      metadata: {
-        itemId,
-        status: updates.status,
-        rejectReason: updates.rejectReason,
-      },
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+// Creates a studioUsers document for a new user
+export const createUserDoc = functions.auth.user().onCreate(async (user) => {
+    const {uid, email} = user;
+    await db.collection("studioUsers").doc(uid).set({
+        email,
+        plan: "free",
+        role: "user",
+        isActive: true,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-  });
+});
 
-/**
- * Enqueues jobs for a new version.
- */
-export const enqueueJobsForVersion = functions.firestore
-  .document("contentItems/{itemId}/versions/{versionId}")
-  .onCreate(async (snap, context) => {
-    const version = snap.data() as Version;
-    const { itemId, versionId } = context.params;
-    const { ownerUid } = version;
-
-    // Create a chain of jobs
-    const jobs: Omit<Job, "createdAt" | "updatedAt">[] = [
-      { ownerUid, itemId, versionId, type: "transcode", status: "queued", progressPct: 0, stage: "", attempts: 0 },
-      { ownerUid, itemId, versionId, type: "captions", status: "queued", progressPct: 0, stage: "", attempts: 0 },
-      { ownerUid, itemId, versionId, type: "thumbnail", status: "queued", progressPct: 0, stage: "", attempts: 0 },
-      { ownerUid, itemId, versionId, type: "renderShort", status: "queued", progressPct: 0, stage: "", attempts: 0 },
-    ];
-
-    const batch = db.batch();
-    for (const job of jobs) {
-      const jobRef = db.collection("jobs").doc();
-      batch.set(jobRef, { ...job, createdAt: admin.firestore.FieldValue.serverTimestamp(), updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+// Create a signed URL for uploading a file
+export const createUploadUrl = functions.https.onCall(async (data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError("unauthenticated", "You must be logged in to upload a file.");
     }
-    await batch.commit();
 
-    // Update content item status
-    await db.collection("contentItems").doc(itemId).update({ statusSummary: "processing" });
+    const {fileName, mimeType, bytes, title, description} = data;
+    const {uid} = context.auth;
 
-    // Create audit log
-    await db.collection("auditLogs").add({
-      actorUid: ownerUid,
-      actorRole: "user",
-      action: "create_version",
-      targetType: "version",
-      targetId: versionId,
-      metadata: { itemId },
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-  });
+    if (bytes > MAX_UPLOAD_SIZE_MB * 1024 * 1024) {
+        throw new functions.https.HttpsError("invalid-argument", `File size exceeds the ${MAX_UPLOAD_SIZE_MB}MB limit.`);
+    }
 
-/**
- * Worker function to process jobs.
- */
-export const worker = functions.firestore.document("jobs/{jobId}").onUpdate(async (change, context) => {
-  const job = change.after.data() as Job;
-  const { jobId } = context.params;
+    const userDoc = await db.collection("studioUsers").doc(uid).get();
+    if (!userDoc.exists || !userDoc.data()?.isActive) {
+        throw new functions.https.HttpsError("permission-denied", "Your account is not active.");
+    }
 
-  // Only process running jobs
-  if (job.status !== "running") {
-    return;
-  }
+    const contentId = uuidv4();
+    const storagePath = `uploads/${uid}/${contentId}/${fileName}`;
 
-  // Implement locking to prevent double processing
-  const now = admin.firestore.Timestamp.now();
-  if (job.lockExpiresAt && job.lockExpiresAt > now) {
-    return;
-  }
-
-  const lockId = Math.random().toString(36).substring(2);
-  await db.collection("jobs").doc(jobId).update({
-    lockedBy: lockId,
-    lockExpiresAt: admin.firestore.Timestamp.fromMillis(now.toMillis() + 60 * 1000), // 1 minute lock
-    lastHeartbeatAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-
-  try {
-    // V1 Stub Render
-    await new Promise(resolve => setTimeout(resolve, 5000)); // Simulate work
-
-    const updates: Partial<Job> = {
-      status: "succeeded",
-      progressPct: 100,
-      finishedAt: admin.firestore.FieldValue.serverTimestamp(),
+    const contentItem = {
+        ownerUid: uid,
+        title: title || "Untitled",
+        description: description || null,
+        status: "draft",
+        input: {},
+        storagePath,
+        fileName,
+        mimeType,
+        bytes,
+        outputs: [],
+        error: null,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
-    await db.collection("jobs").doc(jobId).update(updates);
+    await db.collection("contentItems").doc(contentId).set(contentItem);
 
-    // Update version outputs
-    const { itemId, versionId, type } = job;
-    const versionRef = db.collection("contentItems").doc(itemId).collection("versions").doc(versionId);
-
-    const outputKey = type === "renderShort" ? "final.mp4" : `${type}.srt`;
-    const storagePath = `outputs/${job.ownerUid}/${itemId}/${versionId}/${outputKey}`;
-
-    await versionRef.update({
-      [`outputs.${type}`]: storagePath,
+    const [uploadUrl] = await storage.bucket().file(storagePath).getSignedUrl({
+        action: "write",
+        expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+        version: "v4",
+        contentType: mimeType,
     });
 
-    // Copy the uploaded file to the output path (stub render)
-    const contentItem = (await db.collection("contentItems").doc(itemId).get()).data() as ContentItem;
-    const uploads = await db.collection("contentItems").doc(itemId).collection("uploads").where("status", "==", "validated").limit(1).get();
-    if (uploads.empty) {
-      throw new Error("No validated uploads found");
-    }
-    const upload = uploads.docs[0].data() as Upload;
+    await db.collection("auditLogs").add({
+        actorUid: uid,
+        action: "createUploadUrl",
+        target: `contentItems/${contentId}`,
+        metadata: {fileName, mimeType, bytes},
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
 
-    const sourceFile = storage.bucket().file(upload.storagePath);
-    const destFile = storage.bucket().file(storagePath);
-    await sourceFile.copy(destFile);
 
-    // Check if all jobs for the version are complete
-    const jobsSnapshot = await db.collection("jobs").where("versionId", "==", versionId).get();
-    const allJobsSucceeded = jobsSnapshot.docs.every(doc => doc.data().status === "succeeded");
+    return {contentId, uploadUrl, storagePath};
+});
 
-    if (allJobsSucceeded) {
-      await db.collection("contentItems").doc(itemId).update({ statusSummary: "ready" });
-      await versionRef.update({ status: "ready" });
+// Finalize an upload and create a job
+export const finalizeUpload = functions.https.onCall(async (data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError("unauthenticated", "You must be logged in to finalize an upload.");
     }
 
-    // Create audit log
-    await db.collection("auditLogs").add({
-      actorRole: "system",
-      action: `job_${job.status}`,
-      targetType: "job",
-      targetId: jobId,
-      metadata: { itemId, versionId },
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    const {contentId, storagePath, mimeType, bytes} = data;
+    const {uid} = context.auth;
+
+    const contentItemRef = db.collection("contentItems").doc(contentId);
+    const contentItemDoc = await contentItemRef.get();
+
+    if (!contentItemDoc.exists || contentItemDoc.data()?.ownerUid !== uid) {
+        throw new functions.https.HttpsError("permission-denied", "You do not have permission to finalize this upload.");
+    }
+
+    await contentItemRef.update({
+        status: "uploaded",
+        input: {
+            storagePath,
+            mimeType,
+            bytes,
+        },
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-  } catch (error) {
-    const updates: Partial<Job> = {
-      status: "failed",
-      errorMessage: error instanceof Error ? error.message : "Unknown error",
-      finishedAt: admin.firestore.FieldValue.serverTimestamp(),
-    };
-    await db.collection("jobs").doc(jobId).update(updates);
-
-    // Create audit log
-    await db.collection("auditLogs").add({
-      actorRole: "system",
-      action: "job_failed",
-      targetType: "job",
-      targetId: jobId,
-      metadata: { error: updates.errorMessage },
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    const jobId = uuidv4();
+    await db.collection("jobs").doc(jobId).set({
+        type: "processContent",
+        contentId,
+        ownerUid: uid,
+        status: "queued",
+        attempt: 1,
+        log: [],
+        result: null,
+        error: null,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-  }
+
+    await db.collection("auditLogs").add({
+        actorUid: uid,
+        action: "finalizeUpload",
+        target: `contentItems/${contentId}`,
+        metadata: {jobId},
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+
+    return {ok: true, jobId};
+});
+
+
+// Process a job when it is created
+export const runJob = functions.firestore.document("jobs/{jobId}").onCreate(async (snap, context) => {
+    const job = snap.data();
+    const {jobId} = context.params;
+    const {contentId, ownerUid} = job;
+
+    const jobRef = db.collection("jobs").doc(jobId);
+    const contentItemRef = db.collection("contentItems").doc(contentId);
+
+    await jobRef.update({status: "running", updatedAt: admin.firestore.FieldValue.serverTimestamp()});
+
+    try {
+        const contentItemDoc = await contentItemRef.get();
+        const contentItem = contentItemDoc.data();
+        if (!contentItem) {
+            throw new Error("Content item not found");
+        }
+
+        const {storagePath, mimeType, fileName} = contentItem;
+        const bucket = storage.bucket();
+        const file = bucket.file(storagePath);
+        const [metadata] = await file.getMetadata();
+
+        const outputs = [];
+        const outputPrefix = `outputs/${ownerUid}/${contentId}`;
+
+        if (mimeType.startsWith("image/")) {
+            const sizes = {thumb: 128, medium: 640, large: 1920};
+            for (const [name, size] of Object.entries(sizes)) {
+                const outputStoragePath = `${outputPrefix}/${name}_${fileName}`;
+                const outputFile = bucket.file(outputStoragePath);
+
+                const transformer = sharp().resize(size, size, {fit: "inside"});
+                const stream = file.createReadStream().pipe(transformer).pipe(outputFile.createWriteStream());
+
+                await new Promise((resolve, reject) => {
+                    stream.on("finish", resolve);
+                    stream.on("error", reject);
+                });
+
+                const [outputMetadata] = await outputFile.getMetadata();
+                const [url] = await outputFile.getSignedUrl({action: "read", expires: Date.now() + 60 * 60 * 1000});
+
+                outputs.push({
+                    type: `${name}`,
+                    storagePath: outputStoragePath,
+                    url,
+                    bytes: outputMetadata.size,
+                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                });
+            }
+        } else if (mimeType.startsWith("audio/")) {
+            // Audio processing with ffprobe (optional)
+            const outputStoragePath = `${outputPrefix}/normalized_${fileName}`;
+            await file.copy(bucket.file(outputStoragePath));
+            const outputFile = bucket.file(outputStoragePath);
+            const [outputMetadata] = await outputFile.getMetadata();
+            const [url] = await outputFile.getSignedUrl({action: "read", expires: Date.now() + 60 * 60 * 1000});
+            outputs.push({
+                type: "normalized",
+                storagePath: outputStoragePath,
+                url,
+                bytes: outputMetadata.size,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+
+        } else if (mimeType.startsWith("video/")) {
+            // Video processing with ffmpeg (optional)
+            const outputStoragePath = `${outputPrefix}/normalized_${fileName}`;
+            await file.copy(bucket.file(outputStoragePath));
+            const outputFile = bucket.file(outputStoragePath);
+            const [outputMetadata] = await outputFile.getMetadata();
+            const [url] = await outputFile.getSignedUrl({action: "read", expires: Date.now() + 60 * 60 * 1000});
+            outputs.push({
+                type: "normalized",
+                storagePath: outputStoragePath,
+                url,
+                bytes: outputMetadata.size,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+
+        } else {
+            // Copy unknown file types
+            const outputStoragePath = `${outputPrefix}/normalized_${fileName}`;
+            await file.copy(bucket.file(outputStoragePath));
+            const outputFile = bucket.file(outputStoragePath);
+            const [outputMetadata] = await outputFile.getMetadata();
+            const [url] = await outputFile.getSignedUrl({action: "read", expires: Date.now() + 60 * 60 * 1000});
+            outputs.push({
+                type: "normalized",
+                storagePath: outputStoragePath,
+                url,
+                bytes: outputMetadata.size,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+        }
+
+        await contentItemRef.update({
+            status: "ready",
+            outputs,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        await jobRef.update({
+            status: "succeeded",
+            result: {outputs: outputs.map((o) => o.storagePath)},
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+    } catch (error: any) {
+        await contentItemRef.update({
+            status: "failed",
+            error: error.message,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        await jobRef.update({
+            status: "failed",
+            error: error.message,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+    }
+});
+
+
+// Refresh the signed URLs for a content item's outputs
+export const refreshOutputUrls = functions.https.onCall(async (data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError("unauthenticated", "You must be logged in to refresh output URLs.");
+    }
+
+    const {contentId} = data;
+    const {uid} = context.auth;
+
+    const contentItemRef = db.collection("contentItems").doc(contentId);
+    const contentItemDoc = await contentItemRef.get();
+
+    if (!contentItemDoc.exists || contentItemDoc.data()?.ownerUid !== uid) {
+        throw new functions.https.HttpsError("permission-denied", "You do not have permission to refresh these URLs.");
+    }
+
+    const contentItem = contentItemDoc.data();
+    if (!contentItem || !contentItem.outputs) {
+        return {outputs: []};
+    }
+
+    const refreshedOutputs = await Promise.all(
+        contentItem.outputs.map(async (output: any) => {
+            const [url] = await storage.bucket().file(output.storagePath).getSignedUrl({
+                action: "read",
+                expires: Date.now() + 60 * 60 * 1000, // 1 hour
+            });
+            return {...output, url};
+        }),
+    );
+
+    await contentItemRef.update({
+        outputs: refreshedOutputs,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {outputs: refreshedOutputs};
 });
