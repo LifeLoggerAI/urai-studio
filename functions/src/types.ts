@@ -1,81 +1,95 @@
-export type User = {
+import { Timestamp } from 'firebase-admin/firestore';
+
+export type UserRole = "owner" | "admin" | "editor" | "viewer";
+
+export interface StudioUser {
+  uid: string;
   email: string;
   displayName: string;
-  roles: { admin: boolean };
-  createdAt: FirebaseFirestore.Timestamp;
-  updatedAt: FirebaseFirestore.Timestamp;
-};
+  role: UserRole;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  disabled: boolean;
+}
 
-export type ContentItem = {
-  ownerUid: string;
-  title: string;
-  description?: string;
+export interface Project {
+  name: string;
+  description: string;
+  createdBy: string; // uid
+  status: "active" | "archived";
   tags: string[];
-  createdAt: FirebaseFirestore.Timestamp;
-  updatedAt: FirebaseFirestore.Timestamp;
-  latestVersionId?: string;
-  statusSummary: "draft" | "processing" | "ready" | "failed";
-};
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
 
-export type Upload = {
-  ownerUid: string;
-  storagePath: string;
-  fileName: string;
-  contentType: string;
-  size: number;
-  durationSec?: number;
-  createdAt: FirebaseFirestore.Timestamp;
-  checksum?: string;
-  status: "uploaded" | "validated" | "rejected";
-  rejectReason?: string;
-};
+export interface Asset {
+    type: "video" | "audio" | "image" | "script" | "caption" | "other";
+    storagePath: string;
+    filename: string;
+    bytes: number;
+    contentType: string;
+    sha256?: string;
+    createdBy: string; // uid
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+}
 
-export type Version = {
-  ownerUid: string;
-  recipeId: string;
-  recipeParams: Record<string, any>;
-  createdAt: FirebaseFirestore.Timestamp;
-  updatedAt: FirebaseFirestore.Timestamp;
-  status: "draft" | "rendering" | "ready" | "failed";
-  outputs: Record<string, any>;
-};
+export type JobKind = "clip_render" | "thumbnail" | "captions" | "package_export" | "publish";
+export type JobState = "queued" | "running" | "succeeded" | "failed" | "canceled";
 
-export type Job = {
-  ownerUid: string;
-  itemId: string;
-  versionId: string;
-  type: "transcode" | "captions" | "thumbnail" | "renderShort";
-  status: "queued" | "running" | "succeeded" | "failed" | "cancelled";
-  progressPct: number;
-  stage: string;
-  attempts: number;
-  lockedBy?: string;
-  lockExpiresAt?: FirebaseFirestore.Timestamp;
-  createdAt: FirebaseFirestore.Timestamp;
-  updatedAt: FirebaseFirestore.Timestamp;
-  startedAt?: FirebaseFirestore.Timestamp;
-  finishedAt?: FirebaseFirestore.Timestamp;
-  errorCode?: string;
-  errorMessage?: string;
-  lastHeartbeatAt?: FirebaseFirestore.Timestamp;
-};
+export interface Job {
+    projectId: string;
+    kind: JobKind;
+    state: JobState;
+    priority: number;
+    input: Record<string, any>;
+    output: Record<string, any>;
+    error: Record<string, any> | null;
+    createdBy: string; // uid
+    claimedBy: string | null;
+    leaseExpiresAt: Timestamp | null;
+    attempt: number;
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+}
 
-export type JobRun = {
-  jobId: string;
-  attempt: number;
-  startedAt: FirebaseFirestore.Timestamp;
-  finishedAt?: FirebaseFirestore.Timestamp;
-  status: "running" | "succeeded" | "failed";
-  logsPath?: string;
-  error?: string;
-};
+export interface JobEvent {
+    type: "state_change" | "log" | "artifact" | "metric";
+    message: string;
+    data: Record<string, any>;
+    createdAt: Timestamp;
+}
 
-export type AuditLog = {
-  actorUid?: string;
-  actorRole: "user" | "admin" | "system";
-  action: string;
-  targetType: string;
-  targetId: string;
-  metadata: Record<string, any>;
-  createdAt: FirebaseFirestore.Timestamp;
-};
+export type PublishPlatform = "youtube" | "tiktok" | "instagram" | "x" | "other";
+export type PublishState = "draft" | "approved" | "publishing" | "published" | "failed";
+
+export interface Publish {
+    projectId: string;
+    jobId: string;
+    platform: PublishPlatform;
+    state: PublishState;
+    payload: Record<string, any>;
+    result: Record<string, any>;
+    approvedBy: string | null; // uid
+    createdBy: string; // uid
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+}
+
+export interface AuditLog {
+    actorUid: string | "system";
+    action: string;
+    target: string; // "projects/...", "jobs/..."
+    before: Record<string, any> | null;
+    after: Record<string, any> | null;
+    ip: string | null;
+    userAgent: string | null;
+    createdAt: Timestamp;
+}
+
+export interface SystemConfig {
+    allowBootstrapOwner: boolean;
+    bootstrapOwnerEmail?: string;
+    maxJobAttempts: number;
+    leaseSeconds: number;
+}

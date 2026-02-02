@@ -1,24 +1,22 @@
-
 import type { Metadata } from "next";
-import { Inter, Fira_Code } from "next/font/google";
-import "./globals.css";
+import { Inter } from "next/font/google";
+import "../globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-const firaCode = Fira_Code({ subsets: ["latin"], variable: "--font-mono" });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "URAI Studio",
-  description: "Next-gen content creation and processing",
+  description: "A content creation and clip factory system.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${firaCode.variable} font-sans`}>{children}</body>
+      <body className={inter.className}>{children}</body>
     </html>
   );
 }

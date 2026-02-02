@@ -1,20 +1,54 @@
+
 rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Deny all reads and writes by default
+
+    // --- Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserRole() {
+        return firestore.get(/databases/(default)/documents/studioUsers/$(request.auth.uid)).data.role;
+    }
+
+    function isOneOfRoles(roles) {
+        let userRole = getUserRole();
+        return isSignedIn() && userRole != null && roles.has(userRole);
+    }
+
+    // --- Default Deny ---
     match /{allPaths=**} {
       allow read, write: if false;
     }
 
-    // Allow users to upload to their own upload path
-    match /uploads/{uid}/{contentId}/{fileName} {
-      allow write: if request.auth.uid == uid;
+    // --- Project Files Rules ---
+    // General project files can be read by any authenticated studio user.
+    // Writes are restricted to editors, admins, and owners.
+    // Renders and exports are special cases and handled below.
+    match /projects/{projectId}/{path=**} {
+        allow read: if isOneOfRoles(['viewer', 'editor', 'admin', 'owner']);
     }
 
-    // Allow users to read their own output files
-    match /outputs/{uid}/{contentId}/{allPaths=**} {
-      allow read: if request.auth.uid == uid;
+    match /projects/{projectId}/assets/{path=**} {
+        allow write: if isOneOfRoles(['editor', 'admin', 'owner']);
+    }
+
+    // Renders can only be written by the backend (Cloud Functions).
+    // This is a critical security rule to prevent users from tampering with job outputs.
+    match /projects/{projectId}/renders/{jobId}/{path=**} {
+      // Allow reads for authenticated users so they can see the results.
+      allow read: if isOneOfRoles(['viewer', 'editor', 'admin', 'owner']);
+      // Writes are denied to all users, and only service accounts (functions) can write.
+      allow write: if false;
+    }
+
+    match /projects/{projectId}/exports/{exportId}/{path=**} {
+      // Allow reads for authenticated users.
+      allow read: if isOneOfRoles(['viewer', 'editor', 'admin', 'owner']);
+      // Writes are denied to all users, and only service accounts (functions) can write.
+      allow write: if false;
     }
   }
 }

@@ -1,7 +1,18 @@
-
 {
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "runtime": "nodejs20"
+    }
+  ],
   "hosting": {
-    "public": "apps/studio/out",
+    "public": "dist",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -13,14 +24,5 @@
         "destination": "/index.html"
       }
     ]
-  },
-  "functions": {
-    "source": "functions"
-  },
-  "firestore": {
-    "rules": "firestore.rules"
-  },
-  "storage": {
-    "rules": "storage.rules"
   }
 }
