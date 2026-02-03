@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  allowedDevOrigins: ['*.cloudworkstations.dev'],
   transpilePackages: ['@urai/ui'],
 };
 

@@ -1,0 +1,17 @@
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: system-ui;
+}
+
+.button {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #333;
+}
+
+.error {
+  color: crimson;
+  margin-top: 12px;
+}

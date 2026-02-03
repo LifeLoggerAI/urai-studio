@@ -1,0 +1,12 @@
+export type StudioRole = "founder" | "operator" | "viewer";
+
+export const ROLE_ORDER: Record<StudioRole, number> = {
+  viewer: 1,
+  operator: 2,
+  founder: 3
+};
+
+export function minRole(required: StudioRole, actual?: string | null) {
+  const a = (actual || "viewer") as StudioRole;
+  return (ROLE_ORDER[a] || 0) >= ROLE_ORDER[required];
+}

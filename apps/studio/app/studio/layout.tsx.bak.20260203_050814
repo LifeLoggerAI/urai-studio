@@ -1,0 +1,45 @@
+import Link from "next/link";
+import { StudioShell } from "@/components/studio/StudioShell";
+
+export default function StudioLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <StudioShell
+      sidebar={
+        <nav style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: 0.3 }}>URAI Studio</div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
+            <Link href="/studio" style={{ textDecoration: "none" }}>🏠 Overview</Link>
+            <Link href="/studio/jobs" style={{ textDecoration: "none" }}>🧾 Jobs</Link>
+            <Link href="/studio/clips" style={{ textDecoration: "none" }}>🎬 Clips</Link>
+            <Link href="/studio/renders" style={{ textDecoration: "none" }}>🖥️ Renders</Link>
+            <Link href="/studio/dead-letter" style={{ textDecoration: "none" }}>🪦 Dead Letter</Link>
+            <Link href="/studio/settings" style={{ textDecoration: "none" }}>⚙️ Settings</Link>
+          </div>
+
+          <div style={{ marginTop: "auto", opacity: 0.75, fontSize: 12 }}>
+            <div>env: dev</div>
+            <div>project: urai-studio</div>
+          </div>
+        </nav>
+      }
+      topbar={
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+            <div style={{ fontWeight: 800, fontSize: 16 }}>Studio</div>
+            <div style={{ opacity: 0.7, fontSize: 12 }}>Queue • Render • Audit</div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <a href="/api/health" style={{ fontSize: 12, opacity: 0.8, textDecoration: "none" }}>health</a>
+            <div style={{ width: 28, height: 28, borderRadius: 999, background: "rgba(0,0,0,0.08)", display: "grid", placeItems: "center", fontSize: 12 }}>
+              A
+            </div>
+          </div>
+        </div>
+      }
+    >
+      {children}
+    </StudioShell>
+  );
+}

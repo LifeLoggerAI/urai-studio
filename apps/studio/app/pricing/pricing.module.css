@@ -1,0 +1,29 @@
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: system-ui;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.card {
+  border: 1px solid #333;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.button {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #333;
+}
+
+.links {
+  margin-top: 26px;
+}

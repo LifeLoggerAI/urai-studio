@@ -1,0 +1,79 @@
+import { NextRequest, NextResponse } from "next/server";
+import { adminAuth } from "@/lib/firebaseAdmin";
+import { minRole, StudioRole } from "@/lib/gates";
+
+const PUBLIC_PATHS = ["/", "/api/health", "/favicon.ico"];
+
+function isPublic(pathname: string) {
+  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
+
+function requiredRoleForPath(pathname: string): StudioRole {
+  // tweak as needed
+  if (pathname.startsWith("/studio/settings")) return "founder";
+  if (pathname.startsWith("/studio/dead-letter")) return "operator";
+  if (pathname.startsWith("/studio/jobs")) return "operator";
+  if (pathname.startsWith("/studio/renders")) return "operator";
+  if (pathname.startsWith("/studio/clips")) return "viewer";
+  if (pathname.startsWith("/api/jobs/replay") || pathname.startsWith("/api/jobs/dlq-replay")) return "operator";
+  return "viewer";
+}
+
+async function getRoleFromRequest(req: NextRequest): Promise<string | null> {
+  // Prefer Authorization: Bearer <idToken> for dev; fallback to session cookie if present.
+  const authz = req.headers.get("authorization");
+  if (authz && authz.toLowerCase().startsWith("bearer ")) {
+    const token = authz.slice("bearer ".length).trim();
+    try {
+      const decoded = await adminAuth.verifyIdToken(token);
+      return (decoded.role as string) || null;
+    } catch {
+      return null;
+    }
+  }
+
+  const cookie = req.cookies.get("__session")?.value || req.cookies.get("session")?.value || null;
+  if (!cookie) return null;
+  try {
+    const decoded = await adminAuth.verifySessionCookie(cookie, true);
+    return (decoded.role as string) || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function middleware(req: NextRequest) {
+  const url = req.nextUrl;
+  const pathname = url.pathname;
+
+  if (isPublic(pathname)) return NextResponse.next();
+
+  // Guard Studio + API
+  if (pathname.startsWith("/studio") || pathname.startsWith("/api")) {
+    const role = await getRoleFromRequest(req);
+    const required = requiredRoleForPath(pathname);
+
+    if (!role) {
+      return NextResponse.json(
+        { ok: false, error: "UNAUTHENTICATED", requiredRole: required },
+        { status: 401 }
+      );
+    }
+    if (!minRole(required, role)) {
+      return NextResponse.json(
+        { ok: false, error: "FORBIDDEN", role, requiredRole: required },
+        { status: 403 }
+      );
+    }
+
+    const res = NextResponse.next();
+    res.headers.set("x-urai-role", role);
+    return res;
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"]
+};

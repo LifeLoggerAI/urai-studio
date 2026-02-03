@@ -1,0 +1,6 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  transpilePackages: ['@urai/ui'],
+};
+
+module.exports = nextConfig;

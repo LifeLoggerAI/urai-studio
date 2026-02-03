@@ -1,0 +1,12 @@
+export default function Home() {
+  return (
+    <main style={{ padding: 24 }}>
+      <h1 style={{ margin: 0 }}>URAI Studio</h1>
+      <p style={{ opacity: 0.8 }}>Dev server is up. Routes are working.</p>
+      <ul>
+        <li><a href="/studio">/studio</a></li>
+        <li><a href="/api/health">/api/health</a> (if exists)</li>
+      </ul>
+    </main>
+  );
+}

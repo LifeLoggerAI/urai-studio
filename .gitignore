@@ -1,2 +1,9 @@
+/apps/studio/playwright-report/
+/uraistudio-app/playwright-report/
 node_modules
-node_modules
+**/.next/
+**/.next/
+**/dist/
+**/.turbo/
+**/*.log
+**/.firebase/

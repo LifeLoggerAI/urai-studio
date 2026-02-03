@@ -1,0 +1,118 @@
+import { NextRequest, NextResponse } from "next/server";
+import { adminAuth } from "@/src/lib/firebaseAdmin";
+
+const PUBLIC_PATHS = [
+  "/",
+  "/waitlist",
+  "/pricing",
+  "/login",
+  "/api/waitlist",
+  "/api/billing/webhook",
+  "/api/health",
+  "/favicon.ico",
+  "/robots.txt",
+  "/sitemap.xml",
+];
+
+function isPublicPath(pathname: string) {
+  if (PUBLIC_PATHS.includes(pathname)) return true;
+  if (pathname.startsWith("/_next")) return true;
+  if (pathname.startsWith("/assets")) return true;
+  if (pathname.startsWith("/images")) return true;
+  return false;
+}
+
+function parseAllowlist(raw: string | undefined) {
+  return (raw || "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function parseRequirePlanPaths(raw: string | undefined) {
+  return (raw || "/studio,/api/jobs,/api/render")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+export async function middleware(req: NextRequest) {
+  const url = req.nextUrl;
+  const pathname = url.pathname;
+
+  if (pathname === "/api/health") return NextResponse.json({ ok: true });
+
+  const launchMode = (process.env.URAI_LAUNCH_MODE || "private").toLowerCase();
+  const allowlist = parseAllowlist(process.env.URAI_ALLOWLIST_EMAILS);
+  const inviteCode = (process.env.URAI_INVITE_CODE || "").trim();
+  const requirePlanPaths = parseRequirePlanPaths(process.env.URAI_REQUIRE_PLAN_ON_PATHS);
+  const planGates = (process.env.URAI_PLAN_GATES || "off").toLowerCase() === "on";
+
+  if (isPublicPath(pathname)) return NextResponse.next();
+
+  // Must be signed in for anything not public
+  const session = req.cookies.get("__session")?.value || "";
+  if (!session) {
+    const to = new URL("/login", req.url);
+    to.searchParams.set("from", pathname);
+    return NextResponse.redirect(to);
+  }
+
+  // Verify session cookie
+  let decoded: { uid: string; email?: string | null } | null = null;
+  try {
+    const auth = adminAuth();
+    const d = await auth.verifySessionCookie(session, true);
+    decoded = { uid: d.uid, email: (d.email as any) || null };
+  } catch {
+    const res = NextResponse.redirect(new URL("/login", req.url));
+    res.cookies.set("__session", "", { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 0 });
+    return res;
+  }
+
+  const email = (decoded.email || "").toLowerCase();
+
+  // Private launch gate (in addition to auth)
+  if (launchMode !== "public") {
+    const provided = url.searchParams.get("code") || req.cookies.get("urai_invite")?.value || "";
+    const codeOk = inviteCode.length > 0 && provided === inviteCode;
+    const allowlisted = !!email && allowlist.includes(email);
+
+    if (!allowlisted && !codeOk) {
+      const to = new URL("/waitlist", req.url);
+      to.searchParams.set("from", pathname);
+      return NextResponse.redirect(to);
+    }
+
+    const res = NextResponse.next();
+    if (codeOk && provided) res.cookies.set("urai_invite", provided, { httpOnly: true, sameSite: "lax", path: "/" });
+    // Pass identity downstream
+    res.headers.set("x-urai-uid", decoded.uid);
+    res.headers.set("x-urai-email", email);
+    return res;
+  }
+
+  // Public launch: still enforce auth for protected routes, and optionally plan gates on selected paths
+  const res = NextResponse.next();
+  res.headers.set("x-urai-uid", decoded.uid);
+  res.headers.set("x-urai-email", email);
+
+  if (planGates) {
+    const needsPlan = requirePlanPaths.some((p) => pathname === p || pathname.startsWith(p + "/"));
+    if (needsPlan) {
+      // Server-side plan enforcement happens in API routes (authoritative).
+      // Here we can redirect UI routes to /pricing for nicer UX.
+      if (!pathname.startsWith("/api/")) {
+        // Let page render; it can show a paywall if you add it.
+        // Or redirect hard:
+        // return NextResponse.redirect(new URL("/pricing", req.url));
+      }
+    }
+  }
+
+  return res;
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+};

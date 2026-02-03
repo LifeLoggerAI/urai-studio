@@ -1,0 +1,30 @@
+import "server-only";
+import { adminDb } from "@/src/lib/firebaseAdmin";
+import { getUserPlan, planGatesEnabled } from "@/src/lib/billing";
+
+export async function enforcePlanIfEnabled(uid: string) {
+  if (!planGatesEnabled()) return { ok: true as const };
+  const { active } = await getUserPlan(uid);
+  if (!active) throw new Error("plan_required");
+  return { ok: true as const };
+}
+
+// Firestore-backed per-uid per-minute token counter.
+// This survives serverless cold starts.
+export async function rateLimit(uid: string, limitPerMin: number) {
+  const db = adminDb();
+  const now = new Date();
+  const key = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-${String(
+    now.getUTCDate()
+  ).padStart(2, "0")}-${String(now.getUTCHours()).padStart(2, "0")}-${String(
+    now.getUTCMinutes()
+  ).padStart(2, "0")}`;
+
+  const ref = db.collection("rateLimits").doc(`${uid}_${key}`);
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const n = (snap.data() as any)?.count || 0;
+    if (n >= limitPerMin) throw new Error("rate_limited");
+    tx.set(ref, { uid, key, count: n + 1, updatedAt: new Date().toISOString() }, { merge: true });
+  });
+}

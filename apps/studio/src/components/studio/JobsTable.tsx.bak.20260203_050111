@@ -1,0 +1,123 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { fmtShortId, fmtTime } from "@/lib/format";
+
+type JobStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED" | "DLQ";
+
+type JobRow = {
+  id: string;
+  type: "CLIP_RENDER" | "THUMBNAIL" | "TRANSCRIPT" | "PUBLISH";
+  status: JobStatus;
+  createdAt: number;
+  updatedAt: number;
+  attempts: number;
+  lastError?: string;
+};
+
+function pillColor(status: JobStatus) {
+  switch (status) {
+    case "QUEUED": return "rgba(0,0,0,0.08)";
+    case "RUNNING": return "rgba(0,120,255,0.14)";
+    case "SUCCEEDED": return "rgba(0,180,90,0.16)";
+    case "FAILED": return "rgba(255,60,60,0.16)";
+    case "DLQ": return "rgba(255,140,0,0.16)";
+  }
+}
+
+export function JobsTable() {
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState<JobStatus | "ALL">("ALL");
+
+  const rows: JobRow[] = useMemo(
+    () => [
+      { id: "job_9c2a11f0a8d4", type: "CLIP_RENDER", status: "RUNNING", createdAt: Date.now() - 8_000, updatedAt: Date.now() - 500, attempts: 1 },
+      { id: "job_11eaa0b4d911", type: "THUMBNAIL", status: "QUEUED", createdAt: Date.now() - 22_000, updatedAt: Date.now() - 22_000, attempts: 0 },
+      { id: "job_7a5d9012cbe1", type: "TRANSCRIPT", status: "SUCCEEDED", createdAt: Date.now() - 180_000, updatedAt: Date.now() - 90_000, attempts: 1 },
+      { id: "job_1b93d77fa2a9", type: "PUBLISH", status: "FAILED", createdAt: Date.now() - 400_000, updatedAt: Date.now() - 60_000, attempts: 3, lastError: "HTTP 429 from platform API" },
+      { id: "job_dlq_0b8e77c1d9aa", type: "CLIP_RENDER", status: "DLQ", createdAt: Date.now() - 900_000, updatedAt: Date.now() - 900_000, attempts: 5, lastError: "Render timeout" },
+    ],
+    []
+  );
+
+  const filtered = rows.filter((r) => {
+    const okQ = !q || r.id.toLowerCase().includes(q.toLowerCase()) || r.type.toLowerCase().includes(q.toLowerCase());
+    const okS = status === "ALL" || r.status === status;
+    return okQ && okS;
+  });
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search job id / type…"
+          style={{
+            padding: "10px 12px",
+            borderRadius: 10,
+            border: "1px solid rgba(0,0,0,0.12)",
+            minWidth: 260,
+          }}
+        />
+        <select
+          value={status}
+          onChange={(e) => setStatus(e.target.value as any)}
+          style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(0,0,0,0.12)" }}
+        >
+          <option value="ALL">All statuses</option>
+          <option value="QUEUED">QUEUED</option>
+          <option value="RUNNING">RUNNING</option>
+          <option value="SUCCEEDED">SUCCEEDED</option>
+          <option value="FAILED">FAILED</option>
+          <option value="DLQ">DLQ</option>
+        </select>
+
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+          <button
+            onClick={() => alert("TODO: wire replay (re-run last jobRun id)")}
+            style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(0,0,0,0.12)", background: "white", cursor: "pointer" }}
+          >
+            ↻ Replay
+          </button>
+          <button
+            onClick={() => alert("TODO: wire DLQ replay")}
+            style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(0,0,0,0.12)", background: "white", cursor: "pointer" }}
+          >
+            ☠ DLQ Replay
+          </button>
+        </div>
+      </div>
+
+      <div style={{ border: "1px solid rgba(0,0,0,0.08)", borderRadius: 14, overflow: "hidden" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 0.9fr 1fr 0.8fr 1fr", gap: 0, padding: "10px 12px", fontSize: 12, fontWeight: 700, background: "rgba(0,0,0,0.03)" }}>
+          <div>Job</div>
+          <div>Type</div>
+          <div>Status</div>
+          <div>Updated</div>
+          <div>Attempts</div>
+          <div>Last error</div>
+        </div>
+
+        {filtered.map((r) => (
+          <div key={r.id} style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 0.9fr 1fr 0.8fr 1fr", padding: "12px 12px", borderTop: "1px solid rgba(0,0,0,0.06)", alignItems: "center", fontSize: 13 }}>
+            <div title={r.id} style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" }}>{fmtShortId(r.id)}</div>
+            <div>{r.type}</div>
+            <div>
+              <span style={{ padding: "4px 8px", borderRadius: 999, background: pillColor(r.status), fontSize: 12, fontWeight: 700 }}>
+                {r.status}
+              </span>
+            </div>
+            <div style={{ opacity: 0.85 }}>{fmtTime(r.updatedAt)}</div>
+            <div style={{ opacity: 0.85 }}>{r.attempts}</div>
+            <div style={{ opacity: 0.75 }}>{r.lastError || "—"}</div>
+          </div>
+        ))}
+
+        {filtered.length === 0 && (
+          <div style={{ padding: 16, opacity: 0.7 }}>No jobs match your filters.</div>
+        )}
+      </div>
+    </div>
+  );
+}

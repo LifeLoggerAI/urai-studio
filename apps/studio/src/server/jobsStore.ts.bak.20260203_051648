@@ -1,0 +1,67 @@
+import { adminDb } from "@/lib/firebaseAdmin";
+
+export type JobStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED" | "DLQ";
+export type JobType = string;
+
+export type JobRow = {
+  id: string;
+  type?: JobType;
+  status?: JobStatus;
+  updatedAt?: string | null;
+  attempts?: number | null;
+  lastError?: string | null;
+  payload?: unknown;
+};
+
+export type ListJobsParams = {
+  q?: string;
+  status?: string;
+  limit?: number;
+};
+
+function toIso(v: any): string | null {
+  // Firestore Timestamp -> ISO
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (v.toDate) return v.toDate().toISOString();
+  return null;
+}
+
+export async function listJobs(params: ListJobsParams): Promise<JobRow[]> {
+  const limit = Math.max(1, Math.min(200, params.limit || 50));
+  const status = (params.status || "").trim();
+  const q = (params.q || "").trim().toLowerCase();
+
+  let ref: FirebaseFirestore.Query = adminDb.collection("jobs").orderBy("updatedAt", "desc").limit(limit);
+
+  if (status && status !== "ALL") {
+    ref = ref.where("status", "==", status);
+  }
+
+  // NOTE: Firestore doesn't do contains/ilike. We'll do a cheap client-side filter on id/type.
+  const snap = await ref.get();
+
+  const rows = snap.docs.map((d) => {
+    const data = d.data() as any;
+    return {
+      id: d.id,
+      type: data.type,
+      status: data.status,
+      updatedAt: toIso(data.updatedAt),
+      attempts: data.attempts ?? null,
+      lastError: data.lastError ?? null,
+      payload: data.payload ?? null
+    } satisfies JobRow;
+  });
+
+  if (!q) return rows;
+
+  return rows.filter((r) => {
+    return (
+      r.id.toLowerCase().includes(q) ||
+      String(r.type || "").toLowerCase().includes(q) ||
+      String(r.status || "").toLowerCase().includes(q) ||
+      String(r.lastError || "").toLowerCase().includes(q)
+    );
+  });
+}
