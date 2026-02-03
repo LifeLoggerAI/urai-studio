@@ -1,9 +1,9 @@
 
-// apps/studio/app/api/jobs/replay/route.ts
+// apps/studio/app/api/jobs/dismiss/route.ts
 
 import { NextResponse } from "next/server";
 import { firestore } from "../../../../lib/firebase-admin";
-import { StudioJob, StudioAudit } from "../../schemas";
+import { StudioAudit } from "../../schemas";
 import { v4 as uuidv4 } from "uuid";
 
 export async function POST(request: Request) {
@@ -14,6 +14,7 @@ export async function POST(request: Request) {
   }
 
   const jobRef = firestore.collection("studioJobs").doc(jobId);
+  const dlqRef = firestore.collection("studioDLQ").where("jobId", "==", jobId);
 
   try {
     await firestore.runTransaction(async (transaction) => {
@@ -23,32 +24,31 @@ export async function POST(request: Request) {
         throw new Error("Job not found");
       }
 
-      const job = jobDoc.data() as StudioJob;
+      // Update the job status to CANCELLED
+      transaction.update(jobRef, { status: "CANCELLED", updatedAt: new Date() });
 
-      // Reset the job status to QUEUED
-      transaction.update(jobRef, {
-        status: "QUEUED",
-        lease: {},
-        updatedAt: new Date(),
-        attempts: 0, // Reset attempts for re-queued job
-      });
+      // Delete the job from the DLQ
+      const dlqSnapshot = await transaction.get(dlqRef);
+      if (!dlqSnapshot.empty) {
+        dlqSnapshot.docs.forEach((doc) => transaction.delete(doc.ref));
+      }
 
-      // Create an audit log for the replay action
+      // Create an audit log for the dismiss action
       const auditLogRef = firestore.collection("studioAudit").doc(uuidv4());
       const auditLog: StudioAudit = {
         auditId: auditLogRef.id,
         at: new Date(),
         actor: { uid: "system" }, // Replace with actual user ID
-        action: "JOB_REPLAYED",
+        action: "DLQ_DISMISSED",
         jobId: jobId,
       };
       transaction.set(auditLogRef, auditLog);
     });
 
-    return NextResponse.json({ message: `Job ${jobId} has been re-queued` });
+    return NextResponse.json({ message: `Job ${jobId} has been dismissed` });
 
   } catch (error: any) {
-    console.error(`Error replaying job ${jobId}:`, error);
+    console.error(`Error dismissing job ${jobId}:`, error);
     if (error.message === "Job not found") {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
     }

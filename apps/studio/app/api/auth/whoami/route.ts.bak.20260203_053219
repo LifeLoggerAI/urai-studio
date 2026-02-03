@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   if (!token) return NextResponse.json({ ok: false, error: "missing_token" }, { status: 401 });
 
   try {
-    const decoded = await adminAuth.verifyIdToken(token);
+    const decoded = await adminAuth().verifyIdToken(token);
     return NextResponse.json({ ok: true, uid: decoded.uid, claims: decoded });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: "invalid_token" }, { status: 401 });
