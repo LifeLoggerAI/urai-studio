@@ -1,0 +1,57 @@
+
+// apps/studio/app/api/jobs/replay/route.ts
+
+import { NextResponse } from "next/server";
+import { firestore } from "../../../../lib/firebase-admin";
+import { StudioJob, StudioAudit } from "../../schemas";
+import { v4 as uuidv4 } from "uuid";
+
+export async function POST(request: Request) {
+  const { jobId } = await request.json();
+
+  if (!jobId) {
+    return NextResponse.json({ error: "Missing required field: jobId" }, { status: 400 });
+  }
+
+  const jobRef = firestore.collection("studioJobs").doc(jobId);
+
+  try {
+    await firestore.runTransaction(async (transaction) => {
+      const jobDoc = await transaction.get(jobRef);
+
+      if (!jobDoc.exists) {
+        throw new Error("Job not found");
+      }
+
+      const job = jobDoc.data() as StudioJob;
+
+      // Reset the job status to QUEUED
+      transaction.update(jobRef, {
+        status: "QUEUED",
+        lease: {},
+        updatedAt: new Date(),
+        attempts: 0, // Reset attempts for re-queued job
+      });
+
+      // Create an audit log for the replay action
+      const auditLogRef = firestore.collection("studioAudit").doc(uuidv4());
+      const auditLog: StudioAudit = {
+        auditId: auditLogRef.id,
+        at: new Date(),
+        actor: { uid: "system" }, // Replace with actual user ID
+        action: "JOB_REPLAYED",
+        jobId: jobId,
+      };
+      transaction.set(auditLogRef, auditLog);
+    });
+
+    return NextResponse.json({ message: `Job ${jobId} has been re-queued` });
+
+  } catch (error: any) {
+    console.error(`Error replaying job ${jobId}:`, error);
+    if (error.message === "Job not found") {
+      return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}

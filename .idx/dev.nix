@@ -5,6 +5,7 @@
     pkgs.firebase-tools
     pkgs.ffmpeg
     pkgs.pnpm
+    pkgs.rsync # Added to support the lock script
   ];
   idx = {
     extensions = [

@@ -1,0 +1,24 @@
+
+import Link from 'next/link';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body style={{ fontFamily: 'system-ui', margin: 0 }}>
+        <div style={{ display: 'flex' }}>
+          <nav style={{ width: '200px', padding: '20px', borderRight: '1px solid #eee' }}>
+            <ul>
+              <li><Link href="/studio/jobs">Jobs</Link></li>
+              <li><Link href="/studio/replay">Replay</Link></li>
+              <li><Link href="/studio/dlq">DLQ</Link></li>
+              <li><Link href="/studio/settings">Settings</Link></li>
+            </ul>
+          </nav>
+          <main style={{ padding: '20px', flex: 1 }}>
+            {children}
+          </main>
+        </div>
+      </body>
+    </html>
+  );
+}

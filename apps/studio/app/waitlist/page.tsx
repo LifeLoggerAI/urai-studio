@@ -1,47 +1,62 @@
-export const dynamic = "force-dynamic";
+"use client";
 
-export default function WaitlistPage({ searchParams }: { searchParams?: Record<string, string> }) {
-  const from = searchParams?.from || "/";
+import { useState } from "react";
+
+export default function WaitlistPage() {
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setMessage("");
+    setError("");
+
+    if (!email) {
+      setError("Please enter your email address.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, source: "studio-waitlist" }),
+      });
+
+      const data = await res.json();
+
+      if (data.ok) {
+        setMessage("Thank you for joining the waitlist!");
+        setEmail("");
+      } else {
+        setError(data.error || "Something went wrong. Please try again.");
+      }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again later.");
+    }
+  };
+
   return (
-    <main style={{ maxWidth: 760, margin: "0 auto", padding: 24, fontFamily: "system-ui" }}>
-      <h1>URAI Studio</h1>
-      <p>Access opens in waves. Join the waitlist.</p>
-
-      <form
-        onSubmit={async (e) => {
-          e.preventDefault();
-          const fd = new FormData(e.currentTarget as HTMLFormElement);
-          const email = String(fd.get("email") || "").trim();
-          await fetch("/api/waitlist", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ email, source: "waitlist_page" }),
-          });
-          (e.currentTarget as HTMLFormElement).reset();
-          alert("Added. Watch your inbox.");
-        }}
-        style={{ display: "flex", gap: 12, marginTop: 16 }}
-      >
+    <main style={{ padding: "2rem" }}>
+      <h1>Join the Waitlist</h1>
+      <p>Be the first to know when we launch new features.</p>
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", maxWidth: "300px", gap: "1rem" }}>
         <input
-          name="email"
-          placeholder="you@email.com"
           type="email"
-          required
-          style={{ flex: 1, padding: 12, borderRadius: 10, border: "1px solid #333" }}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Enter your email"
+          style={{ padding: "0.5rem" }}
         />
-        <button type="submit" style={{ padding: "12px 16px", borderRadius: 10, border: "1px solid #333" }}>
+        <button type="submit" style={{ padding: "0.5rem" }}>
           Join
         </button>
       </form>
-
-      <div style={{ marginTop: 22, opacity: 0.85 }}>
-        <p>Have access already?</p>
-        <a href={`/login?from=${encodeURIComponent(from)}`}>Sign in</a>
-      </div>
-
-      <p style={{ marginTop: 28 }}>
-        <a href="/pricing">Pricing</a>
-      </p>
+      {message && <p style={{ color: "green" }}>{message}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </main>
   );
 }
