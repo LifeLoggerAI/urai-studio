@@ -1,0 +1,17 @@
+{
+  "name": "@urai/utils",
+  "version": "0.0.1",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "lint": "eslint . --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.5"
+  }
+}
