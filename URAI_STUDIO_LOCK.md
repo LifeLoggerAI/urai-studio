@@ -19,3 +19,7 @@ Backup: ../urai-studio.bak.20260204_015503.tgz
 - firebase deploy --only hosting
 - firebase deploy --only functions (if present)
 
+
+## Notes
+- Cloud Functions API is disabled in project `urai-studio` (403 SERVICE_DISABLED).
+- This repo ships Studio via Hosting (frameworksBackend). No classic Functions deployment is required for SHIP.
