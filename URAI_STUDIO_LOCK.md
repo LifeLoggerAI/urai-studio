@@ -1,32 +1,37 @@
-# URAI_STUDIO_LOCK
+# URAI-STUDIO LOCK ✅
 
-- **UTC Locked At:** 2026-02-04 05:24:50 UTC
-- **Repo:** /home/user/urai-studio
-- **Git Branch:** main
-- **Git Commit:** 21920f2d5d2256bce479e5299c133895eaec9e08
-- **Firebase Project:** urai-studio
-- **Tag Target:** v1.0.0-studio
-- **Functions Deploy Status:** OK
-- **Log:** /tmp/urai_studio_ship_lock_20260204_052344.log
+- Project: urai-studio
+- Locked at: 2026-02-05 00:57:35 UTC
+- Repo: /home/user/urai-studio
+- Branch: main
+- Commit: 09babc1925d5330d6f3ff31da5f21be9084b10d5
+- Tag: v1.0.0-studio-static
+- Firebase Project: urai-4dc1d
 
-## Deploy Notes
-✅ Functions deploy completed successfully.
+## Build/Tests
+- pnpm --filter "./apps/studio" build: PASS (static export)
 
-### functions:list
-```
-┌────────────────┬─────────┬───────────────────────────────────────────────────┬─────────────┬────────┬──────────┐
-│ Function       │ Version │ Trigger                                           │ Location    │ Memory │ Runtime  │
-├────────────────┼─────────┼───────────────────────────────────────────────────┼─────────────┼────────┼──────────┤
-│ approvePublish │ v2      │ callable                                          │ us-central1 │ ---    │ nodejs20 │
-├────────────────┼─────────┼───────────────────────────────────────────────────┼─────────────┼────────┼──────────┤
-│ bootstrapOwner │ v2      │ callable                                          │ us-central1 │ ---    │ nodejs20 │
-├────────────────┼─────────┼───────────────────────────────────────────────────┼─────────────┼────────┼──────────┤
-│ createJob      │ v2      │ callable                                          │ us-central1 │ ---    │ nodejs20 │
-├────────────────┼─────────┼───────────────────────────────────────────────────┼─────────────┼────────┼──────────┤
-│ jobrunner      │ v2      │ scheduled                                         │ us-central1 │ ---    │ nodejs20 │
-├────────────────┼─────────┼───────────────────────────────────────────────────┼─────────────┼────────┼──────────┤
-│ onjobwrite     │ v2      │ https                                             │ us-central1 │ ---    │ nodejs20 │
-├────────────────┼─────────┼───────────────────────────────────────────────────┼─────────────┼────────┼──────────┤
-│ onusercreate   │ v2      │ providers/cloud.auth/eventTypes/user.beforeCreate │ us-central1 │ ---    │ nodejs20 │
-└────────────────┴─────────┴───────────────────────────────────────────────────┴─────────────┴────────┴──────────┘
-```
+## Deploy
+- firebase deploy --only hosting: PASS (static-only)
+
+## Notes
+- Log: /tmp/urai-studio_lock_20260205_005728.log
+- Hosting sites (best-effort):
+- 
+- Sites for project urai-4dc1d
+- 
+- ┌────────────────┬────────────────────────────────┬───────────────────────────────────────────┐
+- │ Site ID        │ Default URL                    │ App ID (if set)                           │
+- ├────────────────┼────────────────────────────────┼───────────────────────────────────────────┤
+- │ urai-4dc1d     │ https://urai-4dc1d.web.app     │ 1:952723774155:web:0e07735a538d4dc925994e │
+- ├────────────────┼────────────────────────────────┼───────────────────────────────────────────┤
+- │ urai-admin     │ https://urai-admin.web.app     │ --                                        │
+- ├────────────────┼────────────────────────────────┼───────────────────────────────────────────┤
+- │ urai-analytics │ https://urai-analytics.web.app │ --                                        │
+- ├────────────────┼────────────────────────────────┼───────────────────────────────────────────┤
+- │ urai-b2bportal │ https://urai-b2bportal.web.app │ --                                        │
+- ├────────────────┼────────────────────────────────┼───────────────────────────────────────────┤
+- │ urai-jobs      │ https://urai-jobs.web.app      │ --                                        │
+- ├────────────────┼────────────────────────────────┼───────────────────────────────────────────┤
+- │ urai-web-final │ https://urai-web-final.web.app │ --                                        │
+- └────────────────┴────────────────────────────────┴───────────────────────────────────────────┘
