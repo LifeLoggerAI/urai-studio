@@ -1,3 +1,7 @@
-export default function JobsPage() {
-  return <h1>Jobs</h1>;
+import JobsClient from "./JobsClient";
+
+export const dynamic = "force-dynamic";
+
+export default function StudioJobsPage() {
+  return <JobsClient />;
 }

@@ -11,7 +11,7 @@ export function planGatesEnabled() {
 export function stripe() {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error("Missing STRIPE_SECRET_KEY");
-  return new Stripe(key, { apiVersion: "2024-06-20" });
+  return new Stripe(key, { apiVersion: "2025-02-24.acacia" });
 }
 
 export function priceForPlan(plan: string): { priceId: string; tier: Plan } {
@@ -27,7 +27,7 @@ export function priceForPlan(plan: string): { priceId: string; tier: Plan } {
 }
 
 export async function setUserBilling(uid: string, patch: any) {
-  const db = adminDb();
+  const db = adminDb;
   await db.collection("users").doc(uid).set(
     {
       billing: {
@@ -40,7 +40,7 @@ export async function setUserBilling(uid: string, patch: any) {
 }
 
 export async function getUserPlan(uid: string): Promise<{ active: boolean; tier: Plan }> {
-  const db = adminDb();
+  const db = adminDb;
   const snap = await db.collection("users").doc(uid).get();
   const billing = (snap.data() as any)?.billing || {};
   const status = String(billing.status || "inactive");

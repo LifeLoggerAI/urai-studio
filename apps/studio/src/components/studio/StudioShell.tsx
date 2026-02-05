@@ -1,5 +1,5 @@
 
-export function StudioShell({ children }: { children: React.ReactNode }) {
+export function StudioShell({ children, title, subtitle }: { children: React.ReactNode; title?: string; subtitle?: string }) {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="mx-auto flex max-w-7xl">

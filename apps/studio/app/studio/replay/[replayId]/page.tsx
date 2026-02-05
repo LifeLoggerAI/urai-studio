@@ -1,15 +1,18 @@
+"use client";
 
-'use client';
+import { useParams } from "next/navigation";
 
-import { useParams } from 'next/navigation';
+export const dynamic = "force-static";
 
 export default function ReplayPage() {
   const params = useParams();
-  const { replayId } = params;
+  const replayId = params?.replayId as string | undefined;
+
+  if (!replayId) return null;
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">Replay</h1>
+    <div style={{ padding: 24 }}>
+      <h1>Replay</h1>
       <p>Replay ID: {replayId}</p>
     </div>
   );

@@ -143,7 +143,7 @@ export default function StudioFriendHome() {
                         <div className="flex items-center gap-3">
                           {badge(job.status)}
                           <div className="truncate text-sm font-medium">{job.type.replace(/_/g, ' ')}</div>
-                          <div className="ml-auto shrink-0 text-xs text-zinc-500">{job.createdAt.toLocaleTimeString()}</div>
+                          <div className="ml-auto shrink-0 text-xs text-zinc-500">{(((job as any).createdAt?.toDate?.() ? (job as any).createdAt.toDate().toLocaleTimeString() : String((job as any).createdAt ?? "")))}</div>
                         </div>
                         <div className="mt-1 truncate text-xs text-zinc-400">{job.source.title || job.source.ref}</div>
                       </div>

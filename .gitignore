@@ -11,3 +11,13 @@ node_modules
 firebase.json.bak.*
 /tmp/
 *.log
+
+# URAI buildfix backups (auto-ignore)
+*.bak.*
+**/*.bak.*
+.bak_buildfix_*/
+apps/**/.bak_buildfix_*/
+apps/**/.bak/
+/ship_and_lock.sh
+/simple_deploy.sh
+/urai_studio_*.sh

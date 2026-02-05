@@ -1,5 +1,16 @@
 {
   "projects": {
     "default": "urai-studio"
-  }
+  },
+  "targets": {
+    "urai-studio": {
+      "hosting": {
+        "default": [
+          "urai-studio"
+        ]
+      }
+    }
+  },
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
 }

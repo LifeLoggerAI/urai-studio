@@ -1,25 +1,26 @@
+"use client";
+import { firebaseApp, requireAuth, requireDb, db } from "@/lib/firebaseClient";
+
 
 import { getAuth } from "firebase/auth";
-import { app, db } from "@/app/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
+
+import { useAuthState } from "@/lib/staticAuth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { getFunctions, httpsCallable } from "firebase/functions";
 
-const auth = getAuth(app);
-const functions = getFunctions(app);
 
-const refreshOutputUrls = httpsCallable(functions, "refreshOutputUrls");
 
 export default function ContentDetail({ params }: { params: { contentId: string } }) {
-  const [user, loading] = useAuthState(auth);
+  const db2 = requireDb();
+  const [user, loading] = useAuthState(requireAuth() as any);
   const [contentItem, setContentItem] = useState<any>(null);
   const [job, setJob] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
       const unsubscribe = onSnapshot(
-        doc(db, "contentItems", params.contentId),
+        doc(db2, "contentItems", params.contentId),
         (doc) => {
           setContentItem({ id: doc.id, ...doc.data() });
         }
@@ -30,7 +31,7 @@ export default function ContentDetail({ params }: { params: { contentId: string 
 
   useEffect(() => {
     if (contentItem) {
-      const unsubscribe = onSnapshot(doc(db, "jobs", contentItem.jobId), (doc) => {
+      const unsubscribe = onSnapshot(doc(db2, "jobs", contentItem.jobId), (doc) => {
         setJob({ id: doc.id, ...doc.data() });
       });
       return () => unsubscribe();
@@ -39,7 +40,9 @@ export default function ContentDetail({ params }: { params: { contentId: string 
 
   const handleRefreshUrls = async () => {
     if (contentItem) {
-      await refreshOutputUrls({ contentId: contentItem.id });
+      if (typeof window === "undefined") return;
+        const callable = httpsCallable(getFunctions(firebaseApp as any), "refreshOutputUrls");
+        await (callable as any)({ contentId: contentItem.id });
     }
   };
 

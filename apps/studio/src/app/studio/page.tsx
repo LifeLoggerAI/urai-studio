@@ -1,28 +1,29 @@
+import { requireAuth, requireDb } from "@/lib/firebaseClient";
 
-import { getAuth } from "firebase/auth";
+
 import { app } from "@/app/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
+import { useAuthState } from "@/lib/staticAuth";
 import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "@/app/firebase";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import FileUpload from "@/components/FileUpload";
 
-const auth = getAuth(app);
+const auth = requireAuth();
 
 export default function Studio() {
   const [user, loading] = useAuthState(auth);
-  const [contentItems, setContentItems] = useState([]);
+  const [contentItems, setContentItems] = useState<any[]>([]);
 
   useEffect(() => {
     if (user) {
       const q = query(
-        collection(db, "contentItems"),
-        where("ownerUid", "==", user.uid),
+        collection(requireDb(), "contentItems"),
+        where("ownerUid", "==", (user as any).uid),
         orderBy("createdAt", "desc")
       );
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const items = [];
+        const items: any[] = [];
         querySnapshot.forEach((doc) => {
           items.push({ id: doc.id, ...doc.data() });
         });

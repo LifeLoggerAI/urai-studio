@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { firebaseAuth } from "@/lib/firebaseClient";
+import { firebaseAuth, requireAuth } from "@/lib/firebaseClient";
 
 export default function LoginPage() {
   const [err, setErr] = useState<string | null>(null);
@@ -11,7 +11,7 @@ export default function LoginPage() {
     setErr(null);
     setBusy(true);
     try {
-      const auth = firebaseAuth();
+      const auth = requireAuth();
       const provider = new GoogleAuthProvider();
       const cred = await signInWithPopup(auth, provider);
       const idToken = await cred.user.getIdToken();

@@ -1,13 +1,41 @@
 {
   "hosting": {
-    "source": "apps/studio/.next",
+    "source": "apps/studio",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ],
-    "frameworksBackend": {
-      "region": "us-central1"
+    "rewrites": []
+  },
+  "functions": {
+    "source": "functions"
+  },
+  "emulators": {
+    "hub": {
+      "host": "127.0.0.1",
+      "port": 4401
+    },
+    "ui": {
+      "host": "127.0.0.1",
+      "port": 4001
+    },
+    "logging": {
+      "host": "127.0.0.1",
+      "port": 4501
+    },
+    "hosting": {
+      "host": "127.0.0.1",
+      "port": 5002
+    },
+    "functions": {
+      "host": "127.0.0.1",
+      "port": 5003
+    },
+    "singleProjectMode": true,
+    "eventarc": {
+      "host": "127.0.0.1",
+      "port": 9299
     }
   }
 }
