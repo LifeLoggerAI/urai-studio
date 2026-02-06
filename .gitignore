@@ -21,3 +21,4 @@ apps/**/.bak/
 /ship_and_lock.sh
 /simple_deploy.sh
 /urai_studio_*.sh
+node_modules
