@@ -1,0 +1,2 @@
+Studio frozen at: 20260207_035707 UTC
+Tag: v1.0.0-studio-internal
