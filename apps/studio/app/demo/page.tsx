@@ -1,0 +1,2 @@
+import { council,demoLifeMap,demoWeeklyScroll } from '@/lib/studio/demo-data';
+export default function Page(){return <section><h1>URAI Demo</h1><p>Council autonomy is OFF by default. This is a seeded demo story.</p><div className='card'><h3>{demoWeeklyScroll.title}</h3><p>{demoWeeklyScroll.summary}</p><ul>{demoWeeklyScroll.highlights.map(h=><li key={h}>{h}</li>)}</ul></div><div className='card'><h3>Life Map Preview</h3><ul>{demoLifeMap.map(e=><li key={e.day}>{e.day}: {e.event}</li>)}</ul></div><div className='card'><h3>Council</h3>{council.join(', ')}</div></section>}
