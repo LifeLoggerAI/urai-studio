@@ -1,0 +1,1 @@
+export default async function Page({params}:{params:Promise<{id:string}>}){const {id}=await params; if(!/^[a-zA-Z0-9_-]+$/.test(id)) return <div><h1>Invalid asset id</h1></div>; return <div><h1>Asset {id}</h1><p>No live asset source configured.</p></div>}
