@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit",
+    "test": "node tests/modules.test.mjs && node tests/openapi.test.mjs && node tests/intake.test.mjs",
+    "smoke": "node tests/routes-smoke.mjs"
   },
   "dependencies": {
     "@types/uuid": "^11.0.0",

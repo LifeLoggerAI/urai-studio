@@ -1,0 +1,1 @@
+export default function Page(){return <section><h1>Assets</h1><div className='card'>No live asset source configured. Connect Asset Factory or storage integration to populate registry.</div></section>}

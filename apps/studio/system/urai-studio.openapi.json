@@ -1,0 +1,13 @@
+{
+  "openapi": "3.0.3",
+  "info": {"title": "URAI Studio System API", "version": "1.0.0"},
+  "paths": {
+    "/api/system/health": {"get": {"responses": {"200": {"description": "ok"}}}},
+    "/api/system/manifest": {"get": {"responses": {"200": {"description": "ok"}}}},
+    "/api/system/capabilities": {"get": {"responses": {"200": {"description": "ok"}}}},
+    "/api/system/integration-contract": {"get": {"responses": {"200": {"description": "ok"}}}},
+    "/api/system/openapi": {"get": {"responses": {"200": {"description": "ok"}}}},
+    "/api/integrations/asset-factory/health": {"get": {"responses": {"200": {"description": "ok"}}}},
+    "/api/integrations/asset-factory/manifest": {"get": {"responses": {"200": {"description": "ok"}}}}
+  }
+}
