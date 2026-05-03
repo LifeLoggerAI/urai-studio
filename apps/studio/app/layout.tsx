@@ -1,9 +1,6 @@
-import "./globals.css";
-
-export default function StudioRootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <body data-urai-page="studio">{children}</body>
-    </html>
-  );
-}
+import './globals.css';
+import { Header } from '@/components/site/Header';
+import { Footer } from '@/components/site/Footer';
+import { siteMeta } from '@/lib/studio/site';
+export const metadata={title:{default:siteMeta.title,template:'%s | URAI Studio'},description:siteMeta.description};
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang='en'><body><Header/><main className='container'>{children}</main><Footer/></body></html>}

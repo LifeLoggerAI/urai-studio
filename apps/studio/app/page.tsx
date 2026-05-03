@@ -1,7 +1,2 @@
-export default function StudioHome() {
-  return (
-    <main>
-      <div data-urai-page="studio">Studio</div>
-    </main>
-  );
-}
+import Link from 'next/link';import { HeroVisual } from '@/components/site/HeroVisual';
+export default function Home(){return <section><h1>Cinematic systems for memory, media, spatial storytelling, and intelligent life interfaces.</h1><p>URAI Studio is private by design and built to move from signals to story.</p><div className='hero-visual'><HeroVisual/></div><div className='grid'>{[['Join Waitlist','/waitlist'],['View Demo','/demo'],['Explore Systems','/systems'],['Contact','/contact']].map(([l,h])=><Link className='card' key={h} href={h}>{l}</Link>)}</div></section>}

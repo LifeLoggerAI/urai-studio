@@ -1,0 +1,2 @@
+import { systems } from '@/lib/studio/systems';
+export function ModuleOverviewPage({slug}:{slug:string}){const s=systems.find(x=>x.slug===slug); if(!s) return <div className='card'>Module unavailable.</div>; return <section><h1>{s.name}</h1><p>{s.description}</p><div className='card'><strong>Status:</strong> {s.status}<br/><strong>Capabilities:</strong> {s.capabilities.join(', ')}<br/><strong>Dependencies:</strong> {s.dependencies.join(', ')||'None'}<br/><strong>Version lane:</strong> {s.versionLane}</div></section>}
