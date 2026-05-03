@@ -1,0 +1,31 @@
+name: studio-ci
+on:
+  push:
+    paths:
+      - 'apps/studio/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/studio-ci.yml'
+  pull_request:
+    paths:
+      - 'apps/studio/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter studio lint
+      - run: pnpm --filter studio typecheck
+      - run: pnpm --filter studio test
+      - run: pnpm --filter studio build
+      - run: pnpm --filter studio smoke
