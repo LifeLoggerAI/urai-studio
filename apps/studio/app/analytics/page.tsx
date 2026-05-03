@@ -1,2 +1,5 @@
 import { ModuleOverviewPage } from '@/components/studio/ModuleOverviewPage';
-export default function Page(){return <ModuleOverviewPage slug='analytics'/>}
+
+export default function Page() {
+  return <ModuleOverviewPage slug="analytics" route="/analytics" />;
+}

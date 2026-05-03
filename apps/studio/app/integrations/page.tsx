@@ -1,1 +1,12 @@
-export default function Page(){return <section><h1>Integrations</h1><div className='card'>External integrations are environment-gated. Disconnected integrations surface diagnostics, not fake success.</div></section>}
+import { ModuleOverviewPage } from '@/components/studio/ModuleOverviewPage';
+
+export default function Page() {
+  return (
+    <ModuleOverviewPage
+      slug="integrations"
+      route="/integrations"
+      fallbackTitle="Integrations"
+      fallbackDescription="External integrations are environment-gated. Disconnected integrations surface diagnostics, not fake success."
+    />
+  );
+}

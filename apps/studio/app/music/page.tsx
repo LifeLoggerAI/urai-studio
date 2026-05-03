@@ -1,2 +1,5 @@
 import { ModuleOverviewPage } from '@/components/studio/ModuleOverviewPage';
-export default function Page(){return <ModuleOverviewPage slug='music'/>}
+
+export default function Page() {
+  return <ModuleOverviewPage slug="music" route="/music" />;
+}

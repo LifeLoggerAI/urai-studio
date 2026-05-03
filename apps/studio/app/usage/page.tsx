@@ -1,1 +1,12 @@
-export default function Page(){return <section><h1>Usage</h1><div className='card'>Usage reporting requires analytics backend; currently showing diagnostic mode.</div></section>}
+import { ModuleOverviewPage } from '@/components/studio/ModuleOverviewPage';
+
+export default function Page() {
+  return (
+    <ModuleOverviewPage
+      slug="usage"
+      route="/usage"
+      fallbackTitle="Usage"
+      fallbackDescription="Usage reporting requires analytics backend; currently showing diagnostic mode."
+    />
+  );
+}
