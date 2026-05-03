@@ -1,4 +1,1 @@
-/* URAI Studio globals (minimal) */
-html, body { height: 100%; }
-body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
-* { box-sizing: border-box; }
+body{font-family:Arial,sans-serif;margin:0} .shell{display:flex;min-height:100vh}.nav{width:240px;padding:16px;background:#111;color:#fff}.nav a{display:block;color:#9fd;margin:6px 0;text-decoration:none}.main{flex:1;padding:20px}.card{border:1px solid #ddd;padding:12px;border-radius:8px;margin:8px 0}

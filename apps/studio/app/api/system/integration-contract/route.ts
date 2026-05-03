@@ -1,0 +1,2 @@
+import { NextResponse } from 'next/server';import { studioModules } from '@/lib/studio/modules';
+export async function GET(){return NextResponse.json({version:'1.0.0',moduleRegistry:studioModules,routeMap:Object.fromEntries(studioModules.map(m=>[m.id,m.route])),healthEndpoint:'/api/system/health',acceptedIntegrationIds:studioModules.map(m=>m.id),assetHandoffModel:'uri+metadata+jobId',statusModel:['live','fallback','mock','disconnected'],breakingChangePolicy:'semver-major-only',compatibilityNotes:'Additive fields are backward compatible.'});}
