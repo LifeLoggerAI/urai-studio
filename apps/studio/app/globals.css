@@ -23,10 +23,23 @@ a {
   text-decoration: none;
 }
 
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #9bf2ff;
+  outline-offset: 3px;
+}
+
 .container {
   max-width: 1180px;
   margin: 0 auto;
   padding: 32px 24px 72px;
+}
+
+.container:focus {
+  outline: none;
 }
 
 .shell {
@@ -92,6 +105,22 @@ a {
 .header a,
 .footer a {
   color: #d9e6ff;
+}
+
+.skip-link {
+  left: 16px;
+  position: absolute;
+  top: -80px;
+  z-index: 100;
+  border-radius: 999px;
+  background: #d9e6ff;
+  color: #05070d !important;
+  font-weight: 700;
+  padding: 10px 14px;
+}
+
+.skip-link:focus {
+  top: 16px;
 }
 
 .header-cta {
