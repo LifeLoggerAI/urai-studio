@@ -23,6 +23,15 @@ a {
   text-decoration: none;
 }
 
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #9bf2ff;
+  outline-offset: 3px;
+}
+
 .container {
   max-width: 1180px;
   margin: 0 auto;
@@ -253,6 +262,12 @@ a {
   opacity: 0.96;
 }
 
+.button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+  transform: none;
+}
+
 .button-primary {
   background: linear-gradient(135deg, #7cb5ff, #8d7dff);
   color: #05070d;
@@ -315,6 +330,57 @@ a {
   border-radius: 24px;
   border: 1px solid rgba(123, 151, 214, 0.2);
   background: linear-gradient(180deg, rgba(13, 19, 36, 0.96), rgba(11, 15, 27, 0.9));
+}
+
+.narrow-page {
+  max-width: 860px;
+}
+
+.stack-xl {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #d9e6ff;
+  font-weight: 600;
+}
+
+.form-card input,
+.form-card select,
+.form-card textarea {
+  width: 100%;
+  border: 1px solid rgba(135, 165, 236, 0.32);
+  border-radius: 16px;
+  background: rgba(5, 7, 13, 0.56);
+  color: #f3f7ff;
+  font: inherit;
+  padding: 13px 14px;
+}
+
+.form-card textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.form-status {
+  min-height: 1.6em;
+  margin: 0;
+  color: #c8d8ff;
+}
+
+.honeypot {
+  display: none;
 }
 
 @media (max-width: 980px) {
