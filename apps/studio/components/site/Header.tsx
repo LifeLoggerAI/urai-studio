@@ -1,3 +1,33 @@
 import Link from 'next/link';
-const nav=[['Studio','/studio'],['Systems','/systems'],['Motion','/motion'],['Cinema','/cinema'],['Spatial','/spatial'],['Privacy','/privacy'],['Demo','/demo'],['Waitlist','/waitlist'],['Contact','/contact']];
-export function Header(){return <header className='header'><Link href='/' className='logo'>URAI Studio</Link><nav>{nav.map(([l,h])=><Link key={h} href={h}>{l}</Link>)}</nav></header>}
+
+const nav = [
+  { label: 'Studio', href: '/studio' },
+  { label: 'Systems', href: '/systems' },
+  { label: 'Motion', href: '/motion' },
+  { label: 'Cinema', href: '/cinema' },
+  { label: 'Spatial', href: '/spatial' },
+  { label: 'Privacy', href: '/settings' },
+  { label: 'Demo', href: '/demo' },
+  { label: 'Contact', href: '/contact' },
+];
+
+export function Header() {
+  return (
+    <header className="header">
+      <Link href="/" className="logo" aria-label="URAI Studio home">
+        URAI Studio
+      </Link>
+
+      <nav aria-label="Primary navigation">
+        {nav.map(({ label, href }) => (
+          <Link key={href} href={href}>
+            {label}
+          </Link>
+        ))}
+        <Link className="header-cta" href="/waitlist">
+          Join Waitlist
+        </Link>
+      </nav>
+    </header>
+  );
+}
