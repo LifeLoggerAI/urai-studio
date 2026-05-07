@@ -1,24 +1,35 @@
-/apps/studio/playwright-report/
-/uraistudio-app/playwright-report/
-node_modules
-**/.next/
+# Dependencies
+node_modules/
+
+# Framework/build outputs
 **/.next/
 **/dist/
 **/.turbo/
-**/*.log
 **/.firebase/
-.bak/
-firebase.json.bak.*
-/tmp/
-*.log
+/apps/studio/playwright-report/
+/uraistudio-app/playwright-report/
+**/test-results/
+coverage/
 
-# URAI buildfix backups (auto-ignore)
+# Logs and temporary files
+*.log
+**/*.log
+/tmp/
+
+# Local environment files. Keep curated examples tracked.
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# URAI buildfix backups and local helper scripts
+.bak/
 *.bak.*
 **/*.bak.*
 .bak_buildfix_*/
 apps/**/.bak_buildfix_*/
 apps/**/.bak/
+firebase.json.bak.*
 /ship_and_lock.sh
 /simple_deploy.sh
 /urai_studio_*.sh
-node_modules
