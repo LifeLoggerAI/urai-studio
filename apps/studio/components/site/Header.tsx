@@ -6,7 +6,7 @@ const nav = [
   { label: 'Motion', href: '/motion' },
   { label: 'Cinema', href: '/cinema' },
   { label: 'Spatial', href: '/spatial' },
-  { label: 'Privacy', href: '/settings' },
+  { label: 'Privacy', href: '/privacy' },
   { label: 'Demo', href: '/demo' },
   { label: 'Contact', href: '/contact' },
 ];
@@ -14,6 +14,9 @@ const nav = [
 export function Header() {
   return (
     <header className="header">
+      <Link href="#main-content" className="skip-link">
+        Skip to content
+      </Link>
       <Link href="/" className="logo" aria-label="URAI Studio home">
         URAI Studio
       </Link>
