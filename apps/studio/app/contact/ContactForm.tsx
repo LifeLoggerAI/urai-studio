@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { type FormEvent, useState } from 'react';
 
 type ContactState = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -8,7 +8,7 @@ export function ContactForm() {
   const [message, setMessage] = useState('');
   const [state, setState] = useState<ContactState>('idle');
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setState('submitting');
     setMessage('');
@@ -63,7 +63,7 @@ export function ContactForm() {
       <input id="contact-website" name="website" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
 
       <button className="button button-primary" type="submit" disabled={state === 'submitting'}>
-        {state === 'submitting' ? 'Sending…' : 'Send Project Request'}
+        {state === 'submitting' ? 'Sending...' : 'Send Project Request'}
       </button>
 
       <p id="contact-status" role={state === 'error' ? 'alert' : 'status'}>
