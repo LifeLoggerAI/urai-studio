@@ -1,2 +1,25 @@
-import { NextResponse } from 'next/server';import { studioModules } from '@/lib/studio/modules';import { studioIntegrations } from '@/lib/studio/integrations';
-export async function GET(){return NextResponse.json({service:'urai-studio',name:'URAI Studio',version:'0.1.0',description:'Central creative/admin studio',routes:studioModules.map(m=>m.route),modules:studioModules,capabilities:['studio-dashboard','asset-factory-control','creative-module-registry','spatial-integration','motion-pipeline','cinema-pipeline','music-pipeline','visuals-pipeline','analytics-view','admin-control','system-health'],integrations:studioIntegrations,deployment:{hosting:'firebase'},persistenceMode:'firebase',fallbackActive:true});}
+import { NextResponse } from 'next/server';
+
+import { studioConfig } from '@/lib/studio/config';
+import { studioIntegrations } from '@/lib/studio/integrations';
+import { studioModules } from '@/lib/studio/modules';
+import { systemCapabilities } from '@/lib/studio/types';
+
+export async function GET() {
+  return NextResponse.json({
+    ok: true,
+    service: 'urai-studio',
+    name: 'URAI Studio',
+    version: studioConfig.version ?? '0.1.0',
+    description: 'Premium creative operating system for generated media, cinematic interfaces, spatial storytelling, and URAI system-of-systems operations.',
+    domain: 'https://www.uraistudio.com',
+    appRoot: 'apps/studio',
+    routes: studioModules.map((module) => module.route),
+    modules: studioModules,
+    capabilities: systemCapabilities,
+    integrations: studioIntegrations,
+    deployment: { hosting: 'firebase', canonical: 'https://www.uraistudio.com' },
+    persistenceMode: 'firebase',
+    fallbackActive: true,
+  });
+}
