@@ -1,12 +1,22 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { HeroVisual } from '@/components/site/HeroVisual';
 import { studioModules } from '@/lib/studio/modules';
 
+export const metadata: Metadata = {
+  title: 'URAI Studio',
+  description:
+    'Premium cinematic AI creative infrastructure for generated media, motion, spatial storytelling, and URAI system-of-systems workflows.',
+  alternates: {
+    canonical: '/',
+  },
+};
+
 const quickLinks = [
-  { label: 'Join Waitlist', href: '/waitlist', tone: 'primary' },
-  { label: 'View Demo', href: '/demo', tone: 'secondary' },
-  { label: 'Explore Systems', href: '/systems', tone: 'secondary' },
+  { label: 'Explore Studio', href: '/studio', tone: 'primary' },
+  { label: 'Start Generating', href: '/generate', tone: 'secondary' },
+  { label: 'View System', href: '/system', tone: 'secondary' },
   { label: 'Start a Project', href: '/contact', tone: 'secondary' },
 ];
 
@@ -20,7 +30,7 @@ export default function Home() {
   const featuredModules = studioModules.slice(0, 8);
 
   return (
-    <section className="landing-page">
+    <section data-urai-studio-page="home" className="landing-page">
       <div className="hero-section">
         <div className="hero-copy">
           <p className="eyebrow">URAI Studio · Cinematic AI systems</p>
@@ -58,7 +68,8 @@ export default function Home() {
         <p className="eyebrow">Ecosystem</p>
         <h2>One studio spine for the URAI creative ecosystem.</h2>
         <p>
-          The website now presents URAI Studio as a premium, trustworthy production hub rather than a prototype shell.
+          URAI Studio is the professional creative layer for Asset Factory, Spatial, Motion, Cinema,
+          Music, Visuals, Analytics, Jobs, and future enterprise API workflows.
         </p>
       </div>
 
@@ -80,7 +91,7 @@ export default function Home() {
           <h2>Built for a polished public launch at www.uraistudio.com.</h2>
           <p>
             Navigation, metadata, sitemap, robots, deployment environment documentation, and conversion CTAs
-            are now aligned around a production website foundation.
+            are aligned around a production website foundation.
           </p>
         </div>
         <Link className="button button-primary" href="/contact">
