@@ -2,13 +2,13 @@ import Link from 'next/link';
 
 const nav = [
   { label: 'Studio', href: '/studio' },
-  { label: 'Systems', href: '/systems' },
-  { label: 'Motion', href: '/motion' },
-  { label: 'Cinema', href: '/cinema' },
-  { label: 'Spatial', href: '/spatial' },
-  { label: 'Privacy', href: '/settings' },
-  { label: 'Demo', href: '/demo' },
-  { label: 'Contact', href: '/contact' },
+  { label: 'Generate', href: '/generate' },
+  { label: 'Assets', href: '/assets' },
+  { label: 'Jobs', href: '/jobs' },
+  { label: 'Pricing', href: '/pricing' },
+  { label: 'About', href: '/about' },
+  { label: 'Status', href: '/status' },
+  { label: 'System', href: '/system' },
 ];
 
 export function Header() {
@@ -24,8 +24,8 @@ export function Header() {
             {label}
           </Link>
         ))}
-        <Link className="header-cta" href="/waitlist">
-          Join Waitlist
+        <Link className="header-cta" href="/contact">
+          Start a Project
         </Link>
       </nav>
     </header>
