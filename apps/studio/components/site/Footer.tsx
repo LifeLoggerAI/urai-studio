@@ -2,12 +2,13 @@ import Link from 'next/link';
 
 const footerLinks = [
   { label: 'Studio', href: '/studio' },
-  { label: 'Motion', href: '/motion' },
-  { label: 'Cinema', href: '/cinema' },
-  { label: 'Music', href: '/music' },
-  { label: 'Visuals', href: '/visuals' },
-  { label: 'Spatial', href: '/spatial' },
-  { label: 'Privacy', href: '/settings' },
+  { label: 'Generate', href: '/generate' },
+  { label: 'Assets', href: '/assets' },
+  { label: 'Jobs', href: '/jobs' },
+  { label: 'Pricing', href: '/pricing' },
+  { label: 'About', href: '/about' },
+  { label: 'Privacy', href: '/privacy' },
+  { label: 'Terms', href: '/terms' },
   { label: 'Contact', href: '/contact' },
   { label: 'Status', href: '/status' },
 ];
