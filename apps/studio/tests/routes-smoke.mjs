@@ -11,6 +11,7 @@ const routes = [
   '/visuals',
   '/spatial',
   '/privacy',
+  '/terms',
   '/demo',
   '/waitlist',
   '/contact',
@@ -24,13 +25,17 @@ const routes = [
   '/api/health',
   '/api/system/health',
   '/healthz',
+  '/readyz',
 ];
 
-assert.equal(routes.length, 23);
+assert.equal(routes.length, 25);
 assert.ok(routes.includes('/systems'));
 assert.ok(routes.includes('/system'));
 assert.ok(routes.includes('/studio'));
+assert.ok(routes.includes('/privacy'));
+assert.ok(routes.includes('/terms'));
 assert.ok(routes.includes('/status'));
+assert.ok(routes.includes('/readyz'));
 assert.ok(routes.includes('/dashboard'));
 
-console.log('smoke routes declared', routes.length);
+console.log('static route declaration passed', routes.length);
