@@ -8,6 +8,9 @@
     "lint": "pnpm --filter ./apps/* --filter ./packages/* lint",
     "typecheck": "pnpm --filter ./apps/* --filter ./packages/* typecheck",
     "test": "pnpm --filter ./apps/* --filter ./packages/* test",
+    "smoke": "pnpm --filter studio smoke",
+    "audit": "pnpm lint && pnpm typecheck && pnpm test",
+    "release:check": "pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm smoke",
     "emulators": "firebase emulators:start",
     "seed:demo": "ts-node scripts/seed_demo_job.ts",
     "lock:staging": "scripts/lock_urai_staging.sh"
