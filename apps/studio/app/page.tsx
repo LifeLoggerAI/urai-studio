@@ -1,12 +1,22 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { HeroVisual } from '@/components/site/HeroVisual';
 import { studioModules } from '@/lib/studio/modules';
 
+export const metadata: Metadata = {
+  title: 'URAI Studio',
+  description:
+    'Premium cinematic AI creative infrastructure for generated media, motion, spatial storytelling, and URAI system-of-systems workflows.',
+  alternates: {
+    canonical: '/',
+  },
+};
+
 const quickLinks = [
   { label: 'Start a Project', href: '/contact', tone: 'primary' },
-  { label: 'Join Waitlist', href: '/waitlist', tone: 'secondary' },
-  { label: 'View Demo', href: '/demo', tone: 'secondary' },
+  { label: 'Explore Studio', href: '/studio', tone: 'secondary' },
+  { label: 'Start Generating', href: '/generate', tone: 'secondary' },
   { label: 'Explore Systems', href: '/systems', tone: 'secondary' },
 ];
 
@@ -37,7 +47,7 @@ export default function Home() {
     .slice(0, 8);
 
   return (
-    <section className="landing-page" data-urai-studio-page="home">
+    <section data-urai-studio-page="home" className="landing-page">
       <div className="hero-section">
         <div className="hero-copy">
           <p className="eyebrow">URAI Studio · Cinematic AI systems</p>
@@ -85,8 +95,9 @@ export default function Home() {
           <p className="eyebrow">Studio modules</p>
           <h2>One studio spine for the URAI creative ecosystem.</h2>
           <p>
-            Public modules are wired to real routes with safe diagnostic states for integrations that require
-            credentials.
+            URAI Studio is the professional creative layer for Asset Factory, Spatial, Motion, Cinema,
+            Music, Visuals, Analytics, Jobs, and future enterprise API workflows. Public modules are wired
+            to real routes with safe diagnostic states for integrations that require credentials.
           </p>
         </div>
 

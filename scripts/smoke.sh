@@ -3,11 +3,18 @@ set -euo pipefail
 
 HOST="${HOST:-http://127.0.0.1:3000}"
 EXPECT_READY="${EXPECT_READY:-true}"
+PLACEHOLDERS='TODO|lorem ipsum|coming soon|undefined|null|\[object Object\]'
+SECRET_PATTERN='SECRET|PRIVATE_KEY|TOKEN|PASSWORD'
 
 HTML_ROUTES=(
   /
   /systems
   /studio
+  /generate
+  /assets
+  /jobs
+  /pricing
+  /about
   /motion
   /cinema
   /music
@@ -16,8 +23,6 @@ HTML_ROUTES=(
   /demo
   /waitlist
   /contact
-  /pricing
-  /about
   /privacy
   /terms
   /status
@@ -40,6 +45,14 @@ echo "URAI Studio smoke host: ${HOST}"
 fail() {
   echo "[FAIL] $*" >&2
   exit 1
+}
+
+page_marker_for_route() {
+  local route="$1"
+  local marker
+
+  marker="$(printf '%s' "$route" | sed 's#^/##; s#^$#home#')"
+  printf 'data-urai-studio-page="%s"' "$marker"
 }
 
 check_status() {
@@ -100,54 +113,76 @@ check_html_route() {
   local route="$1"
   local body
   local code
-  local marker=""
+  local marker
+  local url="${HOST}${route}"
 
   body="$(mktemp)"
-  code="$(curl -L -sS -o "$body" -w "%{http_code}" "${HOST}${route}")" || {
+  code="$(curl -L -sS -o "$body" -w "%{http_code}" "$url")" || {
     rm -f "$body"
-    fail "request failed: ${HOST}${route}"
+    fail "request failed: $url"
   }
 
   if [ "$code" != "200" ]; then
-    echo "--- response body for ${HOST}${route} ---" >&2
+    echo "--- response body for $url ---" >&2
     cat "$body" >&2 || true
     echo >&2
     rm -f "$body"
-    fail "${HOST}${route} returned $code, expected 200"
+    fail "$url returned $code, expected 200"
   fi
+
+  marker="$(page_marker_for_route "$route")"
 
   grep -qi '<title' "$body" || fail "$route missing <title>"
   grep -qi 'name="viewport"' "$body" || fail "$route missing viewport meta"
   grep -qi 'name="description"' "$body" || fail "$route missing description meta"
+  grep -q "$marker" "$body" || fail "$route missing marker: $marker"
 
-  case "$route" in
-    /) marker='data-urai-studio-page="home"' ;;
-    /systems) marker='data-urai-studio-page="systems"' ;;
-    /studio) marker='data-urai-studio-page="studio"' ;;
-    /motion) marker='data-urai-studio-page="motion"' ;;
-    /cinema) marker='data-urai-studio-page="cinema"' ;;
-    /music) marker='data-urai-studio-page="music"' ;;
-    /visuals) marker='data-urai-studio-page="visuals"' ;;
-    /spatial) marker='data-urai-studio-page="spatial"' ;;
-    /demo) marker='data-urai-studio-page="demo"' ;;
-    /waitlist) marker='data-urai-studio-page="waitlist"' ;;
-    /contact) marker='data-urai-studio-page="contact"' ;;
-    /pricing) marker='data-urai-studio-page="pricing"' ;;
-    /about) marker='data-urai-studio-page="about"' ;;
-    /privacy) marker='data-urai-studio-page="privacy"' ;;
-    /terms) marker='data-urai-studio-page="terms"' ;;
-    /status) marker='data-urai-studio-page="status"' ;;
-  esac
-
-  if [ -n "$marker" ]; then
-    grep -q "$marker" "$body" || fail "$route missing marker: $marker"
-  fi
-
-  ! grep -Eiq 'TODO|lorem ipsum|coming soon|undefined|null|\[object Object\]' "$body" ||
+  ! grep -Eiq "$PLACEHOLDERS" "$body" ||
     fail "$route contains placeholder or invalid rendered content"
 
   rm -f "$body"
   echo "[OK] html $route"
+}
+
+check_api_route() {
+  local route="$1"
+  local body
+  local code
+  local url="${HOST}${route}"
+
+  body="$(mktemp)"
+  code="$(curl -L -sS -o "$body" -w "%{http_code}" "$url")" || {
+    rm -f "$body"
+    fail "request failed: $url"
+  }
+
+  if [ "$code" != "200" ]; then
+    echo "--- response body for $url ---" >&2
+    cat "$body" >&2 || true
+    echo >&2
+    rm -f "$body"
+    fail "$url returned $code, expected 200"
+  fi
+
+  if [[ "$route" == /api/* || "$route" == "/healthz" ]]; then
+    node -e "
+      const fs = require('fs');
+      const data = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
+      if (data.service && data.service !== 'urai-studio') process.exit(2);
+      if (data.ok === false) process.exit(3);
+    " "$body" || {
+      rm -f "$body"
+      fail "$route returned invalid service JSON"
+    }
+  fi
+
+  if grep -Eiq "$SECRET_PATTERN" "$body"; then
+    rm -f "$body"
+    fail "possible secret exposure: $route"
+  fi
+
+  rm -f "$body"
+  echo "[OK] api $route"
 }
 
 for route in "${HTML_ROUTES[@]}"; do
@@ -155,7 +190,7 @@ for route in "${HTML_ROUTES[@]}"; do
 done
 
 for route in "${API_ROUTES[@]}"; do
-  check_status "$route" 200
+  check_api_route "$route"
 done
 
 check_json_field /api/system/health service urai-studio

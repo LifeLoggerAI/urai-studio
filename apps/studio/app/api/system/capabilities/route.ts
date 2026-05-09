@@ -7,5 +7,6 @@ export async function GET() {
     ok: true,
     service: 'urai-studio',
     capabilities: systemCapabilities,
+    count: systemCapabilities.length,
   });
 }

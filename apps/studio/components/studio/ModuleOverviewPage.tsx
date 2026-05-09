@@ -10,6 +10,10 @@ type ModuleOverviewPageProps = {
   fallbackDescription?: string;
 };
 
+function pageMarkerFromRoute(route?: string, slug?: string) {
+  return (route?.replace(/^\//, '') || slug || 'module').replace(/[^a-z0-9-]/gi, '-').toLowerCase();
+}
+
 export function ModuleOverviewPage({
   slug,
   route,
@@ -18,11 +22,13 @@ export function ModuleOverviewPage({
 }: ModuleOverviewPageProps) {
   const system = slug ? systems.find((item) => item.slug === slug) : undefined;
   const studioModule = route ? studioModules.find((item) => item.route === route) : undefined;
+  const marker = pageMarkerFromRoute(route, slug);
 
   if (!system && !studioModule) {
     if (fallbackTitle || fallbackDescription) {
       return (
-        <section>
+        <section data-urai-studio-page={marker} className="page-stack">
+          <p className="eyebrow">Feature-gated module</p>
           <h1>{fallbackTitle}</h1>
           <div className="card">{fallbackDescription}</div>
         </section>
@@ -38,7 +44,8 @@ export function ModuleOverviewPage({
   const capabilities = system?.capabilities ?? studioModule?.capabilities ?? [];
 
   return (
-    <section>
+    <section data-urai-studio-page={marker} className="page-stack">
+      <p className="eyebrow">URAI Studio module</p>
       <h1>{title}</h1>
       <p>{description}</p>
 

@@ -1,93 +1,79 @@
-# URAI Studio Release Lock
+import * as admin from 'firebase-admin';
 
-Date/time UTC: 2026-05-07T00:00:00Z
-Branch: release/urai-studio-polish-e2e
-Base commit SHA: bedf8b1f3a465a59c716238ed39169870dffad22
-Target domain: https://www.uraistudio.com
-Repository: LifeLoggerAI/urai-studio
-App root: apps/studio
-Framework: Next.js App Router
-Package manager: pnpm
-Firebase hosting target: urai-studio / Firebase App Hosting or Hosting config as present in repository
+type FirebaseAdminMode =
+  | 'service-account'
+  | 'application-default'
+  | 'unconfigured'
+  | 'error';
 
-## Routes verified by design
+let firebaseAdminMode: FirebaseAdminMode = 'unconfigured';
+let firebaseAdminInitError: string | null = null;
 
-HTML routes added or confirmed for the standalone production surface:
+function hasPemShape(value: string | undefined): value is string {
+  return (
+    !!value &&
+    value.includes('-----BEGIN PRIVATE KEY-----') &&
+    value.includes('-----END PRIVATE KEY-----')
+  );
+}
 
-- /
-- /studio
-- /generate
-- /assets
-- /pricing
-- /about
-- /privacy
-- /terms
+function initAdmin() {
+  if (admin.apps.length) {
+    firebaseAdminMode = 'service-account';
+    return;
+  }
 
-System API routes added or normalized:
+  const projectId =
+    process.env.FIREBASE_PROJECT_ID ||
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
-- /api/system/health
-- /api/system/manifest
-- /api/system/capabilities
-- /api/system/integration-contract
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
-## Commands to run locally or in CI
+  try {
+    if (projectId && clientEmail && hasPemShape(privateKey)) {
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId,
+          clientEmail,
+          privateKey,
+        }),
+        projectId,
+      });
 
-```bash
-pnpm install --frozen-lockfile
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm build
-HOST=http://127.0.0.1:3000 bash scripts/smoke.sh
-pnpm release:check
-```
+      firebaseAdminMode = 'service-account';
+      return;
+    }
 
-## Status matrix
+    if (projectId && process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      admin.initializeApp({
+        credential: admin.credential.applicationDefault(),
+        projectId,
+      });
 
-| Check | Status | Notes |
-| --- | --- | --- |
-| install | Not run in this environment | Container DNS blocked direct GitHub clone/install. Run in CI or local shell. |
-| lint | Not run in this environment | CI workflow exists and should run on PR/push. |
-| typecheck | Not run in this environment | CI workflow exists and should run on PR/push. |
-| test | Not run in this environment | Existing module/openapi tests preserved. |
-| build | Not run in this environment | CI workflow exists and should run on PR/push. |
-| smoke | Added | scripts/smoke.sh validates required HTML/API routes against a running host. |
+      firebaseAdminMode = 'application-default';
+      return;
+    }
 
-## Completed in this lock
+    firebaseAdminMode = 'unconfigured';
+  } catch (error) {
+    firebaseAdminMode = 'error';
+    firebaseAdminInitError =
+      error instanceof Error
+        ? error.message
+        : 'unknown_firebase_admin_init_error';
+  }
+}
 
-- Added root `smoke`, `audit`, and `release:check` scripts.
-- Added `/generate` as a safe feature-gated creative intake page.
-- Added `/pricing` without fake checkout claims.
-- Added `/about` explaining URAI Studio as standalone and system-of-systems layer.
-- Added `/terms` as a safe production placeholder pending legal review.
-- Added deterministic `scripts/smoke.sh` route/API verification.
-- Added explicit home page smoke marker.
-- Normalized `/api/system/capabilities` with `ok` and `service`.
-- Expanded `/api/system/integration-contract` with domain, connected systems, auth posture, health guarantees, and smoke coverage.
+initAdmin();
 
-## Known limitations
+export const adminDb = admin.apps.length ? admin.firestore() : null;
+export const adminAuth = admin.apps.length ? admin.auth() : null;
 
-- Local clone/install/build/smoke could not be executed from this assistant environment because DNS resolution for github.com was unavailable in the execution container.
-- Stripe or live checkout was not wired because no active production billing configuration was verified.
-- Generation submission remains feature-gated until a live Asset Factory/render queue endpoint is configured.
-- Domain DNS and Firebase custom domain attachment must be verified from Firebase Console or deploy environment.
+export const firebaseAdminReady = Boolean(adminDb && adminAuth);
 
-## Deployment command
-
-```bash
-pnpm install --frozen-lockfile
-pnpm release:check
-firebase deploy --only hosting
-```
-
-If Firebase App Hosting is the selected target for this app, deploy through the configured App Hosting backend for `apps/studio` and set `NEXT_PUBLIC_SITE_URL=https://www.uraistudio.com`.
-
-## Rollback
-
-```bash
-git checkout main
-git revert <merge_commit_sha>
-firebase hosting:clone <source_site>:<source_version> urai-studio:live
-```
-
-Replace `<merge_commit_sha>`, `<source_site>`, and `<source_version>` with the production release values from GitHub and Firebase Hosting history.
+export const firebaseAdminStatus = {
+  ready: firebaseAdminReady,
+  mode: firebaseAdminMode,
+  error: firebaseAdminInitError,
+};

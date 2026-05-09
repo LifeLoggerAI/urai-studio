@@ -3,11 +3,12 @@ import Link from 'next/link';
 const nav = [
   { label: 'Studio', href: '/studio' },
   { label: 'Systems', href: '/systems' },
-  { label: 'Motion', href: '/motion' },
-  { label: 'Cinema', href: '/cinema' },
-  { label: 'Spatial', href: '/spatial' },
-  { label: 'Privacy', href: '/privacy' },
-  { label: 'Demo', href: '/demo' },
+  { label: 'Generate', href: '/generate' },
+  { label: 'Assets', href: '/assets' },
+  { label: 'Jobs', href: '/jobs' },
+  { label: 'Pricing', href: '/pricing' },
+  { label: 'About', href: '/about' },
+  { label: 'Status', href: '/status' },
   { label: 'Contact', href: '/contact' },
 ];
 
@@ -30,8 +31,8 @@ export function Header() {
           </Link>
         ))}
 
-        <Link href="/waitlist" className="nav-cta header-cta">
-          Join Waitlist
+        <Link className="nav-cta header-cta" href="/contact">
+          Start a Project
         </Link>
       </nav>
     </header>
