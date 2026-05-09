@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Implemented and continued the repo-level URAI Studio audit and enforcement layer requested in the master prompt. The work now includes Studio callable functions, Firebase security and index coverage, a static smoke test, required documentation artifacts, shared frontend contracts, callable-backed frontend controls, nested Studio route surfaces, a GitHub Actions audit workflow, Firebase Functions v2 callable compatibility hardening, frontend strict TypeScript / Next.js client-boundary hardening, shared Firebase client hardening, Studio registry/status hardening, system API/config hardening, health/readiness route hardening, Asset Factory integration hardening, system contract route hardening, module overview lookup hardening, public route metadata hardening, legal/static page metadata hardening, waitlist client/server boundary hardening, submission API hardening, submission collection security rules, Firebase documentation alignment, and PR conflict cleanup.
+Implemented and continued the repo-level URAI Studio audit and enforcement layer requested in the master prompt. The work now includes Studio callable functions, Firebase security and index coverage, Storage rules/documentation alignment, a static smoke test, required documentation artifacts, shared frontend contracts, callable-backed frontend controls, nested Studio route surfaces, a GitHub Actions audit workflow, Firebase Functions v2 callable compatibility hardening, frontend strict TypeScript / Next.js client-boundary hardening, shared Firebase client hardening, Studio registry/status hardening, system API/config hardening, health/readiness route hardening, Asset Factory integration hardening, system contract route hardening, module overview lookup hardening, public route metadata hardening, legal/static page metadata hardening, waitlist client/server boundary hardening, submission API hardening, submission collection security rules, Firebase documentation alignment, and PR conflict cleanup.
 
 ## Files Changed or Added
 
@@ -98,6 +98,7 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 - `/privacy`, `/terms`, `/contact`, `/waitlist`, `/demo`, `/status`, `/systems`, and `/system` legal/static/public routes with canonical metadata coverage
 - `/api/contact` and `/api/waitlist` validated submission routes
 - Firestore rules explicitly deny client SDK read/write access to `waitlist` and `contactMessages`; those collections are Admin/server-route only
+- Storage rules and `FIREBASE.md` document owner-only uploads, server-generated outputs, public read-only assets, and membership-gated studio upload/output paths
 - `/api/system/manifest`, `/api/system/capabilities`, `/api/system/openapi`, and `/api/system/integrations` contract routes
 - CI workflow for install, lint, typecheck, tests, app build, functions build, and smoke check
 - Firebase Functions v2 `onCall` / `HttpsError` migration for `studio-system.ts`
@@ -127,6 +128,15 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 - `firestore.rules` now includes explicit `waitlist` and `contactMessages` collection blocks with `allow read, write: if false;`, keeping those collections writeable only through Firebase Admin/server routes.
 - `FIREBASE.md` documents the `waitlist` and `contactMessages` collections, their server-route writers, Admin-only rule posture, and the current no-composite-index decision.
 - `scripts/studio-smoke-test.js` now validates the waitlist/contact API route contracts, persistence collection names, locked-down submission collection rules, and Firebase documentation alignment.
+
+## Storage Rules and Documentation Notes
+
+- `storage.rules` covers `user-uploads/{uid}/studio/**` with signed-in owner read/write access.
+- `storage.rules` covers `generated/{uid}/studio/**` with signed-in owner read access and denied client writes.
+- `storage.rules` covers `public/studio-assets/**` with public read access and denied client writes.
+- `storage.rules` covers `studios/{studioId}/uploads/**` and `studios/{studioId}/outputs/**` with membership-gated access based on `memberships/{uid}_{studioId}`.
+- `FIREBASE.md` now documents each Storage path, intended use, and client write posture.
+- `scripts/studio-smoke-test.js` now validates the Storage path/rule tokens and `FIREBASE.md` Storage documentation alignment.
 
 ## Registry and Status Hardening Notes
 
@@ -174,6 +184,14 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 - `vrSessions`
 - `waitlist` (server/Admin-only; client SDK denied; no composite index required)
 - `contactMessages` (server/Admin-only; client SDK denied; no composite index required)
+
+## Storage Paths Supported
+
+- `user-uploads/{uid}/studio/**` owner read/write
+- `generated/{uid}/studio/**` owner read, client write denied
+- `public/studio-assets/**` public read, client write denied
+- `studios/{studioId}/uploads/**` Studio-member read/write
+- `studios/{studioId}/outputs/**` Studio-member read/write
 
 ## Functions Compatibility Notes
 
@@ -238,4 +256,4 @@ firebase deploy --only firestore:rules,firestore:indexes,storage,functions,hosti
 
 ## Final Confidence Level
 
-91%. The backend contracts, Firebase security/index coverage, Functions v2 callable compatibility hardening, frontend callable surfaces, frontend strictness hardening, shared Firebase client hardening, Studio registry/status hardening, system API/config hardening, health/readiness route hardening, Asset Factory integration hardening, system contract route hardening, module overview hardening, route metadata hardening, legal/static metadata hardening, waitlist client/server boundary hardening, submission API hardening, submission collection rules, Firebase documentation alignment, static smoke test, predeploy hook, CI workflow, and PR conflict cleanup are implemented. Confidence remains capped until install/build/test/functions verification passes in a network-enabled environment.
+92%. The backend contracts, Firebase security/index coverage, Storage rules/documentation alignment, Functions v2 callable compatibility hardening, frontend callable surfaces, frontend strictness hardening, shared Firebase client hardening, Studio registry/status hardening, system API/config hardening, health/readiness route hardening, Asset Factory integration hardening, system contract route hardening, module overview hardening, route metadata hardening, legal/static metadata hardening, waitlist client/server boundary hardening, submission API hardening, submission collection rules, Firebase documentation alignment, static smoke test, predeploy hook, CI workflow, and PR conflict cleanup are implemented. Confidence remains capped until install/build/test/functions verification passes in a network-enabled environment.
