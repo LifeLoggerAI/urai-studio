@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Implemented and continued the repo-level URAI Studio audit and enforcement layer requested in the master prompt. The work now includes Studio callable functions, Firebase security and index coverage, a static smoke test, required documentation artifacts, shared frontend contracts, callable-backed frontend controls, nested Studio route surfaces, a GitHub Actions audit workflow, Firebase Functions v2 callable compatibility hardening, frontend strict TypeScript / Next.js client-boundary hardening, and PR conflict cleanup.
+Implemented and continued the repo-level URAI Studio audit and enforcement layer requested in the master prompt. The work now includes Studio callable functions, Firebase security and index coverage, a static smoke test, required documentation artifacts, shared frontend contracts, callable-backed frontend controls, nested Studio route surfaces, a GitHub Actions audit workflow, Firebase Functions v2 callable compatibility hardening, frontend strict TypeScript / Next.js client-boundary hardening, shared Firebase client hardening, and PR conflict cleanup.
 
 ## Files Changed or Added
 
@@ -17,6 +17,7 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 - `scripts/studio-smoke-test.js`
 - `package.json`
 - `.github/workflows/studio-audit.yml`
+- `apps/studio/lib/firebaseClient.ts`
 - `apps/studio/lib/studio/types.ts`
 - `apps/studio/lib/studio/firebase-client.ts`
 - `apps/studio/components/studio/StudioActionPanel.tsx`
@@ -72,6 +73,7 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 ## Frontend Strictness Notes
 
 - `apps/studio/lib/studio/firebase-client.ts` now scopes Firebase env reads inside helper functions, uses explicit callable payload typing, and converts typed optional inputs into callable payload objects.
+- `apps/studio/lib/firebaseClient.ts` now has an explicit client boundary, includes full Firebase client config fields, and scopes Firebase config evaluation inside helper functions before exporting nullable app/auth/firestore handles.
 - `apps/studio/components/studio/StudioActionPanel.tsx` now has safer payload rendering, export job ID extraction, and disabled action buttons while calls are running.
 - `apps/studio/app/studio/assets/page.tsx` now uses type-only imports for asset types and `next/image` with `unoptimized` for external artifact previews.
 
@@ -157,4 +159,4 @@ firebase deploy --only firestore:rules,firestore:indexes,storage,functions,hosti
 
 ## Final Confidence Level
 
-80%. The backend contracts, Firebase security/index coverage, Functions v2 callable compatibility hardening, frontend callable surfaces, frontend strictness hardening, documentation, static smoke test, predeploy hook, CI workflow, and PR conflict cleanup are implemented. Confidence remains capped until install/build/test/functions verification passes in a network-enabled environment.
+81%. The backend contracts, Firebase security/index coverage, Functions v2 callable compatibility hardening, frontend callable surfaces, frontend strictness hardening, shared Firebase client hardening, documentation, static smoke test, predeploy hook, CI workflow, and PR conflict cleanup are implemented. Confidence remains capped until install/build/test/functions verification passes in a network-enabled environment.
