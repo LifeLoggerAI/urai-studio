@@ -6,7 +6,7 @@
  * Static mode validates required repo files, frontend route files, callables,
  * Firebase rules, Functions v2 callable usage, Studio registry helpers, system API helpers,
  * health/readiness endpoints, integration helpers, system contract endpoints, module lookup helpers,
- * route metadata, static page metadata, submission APIs, and CI workflow presence.
+ * route metadata, static page metadata, submission APIs, submission rules, and CI workflow presence.
  */
 
 const fs = require('node:fs');
@@ -173,9 +173,18 @@ requireTokens('functions/src/index.ts', ['studio-system'], 'functions index');
 requireTokens('apps/studio/components/studio/StudioActionPanel.tsx', ['studioApi.ping', 'studioApi.seedStudioDemo', 'studioApi.createStudioProject', 'studioApi.createExportJob'], 'StudioActionPanel');
 
 const firestoreRules = fs.readFileSync(path.join(root, 'firestore.rules'), 'utf8');
-for (const collection of ['studioProjects', 'studioAssets', 'studioScenes', 'studioScrolls', 'narratorScripts', 'exportJobs']) {
+for (const collection of ['studioProjects', 'studioAssets', 'studioScenes', 'studioScrolls', 'narratorScripts', 'exportJobs', 'waitlist', 'contactMessages']) {
   if (!firestoreRules.includes(`match /${collection}/`)) {
     console.error(`[urai-studio:smoke] firestore.rules missing ${collection}`);
+    process.exit(1);
+  }
+}
+for (const lockedCollection of ['waitlist', 'contactMessages']) {
+  const token = `match /${lockedCollection}/{id}`;
+  const start = firestoreRules.indexOf(token);
+  const block = start >= 0 ? firestoreRules.slice(start, start + 160) : '';
+  if (!block.includes('allow read, write: if false;')) {
+    console.error(`[urai-studio:smoke] firestore.rules must deny client access to ${lockedCollection}`);
     process.exit(1);
   }
 }
