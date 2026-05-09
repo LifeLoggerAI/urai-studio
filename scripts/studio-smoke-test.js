@@ -5,7 +5,7 @@
  *
  * Static mode validates required repo files, frontend route files, callables,
  * Firebase rules, Functions v2 callable usage, Studio registry helpers, system API helpers,
- * health/readiness endpoints, integration helpers, and CI workflow presence.
+ * health/readiness endpoints, integration helpers, system contract endpoints, and CI workflow presence.
  */
 
 const fs = require('node:fs');
@@ -26,6 +26,10 @@ const requiredFiles = [
   'functions/src/studio-system.ts',
   'apps/studio/app/api/health/route.ts',
   'apps/studio/app/api/system/health/route.ts',
+  'apps/studio/app/api/system/manifest/route.ts',
+  'apps/studio/app/api/system/capabilities/route.ts',
+  'apps/studio/app/api/system/openapi/route.ts',
+  'apps/studio/app/api/system/integrations/route.ts',
   'apps/studio/app/api/integrations/asset-factory/health/route.ts',
   'apps/studio/app/healthz/route.ts',
   'apps/studio/app/readyz/route.ts',
@@ -83,6 +87,10 @@ requireTokens('apps/studio/app/healthz/route.ts', ['LivenessResponse', "dynamic 
 requireTokens('apps/studio/app/readyz/route.ts', ['ReadinessResponse', "dynamic = 'force-dynamic'", 'status: readiness.ok ? 200 : 503', "'Cache-Control': 'no-store, max-age=0'"], 'readyz route');
 requireTokens('apps/studio/app/api/integrations/asset-factory/health/route.ts', ['getAssetFactoryHealth', "dynamic = 'force-dynamic'", 'status: health.ok ? 200 : 503', "'Cache-Control': 'no-store, max-age=0'"], 'asset factory health route');
 requireTokens('apps/studio/app/api/system/health/route.ts', ['SystemHealthResponse', "dynamic = 'force-dynamic'", "'Cache-Control': 'no-store, max-age=0'", 'status: readiness.ok ? 200 : 503'], 'system health route');
+requireTokens('apps/studio/app/api/system/manifest/route.ts', ['SystemManifestResponse', "dynamic = 'force-dynamic'", "'Cache-Control': 'no-store, max-age=0'", 'firebaseDiagnostics'], 'system manifest route');
+requireTokens('apps/studio/app/api/system/capabilities/route.ts', ['SystemCapabilitiesResponse', "dynamic = 'force-dynamic'", "'Cache-Control': 'no-store, max-age=0'", 'systemCapabilities'], 'system capabilities route');
+requireTokens('apps/studio/app/api/system/openapi/route.ts', ['OpenApiDocument', "dynamic = 'force-dynamic'", "'Cache-Control': 'no-store, max-age=0'"], 'system openapi route');
+requireTokens('apps/studio/app/api/system/integrations/route.ts', ['SystemIntegrationsResponse', "dynamic = 'force-dynamic'", 'missingRequired', 'status: body.ok ? 200 : 503'], 'system integrations route');
 
 requireTokens('apps/studio/lib/studio/modules.ts', ['studioModules', 'moduleByRoute', 'CreativePipelineId', "route: '/studio'", "route: '/asset-factory'"], 'modules.ts');
 requireTokens('apps/studio/lib/studio/status.ts', ['ReadinessCheck', 'ReadinessSummary', 'ModuleStatusSummary', 'readinessSummary', 'moduleStatuses'], 'status.ts');
