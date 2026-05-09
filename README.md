@@ -1,2 +1,26 @@
+# URAI Studio public site
+NEXT_PUBLIC_SITE_URL=https://www.uraistudio.com
 
-Learn more at https://developers.google.com/idx/guides/customize-idx-env
+# Public Firebase client config, if the frontend needs Firebase SDK access.
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+
+# Optional Firebase Admin persistence for contact and waitlist API routes.
+# Use server-only environment variables in Vercel/Firebase hosting settings.
+FIREBASE_PROJECT_ID=
+FIREBASE_CLIENT_EMAIL=
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+
+# Optional external module URLs shown by diagnostics when configured.
+NEXT_PUBLIC_ASSET_FACTORY_URL=
+ASSET_FACTORY_INTERNAL_URL=
+NEXT_PUBLIC_URAI_SPATIAL_URL=
+NEXT_PUBLIC_URAI_MARKETING_URL=
+NEXT_PUBLIC_URAI_ANALYTICS_URL=
+NEXT_PUBLIC_URAI_ADMIN_URL=
+NEXT_PUBLIC_URAI_PRIVACY_URL=
+NEXT_PUBLIC_URAI_INVESTORS_URL=
+
+# Optional payment or booking integrations can be added only after the project chooses providers.
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=

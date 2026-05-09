@@ -21,10 +21,10 @@ export function ModuleOverviewPage({
   fallbackDescription = 'This module is not currently configured.',
 }: ModuleOverviewPageProps) {
   const system = slug ? systems.find((item) => item.slug === slug) : undefined;
-  const module = route ? studioModules.find((item) => item.route === route) : undefined;
+  const studioModule = route ? studioModules.find((item) => item.route === route) : undefined;
   const marker = pageMarkerFromRoute(route, slug);
 
-  if (!system && !module) {
+  if (!system && !studioModule) {
     if (fallbackTitle || fallbackDescription) {
       return (
         <section data-urai-studio-page={marker} className="page-stack">
@@ -38,10 +38,10 @@ export function ModuleOverviewPage({
     return notFound();
   }
 
-  const title = system?.name ?? module?.name ?? fallbackTitle;
-  const description = system?.description ?? module?.description ?? fallbackDescription;
-  const status = system?.status ?? module?.status ?? 'unknown';
-  const capabilities = system?.capabilities ?? module?.capabilities ?? [];
+  const title = system?.name ?? studioModule?.name ?? fallbackTitle;
+  const description = system?.description ?? studioModule?.description ?? fallbackDescription;
+  const status = system?.status ?? studioModule?.status ?? 'unknown';
+  const capabilities = system?.capabilities ?? studioModule?.capabilities ?? [];
 
   return (
     <section data-urai-studio-page={marker} className="page-stack">
@@ -53,15 +53,15 @@ export function ModuleOverviewPage({
         <strong>Status:</strong> {status}
         <br />
 
-        {module ? (
+        {studioModule ? (
           <>
-            <strong>Integration:</strong> {module.integrationType}
+            <strong>Integration:</strong> {studioModule.integrationType}
             <br />
-            <strong>Health:</strong> {module.healthEndpoint ?? 'n/a'}
+            <strong>Health:</strong> {studioModule.healthEndpoint ?? 'n/a'}
             <br />
-            <strong>Inputs:</strong> {module.inputs.join(', ') || 'None'}
+            <strong>Inputs:</strong> {studioModule.inputs.join(', ') || 'None'}
             <br />
-            <strong>Outputs:</strong> {module.outputs.join(', ') || 'None'}
+            <strong>Outputs:</strong> {studioModule.outputs.join(', ') || 'None'}
             <br />
           </>
         ) : null}
@@ -78,9 +78,9 @@ export function ModuleOverviewPage({
           </>
         ) : null}
 
-        {module ? (
+        {studioModule ? (
           <>
-            <strong>Fallback:</strong> {module.fallbackBehavior}
+            <strong>Fallback:</strong> {studioModule.fallbackBehavior}
           </>
         ) : null}
       </div>

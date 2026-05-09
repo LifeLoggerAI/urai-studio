@@ -7,9 +7,42 @@ export const metadata: Metadata = {
 };
 
 const tiers = [
-  { name: 'Creator', price: 'Contact', description: 'For individual creators validating cinematic AI workflows.', features: ['Studio dashboard access', 'Feature-gated generation intake', 'Asset and job visibility', 'Privacy-first defaults'] },
-  { name: 'Studio Pro', price: 'Custom', description: 'For production teams building repeatable visual, motion, cinema, and music pipelines.', features: ['Multi-module operations', 'Asset Factory handoff contract', 'Usage and analytics surfaces', 'Priority implementation planning'] },
-  { name: 'Enterprise', price: 'Custom', description: 'For organizations integrating URAI Studio into internal creative systems.', features: ['Integration contract support', 'Admin and compliance readiness', 'Private deployment planning', 'API and system-of-systems roadmap'] },
+  {
+    name: 'Creator',
+    price: 'Project-based',
+    description: 'For individual creators validating cinematic AI workflows, launch visuals, and brand assets.',
+    features: [
+      'Studio dashboard access',
+      'Feature-gated generation intake',
+      'Asset and job visibility',
+      'Guided creative production briefs',
+      'Privacy-first defaults',
+    ],
+  },
+  {
+    name: 'Studio Pro',
+    price: 'Retainer',
+    description: 'For production teams building repeatable visual, motion, cinema, and music pipelines.',
+    features: [
+      'Multi-module operations',
+      'Asset Factory handoff contract',
+      'Recurring cinematic assets',
+      'Usage and analytics surfaces',
+      'Priority implementation planning',
+    ],
+  },
+  {
+    name: 'Enterprise',
+    price: 'Custom',
+    description: 'For organizations integrating URAI Studio into internal creative systems.',
+    features: [
+      'Integration contract support',
+      'Admin and compliance readiness',
+      'Private deployment planning',
+      'API and system-of-systems roadmap',
+      'Governance, security review, and rollout planning',
+    ],
+  },
 ];
 
 export default function PricingPage() {
@@ -20,16 +53,24 @@ export default function PricingPage() {
       <p className="eyebrow">Pricing</p>
       <h1>Plans for creators, studios, and enterprise systems.</h1>
       <p className="hero-lede">
-        Billing is intentionally feature-gated until Stripe products, checkout URLs, and webhook verification are configured. No fake checkout flow is presented.
+        URAI Studio packages are intentionally consultative until billing, Stripe products, checkout URLs, and webhook
+        verification are configured. No fake checkout flow is presented.
       </p>
-      <div className="grid">
+
+      <div className="grid feature-grid">
         {tiers.map((tier) => (
           <article className="card" key={tier.name}>
             <p className="eyebrow">{tier.name}</p>
             <h2>{tier.price}</h2>
             <p>{tier.description}</p>
-            <ul>{tier.features.map((feature) => <li key={feature}>{feature}</li>)}</ul>
-            <Link className="button button-primary" href={hasStripe ? '/settings' : '/contact'}>{hasStripe ? 'Manage Billing' : 'Request Access'}</Link>
+            <ul>
+              {tier.features.map((feature) => (
+                <li key={feature}>{feature}</li>
+              ))}
+            </ul>
+            <Link className="button button-primary" href={hasStripe ? '/settings' : '/contact'}>
+              {hasStripe ? 'Manage Billing' : 'Start Conversation'}
+            </Link>
           </article>
         ))}
       </div>

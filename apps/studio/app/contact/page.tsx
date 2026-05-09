@@ -21,16 +21,16 @@ const contactPaths = [
 
 export default function ContactPage() {
   return (
-    <section data-urai-studio-page="contact" className="page-stack">
+    <section data-urai-studio-page="contact" className="page-stack narrow-page">
       <p className="eyebrow">Contact</p>
       <h1>Start a URAI Studio production conversation.</h1>
       <p className="hero-lede">
-        Use this page for serious build requests, launch support, enterprise integrations,
-        and connecting URAI Studio into the broader URAI system-of-systems.
+        Use this page for serious build requests, launch support, enterprise integrations, and connecting URAI Studio
+        into the broader URAI system-of-systems.
       </p>
 
-      <div className="grid">
-        <div className="page-stack">
+      <div className="grid feature-grid">
+        <div className="page-stack stack-lg">
           <article className="card">
             <h2>Best for</h2>
             <ul>
@@ -39,6 +39,7 @@ export default function ContactPage() {
               ))}
             </ul>
           </article>
+
           <article className="card">
             <h2>Before production activation</h2>
             <p>
@@ -50,6 +51,7 @@ export default function ContactPage() {
             </Link>
           </article>
         </div>
+
         <ContactForm />
       </div>
     </section>
