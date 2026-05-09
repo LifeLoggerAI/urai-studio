@@ -4,7 +4,8 @@
  * URAI Studio smoke test.
  *
  * Static mode validates required repo files, frontend route files, callables,
- * Firebase rules, Functions v2 callable usage, Studio registry helpers, and CI workflow presence.
+ * Firebase rules, Functions v2 callable usage, Studio registry helpers, system API helpers,
+ * and CI workflow presence.
  */
 
 const fs = require('node:fs');
@@ -23,6 +24,10 @@ const requiredFiles = [
   'functions/package.json',
   'functions/src/index.ts',
   'functions/src/studio-system.ts',
+  'apps/studio/app/api/system/health/route.ts',
+  'apps/studio/lib/studio/config.ts',
+  'apps/studio/lib/studio/firebase.ts',
+  'apps/studio/lib/studio/integrations.ts',
   'apps/studio/lib/studio/modules.ts',
   'apps/studio/lib/studio/status.ts',
   'apps/studio/lib/studio/systems.ts',
@@ -51,6 +56,38 @@ if (missing.length > 0) {
   console.error('[urai-studio:smoke] Missing required files:');
   for (const file of missing) console.error(`- ${file}`);
   process.exit(1);
+}
+
+const configSource = fs.readFileSync(path.join(root, 'apps/studio/lib/studio/config.ts'), 'utf8');
+for (const token of ['StudioConfig', 'studioConfig', 'siteUrl', 'firebaseProjectId']) {
+  if (!configSource.includes(token)) {
+    console.error(`[urai-studio:smoke] config.ts missing config token: ${token}`);
+    process.exit(1);
+  }
+}
+
+const firebaseSource = fs.readFileSync(path.join(root, 'apps/studio/lib/studio/firebase.ts'), 'utf8');
+for (const token of ['FirebaseDiagnostics', 'firebaseDiagnostics', 'emulator', 'adminAvailable']) {
+  if (!firebaseSource.includes(token)) {
+    console.error(`[urai-studio:smoke] firebase.ts missing diagnostics token: ${token}`);
+    process.exit(1);
+  }
+}
+
+const integrationsSource = fs.readFileSync(path.join(root, 'apps/studio/lib/studio/integrations.ts'), 'utf8');
+for (const token of ['StudioIntegrationDiagnostic', 'StudioIntegrationStatus', 'studioIntegrations', 'required']) {
+  if (!integrationsSource.includes(token)) {
+    console.error(`[urai-studio:smoke] integrations.ts missing integration token: ${token}`);
+    process.exit(1);
+  }
+}
+
+const healthRouteSource = fs.readFileSync(path.join(root, 'apps/studio/app/api/system/health/route.ts'), 'utf8');
+for (const token of ['SystemHealthResponse', "dynamic = 'force-dynamic'", "'Cache-Control': 'no-store, max-age=0'", 'status: readiness.ok ? 200 : 503']) {
+  if (!healthRouteSource.includes(token)) {
+    console.error(`[urai-studio:smoke] system health route missing token: ${token}`);
+    process.exit(1);
+  }
 }
 
 const modulesSource = fs.readFileSync(path.join(root, 'apps/studio/lib/studio/modules.ts'), 'utf8');
