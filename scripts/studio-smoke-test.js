@@ -6,7 +6,7 @@
  * Static mode validates required repo files, frontend route files, callables,
  * Firebase rules, Functions v2 callable usage, Studio registry helpers, system API helpers,
  * health/readiness endpoints, integration helpers, system contract endpoints, module lookup helpers,
- * route metadata, static page metadata, and CI workflow presence.
+ * route metadata, static page metadata, submission APIs, and CI workflow presence.
  */
 
 const fs = require('node:fs');
@@ -25,6 +25,8 @@ const requiredFiles = [
   'functions/package.json',
   'functions/src/index.ts',
   'functions/src/studio-system.ts',
+  'apps/studio/app/api/contact/route.ts',
+  'apps/studio/app/api/waitlist/route.ts',
   'apps/studio/app/api/health/route.ts',
   'apps/studio/app/api/system/health/route.ts',
   'apps/studio/app/api/system/manifest/route.ts',
@@ -115,6 +117,8 @@ for (const [filePath, canonical] of [
 
 requireTokens('apps/studio/app/system/page.tsx', ['metadata', "'../systems/page'"], '/system alias page');
 requireTokens('apps/studio/app/waitlist/WaitlistForm.tsx', ["'use client'", 'WaitlistForm', 'FormEvent', "fetch('/api/waitlist'"], 'waitlist client form');
+requireTokens('apps/studio/app/api/waitlist/route.ts', ['WaitlistResponse', "dynamic = 'force-dynamic'", "'Cache-Control': 'no-store, max-age=0'", 'invalid_json', "collection('waitlist')"], 'waitlist API route');
+requireTokens('apps/studio/app/api/contact/route.ts', ['ContactResponse', "dynamic = 'force-dynamic'", "'Cache-Control': 'no-store, max-age=0'", 'invalid_json', "collection('contactMessages')"], 'contact API route');
 
 requireTokens('apps/studio/lib/studio/config.ts', ['StudioConfig', 'studioConfig', 'siteUrl', 'firebaseProjectId'], 'config.ts');
 requireTokens('apps/studio/lib/studio/firebase.ts', ['FirebaseDiagnostics', 'firebaseDiagnostics', 'emulator', 'adminAvailable'], 'firebase.ts');
