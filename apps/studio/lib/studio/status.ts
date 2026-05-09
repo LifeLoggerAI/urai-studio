@@ -1,14 +1,48 @@
 import { firebaseAdminStatus } from '@/lib/firebase-admin';
 import { studioModules } from './modules';
+import type { ModuleStatus } from './types';
 
-export function statusWarnings() {
+export type ReadinessCheck = {
+  id: string;
+  required: boolean;
+  ok: boolean;
+  detail: string | null;
+  error?: string | null;
+};
+
+export type ReadinessSummary = {
+  ok: boolean;
+  status: 'ready' | 'degraded';
+  checks: ReadinessCheck[];
+  blockers: string[];
+  warnings: string[];
+};
+
+export type ModuleStatusSummary = {
+  id: string;
+  name: string;
+  status: ModuleStatus;
+  route: string;
+  enabled: boolean;
+  productionCritical: boolean;
+};
+
+function envValue(...keys: string[]): string | null {
+  for (const key of keys) {
+    const value = process.env[key];
+    if (typeof value === 'string' && value.trim().length > 0) return value;
+  }
+  return null;
+}
+
+export function statusWarnings(): string[] {
   const warnings: string[] = [];
 
-  if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID && !process.env.FIREBASE_PROJECT_ID) {
+  if (!envValue('NEXT_PUBLIC_FIREBASE_PROJECT_ID', 'FIREBASE_PROJECT_ID')) {
     warnings.push('firebase_project_unconfigured');
   }
 
-  if (!process.env.NEXT_PUBLIC_ASSET_FACTORY_URL && !process.env.ASSET_FACTORY_INTERNAL_URL) {
+  if (!envValue('NEXT_PUBLIC_ASSET_FACTORY_URL', 'ASSET_FACTORY_INTERNAL_URL')) {
     warnings.push('asset_factory_unconfigured');
   }
 
@@ -19,13 +53,17 @@ export function statusWarnings() {
   return warnings;
 }
 
-export function readinessChecks() {
+export function readinessChecks(): ReadinessCheck[] {
+  const firebaseProjectId = envValue('NEXT_PUBLIC_FIREBASE_PROJECT_ID', 'FIREBASE_PROJECT_ID');
+  const assetFactoryUrl = envValue('NEXT_PUBLIC_ASSET_FACTORY_URL', 'ASSET_FACTORY_INTERNAL_URL');
+  const siteUrl = envValue('NEXT_PUBLIC_SITE_URL');
+
   return [
     {
       id: 'firebase-project',
       required: true,
-      ok: Boolean(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID),
-      detail: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || null,
+      ok: Boolean(firebaseProjectId),
+      detail: firebaseProjectId,
     },
     {
       id: 'firebase-admin-persistence',
@@ -37,19 +75,19 @@ export function readinessChecks() {
     {
       id: 'asset-factory-url',
       required: false,
-      ok: Boolean(process.env.NEXT_PUBLIC_ASSET_FACTORY_URL || process.env.ASSET_FACTORY_INTERNAL_URL),
-      detail: process.env.NEXT_PUBLIC_ASSET_FACTORY_URL || process.env.ASSET_FACTORY_INTERNAL_URL || null,
+      ok: Boolean(assetFactoryUrl),
+      detail: assetFactoryUrl,
     },
     {
       id: 'public-site-url',
       required: process.env.NODE_ENV === 'production',
-      ok: Boolean(process.env.NEXT_PUBLIC_SITE_URL),
-      detail: process.env.NEXT_PUBLIC_SITE_URL || null,
+      ok: Boolean(siteUrl),
+      detail: siteUrl,
     },
   ];
 }
 
-export function readinessSummary() {
+export function readinessSummary(): ReadinessSummary {
   const checks = readinessChecks();
   const blockers = checks.filter((check) => check.required && !check.ok);
 
@@ -62,4 +100,13 @@ export function readinessSummary() {
   };
 }
 
-export const moduleStatuses = () => studioModules.map((m) => ({ id: m.id, status: m.status, route: m.route }));
+export function moduleStatuses(): ModuleStatusSummary[] {
+  return studioModules.map((module) => ({
+    id: module.id,
+    name: module.name,
+    status: module.status,
+    route: module.route,
+    enabled: module.enabled,
+    productionCritical: module.productionCritical,
+  }));
+}
