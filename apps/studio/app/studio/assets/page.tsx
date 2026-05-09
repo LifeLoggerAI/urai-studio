@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
+import { StudioActionPanel } from '@/components/studio/StudioActionPanel';
 import { subscribeAssetManifests, subscribeGenerationJobs } from '@/lib/assets/client';
 import { StudioAssetManifest, StudioGenerationJob } from '@/lib/assets/types';
 
@@ -27,6 +29,12 @@ function renderArtifact(manifest: StudioAssetManifest) {
   );
 }
 
+const assetContracts = [
+  { title: 'Upload path', body: 'User uploads belong under user-uploads/{uid}/studio/**.' },
+  { title: 'Generated path', body: 'Generated outputs belong under generated/{uid}/studio/** and are function-owned.' },
+  { title: 'Public path', body: 'Public Studio assets belong under public/studio-assets/** with public read only.' },
+];
+
 export default function StudioAssetsPage() {
   const [manifests, setManifests] = useState<StudioAssetManifest[]>([]);
   const [jobs, setJobs] = useState<StudioGenerationJob[]>([]);
@@ -42,10 +50,22 @@ export default function StudioAssetsPage() {
   }, []);
 
   return (
-    <section>
-      <p style={{ color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: 2 }}>URAI Studio</p>
+    <section className="page-stack" data-urai-studio-page="studio-assets">
+      <p className="eyebrow">Asset Factory</p>
       <h1>Generated Assets</h1>
-      <p>Live asset pipeline view: generation jobs, manifests, previews, and spatial compatibility.</p>
+      <p className="hero-lede">Live asset pipeline view: generation jobs, manifests, previews, spatial compatibility, and callable-backed asset job creation.</p>
+
+      <div className="grid three">
+        {assetContracts.map((contract) => (
+          <article className="card" key={contract.title}>
+            <p className="eyebrow">Storage contract</p>
+            <h2>{contract.title}</h2>
+            <p>{contract.body}</p>
+          </article>
+        ))}
+      </div>
+
+      <StudioActionPanel />
 
       {error ? <p style={{ color: '#f87171' }}>Firestore error: {error}</p> : null}
 
