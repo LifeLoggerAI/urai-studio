@@ -6,7 +6,7 @@
  * Static mode validates required repo files, frontend route files, callables,
  * Firebase rules, Functions v2 callable usage, Studio registry helpers, system API helpers,
  * health/readiness endpoints, integration helpers, system contract endpoints, module lookup helpers,
- * route metadata, static page metadata, submission APIs, submission rules, and CI workflow presence.
+ * route metadata, static page metadata, submission APIs, submission rules, Firebase docs, and CI workflow presence.
  */
 
 const fs = require('node:fs');
@@ -188,6 +188,8 @@ for (const lockedCollection of ['waitlist', 'contactMessages']) {
     process.exit(1);
   }
 }
+
+requireTokens('FIREBASE.md', ['Public submission collections', 'waitlist', 'contactMessages', 'Composite index required: no', 'Client rule: `allow read, write: if false;`'], 'FIREBASE.md submission docs');
 
 const storageRules = fs.readFileSync(path.join(root, 'storage.rules'), 'utf8');
 for (const storagePath of ['user-uploads', 'generated', 'public/studio-assets']) {
