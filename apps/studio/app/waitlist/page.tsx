@@ -28,6 +28,7 @@ export default function WaitlistPage() {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ email, interest, website }),
     });
+
     const result = await response.json().catch(() => ({ error: 'Unable to read the server response.' }));
 
     setIsSubmitting(false);
@@ -36,7 +37,7 @@ export default function WaitlistPage() {
   }
 
   return (
-    <section className="narrow-page stack-xl">
+    <section className="narrow-page stack-xl" data-urai-studio-page="waitlist">
       <div className="section-heading">
         <p className="eyebrow">Early access</p>
         <h1>Join the URAI Studio waitlist.</h1>
@@ -51,6 +52,7 @@ export default function WaitlistPage() {
           Email
           <input name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
         </label>
+
         <label>
           What are you most interested in?
           <select name="interest" defaultValue="">
@@ -64,10 +66,13 @@ export default function WaitlistPage() {
             <option>Partnerships / investment</option>
           </select>
         </label>
+
         <input name="website" className="honeypot" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+
         <button className="button button-primary" type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Joining…' : 'Join waitlist'}
         </button>
+
         <p className="form-status" role="status" aria-live="polite">
           {message}
         </p>

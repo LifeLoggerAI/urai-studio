@@ -30,6 +30,7 @@ export default function ContactPage() {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ email, name, projectType, message: body, website }),
     });
+
     const result = await response.json().catch(() => ({ error: 'Unable to read the server response.' }));
 
     setIsSubmitting(false);
@@ -43,8 +44,9 @@ export default function ContactPage() {
         <p className="eyebrow">Contact</p>
         <h1>Start a URAI Studio project.</h1>
         <p>
-          Share the website, motion system, cinematic demo, symbolic visual package, or spatial experience you want to build.
-          Firebase persistence is used when server credentials are configured; otherwise local/demo environments return a safe fallback.
+          Share the creative system, website, motion package, cinematic demo, symbolic visual package, or spatial
+          experience you want to build. Firebase persistence is used when server credentials are configured; otherwise
+          local/demo environments return a safe fallback.
         </p>
       </div>
 
@@ -53,10 +55,12 @@ export default function ContactPage() {
           Name
           <input name="name" autoComplete="name" placeholder="Your name" />
         </label>
+
         <label>
           Email <span aria-hidden="true">*</span>
           <input name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
         </label>
+
         <label>
           Project type
           <select name="projectType" defaultValue="">
@@ -70,14 +74,18 @@ export default function ContactPage() {
             <option>URAI ecosystem integration</option>
           </select>
         </label>
+
         <label>
           Project note <span aria-hidden="true">*</span>
           <textarea name="message" placeholder="Tell us what you want to build." minLength={12} required />
         </label>
+
         <input name="website" className="honeypot" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+
         <button className="button button-primary" type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Sending…' : 'Send project request'}
         </button>
+
         <p className="form-status" role="status" aria-live="polite">
           {message}
         </p>

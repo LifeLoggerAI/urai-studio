@@ -13,11 +13,13 @@ const nav = [
 
 export function Header() {
   return (
-    <header className="header">
+    <header className="header" role="banner">
       <Link href="#main-content" className="skip-link">
         Skip to content
       </Link>
+
       <Link href="/" className="logo" aria-label="URAI Studio home">
+        <span className="logo-mark" aria-hidden="true" />
         URAI Studio
       </Link>
 
@@ -27,7 +29,8 @@ export function Header() {
             {label}
           </Link>
         ))}
-        <Link className="header-cta" href="/waitlist">
+
+        <Link href="/waitlist" className="nav-cta header-cta">
           Join Waitlist
         </Link>
       </nav>
