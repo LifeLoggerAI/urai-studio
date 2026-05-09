@@ -12,8 +12,7 @@
     "audit": "pnpm lint && pnpm typecheck && pnpm test",
     "release:check": "pnpm audit && pnpm build",
     "emulators": "firebase emulators:start",
-    "seed:demo": "pnpm exec ts-node scripts/seed_demo_job.ts",
-    "lock:staging": "bash scripts/lock_urai_staging.sh"
+    "seed:demo": "pnpm exec ts-node scripts/seed_demo_job.ts"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
