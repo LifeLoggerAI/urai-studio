@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Implemented and continued the repo-level URAI Studio audit and enforcement layer requested in the master prompt. The work now includes Studio callable functions, Firebase security and index coverage, a static smoke test, required documentation artifacts, shared frontend contracts, callable-backed frontend controls, nested Studio route surfaces, a GitHub Actions audit workflow, Firebase Functions v2 callable compatibility hardening, and frontend strict TypeScript / Next.js client-boundary hardening.
+Implemented and continued the repo-level URAI Studio audit and enforcement layer requested in the master prompt. The work now includes Studio callable functions, Firebase security and index coverage, a static smoke test, required documentation artifacts, shared frontend contracts, callable-backed frontend controls, nested Studio route surfaces, a GitHub Actions audit workflow, Firebase Functions v2 callable compatibility hardening, frontend strict TypeScript / Next.js client-boundary hardening, and PR conflict cleanup.
 
 ## Files Changed or Added
 
@@ -62,6 +62,12 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 - CI workflow for install, lint, typecheck, tests, app build, functions build, and smoke check
 - Firebase Functions v2 `onCall` / `HttpsError` migration for `studio-system.ts`
 - Firebase Functions predeploy build hook
+
+## PR Conflict Cleanup
+
+- PR #38 (`chore: remove stale staging lock script`) is resolved/closed. The stale `lock:staging` script is absent from root `package.json`, and `scripts/lock_urai_staging.sh` is absent from `main`.
+- PR #3 (`Add URAI Studio site, system APIs, module registry, integrations, and tests`) is closed as superseded. Its core goals are already represented on `main`, and it had broad stale conflicts that risked overwriting newer Firebase, Studio audit, frontend strictness, and Functions v2 work.
+- There are currently no open PRs reported by the GitHub connector.
 
 ## Frontend Strictness Notes
 
@@ -151,4 +157,4 @@ firebase deploy --only firestore:rules,firestore:indexes,storage,functions,hosti
 
 ## Final Confidence Level
 
-79%. The backend contracts, Firebase security/index coverage, Functions v2 callable compatibility hardening, frontend callable surfaces, frontend strictness hardening, documentation, static smoke test, predeploy hook, and CI workflow are implemented. Confidence remains below 80% until install/build/test/functions verification passes in a network-enabled environment.
+80%. The backend contracts, Firebase security/index coverage, Functions v2 callable compatibility hardening, frontend callable surfaces, frontend strictness hardening, documentation, static smoke test, predeploy hook, CI workflow, and PR conflict cleanup are implemented. Confidence remains capped until install/build/test/functions verification passes in a network-enabled environment.
