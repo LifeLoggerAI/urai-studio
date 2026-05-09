@@ -1,17 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { useEffect, useState, type ReactElement } from 'react';
 
 import { StudioActionPanel } from '@/components/studio/StudioActionPanel';
 import { subscribeAssetManifests, subscribeGenerationJobs } from '@/lib/assets/client';
-import { StudioAssetManifest, StudioGenerationJob } from '@/lib/assets/types';
+import type { StudioAssetManifest, StudioGenerationJob } from '@/lib/assets/types';
 
-function renderArtifact(manifest: StudioAssetManifest) {
+function renderArtifact(manifest: StudioAssetManifest): ReactElement {
   const artifact = manifest.artifacts?.[0];
   if (!artifact) return <p>No artifact attached.</p>;
 
   if (artifact.mimeType.startsWith('image/')) {
-    return <img src={artifact.url} alt={manifest.promptPreview || manifest.manifestId} style={{ maxWidth: '100%', borderRadius: 12 }} />;
+    return (
+      <Image
+        src={artifact.url}
+        alt={manifest.promptPreview || manifest.manifestId}
+        width={960}
+        height={540}
+        style={{ maxWidth: '100%', height: 'auto', borderRadius: 12 }}
+        unoptimized
+      />
+    );
   }
 
   if (artifact.mimeType.startsWith('video/')) {
