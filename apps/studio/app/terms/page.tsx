@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: 'Terms',
   description:
     'Production-ready terms scaffold for URAI Studio accounts, generated content, payments, availability, and acceptable use.',
+  alternates: {
+    canonical: '/terms',
+  },
 };
 
 const sections = [
