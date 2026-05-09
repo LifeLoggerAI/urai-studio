@@ -19,7 +19,7 @@ export default function StudioPage() {
   const studioSystems = systems.filter((system) =>
     ['studio', 'motion', 'cinema', 'music', 'visuals', 'spatial'].includes(system.slug),
   );
-  const configuredModules = studioModules.filter((module) => module.status === 'active' || module.status === 'ready');
+  const configuredModules = studioModules.filter((module) => module.enabled && module.status !== 'disconnected');
 
   return (
     <section data-urai-studio-page="studio" className="page-stack">
@@ -34,7 +34,7 @@ export default function StudioPage() {
         <article className="card">
           <p className="eyebrow">Configured modules</p>
           <h2>{configuredModules.length}</h2>
-          <p>Modules with active or ready status in the Studio registry.</p>
+          <p>Modules that are enabled and not explicitly disconnected in the Studio registry.</p>
         </article>
         <article className="card">
           <p className="eyebrow">Generation</p>
