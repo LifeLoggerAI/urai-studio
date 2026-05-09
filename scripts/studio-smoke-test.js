@@ -5,7 +5,8 @@
  *
  * Static mode validates required repo files, frontend route files, callables,
  * Firebase rules, Functions v2 callable usage, Studio registry helpers, system API helpers,
- * health/readiness endpoints, integration helpers, system contract endpoints, and CI workflow presence.
+ * health/readiness endpoints, integration helpers, system contract endpoints, module lookup helpers,
+ * and CI workflow presence.
  */
 
 const fs = require('node:fs');
@@ -42,6 +43,7 @@ const requiredFiles = [
   'apps/studio/lib/studio/systems.ts',
   'apps/studio/lib/studio/types.ts',
   'apps/studio/lib/studio/firebase-client.ts',
+  'apps/studio/components/studio/ModuleOverviewPage.tsx',
   'apps/studio/components/studio/StudioActionPanel.tsx',
   'apps/studio/app/studio/page.tsx',
   'apps/studio/app/studio/projects/page.tsx',
@@ -95,6 +97,7 @@ requireTokens('apps/studio/app/api/system/integrations/route.ts', ['SystemIntegr
 requireTokens('apps/studio/lib/studio/modules.ts', ['studioModules', 'moduleByRoute', 'CreativePipelineId', "route: '/studio'", "route: '/asset-factory'"], 'modules.ts');
 requireTokens('apps/studio/lib/studio/status.ts', ['ReadinessCheck', 'ReadinessSummary', 'ModuleStatusSummary', 'readinessSummary', 'moduleStatuses'], 'status.ts');
 requireTokens('apps/studio/lib/studio/systems.ts', ['SystemVisibility', 'systemBySlug', 'systemByRoute', 'publicSystems', "route: '/studio'"], 'systems.ts');
+requireTokens('apps/studio/components/studio/ModuleOverviewPage.tsx', ['moduleByRoute', 'systemBySlug', 'systemByRoute', 'routeAliases', 'slugAliases'], 'ModuleOverviewPage');
 
 const functionSource = requireTokens('functions/src/studio-system.ts', ['firebase-functions/v2/https', 'onCall', 'HttpsError'], 'studio-system.ts');
 if (functionSource.includes('functions.https.onCall') || functionSource.includes('functions.https.HttpsError')) {
