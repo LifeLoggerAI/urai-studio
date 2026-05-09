@@ -1,10 +1,17 @@
 {
   "name": "urai-studio-functions",
   "description": "Cloud Functions for URAI Studio",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
   "dependencies": {
     "firebase-admin": "^12.0.0",
     "firebase-functions": "^5.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
   },
   "private": true,
   "engines": {
