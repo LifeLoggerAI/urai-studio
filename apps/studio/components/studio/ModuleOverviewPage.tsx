@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 
-import { studioModules } from '@/lib/studio/modules';
-import { systems } from '@/lib/studio/systems';
+import { moduleByRoute, studioModules } from '@/lib/studio/modules';
+import { systemBySlug, systemByRoute } from '@/lib/studio/systems';
 
 type ModuleOverviewPageProps = {
   slug?: string;
@@ -10,8 +10,32 @@ type ModuleOverviewPageProps = {
   fallbackDescription?: string;
 };
 
-function pageMarkerFromRoute(route?: string, slug?: string) {
+const routeAliases: Record<string, string> = {
+  '/assets': '/asset-factory',
+  '/dashboard': '/studio',
+  '/usage': '/analytics',
+};
+
+const slugAliases: Record<string, string> = {
+  assets: 'asset-factory',
+  dashboard: 'studio',
+  usage: 'analytics',
+};
+
+function pageMarkerFromRoute(route?: string, slug?: string): string {
   return (route?.replace(/^\//, '') || slug || 'module').replace(/[^a-z0-9-]/gi, '-').toLowerCase();
+}
+
+function routeCandidates(route?: string): string[] {
+  if (!route) return [];
+  const alias = routeAliases[route];
+  return alias ? [route, alias] : [route];
+}
+
+function slugCandidates(slug?: string): string[] {
+  if (!slug) return [];
+  const alias = slugAliases[slug];
+  return alias ? [slug, alias] : [slug];
 }
 
 export function ModuleOverviewPage({
@@ -20,8 +44,22 @@ export function ModuleOverviewPage({
   fallbackTitle = 'Module unavailable',
   fallbackDescription = 'This module is not currently configured.',
 }: ModuleOverviewPageProps) {
-  const system = slug ? systems.find((item) => item.slug === slug) : undefined;
-  const studioModule = route ? studioModules.find((item) => item.route === route) : undefined;
+  const system =
+    slugCandidates(slug)
+      .map((candidate) => systemBySlug[candidate])
+      .find(Boolean) ??
+    routeCandidates(route)
+      .map((candidate) => systemByRoute[candidate])
+      .find(Boolean);
+
+  const studioModule =
+    routeCandidates(route)
+      .map((candidate) => moduleByRoute[candidate])
+      .find(Boolean) ??
+    slugCandidates(slug)
+      .map((candidate) => studioModules.find((item) => item.id === candidate))
+      .find(Boolean);
+
   const marker = pageMarkerFromRoute(route, slug);
 
   if (!system && !studioModule) {
