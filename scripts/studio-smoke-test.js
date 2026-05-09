@@ -4,7 +4,7 @@
  * URAI Studio smoke test.
  *
  * Static mode validates required repo files, frontend route files, callables,
- * Firebase rules, Functions v2 callable usage, and CI workflow presence.
+ * Firebase rules, Functions v2 callable usage, Studio registry helpers, and CI workflow presence.
  */
 
 const fs = require('node:fs');
@@ -23,6 +23,9 @@ const requiredFiles = [
   'functions/package.json',
   'functions/src/index.ts',
   'functions/src/studio-system.ts',
+  'apps/studio/lib/studio/modules.ts',
+  'apps/studio/lib/studio/status.ts',
+  'apps/studio/lib/studio/systems.ts',
   'apps/studio/lib/studio/types.ts',
   'apps/studio/lib/studio/firebase-client.ts',
   'apps/studio/components/studio/StudioActionPanel.tsx',
@@ -48,6 +51,30 @@ if (missing.length > 0) {
   console.error('[urai-studio:smoke] Missing required files:');
   for (const file of missing) console.error(`- ${file}`);
   process.exit(1);
+}
+
+const modulesSource = fs.readFileSync(path.join(root, 'apps/studio/lib/studio/modules.ts'), 'utf8');
+for (const token of ['studioModules', 'moduleByRoute', 'CreativePipelineId', "route: '/studio'", "route: '/asset-factory'"]) {
+  if (!modulesSource.includes(token)) {
+    console.error(`[urai-studio:smoke] modules.ts missing registry token: ${token}`);
+    process.exit(1);
+  }
+}
+
+const statusSource = fs.readFileSync(path.join(root, 'apps/studio/lib/studio/status.ts'), 'utf8');
+for (const token of ['ReadinessCheck', 'ReadinessSummary', 'ModuleStatusSummary', 'readinessSummary', 'moduleStatuses']) {
+  if (!statusSource.includes(token)) {
+    console.error(`[urai-studio:smoke] status.ts missing typed status token: ${token}`);
+    process.exit(1);
+  }
+}
+
+const systemsSource = fs.readFileSync(path.join(root, 'apps/studio/lib/studio/systems.ts'), 'utf8');
+for (const token of ['SystemVisibility', 'systemBySlug', 'systemByRoute', 'publicSystems', "route: '/studio'"]) {
+  if (!systemsSource.includes(token)) {
+    console.error(`[urai-studio:smoke] systems.ts missing system registry token: ${token}`);
+    process.exit(1);
+  }
 }
 
 const functionSource = fs.readFileSync(path.join(root, 'functions/src/studio-system.ts'), 'utf8');
