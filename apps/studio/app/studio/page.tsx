@@ -34,7 +34,7 @@ export default function StudioPage() {
         <article className="card">
           <p className="eyebrow">Configured modules</p>
           <h2>{configuredModules.length}</h2>
-          <p>Modules that are enabled and not explicitly disconnected in the Studio registry.</p>
+          <p>Enabled modules that are available through the Studio registry without a disconnected status.</p>
         </article>
         <article className="card">
           <p className="eyebrow">Generation</p>
