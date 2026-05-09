@@ -9,7 +9,11 @@
     "rewrites": []
   },
   "functions": {
-    "source": "functions"
+    "source": "functions",
+    "predeploy": [
+      "pnpm --dir functions install --no-frozen-lockfile",
+      "pnpm --dir functions build"
+    ]
   },
   "emulators": {
     "hub": {
