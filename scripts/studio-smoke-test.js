@@ -3,10 +3,8 @@
 /**
  * URAI Studio smoke test.
  *
- * This script intentionally supports two modes:
- * 1. Static mode: validates required repo files exist. Always safe in CI.
- * 2. Callable mode: when STUDIO_SMOKE_CALLABLES=true and Firebase env is configured,
- *    validates ping/seed/export callable contracts through the Firebase client SDK.
+ * Static mode validates required repo files, frontend route files, callables,
+ * Firebase rules, and CI workflow presence. It is safe in CI and local shells.
  */
 
 const fs = require('node:fs');
@@ -21,8 +19,20 @@ const requiredFiles = [
   'storage.rules',
   'firestore.indexes.json',
   '.env.example',
+  '.github/workflows/studio-audit.yml',
+  'functions/package.json',
   'functions/src/index.ts',
   'functions/src/studio-system.ts',
+  'apps/studio/lib/studio/types.ts',
+  'apps/studio/lib/studio/firebase-client.ts',
+  'apps/studio/components/studio/StudioActionPanel.tsx',
+  'apps/studio/app/studio/page.tsx',
+  'apps/studio/app/studio/projects/page.tsx',
+  'apps/studio/app/studio/assets/page.tsx',
+  'apps/studio/app/studio/exports/page.tsx',
+  'apps/studio/app/studio/admin/page.tsx',
+  'apps/studio/app/studio/settings/page.tsx',
+  'apps/studio/app/studio/xr/page.tsx',
   'README.md',
   'SYSTEM_MAP.md',
   'AUDIT_REPORT.md',
@@ -65,6 +75,20 @@ if (missingExports.length > 0) {
   process.exit(1);
 }
 
+const indexSource = fs.readFileSync(path.join(root, 'functions/src/index.ts'), 'utf8');
+if (!indexSource.includes('studio-system')) {
+  console.error('[urai-studio:smoke] functions/src/index.ts does not export studio-system.');
+  process.exit(1);
+}
+
+const actionPanel = fs.readFileSync(path.join(root, 'apps/studio/components/studio/StudioActionPanel.tsx'), 'utf8');
+for (const token of ['studioApi.ping', 'studioApi.seedStudioDemo', 'studioApi.createStudioProject', 'studioApi.createExportJob']) {
+  if (!actionPanel.includes(token)) {
+    console.error(`[urai-studio:smoke] StudioActionPanel missing ${token}`);
+    process.exit(1);
+  }
+}
+
 const firestoreRules = fs.readFileSync(path.join(root, 'firestore.rules'), 'utf8');
 for (const collection of ['studioProjects', 'studioAssets', 'studioScenes', 'studioScrolls', 'narratorScripts', 'exportJobs']) {
   if (!firestoreRules.includes(`match /${collection}/`)) {
@@ -77,6 +101,14 @@ const storageRules = fs.readFileSync(path.join(root, 'storage.rules'), 'utf8');
 for (const storagePath of ['user-uploads', 'generated', 'public/studio-assets']) {
   if (!storageRules.includes(storagePath)) {
     console.error(`[urai-studio:smoke] storage.rules missing ${storagePath}`);
+    process.exit(1);
+  }
+}
+
+const workflow = fs.readFileSync(path.join(root, '.github/workflows/studio-audit.yml'), 'utf8');
+for (const command of ['pnpm lint', 'pnpm typecheck', 'pnpm test', 'pnpm build', 'pnpm --dir functions build', 'pnpm studio:smoke']) {
+  if (!workflow.includes(command)) {
+    console.error(`[urai-studio:smoke] CI workflow missing command: ${command}`);
     process.exit(1);
   }
 }
