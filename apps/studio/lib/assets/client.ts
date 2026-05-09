@@ -3,7 +3,13 @@
 import { collection, limit, onSnapshot, orderBy, query, type DocumentData, type Unsubscribe } from 'firebase/firestore';
 
 import { firebaseClientConfigured, firestore } from '@/lib/firebaseClient';
-import type { StudioAssetArtifact, StudioAssetManifest, StudioGenerationJob, StudioGenerationRequest } from './types';
+import type {
+  StudioAssetArtifact,
+  StudioAssetManifest,
+  StudioGenerationError,
+  StudioGenerationJob,
+  StudioGenerationRequest,
+} from './types';
 
 const noop: Unsubscribe = () => undefined;
 
@@ -29,6 +35,16 @@ function normalizeRequest(value: unknown): StudioGenerationRequest {
     type: asString(request.type, 'asset'),
     prompt: asString(request.prompt, asString(request.promptPreview, 'Untitled generation')),
     promptPreview: typeof request.promptPreview === 'string' ? request.promptPreview : undefined,
+  };
+}
+
+function normalizeError(value: unknown): StudioGenerationError | null {
+  if (value === null || value === undefined) return null;
+  const error = asRecord(value);
+  return {
+    code: typeof error.code === 'string' ? error.code : undefined,
+    message: typeof error.message === 'string' ? error.message : undefined,
+    retryable: typeof error.retryable === 'boolean' ? error.retryable : undefined,
   };
 }
 
@@ -60,7 +76,7 @@ function normalizeGenerationJob(docId: string, data: DocumentData): StudioGenera
     artifactId: typeof data.artifactId === 'string' ? data.artifactId : undefined,
     manifestId: typeof data.manifestId === 'string' ? data.manifestId : undefined,
     request: normalizeRequest(data.request),
-    error: data.error === null || data.error === undefined ? null : asRecord(data.error),
+    error: normalizeError(data.error),
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
     completedAt: data.completedAt,
