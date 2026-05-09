@@ -6,7 +6,7 @@ const nav = [
   { label: 'Motion', href: '/motion' },
   { label: 'Cinema', href: '/cinema' },
   { label: 'Spatial', href: '/spatial' },
-  { label: 'Privacy', href: '/settings' },
+  { label: 'Privacy', href: '/privacy' },
   { label: 'Demo', href: '/demo' },
   { label: 'Contact', href: '/contact' },
 ];
