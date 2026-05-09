@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Implemented and continued the repo-level URAI Studio audit and enforcement layer requested in the master prompt. The work now includes Studio callable functions, Firebase security and index coverage, a static smoke test, required documentation artifacts, shared frontend contracts, callable-backed frontend controls, nested Studio route surfaces, a GitHub Actions audit workflow, Firebase Functions v2 callable compatibility hardening, frontend strict TypeScript / Next.js client-boundary hardening, shared Firebase client hardening, Studio registry/status hardening, and PR conflict cleanup.
+Implemented and continued the repo-level URAI Studio audit and enforcement layer requested in the master prompt. The work now includes Studio callable functions, Firebase security and index coverage, a static smoke test, required documentation artifacts, shared frontend contracts, callable-backed frontend controls, nested Studio route surfaces, a GitHub Actions audit workflow, Firebase Functions v2 callable compatibility hardening, frontend strict TypeScript / Next.js client-boundary hardening, shared Firebase client hardening, Studio registry/status hardening, system API/config hardening, and PR conflict cleanup.
 
 ## Files Changed or Added
 
@@ -17,7 +17,11 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 - `scripts/studio-smoke-test.js`
 - `package.json`
 - `.github/workflows/studio-audit.yml`
+- `apps/studio/app/api/system/health/route.ts`
 - `apps/studio/lib/firebaseClient.ts`
+- `apps/studio/lib/studio/config.ts`
+- `apps/studio/lib/studio/firebase.ts`
+- `apps/studio/lib/studio/integrations.ts`
 - `apps/studio/lib/studio/modules.ts`
 - `apps/studio/lib/studio/status.ts`
 - `apps/studio/lib/studio/systems.ts`
@@ -86,6 +90,14 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 - `apps/studio/lib/studio/status.ts` now exports explicit readiness and module status types, uses an `envValue` helper, and returns typed readiness/module summaries.
 - `apps/studio/lib/studio/systems.ts` now exports `SystemVisibility`, `systemBySlug`, `systemByRoute`, and `publicSystems()` helpers.
 - `scripts/studio-smoke-test.js` now validates the registry/status helper tokens in addition to Functions, rules, routes, frontend, and CI files.
+
+## System API Hardening Notes
+
+- `apps/studio/lib/studio/config.ts` now exports explicit `StudioConfig` and `StudioEnvironment` types and safely resolves configured environment values.
+- `apps/studio/lib/studio/firebase.ts` now exports typed `FirebaseDiagnostics`, including emulator visibility for Firestore, Auth, and Storage.
+- `apps/studio/lib/studio/integrations.ts` now exports typed integration diagnostics with configured/missing status and required flags.
+- `apps/studio/app/api/system/health/route.ts` now exports a force-dynamic no-store endpoint with an explicit `SystemHealthResponse`, returns `ok` from readiness, and responds with `503` when readiness blockers exist.
+- `scripts/studio-smoke-test.js` now validates config, Firebase diagnostics, integration diagnostics, and system health route hardening tokens.
 
 ## Firebase Collections Supported
 
@@ -169,4 +181,4 @@ firebase deploy --only firestore:rules,firestore:indexes,storage,functions,hosti
 
 ## Final Confidence Level
 
-82%. The backend contracts, Firebase security/index coverage, Functions v2 callable compatibility hardening, frontend callable surfaces, frontend strictness hardening, shared Firebase client hardening, Studio registry/status hardening, documentation, static smoke test, predeploy hook, CI workflow, and PR conflict cleanup are implemented. Confidence remains capped until install/build/test/functions verification passes in a network-enabled environment.
+83%. The backend contracts, Firebase security/index coverage, Functions v2 callable compatibility hardening, frontend callable surfaces, frontend strictness hardening, shared Firebase client hardening, Studio registry/status hardening, system API/config hardening, documentation, static smoke test, predeploy hook, CI workflow, and PR conflict cleanup are implemented. Confidence remains capped until install/build/test/functions verification passes in a network-enabled environment.
