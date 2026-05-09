@@ -6,7 +6,8 @@
  * Static mode validates required repo files, frontend route files, callables,
  * Firebase rules, Functions v2 callable usage, Studio registry helpers, system API helpers,
  * health/readiness endpoints, integration helpers, system contract endpoints, module lookup helpers,
- * route metadata, static page metadata, submission APIs, submission rules, Firebase docs, and CI workflow presence.
+ * route metadata, static page metadata, submission APIs, submission rules, Firebase docs, Storage rules,
+ * and CI workflow presence.
  */
 
 const fs = require('node:fs');
@@ -192,12 +193,19 @@ for (const lockedCollection of ['waitlist', 'contactMessages']) {
 requireTokens('FIREBASE.md', ['Public submission collections', 'waitlist', 'contactMessages', 'Composite index required: no', 'Client rule: `allow read, write: if false;`'], 'FIREBASE.md submission docs');
 
 const storageRules = fs.readFileSync(path.join(root, 'storage.rules'), 'utf8');
-for (const storagePath of ['user-uploads', 'generated', 'public/studio-assets']) {
+for (const storagePath of ['user-uploads', 'generated', 'public/studio-assets', 'studios/{studioId}/uploads', 'studios/{studioId}/outputs']) {
   if (!storageRules.includes(storagePath)) {
     console.error(`[urai-studio:smoke] storage.rules missing ${storagePath}`);
     process.exit(1);
   }
 }
+for (const token of ['request.auth.uid == uid', 'allow write: if false;', 'allow read: if true;', 'isStudioMember(studioId)']) {
+  if (!storageRules.includes(token)) {
+    console.error(`[urai-studio:smoke] storage.rules missing security token: ${token}`);
+    process.exit(1);
+  }
+}
+requireTokens('FIREBASE.md', ['Storage Paths and Rules', 'Write: denied from client SDK', 'Membership source: `memberships/{uid}_{studioId}`', 'Do not add client write access to `generated/**` or `public/studio-assets/**`'], 'FIREBASE.md storage docs');
 
 const workflow = fs.readFileSync(path.join(root, '.github/workflows/studio-audit.yml'), 'utf8');
 for (const command of ['pnpm lint', 'pnpm typecheck', 'pnpm test', 'pnpm build', 'pnpm --dir functions build', 'pnpm studio:smoke']) {
