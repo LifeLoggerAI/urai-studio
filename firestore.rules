@@ -163,5 +163,15 @@ service cloud.firestore {
       allow read, update, delete: if ownsExisting();
       allow create: if ownsIncoming();
     }
+
+    // Public forms are written only through trusted server routes using Firebase Admin.
+    // Client SDK access is denied to prevent scraping, enumeration, or direct writes.
+    match /waitlist/{id} {
+      allow read, write: if false;
+    }
+
+    match /contactMessages/{id} {
+      allow read, write: if false;
+    }
   }
 }
