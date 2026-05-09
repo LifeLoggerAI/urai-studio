@@ -8,3 +8,4 @@ export * from "./job-runner";
 export * from "./on-job-write";
 export * from "./approve-publish";
 export * from "./user-management";
+export * from "./studio-system";
