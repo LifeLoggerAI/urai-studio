@@ -14,7 +14,7 @@ check_status() {
   local expected="$2"
   local url="${HOST}${path}"
   local status
-  status="$(curl -sS -o /tmp/urai-smoke-body -w "%{http_code}" "$url")" || fail "request failed: $url"
+  status="$(curl -L -sS -o /tmp/urai-smoke-body -w "%{http_code}" "$url")" || fail "request failed: $url"
   if [ "$status" != "$expected" ]; then
     echo "--- response body for $url ---" >&2
     cat /tmp/urai-smoke-body >&2 || true
@@ -30,7 +30,7 @@ check_json_field() {
   local expected="$3"
   local url="${HOST}${path}"
   local value
-  value="$(curl -sS "$url" | node -e "let body='';process.stdin.on('data',d=>body+=d);process.stdin.on('end',()=>{const j=JSON.parse(body); const parts='${field}'.split('.'); let v=j; for (const p of parts) v=v?.[p]; process.stdout.write(String(v));})")" || fail "json check failed: $url $field"
+  value="$(curl -L -sS "$url" | node -e "let body='';process.stdin.on('data',d=>body+=d);process.stdin.on('end',()=>{const j=JSON.parse(body); const parts='${field}'.split('.'); let v=j; for (const p of parts) v=v?.[p]; process.stdout.write(String(v));})")" || fail "json check failed: $url $field"
   if [ "$value" != "$expected" ]; then
     fail "$url field $field was '$value', expected '$expected'"
   fi
@@ -80,11 +80,11 @@ else
 fi
 
 # Forms should reject obviously invalid submissions.
-invalid_waitlist_status="$(curl -sS -o /tmp/urai-smoke-waitlist -w "%{http_code}" -H 'content-type: application/json' -d '{"email":"not-an-email"}' "${HOST}/api/waitlist")" || fail "invalid waitlist request failed"
+invalid_waitlist_status="$(curl -L -sS -o /tmp/urai-smoke-waitlist -w "%{http_code}" -H 'content-type: application/json' -d '{"email":"not-an-email"}' "${HOST}/api/waitlist")" || fail "invalid waitlist request failed"
 [ "$invalid_waitlist_status" = "400" ] || fail "invalid waitlist returned $invalid_waitlist_status, expected 400"
 echo "[OK] /api/waitlist invalid email -> 400"
 
-invalid_contact_status="$(curl -sS -o /tmp/urai-smoke-contact -w "%{http_code}" -H 'content-type: application/json' -d '{"email":"bad","message":"short"}' "${HOST}/api/contact")" || fail "invalid contact request failed"
+invalid_contact_status="$(curl -L -sS -o /tmp/urai-smoke-contact -w "%{http_code}" -H 'content-type: application/json' -d '{"email":"bad","message":"short"}' "${HOST}/api/contact")" || fail "invalid contact request failed"
 [ "$invalid_contact_status" = "400" ] || fail "invalid contact returned $invalid_contact_status, expected 400"
 echo "[OK] /api/contact invalid input -> 400"
 

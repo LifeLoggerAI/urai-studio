@@ -3,11 +3,11 @@
   "private": true,
   "packageManager": "pnpm@9.7.0",
   "scripts": {
-    "build": "pnpm --filter ./apps/* --filter ./packages/* build",
+    "build": "pnpm --filter studio build",
     "dev": "pnpm --filter studio dev",
-    "lint": "pnpm --filter ./apps/* --filter ./packages/* lint",
-    "typecheck": "pnpm --filter ./apps/* --filter ./packages/* typecheck",
-    "test": "pnpm --filter ./apps/* --filter ./packages/* test",
+    "lint": "pnpm --filter studio lint",
+    "typecheck": "pnpm --filter studio typecheck",
+    "test": "pnpm --filter studio test",
     "smoke": "HOST=${HOST:-http://127.0.0.1:3000} bash scripts/smoke.sh",
     "release:check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "emulators": "firebase emulators:start",
@@ -19,5 +19,11 @@
     "prettier": "^3.2.5",
     "typescript": "^5.4.5",
     "ts-node": "^10.9.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "^18.3.1",
+      "react-dom": "^18.3.1"
+    }
   }
 }
