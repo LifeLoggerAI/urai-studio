@@ -10,7 +10,7 @@
     "test": "pnpm --filter studio test",
     "smoke": "HOST=${HOST:-http://127.0.0.1:3000} bash scripts/smoke.sh",
     "audit": "pnpm lint && pnpm typecheck && pnpm test",
-    "release:check": "pnpm audit && pnpm build",
+    "release:check": "pnpm run audit && pnpm build",
     "emulators": "firebase emulators:start",
     "seed:demo": "pnpm exec ts-node scripts/seed_demo_job.ts"
   },
