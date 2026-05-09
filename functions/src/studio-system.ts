@@ -1,10 +1,5 @@
-import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-
-const db = admin.firestore();
-const serverTimestamp = admin.firestore.FieldValue.serverTimestamp;
-
-type CallableContext = functions.https.CallableContext;
+import { HttpsError, onCall, type CallableRequest } from "firebase-functions/v2/https";
 
 type StudioMode = "demo" | "user" | "campaign" | "therapeutic" | "vr" | "social";
 
@@ -19,19 +14,45 @@ type StudioAssetType =
   | "model"
   | "other";
 
-function requireUid(context: CallableContext): string {
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
+type StudioData = Record<string, unknown>;
+
+type AuthenticatedRequest = CallableRequest<unknown> & {
+  auth: NonNullable<CallableRequest<unknown>["auth"]>;
+};
+
+function getDb(): admin.firestore.Firestore {
+  return admin.firestore();
+}
+
+function asRecord(value: unknown): StudioData {
+  return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as StudioData) : {};
+}
+
+function requireAuth(request: CallableRequest<unknown>): AuthenticatedRequest {
+  if (!request.auth) {
+    throw new HttpsError(
       "unauthenticated",
       "You must be authenticated to use URAI Studio callables."
     );
   }
 
-  return context.auth.uid;
+  return request as AuthenticatedRequest;
+}
+
+function requireUid(request: CallableRequest<unknown>): string {
+  return requireAuth(request).auth.uid;
 }
 
 function requireString(value: unknown, fallback: string): string {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
+}
+
+function optionalString(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function safeStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
 function safeMode(value: unknown): StudioMode {
@@ -56,41 +77,44 @@ function safeAssetType(value: unknown): StudioAssetType {
 
 function nowFields() {
   return {
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
 }
 
-function assertAdmin(context: CallableContext): void {
-  if (!context.auth?.token?.admin) {
-    throw new functions.https.HttpsError(
+function assertAdmin(request: CallableRequest<unknown>): void {
+  const authenticated = requireAuth(request);
+  if (authenticated.auth.token.admin !== true) {
+    throw new HttpsError(
       "permission-denied",
       "This URAI Studio action requires an admin custom claim."
     );
   }
 }
 
-export const ping = functions.https.onCall(async () => ({
+export const ping = onCall(async () => ({
   ok: true,
   service: "urai-studio",
   timestamp: new Date().toISOString(),
 }));
 
-export const createStudioProject = functions.https.onCall(async (data, context) => {
-  const uid = requireUid(context);
+export const createStudioProject = onCall(async (request) => {
+  const uid = requireUid(request);
+  const db = getDb();
+  const data = asRecord(request.data);
   const projectRef = db.collection("studioProjects").doc();
-  const title = requireString(data?.title, "Untitled Studio Project");
-  const mode = safeMode(data?.mode);
+  const title = requireString(data.title, "Untitled Studio Project");
+  const mode = safeMode(data.mode);
 
   await projectRef.set({
     id: projectRef.id,
     uid,
     title,
     mode,
-    sourceRefs: Array.isArray(data?.sourceRefs) ? data.sourceRefs : [],
+    sourceRefs: safeStringArray(data.sourceRefs),
     scenes: [],
-    narrationStyle: requireString(data?.narrationStyle, "calm cinematic narrator"),
-    visualStyle: requireString(data?.visualStyle, "symbolic cinematic memory system"),
+    narrationStyle: requireString(data.narrationStyle, "calm cinematic narrator"),
+    visualStyle: requireString(data.visualStyle, "symbolic cinematic memory system"),
     exportStatus: "draft",
     ...nowFields(),
   });
@@ -105,16 +129,26 @@ export const createStudioProject = functions.https.onCall(async (data, context) 
   return { ok: true, projectId: projectRef.id };
 });
 
-export const seedStudioDemo = functions.https.onCall(async (data, context) => {
-  const uid = requireUid(context);
+export const seedStudioDemo = onCall(async (request) => {
+  const uid = requireUid(request);
+  const db = getDb();
+  const data = asRecord(request.data);
   const projectRef = db.collection("studioProjects").doc();
-  const sceneRefs = [db.collection("studioScenes").doc(), db.collection("studioScenes").doc(), db.collection("studioScenes").doc()];
-  const assetRefs = [db.collection("studioAssets").doc(), db.collection("studioAssets").doc(), db.collection("studioAssets").doc()];
+  const sceneRefs = [
+    db.collection("studioScenes").doc(),
+    db.collection("studioScenes").doc(),
+    db.collection("studioScenes").doc(),
+  ];
+  const assetRefs = [
+    db.collection("studioAssets").doc(),
+    db.collection("studioAssets").doc(),
+    db.collection("studioAssets").doc(),
+  ];
   const scriptRef = db.collection("narratorScripts").doc();
   const scrollRef = db.collection("studioScrolls").doc();
   const exportRef = db.collection("exportJobs").doc();
   const batch = db.batch();
-  const title = requireString(data?.title, "URAI Studio Demo Scroll");
+  const title = requireString(data.title, "URAI Studio Demo Scroll");
 
   batch.set(projectRef, {
     id: projectRef.id,
@@ -211,11 +245,13 @@ export const seedStudioDemo = functions.https.onCall(async (data, context) => {
   };
 });
 
-export const generateStudioScript = functions.https.onCall(async (data, context) => {
-  const uid = requireUid(context);
-  const projectId = requireString(data?.projectId, "standalone");
-  const prompt = requireString(data?.prompt, "Generate a concise URAI Studio narrator script.");
-  const style = requireString(data?.style, "cinematic companion");
+export const generateStudioScript = onCall(async (request) => {
+  const uid = requireUid(request);
+  const db = getDb();
+  const data = asRecord(request.data);
+  const projectId = requireString(data.projectId, "standalone");
+  const prompt = requireString(data.prompt, "Generate a concise URAI Studio narrator script.");
+  const style = requireString(data.style, "cinematic companion");
   const scriptRef = db.collection("narratorScripts").doc();
   const body = `Style: ${style}\n\n${prompt}\n\nURAI Studio narration: We gather the signal, shape it into a scene, and let the story become visible.`;
 
@@ -223,21 +259,29 @@ export const generateStudioScript = functions.https.onCall(async (data, context)
     id: scriptRef.id,
     uid,
     projectId,
-    title: requireString(data?.title, "Generated Studio Narration"),
+    title: requireString(data.title, "Generated Studio Narration"),
     body,
     style,
     status: "ready",
     ...nowFields(),
   });
 
-  await db.collection("studioEvents").add({ uid, type: "script_generated", projectId, scriptId: scriptRef.id, ...nowFields() });
+  await db.collection("studioEvents").add({
+    uid,
+    type: "script_generated",
+    projectId,
+    scriptId: scriptRef.id,
+    ...nowFields(),
+  });
 
   return { ok: true, scriptId: scriptRef.id, body };
 });
 
-export const generateSceneNarration = functions.https.onCall(async (data, context) => {
-  const uid = requireUid(context);
-  const sceneId = requireString(data?.sceneId, "standalone-scene");
+export const generateSceneNarration = onCall(async (request) => {
+  const uid = requireUid(request);
+  const db = getDb();
+  const data = asRecord(request.data);
+  const sceneId = requireString(data.sceneId, "standalone-scene");
   const scriptRef = db.collection("narratorScripts").doc();
   const body = `Scene narration for ${sceneId}: a symbolic memory moves from raw signal into cinematic form.`;
 
@@ -245,10 +289,10 @@ export const generateSceneNarration = functions.https.onCall(async (data, contex
     id: scriptRef.id,
     uid,
     sceneId,
-    projectId: requireString(data?.projectId, "standalone"),
-    title: requireString(data?.title, "Generated Scene Narration"),
+    projectId: requireString(data.projectId, "standalone"),
+    title: requireString(data.title, "Generated Scene Narration"),
     body,
-    style: requireString(data?.style, "scene companion"),
+    style: requireString(data.style, "scene companion"),
     status: "ready",
     ...nowFields(),
   });
@@ -256,9 +300,11 @@ export const generateSceneNarration = functions.https.onCall(async (data, contex
   return { ok: true, scriptId: scriptRef.id, body };
 });
 
-export const generateSrtForProject = functions.https.onCall(async (data, context) => {
-  const uid = requireUid(context);
-  const projectId = requireString(data?.projectId, "standalone");
+export const generateSrtForProject = onCall(async (request) => {
+  const uid = requireUid(request);
+  const db = getDb();
+  const data = asRecord(request.data);
+  const projectId = requireString(data.projectId, "standalone");
   const subtitleRef = db.collection("subtitles").doc();
   const srt = "1\n00:00:00,000 --> 00:00:04,000\nURAI Studio begins the scroll.\n\n2\n00:00:04,000 --> 00:00:08,000\nThe signal becomes a scene.\n";
 
@@ -275,18 +321,20 @@ export const generateSrtForProject = functions.https.onCall(async (data, context
   return { ok: true, subtitleId: subtitleRef.id, srt };
 });
 
-export const generateCompanionIntro = functions.https.onCall(async (data, context) => {
-  const uid = requireUid(context);
+export const generateCompanionIntro = onCall(async (request) => {
+  const uid = requireUid(request);
+  const db = getDb();
+  const data = asRecord(request.data);
   const scriptRef = db.collection("narratorScripts").doc();
   const body = requireString(
-    data?.body,
+    data.body,
     "I am your URAI Studio companion. I will help turn signals, memories, and scenes into a coherent cinematic system."
   );
 
   await scriptRef.set({
     id: scriptRef.id,
     uid,
-    projectId: requireString(data?.projectId, "companion"),
+    projectId: requireString(data.projectId, "companion"),
     title: "Companion Intro",
     body,
     style: "companion intro",
@@ -297,40 +345,49 @@ export const generateCompanionIntro = functions.https.onCall(async (data, contex
   return { ok: true, scriptId: scriptRef.id, body };
 });
 
-export const createAssetJob = functions.https.onCall(async (data, context) => {
-  const uid = requireUid(context);
+export const createAssetJob = onCall(async (request) => {
+  const uid = requireUid(request);
+  const db = getDb();
+  const data = asRecord(request.data);
   const jobRef = db.collection("assetJobs").doc();
 
   await jobRef.set({
     id: jobRef.id,
     uid,
-    projectId: typeof data?.projectId === "string" ? data.projectId : null,
-    type: safeAssetType(data?.type),
+    projectId: optionalString(data.projectId),
+    type: safeAssetType(data.type),
     status: "queued",
-    prompt: requireString(data?.prompt, "URAI Studio asset generation job"),
+    prompt: requireString(data.prompt, "URAI Studio asset generation job"),
     outputAssetId: null,
     error: null,
     ...nowFields(),
   });
 
-  await db.collection("studioEvents").add({ uid, type: "asset_job_created", assetJobId: jobRef.id, ...nowFields() });
+  await db.collection("studioEvents").add({
+    uid,
+    type: "asset_job_created",
+    assetJobId: jobRef.id,
+    ...nowFields(),
+  });
 
   return { ok: true, assetJobId: jobRef.id };
 });
 
-export const markAssetReady = functions.https.onCall(async (data, context) => {
-  assertAdmin(context);
-  const assetId = requireString(data?.assetId, "");
+export const markAssetReady = onCall(async (request) => {
+  assertAdmin(request);
+  const db = getDb();
+  const data = asRecord(request.data);
+  const assetId = requireString(data.assetId, "");
   if (!assetId) {
-    throw new functions.https.HttpsError("invalid-argument", "assetId is required.");
+    throw new HttpsError("invalid-argument", "assetId is required.");
   }
 
   await db.collection("studioAssets").doc(assetId).set(
     {
       status: "ready",
-      publicUrl: typeof data?.publicUrl === "string" ? data.publicUrl : null,
-      thumbnailUrl: typeof data?.thumbnailUrl === "string" ? data.thumbnailUrl : null,
-      updatedAt: serverTimestamp(),
+      publicUrl: optionalString(data.publicUrl),
+      thumbnailUrl: optionalString(data.thumbnailUrl),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     },
     { merge: true }
   );
@@ -338,45 +395,56 @@ export const markAssetReady = functions.https.onCall(async (data, context) => {
   return { ok: true, assetId };
 });
 
-export const createExportJob = functions.https.onCall(async (data, context) => {
-  const uid = requireUid(context);
+export const createExportJob = onCall(async (request) => {
+  const uid = requireUid(request);
+  const db = getDb();
+  const data = asRecord(request.data);
   const exportRef = db.collection("exportJobs").doc();
-  const projectId = requireString(data?.projectId, "standalone");
+  const projectId = requireString(data.projectId, "standalone");
 
   await exportRef.set({
     id: exportRef.id,
     uid,
     projectId,
-    type: requireString(data?.type, "manifest"),
+    type: requireString(data.type, "manifest"),
     exportStatus: "queued",
     manifest: null,
     storagePath: `generated/${uid}/studio/exports/${exportRef.id}.json`,
     ...nowFields(),
   });
 
-  await db.collection("studioEvents").add({ uid, type: "export_created", projectId, exportJobId: exportRef.id, ...nowFields() });
+  await db.collection("studioEvents").add({
+    uid,
+    type: "export_created",
+    projectId,
+    exportJobId: exportRef.id,
+    ...nowFields(),
+  });
 
   return { ok: true, exportJobId: exportRef.id };
 });
 
-export const processExportJob = functions.https.onCall(async (data, context) => {
-  const uid = requireUid(context);
-  const exportJobId = requireString(data?.exportJobId, "");
+export const processExportJob = onCall(async (request) => {
+  const uid = requireUid(request);
+  const db = getDb();
+  const data = asRecord(request.data);
+  const exportJobId = requireString(data.exportJobId, "");
   if (!exportJobId) {
-    throw new functions.https.HttpsError("invalid-argument", "exportJobId is required.");
+    throw new HttpsError("invalid-argument", "exportJobId is required.");
   }
 
   const exportRef = db.collection("exportJobs").doc(exportJobId);
   const exportSnap = await exportRef.get();
-  if (!exportSnap.exists || exportSnap.data()?.uid !== uid) {
-    throw new functions.https.HttpsError("not-found", "Export job not found for this user.");
+  const exportData = exportSnap.data();
+  if (!exportSnap.exists || exportData?.uid !== uid) {
+    throw new HttpsError("not-found", "Export job not found for this user.");
   }
 
   const manifest = {
     service: "urai-studio",
     exportJobId,
     generatedAt: new Date().toISOString(),
-    projectId: exportSnap.data()?.projectId ?? null,
+    projectId: exportData.projectId ?? null,
     formats: ["scroll-json", "storyboard-markdown", "srt", "asset-manifest", "capcut-scene-list"],
   };
 
@@ -384,7 +452,7 @@ export const processExportJob = functions.https.onCall(async (data, context) => 
     {
       exportStatus: "ready",
       manifest,
-      updatedAt: serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     },
     { merge: true }
   );
@@ -394,24 +462,27 @@ export const processExportJob = functions.https.onCall(async (data, context) => 
   return { ok: true, exportJobId, manifest };
 });
 
-export const getExportJobStatus = functions.https.onCall(async (data, context) => {
-  const uid = requireUid(context);
-  const exportJobId = requireString(data?.exportJobId, "");
+export const getExportJobStatus = onCall(async (request) => {
+  const uid = requireUid(request);
+  const db = getDb();
+  const data = asRecord(request.data);
+  const exportJobId = requireString(data.exportJobId, "");
   if (!exportJobId) {
-    throw new functions.https.HttpsError("invalid-argument", "exportJobId is required.");
+    throw new HttpsError("invalid-argument", "exportJobId is required.");
   }
 
   const exportSnap = await db.collection("exportJobs").doc(exportJobId).get();
   if (!exportSnap.exists || exportSnap.data()?.uid !== uid) {
-    throw new functions.https.HttpsError("not-found", "Export job not found for this user.");
+    throw new HttpsError("not-found", "Export job not found for this user.");
   }
 
   return { ok: true, exportJob: exportSnap.data() };
 });
 
-export const getStudioDashboard = functions.https.onCall(async (_data, context) => {
-  const uid = requireUid(context);
-  const [projects, assets, scrolls, exports] = await Promise.all([
+export const getStudioDashboard = onCall(async (request) => {
+  const uid = requireUid(request);
+  const db = getDb();
+  const [projects, assets, scrolls, exportDocs] = await Promise.all([
     db.collection("studioProjects").where("uid", "==", uid).orderBy("createdAt", "desc").limit(10).get(),
     db.collection("studioAssets").where("uid", "==", uid).orderBy("createdAt", "desc").limit(10).get(),
     db.collection("studioScrolls").where("uid", "==", uid).orderBy("createdAt", "desc").limit(10).get(),
@@ -423,20 +494,22 @@ export const getStudioDashboard = functions.https.onCall(async (_data, context) 
     projects: projects.docs.map((doc) => doc.data()),
     assets: assets.docs.map((doc) => doc.data()),
     scrolls: scrolls.docs.map((doc) => doc.data()),
-    exports: exports.docs.map((doc) => doc.data()),
+    exports: exportDocs.docs.map((doc) => doc.data()),
   };
 });
 
-export const logStudioEvent = functions.https.onCall(async (data, context) => {
-  const uid = requireUid(context);
+export const logStudioEvent = onCall(async (request) => {
+  const uid = requireUid(request);
+  const db = getDb();
+  const data = asRecord(request.data);
   const eventRef = db.collection("studioEvents").doc();
 
   await eventRef.set({
     id: eventRef.id,
     uid,
-    type: requireString(data?.type, "studio_event"),
-    projectId: typeof data?.projectId === "string" ? data.projectId : null,
-    metadata: typeof data?.metadata === "object" && data.metadata !== null ? data.metadata : {},
+    type: requireString(data.type, "studio_event"),
+    projectId: optionalString(data.projectId),
+    metadata: asRecord(data.metadata),
     ...nowFields(),
   });
 
