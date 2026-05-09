@@ -6,7 +6,7 @@
  * Static mode validates required repo files, frontend route files, callables,
  * Firebase rules, Functions v2 callable usage, Studio registry helpers, system API helpers,
  * health/readiness endpoints, integration helpers, system contract endpoints, module lookup helpers,
- * route metadata, and CI workflow presence.
+ * route metadata, static page metadata, and CI workflow presence.
  */
 
 const fs = require('node:fs');
@@ -40,6 +40,15 @@ const requiredFiles = [
   'apps/studio/app/settings/page.tsx',
   'apps/studio/app/admin/page.tsx',
   'apps/studio/app/analytics/page.tsx',
+  'apps/studio/app/privacy/page.tsx',
+  'apps/studio/app/terms/page.tsx',
+  'apps/studio/app/contact/page.tsx',
+  'apps/studio/app/waitlist/page.tsx',
+  'apps/studio/app/waitlist/WaitlistForm.tsx',
+  'apps/studio/app/demo/page.tsx',
+  'apps/studio/app/status/page.tsx',
+  'apps/studio/app/systems/page.tsx',
+  'apps/studio/app/system/page.tsx',
   'apps/studio/lib/integrations/assetFactory.ts',
   'apps/studio/lib/studio/config.ts',
   'apps/studio/lib/studio/firebase.ts',
@@ -93,9 +102,19 @@ for (const [filePath, canonical] of [
   ['apps/studio/app/settings/page.tsx', '/settings'],
   ['apps/studio/app/admin/page.tsx', '/admin'],
   ['apps/studio/app/analytics/page.tsx', '/analytics'],
+  ['apps/studio/app/privacy/page.tsx', '/privacy'],
+  ['apps/studio/app/terms/page.tsx', '/terms'],
+  ['apps/studio/app/contact/page.tsx', '/contact'],
+  ['apps/studio/app/waitlist/page.tsx', '/waitlist'],
+  ['apps/studio/app/demo/page.tsx', '/demo'],
+  ['apps/studio/app/status/page.tsx', '/status'],
+  ['apps/studio/app/systems/page.tsx', '/system'],
 ]) {
   requireTokens(filePath, ['Metadata', 'metadata', `canonical: '${canonical}'`], `${canonical} page metadata`);
 }
+
+requireTokens('apps/studio/app/system/page.tsx', ['metadata', "'../systems/page'"], '/system alias page');
+requireTokens('apps/studio/app/waitlist/WaitlistForm.tsx', ["'use client'", 'WaitlistForm', 'FormEvent', "fetch('/api/waitlist'"], 'waitlist client form');
 
 requireTokens('apps/studio/lib/studio/config.ts', ['StudioConfig', 'studioConfig', 'siteUrl', 'firebaseProjectId'], 'config.ts');
 requireTokens('apps/studio/lib/studio/firebase.ts', ['FirebaseDiagnostics', 'firebaseDiagnostics', 'emulator', 'adminAvailable'], 'firebase.ts');
