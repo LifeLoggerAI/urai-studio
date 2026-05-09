@@ -11,10 +11,9 @@
     "smoke": "HOST=${HOST:-http://127.0.0.1:3000} bash scripts/smoke.sh",
     "studio:smoke": "node scripts/studio-smoke-test.js",
     "audit": "pnpm lint && pnpm typecheck && pnpm test && pnpm studio:smoke",
-    "release:check": "pnpm audit && pnpm build",
+    "release:check": "pnpm run audit && pnpm build",
     "emulators": "firebase emulators:start",
-    "seed:demo": "pnpm exec ts-node scripts/seed_demo_job.ts",
-    "lock:staging": "bash scripts/lock_urai_staging.sh"
+    "seed:demo": "pnpm exec ts-node scripts/seed_demo_job.ts"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",

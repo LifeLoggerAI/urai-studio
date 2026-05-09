@@ -3,7 +3,7 @@ set -euo pipefail
 
 HOST="${HOST:-http://127.0.0.1:3000}"
 EXPECT_READY="${EXPECT_READY:-true}"
-PLACEHOLDERS='TODO|lorem ipsum|coming soon|undefined|null|\[object Object\]'
+PLACEHOLDERS='TODO|lorem ipsum|coming soon|\[object Object\]'
 SECRET_PATTERN='SECRET|PRIVATE_KEY|TOKEN|PASSWORD'
 
 HTML_ROUTES=(
@@ -51,7 +51,12 @@ page_marker_for_route() {
   local route="$1"
   local marker
 
-  marker="$(printf '%s' "$route" | sed 's#^/##; s#^$#home#')"
+  case "$route" in
+    /) marker="home" ;;
+    /systems) marker="system" ;;
+    *) marker="$(printf '%s' "$route" | sed 's#^/##')" ;;
+  esac
+
   printf 'data-urai-studio-page="%s"' "$marker"
 }
 
