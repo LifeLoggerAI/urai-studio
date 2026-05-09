@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Implemented and continued the repo-level URAI Studio audit and enforcement layer requested in the master prompt. The work now includes Studio callable functions, Firebase security and index coverage, a static smoke test, required documentation artifacts, shared frontend contracts, callable-backed frontend controls, nested Studio route surfaces, a GitHub Actions audit workflow, and Firebase Functions v2 callable compatibility hardening.
+Implemented and continued the repo-level URAI Studio audit and enforcement layer requested in the master prompt. The work now includes Studio callable functions, Firebase security and index coverage, a static smoke test, required documentation artifacts, shared frontend contracts, callable-backed frontend controls, nested Studio route surfaces, a GitHub Actions audit workflow, Firebase Functions v2 callable compatibility hardening, and frontend strict TypeScript / Next.js client-boundary hardening.
 
 ## Files Changed or Added
 
@@ -62,6 +62,12 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 - CI workflow for install, lint, typecheck, tests, app build, functions build, and smoke check
 - Firebase Functions v2 `onCall` / `HttpsError` migration for `studio-system.ts`
 - Firebase Functions predeploy build hook
+
+## Frontend Strictness Notes
+
+- `apps/studio/lib/studio/firebase-client.ts` now scopes Firebase env reads inside helper functions, uses explicit callable payload typing, and converts typed optional inputs into callable payload objects.
+- `apps/studio/components/studio/StudioActionPanel.tsx` now has safer payload rendering, export job ID extraction, and disabled action buttons while calls are running.
+- `apps/studio/app/studio/assets/page.tsx` now uses type-only imports for asset types and `next/image` with `unoptimized` for external artifact previews.
 
 ## Firebase Collections Supported
 
@@ -145,4 +151,4 @@ firebase deploy --only firestore:rules,firestore:indexes,storage,functions,hosti
 
 ## Final Confidence Level
 
-78%. The backend contracts, Firebase security/index coverage, Functions v2 callable compatibility hardening, frontend callable surfaces, documentation, static smoke test, predeploy hook, and CI workflow are implemented. Confidence remains below 80% until install/build/test/functions verification passes in a network-enabled environment.
+79%. The backend contracts, Firebase security/index coverage, Functions v2 callable compatibility hardening, frontend callable surfaces, frontend strictness hardening, documentation, static smoke test, predeploy hook, and CI workflow are implemented. Confidence remains below 80% until install/build/test/functions verification passes in a network-enabled environment.
