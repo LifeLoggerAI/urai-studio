@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Implemented and continued the repo-level URAI Studio audit and enforcement layer requested in the master prompt. The work now includes Studio callable functions, Firebase security and index coverage, a static smoke test, required documentation artifacts, shared frontend contracts, callable-backed frontend controls, nested Studio route surfaces, a GitHub Actions audit workflow, Firebase Functions v2 callable compatibility hardening, frontend strict TypeScript / Next.js client-boundary hardening, shared Firebase client hardening, Studio registry/status hardening, system API/config hardening, health/readiness route hardening, Asset Factory integration hardening, system contract route hardening, module overview lookup hardening, public route metadata hardening, and PR conflict cleanup.
+Implemented and continued the repo-level URAI Studio audit and enforcement layer requested in the master prompt. The work now includes Studio callable functions, Firebase security and index coverage, a static smoke test, required documentation artifacts, shared frontend contracts, callable-backed frontend controls, nested Studio route surfaces, a GitHub Actions audit workflow, Firebase Functions v2 callable compatibility hardening, frontend strict TypeScript / Next.js client-boundary hardening, shared Firebase client hardening, Studio registry/status hardening, system API/config hardening, health/readiness route hardening, Asset Factory integration hardening, system contract route hardening, module overview lookup hardening, public route metadata hardening, legal/static page metadata hardening, waitlist client/server boundary hardening, and PR conflict cleanup.
 
 ## Files Changed or Added
 
@@ -32,6 +32,15 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 - `apps/studio/app/settings/page.tsx`
 - `apps/studio/app/admin/page.tsx`
 - `apps/studio/app/analytics/page.tsx`
+- `apps/studio/app/privacy/page.tsx`
+- `apps/studio/app/terms/page.tsx`
+- `apps/studio/app/contact/page.tsx`
+- `apps/studio/app/waitlist/page.tsx`
+- `apps/studio/app/waitlist/WaitlistForm.tsx`
+- `apps/studio/app/demo/page.tsx`
+- `apps/studio/app/status/page.tsx`
+- `apps/studio/app/systems/page.tsx`
+- `apps/studio/app/system/page.tsx`
 - `apps/studio/lib/integrations/assetFactory.ts`
 - `apps/studio/lib/firebaseClient.ts`
 - `apps/studio/lib/studio/config.ts`
@@ -84,6 +93,7 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 - `/studio/settings` configuration and release gate route
 - `/studio/xr` XR readiness route
 - `/dashboard`, `/usage`, `/integrations`, `/settings`, `/admin`, and `/analytics` public module routes with explicit metadata
+- `/privacy`, `/terms`, `/contact`, `/waitlist`, `/demo`, `/status`, `/systems`, and `/system` legal/static/public routes with canonical metadata coverage
 - `/api/system/manifest`, `/api/system/capabilities`, `/api/system/openapi`, and `/api/system/integrations` contract routes
 - CI workflow for install, lint, typecheck, tests, app build, functions build, and smoke check
 - Firebase Functions v2 `onCall` / `HttpsError` migration for `studio-system.ts`
@@ -103,6 +113,8 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 - `apps/studio/app/studio/assets/page.tsx` now uses type-only imports for asset types and `next/image` with `unoptimized` for external artifact previews.
 - `apps/studio/components/studio/ModuleOverviewPage.tsx` now uses typed module/system lookup maps with route and slug aliases for routes such as `/assets`, `/dashboard`, and `/usage`.
 - `apps/studio/app/dashboard/page.tsx`, `apps/studio/app/usage/page.tsx`, `apps/studio/app/integrations/page.tsx`, `apps/studio/app/settings/page.tsx`, `apps/studio/app/admin/page.tsx`, and `apps/studio/app/analytics/page.tsx` now export explicit Next metadata with canonical routes.
+- `apps/studio/app/waitlist/page.tsx` is now a server page with metadata, while `apps/studio/app/waitlist/WaitlistForm.tsx` owns the client-side form state and POST flow.
+- `apps/studio/app/privacy/page.tsx`, `apps/studio/app/terms/page.tsx`, and `apps/studio/app/demo/page.tsx` now include canonical metadata; `apps/studio/app/system/page.tsx` re-exports metadata from the systems page.
 
 ## Registry and Status Hardening Notes
 
@@ -128,7 +140,7 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 - `apps/studio/app/api/system/capabilities/route.ts` now returns typed capabilities plus module-to-capability mappings.
 - `apps/studio/app/api/system/openapi/route.ts` now returns the OpenAPI document through a force-dynamic no-store endpoint with a typed document shape.
 - `apps/studio/app/api/system/integrations/route.ts` was added and returns typed integration diagnostics, module integration metadata, missing required integrations, and a status-coded response.
-- `scripts/studio-smoke-test.js` now validates all four system contract routes and public route metadata/canonical declarations.
+- `scripts/studio-smoke-test.js` now validates all four system contract routes and public/static route metadata/canonical declarations.
 
 ## Firebase Collections Supported
 
@@ -212,4 +224,4 @@ firebase deploy --only firestore:rules,firestore:indexes,storage,functions,hosti
 
 ## Final Confidence Level
 
-87%. The backend contracts, Firebase security/index coverage, Functions v2 callable compatibility hardening, frontend callable surfaces, frontend strictness hardening, shared Firebase client hardening, Studio registry/status hardening, system API/config hardening, health/readiness route hardening, Asset Factory integration hardening, system contract route hardening, module overview hardening, route metadata hardening, documentation, static smoke test, predeploy hook, CI workflow, and PR conflict cleanup are implemented. Confidence remains capped until install/build/test/functions verification passes in a network-enabled environment.
+88%. The backend contracts, Firebase security/index coverage, Functions v2 callable compatibility hardening, frontend callable surfaces, frontend strictness hardening, shared Firebase client hardening, Studio registry/status hardening, system API/config hardening, health/readiness route hardening, Asset Factory integration hardening, system contract route hardening, module overview hardening, route metadata hardening, legal/static metadata hardening, waitlist client/server boundary hardening, documentation, static smoke test, predeploy hook, CI workflow, and PR conflict cleanup are implemented. Confidence remains capped until install/build/test/functions verification passes in a network-enabled environment.
