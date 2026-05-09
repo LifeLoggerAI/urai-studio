@@ -16,5 +16,19 @@ service firebase.storage {
     match /studios/{studioId}/outputs/{allPaths=**} {
       allow read, write: if isStudioMember(studioId);
     }
+
+    match /user-uploads/{uid}/studio/{allPaths=**} {
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    match /generated/{uid}/studio/{allPaths=**} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /public/studio-assets/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
   }
 }

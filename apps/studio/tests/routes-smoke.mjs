@@ -5,6 +5,12 @@ const routes = [
   '/systems',
   '/system',
   '/studio',
+  '/studio/projects',
+  '/studio/assets',
+  '/studio/exports',
+  '/studio/admin',
+  '/studio/settings',
+  '/studio/xr',
   '/motion',
   '/cinema',
   '/music',
@@ -28,10 +34,16 @@ const routes = [
   '/readyz',
 ];
 
-assert.equal(routes.length, 25);
+assert.equal(routes.length, 31);
 assert.ok(routes.includes('/systems'));
 assert.ok(routes.includes('/system'));
 assert.ok(routes.includes('/studio'));
+assert.ok(routes.includes('/studio/projects'));
+assert.ok(routes.includes('/studio/assets'));
+assert.ok(routes.includes('/studio/exports'));
+assert.ok(routes.includes('/studio/admin'));
+assert.ok(routes.includes('/studio/settings'));
+assert.ok(routes.includes('/studio/xr'));
 assert.ok(routes.includes('/privacy'));
 assert.ok(routes.includes('/terms'));
 assert.ok(routes.includes('/status'));

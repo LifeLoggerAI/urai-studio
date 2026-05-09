@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
-    "test": "node tests/modules.test.mjs && node tests/openapi.test.mjs",
+    "test": "node tests/modules.test.mjs && node tests/openapi.test.mjs && node tests/routes-smoke.mjs",
     "smoke:static": "node tests/routes-smoke.mjs",
     "smoke": "cd ../.. && HOST=${HOST:-http://127.0.0.1:3000} bash scripts/smoke.sh"
   },

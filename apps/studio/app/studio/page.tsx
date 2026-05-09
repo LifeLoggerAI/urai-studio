@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { SystemCard } from '@/components/site/SystemCard';
+import { StudioActionPanel } from '@/components/studio/StudioActionPanel';
 import { studioModules } from '@/lib/studio/modules';
 import { systems } from '@/lib/studio/systems';
 
@@ -51,16 +52,21 @@ export default function StudioPage() {
         <Link className="button button-primary" href="/generate">
           Start Intake
         </Link>
-        <Link className="button button-secondary" href="/jobs">
-          View Jobs
+        <Link className="button button-secondary" href="/studio/projects">
+          Studio Projects
         </Link>
-        <Link className="button button-secondary" href="/assets">
-          View Assets
+        <Link className="button button-secondary" href="/studio/assets">
+          Studio Assets
         </Link>
-        <Link className="button button-secondary" href="/status">
-          Check Status
+        <Link className="button button-secondary" href="/studio/exports">
+          Studio Exports
+        </Link>
+        <Link className="button button-secondary" href="/studio/admin">
+          Studio Admin
         </Link>
       </div>
+
+      <StudioActionPanel />
 
       <div className="section-heading">
         <p className="eyebrow">Creative systems</p>

@@ -9,6 +9,20 @@ export type GenerationJobStatus =
   | 'retrying'
   | 'cancelled';
 
+export type StudioArtifactKind = 'image' | 'video' | 'audio' | 'model' | 'subtitle' | 'script' | 'scroll' | 'scene' | 'other';
+
+export interface StudioGenerationRequest {
+  type: string;
+  prompt: string;
+  promptPreview?: string;
+}
+
+export interface StudioGenerationError {
+  code?: string;
+  message?: string;
+  retryable?: boolean;
+}
+
 export interface StudioGenerationJob {
   jobId: string;
   ownerId: string;
@@ -18,19 +32,37 @@ export interface StudioGenerationJob {
   model: string;
   artifactId?: string;
   manifestId?: string;
-  request: {
-    type: string;
-    prompt: string;
-    promptPreview?: string;
-  };
-  error?: {
-    code?: string;
-    message?: string;
-    retryable?: boolean;
-  } | null;
+  request: StudioGenerationRequest;
+  error?: StudioGenerationError | null;
   createdAt?: unknown;
   updatedAt?: unknown;
   completedAt?: unknown;
+}
+
+export interface StudioAssetArtifact {
+  artifactId: string;
+  type: StudioArtifactKind | string;
+  url: string;
+  storageUri: string;
+  mimeType: string;
+  width?: number;
+  height?: number;
+  durationMs?: number;
+}
+
+export interface StudioSpatialCompatibility {
+  supported: boolean;
+  type: string;
+  reason?: string;
+}
+
+export interface StudioCompatibility {
+  previewable: boolean;
+  downloadable: boolean;
+}
+
+export interface StudioSafetyReview {
+  status: string;
 }
 
 export interface StudioAssetManifest {
@@ -40,32 +72,14 @@ export interface StudioAssetManifest {
   ownerId: string;
   projectId: string;
   assetType: string;
-  artifacts: Array<{
-    artifactId: string;
-    type: string;
-    url: string;
-    storageUri: string;
-    mimeType: string;
-    width?: number;
-    height?: number;
-    durationMs?: number;
-  }>;
+  artifacts: StudioAssetArtifact[];
   provider: string;
   model: string;
   promptHash?: string;
   promptPreview: string;
-  spatialCompatibility: {
-    supported: boolean;
-    type: string;
-    reason?: string;
-  };
-  studioCompatibility?: {
-    previewable: boolean;
-    downloadable: boolean;
-  };
-  safetyReview?: {
-    status: string;
-  };
+  spatialCompatibility: StudioSpatialCompatibility;
+  studioCompatibility?: StudioCompatibility;
+  safetyReview?: StudioSafetyReview;
   createdAt?: unknown;
   updatedAt?: unknown;
 }
