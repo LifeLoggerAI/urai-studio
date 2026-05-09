@@ -4,10 +4,25 @@ import { HeroVisual } from '@/components/site/HeroVisual';
 import { studioModules } from '@/lib/studio/modules';
 
 const quickLinks = [
-  { label: 'Join Waitlist', href: '/waitlist', tone: 'primary' },
+  { label: 'Start a Project', href: '/contact', tone: 'primary' },
+  { label: 'Join Waitlist', href: '/waitlist', tone: 'secondary' },
   { label: 'View Demo', href: '/demo', tone: 'secondary' },
   { label: 'Explore Systems', href: '/systems', tone: 'secondary' },
-  { label: 'Start a Project', href: '/contact', tone: 'secondary' },
+];
+
+const pillars = [
+  {
+    title: 'Cinematic AI production',
+    body: 'Design, motion, video, voice, and symbolic visual systems built as one premium creative pipeline.',
+  },
+  {
+    title: 'URAI ecosystem native',
+    body: 'Studio surfaces connect to the wider URAI stack for memory maps, spatial storytelling, privacy, admin, and analytics.',
+  },
+  {
+    title: 'Launch-grade infrastructure',
+    body: 'Every public path is designed for real users: clear CTAs, safe fallbacks, SEO, contact capture, and deployable defaults.',
+  },
 ];
 
 const proofPoints = [
@@ -17,10 +32,12 @@ const proofPoints = [
 ];
 
 export default function Home() {
-  const featuredModules = studioModules.slice(0, 8);
+  const featuredModules = studioModules
+    .filter((module) => module.enabled && module.surfaceCategory !== 'operations')
+    .slice(0, 8);
 
   return (
-    <section className="landing-page">
+    <section className="landing-page" data-urai-studio-page="home">
       <div className="hero-section">
         <div className="hero-copy">
           <p className="eyebrow">URAI Studio · Cinematic AI systems</p>
@@ -54,39 +71,54 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="section-heading">
-        <p className="eyebrow">Ecosystem</p>
-        <h2>One studio spine for the URAI creative ecosystem.</h2>
-        <p>
-          The website now presents URAI Studio as a premium, trustworthy production hub rather than a prototype shell.
-        </p>
-      </div>
-
-      <div className="grid feature-grid">
-        {featuredModules.map((module) => (
-          <article key={module.id} className="card module-card">
-            <div className="module-card-header">
-              <Link href={module.route}>{module.name}</Link>
-              <span className={`badge badge-${module.status}`}>{module.status}</span>
-            </div>
-            <p>{module.description}</p>
+      <div className="grid three">
+        {pillars.map((pillar) => (
+          <article key={pillar.title} className="card elevated">
+            <h2>{pillar.title}</h2>
+            <p>{pillar.body}</p>
           </article>
         ))}
       </div>
 
-      <div className="launch-panel">
+      <section className="section-panel">
+        <div className="section-heading">
+          <p className="eyebrow">Studio modules</p>
+          <h2>One studio spine for the URAI creative ecosystem.</h2>
+          <p>
+            Public modules are wired to real routes with safe diagnostic states for integrations that require
+            credentials.
+          </p>
+        </div>
+
+        <div className="grid feature-grid">
+          {featuredModules.map((module) => (
+            <article key={module.id} className="card module-card">
+              <div className="module-card-header">
+                <Link href={module.route}>{module.name}</Link>
+                <span className={`badge badge-${module.status}`}>{module.status}</span>
+              </div>
+              <p>{module.description}</p>
+              <Link href={module.route} className="text-link">
+                Open {module.name}
+              </Link>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="launch-panel">
         <div>
-          <p className="eyebrow">Launch path</p>
+          <p className="eyebrow">www.uraistudio.com</p>
           <h2>Built for a polished public launch at www.uraistudio.com.</h2>
           <p>
-            Navigation, metadata, sitemap, robots, deployment environment documentation, and conversion CTAs
-            are now aligned around a production website foundation.
+            Navigation, metadata, sitemap, robots, deployment environment documentation, and conversion CTAs are
+            aligned around a production website foundation.
           </p>
         </div>
         <Link className="button button-primary" href="/contact">
           Discuss a Build
         </Link>
-      </div>
+      </section>
     </section>
   );
 }

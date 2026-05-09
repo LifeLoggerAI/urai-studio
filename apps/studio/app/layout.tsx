@@ -1,13 +1,13 @@
-import './globals.css';
-
 import type { Metadata, Viewport } from 'next';
+
+import './globals.css';
 
 import { Footer } from '@/components/site/Footer';
 import { Header } from '@/components/site/Header';
 import { StudioShell } from '@/components/studio/StudioShell';
 import { siteMeta } from '@/lib/studio/site';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.uraistudio.com';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? siteMeta.url ?? 'https://www.uraistudio.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     description: siteMeta.description,
     images: [
       {
-        url: '/og',
+        url: siteMeta.ogImage ?? '/og',
         width: 1200,
         height: 630,
         alt: 'URAI Studio cinematic AI systems for memory, media, and spatial intelligence',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: siteMeta.title,
     description: siteMeta.description,
-    images: ['/og'],
+    images: [siteMeta.ogImage ?? '/og'],
   },
   robots: {
     index: true,
@@ -65,10 +65,16 @@ export const metadata: Metadata = {
       'max-video-preview': -1,
     },
   },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#05050a',
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#05070d',
   colorScheme: 'dark',
 };
 
@@ -78,7 +84,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Header />
         <StudioShell>
-          <main className="container">{children}</main>
+          <main className="container" id="main-content" tabIndex={-1}>
+            {children}
+          </main>
         </StudioShell>
         <Footer />
       </body>

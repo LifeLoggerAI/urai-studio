@@ -17,9 +17,17 @@ concurrency:
 
 jobs:
   verify-studio:
-    name: Typecheck, lint, test, and build studio
+    name: Typecheck, lint, test, build, and smoke studio
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+
+    env:
+      NEXT_PUBLIC_SITE_URL: https://www.uraistudio.com
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ci-placeholder
+      NEXT_PUBLIC_FIREBASE_APP_ID: ci-placeholder
+      FIREBASE_PROJECT_ID: ci-placeholder
+      FIREBASE_CLIENT_EMAIL: ci@example.com
+      FIREBASE_PRIVATE_KEY: ci-placeholder
 
     steps:
       - name: Checkout
@@ -37,21 +45,34 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck
-        run: pnpm --filter studio typecheck
+      - name: Release check
+        run: pnpm release:check
 
-      - name: Lint
-        run: pnpm --filter studio lint
+      - name: Static smoke declaration
+        run: pnpm --filter studio smoke:static
 
-      - name: Test
-        run: pnpm --filter studio test --if-present
+      - name: Start Studio server
+        run: |
+          pnpm --filter studio start > /tmp/urai-studio.log 2>&1 &
+          echo $! > /tmp/urai-studio.pid
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/healthz >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/urai-studio.log
+          exit 1
 
-      - name: Build
-        run: pnpm --filter studio build
+      - name: Runtime HTTP smoke
         env:
-          NEXT_PUBLIC_SITE_URL: https://www.uraistudio.com
-          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ci-placeholder
-          NEXT_PUBLIC_FIREBASE_APP_ID: ci-placeholder
-          FIREBASE_PROJECT_ID: ci-placeholder
-          FIREBASE_CLIENT_EMAIL: ci@example.com
-          FIREBASE_PRIVATE_KEY: ci-placeholder
+          HOST: http://127.0.0.1:3000
+          EXPECT_READY: "false"
+        run: bash scripts/smoke.sh
+
+      - name: Stop Studio server
+        if: always()
+        run: |
+          if [ -f /tmp/urai-studio.pid ]; then
+            kill $(cat /tmp/urai-studio.pid) || true
+          fi
