@@ -2,13 +2,14 @@
 
 ## Executive Summary
 
-Implemented and continued the repo-level URAI Studio audit and enforcement layer requested in the master prompt. The work now includes Studio callable functions, Firebase security and index coverage, a static smoke test, required documentation artifacts, shared frontend contracts, callable-backed frontend controls, nested Studio route surfaces, and a GitHub Actions audit workflow.
+Implemented and continued the repo-level URAI Studio audit and enforcement layer requested in the master prompt. The work now includes Studio callable functions, Firebase security and index coverage, a static smoke test, required documentation artifacts, shared frontend contracts, callable-backed frontend controls, nested Studio route surfaces, a GitHub Actions audit workflow, and Firebase Functions v2 callable compatibility hardening.
 
 ## Files Changed or Added
 
 - `functions/src/studio-system.ts`
 - `functions/src/index.ts`
 - `functions/package.json`
+- `firebase.json`
 - `firestore.rules`
 - `storage.rules`
 - `firestore.indexes.json`
@@ -59,6 +60,8 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 - `/studio/settings` configuration and release gate route
 - `/studio/xr` XR readiness route
 - CI workflow for install, lint, typecheck, tests, app build, functions build, and smoke check
+- Firebase Functions v2 `onCall` / `HttpsError` migration for `studio-system.ts`
+- Firebase Functions predeploy build hook
 
 ## Firebase Collections Supported
 
@@ -78,6 +81,10 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 - `remoteConfigMirror`
 - `xrSessions`
 - `vrSessions`
+
+## Functions Compatibility Notes
+
+`functions/src/studio-system.ts` now imports from `firebase-functions/v2/https` and uses `onCall`, `HttpsError`, and `CallableRequest`. The static smoke test rejects older v1 callable usage such as `functions.https.onCall` or `functions.https.HttpsError` inside this module.
 
 ## Tests Run
 
@@ -105,6 +112,7 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm --dir functions install --no-frozen-lockfile
 pnpm --dir functions build
 pnpm studio:smoke
 ```
@@ -137,4 +145,4 @@ firebase deploy --only firestore:rules,firestore:indexes,storage,functions,hosti
 
 ## Final Confidence Level
 
-75%. The backend contracts, Firebase security/index coverage, frontend callable surfaces, documentation, static smoke test, and CI workflow are implemented. Confidence remains below 80% until install/build/test/functions verification passes in a network-enabled environment.
+78%. The backend contracts, Firebase security/index coverage, Functions v2 callable compatibility hardening, frontend callable surfaces, documentation, static smoke test, predeploy hook, and CI workflow are implemented. Confidence remains below 80% until install/build/test/functions verification passes in a network-enabled environment.
