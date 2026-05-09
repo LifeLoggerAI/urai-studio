@@ -38,6 +38,10 @@ textarea:focus-visible {
   padding: 32px 24px 72px;
 }
 
+.container:focus {
+  outline: none;
+}
+
 .shell {
   display: flex;
   min-height: 100vh;
@@ -101,6 +105,22 @@ textarea:focus-visible {
 .header a,
 .footer a {
   color: #d9e6ff;
+}
+
+.skip-link {
+  left: 16px;
+  position: absolute;
+  top: -80px;
+  z-index: 100;
+  border-radius: 999px;
+  background: #d9e6ff;
+  color: #05070d !important;
+  font-weight: 700;
+  padding: 10px 14px;
+}
+
+.skip-link:focus {
+  top: 16px;
 }
 
 .header-cta {

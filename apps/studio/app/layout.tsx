@@ -78,7 +78,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Header />
         <StudioShell>
-          <main className="container">{children}</main>
+          <main className="container" id="main-content" tabIndex={-1}>
+            {children}
+          </main>
         </StudioShell>
         <Footer />
       </body>
