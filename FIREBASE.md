@@ -75,13 +75,29 @@ The public submission collections do not need composite indexes at this time:
 
 Do not add composite indexes for public submission collections unless a real dashboard/query path is implemented.
 
-## Storage Paths
+## Storage Paths and Rules
+
+`storage.rules` intentionally separates user-owned files, server-generated files, public marketing assets, and studio/team assets.
 
 - `user-uploads/{uid}/studio/**`
+  - Read/write: signed-in owner only where `request.auth.uid == uid`
+  - Use for direct user-owned upload flows.
 - `generated/{uid}/studio/**`
+  - Read: signed-in owner only
+  - Write: denied from client SDK
+  - Use for server/Admin-generated outputs only.
 - `public/studio-assets/**`
+  - Read: public
+  - Write: denied from client SDK
+  - Use for public/demo/marketing-safe Studio assets.
 - `studios/{studioId}/uploads/**`
+  - Read/write: signed-in Studio members only
+  - Membership source: `memberships/{uid}_{studioId}` document.
 - `studios/{studioId}/outputs/**`
+  - Read/write: signed-in Studio members only
+  - Membership source: `memberships/{uid}_{studioId}` document.
+
+Do not add client write access to `generated/**` or `public/studio-assets/**`. If generated output persistence is needed, write through Firebase Admin or a trusted backend job.
 
 ## Deploy Commands
 
