@@ -4,7 +4,7 @@
  * URAI Studio smoke test.
  *
  * Static mode validates required repo files, frontend route files, callables,
- * Firebase rules, and CI workflow presence. It is safe in CI and local shells.
+ * Firebase rules, Functions v2 callable usage, and CI workflow presence.
  */
 
 const fs = require('node:fs');
@@ -51,6 +51,19 @@ if (missing.length > 0) {
 }
 
 const functionSource = fs.readFileSync(path.join(root, 'functions/src/studio-system.ts'), 'utf8');
+if (!functionSource.includes('firebase-functions/v2/https')) {
+  console.error('[urai-studio:smoke] studio-system.ts must import Firebase Functions v2 https APIs.');
+  process.exit(1);
+}
+if (!functionSource.includes('onCall') || !functionSource.includes('HttpsError')) {
+  console.error('[urai-studio:smoke] studio-system.ts must use onCall and HttpsError.');
+  process.exit(1);
+}
+if (functionSource.includes('functions.https.onCall') || functionSource.includes('functions.https.HttpsError')) {
+  console.error('[urai-studio:smoke] studio-system.ts still contains v1 callable API usage.');
+  process.exit(1);
+}
+
 const requiredExports = [
   'ping',
   'createStudioProject',
