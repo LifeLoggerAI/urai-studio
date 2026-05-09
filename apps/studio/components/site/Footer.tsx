@@ -7,7 +7,8 @@ const footerLinks = [
   { label: 'Music', href: '/music' },
   { label: 'Visuals', href: '/visuals' },
   { label: 'Spatial', href: '/spatial' },
-  { label: 'Privacy', href: '/settings' },
+  { label: 'Privacy', href: '/privacy' },
+  { label: 'Terms', href: '/terms' },
   { label: 'Contact', href: '/contact' },
   { label: 'Status', href: '/status' },
 ];

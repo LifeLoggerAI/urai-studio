@@ -10,15 +10,16 @@
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
     "test": "node tests/modules.test.mjs && node tests/openapi.test.mjs",
-    "smoke": "node tests/routes-smoke.mjs"
+    "smoke:static": "node tests/routes-smoke.mjs",
+    "smoke": "cd ../.. && HOST=${HOST:-http://127.0.0.1:3000} bash scripts/smoke.sh"
   },
   "dependencies": {
     "@types/uuid": "^11.0.0",
     "firebase": "^10.14.1",
     "firebase-admin": "^13.6.0",
     "next": "16.1.6",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "stripe": "^17.0.0",
     "uuid": "^13.0.0",
     "sharp": "0.33.5"
