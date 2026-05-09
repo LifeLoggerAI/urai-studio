@@ -20,7 +20,7 @@ export default function Home() {
   const featuredModules = studioModules.slice(0, 8);
 
   return (
-    <section className="landing-page">
+    <section className="landing-page" data-urai-studio-page="home">
       <div className="hero-section">
         <div className="hero-copy">
           <p className="eyebrow">URAI Studio · Cinematic AI systems</p>
