@@ -1,201 +1,74 @@
-#!/usr/bin/env bash
-set -euo pipefail
+import { NextResponse } from 'next/server';
 
-HOST="${HOST:-http://127.0.0.1:3000}"
-EXPECT_READY="${EXPECT_READY:-true}"
+import { adminDb } from '@/lib/firebase-admin';
 
-HTML_ROUTES=(
-  /
-  /systems
-  /studio
-  /motion
-  /cinema
-  /music
-  /visuals
-  /spatial
-  /demo
-  /waitlist
-  /contact
-  /pricing
-  /about
-  /privacy
-  /terms
-  /status
-)
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const isProduction = process.env.NODE_ENV === 'production';
 
-API_ROUTES=(
-  /api/health
-  /api/system/health
-  /api/system/manifest
-  /api/system/capabilities
-  /api/system/integration-contract
-  /api/system/openapi
-  /healthz
-  /sitemap.xml
-  /robots.txt
-)
-
-echo "URAI Studio smoke host: ${HOST}"
-
-fail() {
-  echo "[FAIL] $*" >&2
-  exit 1
+function normalizeEmail(value: unknown) {
+  return typeof value === 'string' ? value.trim().toLowerCase() : '';
 }
 
-check_status() {
-  local path="$1"
-  local expected="$2"
-  local body
-  local status
-  local url="${HOST}${path}"
+function normalizeText(value: unknown, maxLength: number) {
+  return typeof value === 'string' ? value.trim().slice(0, maxLength) : '';
+}
 
-  body="$(mktemp)"
-  status="$(curl -L -sS -o "$body" -w "%{http_code}" "$url")" || {
-    rm -f "$body"
-    fail "request failed: $url"
+export async function POST(req: Request) {
+  const body = await req.json().catch(() => null);
+
+  const email = normalizeEmail(body?.email);
+  const name = normalizeText(body?.name, 120) || null;
+  const subject = normalizeText(body?.subject, 160) || 'URAI Studio contact request';
+  const message = normalizeText(body?.message, 4000);
+  const website = normalizeText(body?.website, 240);
+
+  if (website) {
+    return NextResponse.json(
+      { ok: false, error: 'bot_rejected' },
+      { status: 400 },
+    );
   }
 
-  if [ "$status" != "$expected" ]; then
-    echo "--- response body for $url ---" >&2
-    cat "$body" >&2 || true
-    echo >&2
-    rm -f "$body"
-    fail "$url returned $status, expected $expected"
-  fi
-
-  rm -f "$body"
-  echo "[OK] $path -> $status"
-}
-
-check_json_field() {
-  local path="$1"
-  local field="$2"
-  local expected="$3"
-  local url="${HOST}${path}"
-  local value
-
-  value="$(
-    curl -L -sS "$url" |
-      node -e "
-        let body = '';
-        process.stdin.on('data', d => body += d);
-        process.stdin.on('end', () => {
-          const j = JSON.parse(body);
-          const parts = '${field}'.split('.');
-          let v = j;
-          for (const p of parts) v = v?.[p];
-          process.stdout.write(String(v));
-        });
-      "
-  )" || fail "json check failed: $url $field"
-
-  if [ "$value" != "$expected" ]; then
-    fail "$url field $field was '$value', expected '$expected'"
-  fi
-
-  echo "[OK] $path $field=$expected"
-}
-
-check_html_route() {
-  local route="$1"
-  local body
-  local code
-  local marker=""
-
-  body="$(mktemp)"
-  code="$(curl -L -sS -o "$body" -w "%{http_code}" "${HOST}${route}")" || {
-    rm -f "$body"
-    fail "request failed: ${HOST}${route}"
+  if (!EMAIL_RE.test(email)) {
+    return NextResponse.json(
+      { ok: false, error: 'invalid_email', message: 'Please provide a valid email address.' },
+      { status: 400 },
+    );
   }
 
-  if [ "$code" != "200" ]; then
-    echo "--- response body for ${HOST}${route} ---" >&2
-    cat "$body" >&2 || true
-    echo >&2
-    rm -f "$body"
-    fail "${HOST}${route} returned $code, expected 200"
-  fi
+  if (message.length < 10) {
+    return NextResponse.json(
+      { ok: false, error: 'invalid_message', message: 'Please provide a message with at least 10 characters.' },
+      { status: 400 },
+    );
+  }
 
-  grep -qi '<title' "$body" || fail "$route missing <title>"
-  grep -qi 'name="viewport"' "$body" || fail "$route missing viewport meta"
-  grep -qi 'name="description"' "$body" || fail "$route missing description meta"
+  if (!adminDb) {
+    return NextResponse.json(
+      {
+        ok: !isProduction,
+        persisted: false,
+        error: 'persistence_unavailable',
+        message: isProduction
+          ? 'Contact persistence is unavailable. Submission was not stored.'
+          : 'Demo mode: request validated but not persisted because Firebase Admin is not configured.',
+      },
+      { status: isProduction ? 503 : 202 },
+    );
+  }
 
-  case "$route" in
-    /) marker='data-urai-studio-page="home"' ;;
-    /systems) marker='data-urai-studio-page="systems"' ;;
-    /studio) marker='data-urai-studio-page="studio"' ;;
-    /motion) marker='data-urai-studio-page="motion"' ;;
-    /cinema) marker='data-urai-studio-page="cinema"' ;;
-    /music) marker='data-urai-studio-page="music"' ;;
-    /visuals) marker='data-urai-studio-page="visuals"' ;;
-    /spatial) marker='data-urai-studio-page="spatial"' ;;
-    /demo) marker='data-urai-studio-page="demo"' ;;
-    /waitlist) marker='data-urai-studio-page="waitlist"' ;;
-    /contact) marker='data-urai-studio-page="contact"' ;;
-    /pricing) marker='data-urai-studio-page="pricing"' ;;
-    /about) marker='data-urai-studio-page="about"' ;;
-    /privacy) marker='data-urai-studio-page="privacy"' ;;
-    /terms) marker='data-urai-studio-page="terms"' ;;
-    /status) marker='data-urai-studio-page="status"' ;;
-  esac
+  await adminDb.collection('contactMessages').add({
+    email,
+    name,
+    subject,
+    message,
+    source: 'urai-studio',
+    createdAt: new Date().toISOString(),
+  });
 
-  if [ -n "$marker" ]; then
-    grep -q "$marker" "$body" || fail "$route missing marker: $marker"
-  fi
-
-  ! grep -Eiq 'TODO|lorem ipsum|coming soon|undefined|null|\[object Object\]' "$body" ||
-    fail "$route contains placeholder or invalid rendered content"
-
-  rm -f "$body"
-  echo "[OK] html $route"
+  return NextResponse.json({
+    ok: true,
+    persisted: true,
+    message: 'Thanks. Your message was received.',
+  });
 }
-
-for route in "${HTML_ROUTES[@]}"; do
-  check_html_route "$route"
-done
-
-for route in "${API_ROUTES[@]}"; do
-  check_status "$route" 200
-done
-
-check_json_field /api/system/health service urai-studio
-check_json_field /healthz type liveness
-
-if [ "$EXPECT_READY" = "true" ]; then
-  check_status /readyz 200
-  check_json_field /readyz ok true
-else
-  check_status /readyz 503
-fi
-
-invalid_waitlist_status="$(
-  curl -L -sS \
-    -o /tmp/urai-smoke-waitlist \
-    -w "%{http_code}" \
-    -H 'content-type: application/json' \
-    -d '{"email":"not-an-email"}' \
-    "${HOST}/api/waitlist"
-)" || fail "invalid waitlist request failed"
-
-[ "$invalid_waitlist_status" = "400" ] ||
-  fail "invalid waitlist returned $invalid_waitlist_status, expected 400"
-
-echo "[OK] /api/waitlist invalid email -> 400"
-
-invalid_contact_status="$(
-  curl -L -sS \
-    -o /tmp/urai-smoke-contact \
-    -w "%{http_code}" \
-    -H 'content-type: application/json' \
-    -d '{"email":"bad","message":"short"}' \
-    "${HOST}/api/contact"
-)" || fail "invalid contact request failed"
-
-[ "$invalid_contact_status" = "400" ] ||
-  fail "invalid contact returned $invalid_contact_status, expected 400"
-
-echo "[OK] /api/contact invalid input -> 400"
-
-rm -f /tmp/urai-smoke-waitlist /tmp/urai-smoke-contact
-
-echo "[PASS] URAI Studio smoke completed against ${HOST}"
