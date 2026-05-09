@@ -4,6 +4,9 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Privacy',
   description: 'Production-ready privacy overview for URAI Studio data, generated content, analytics, and integrations.',
+  alternates: {
+    canonical: '/privacy',
+  },
 };
 
 const sections = [
