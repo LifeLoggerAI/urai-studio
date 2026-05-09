@@ -1,14 +1,14 @@
 import Link from 'next/link';
 
 const nav = [
-  ['Studio', '/studio'],
-  ['Systems', '/systems'],
-  ['Motion', '/motion'],
-  ['Cinema', '/cinema'],
-  ['Spatial', '/spatial'],
-  ['Privacy', '/privacy'],
-  ['Demo', '/demo'],
-  ['Contact', '/contact'],
+  { label: 'Studio', href: '/studio' },
+  { label: 'Systems', href: '/systems' },
+  { label: 'Motion', href: '/motion' },
+  { label: 'Cinema', href: '/cinema' },
+  { label: 'Spatial', href: '/spatial' },
+  { label: 'Privacy', href: '/privacy' },
+  { label: 'Demo', href: '/demo' },
+  { label: 'Contact', href: '/contact' },
 ];
 
 export function Header() {
@@ -17,17 +17,20 @@ export function Header() {
       <Link href="#main-content" className="skip-link">
         Skip to content
       </Link>
+
       <Link href="/" className="logo" aria-label="URAI Studio home">
         <span className="logo-mark" aria-hidden="true" />
         URAI Studio
       </Link>
+
       <nav aria-label="Primary navigation">
-        {nav.map(([label, href]) => (
+        {nav.map(({ label, href }) => (
           <Link key={href} href={href}>
             {label}
           </Link>
         ))}
-        <Link href="/waitlist" className="nav-cta">
+
+        <Link href="/waitlist" className="nav-cta header-cta">
           Join Waitlist
         </Link>
       </nav>

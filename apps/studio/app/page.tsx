@@ -3,6 +3,13 @@ import Link from 'next/link';
 import { HeroVisual } from '@/components/site/HeroVisual';
 import { studioModules } from '@/lib/studio/modules';
 
+const quickLinks = [
+  { label: 'Start a Project', href: '/contact', tone: 'primary' },
+  { label: 'Join Waitlist', href: '/waitlist', tone: 'secondary' },
+  { label: 'View Demo', href: '/demo', tone: 'secondary' },
+  { label: 'Explore Systems', href: '/systems', tone: 'secondary' },
+];
+
 const pillars = [
   {
     title: 'Cinematic AI production',
@@ -18,35 +25,50 @@ const pillars = [
   },
 ];
 
-const quickLinks = [
-  ['Start a Project', '/contact'],
-  ['Join Waitlist', '/waitlist'],
-  ['View Demo', '/demo'],
-  ['Explore Systems', '/systems'],
+const proofPoints = [
+  'Cinematic AI-native interfaces',
+  'Privacy-first creative infrastructure',
+  'Production systems for motion, spatial, visual, and narrative workflows',
 ];
 
 export default function Home() {
-  const publicModules = studioModules.filter((module) => module.enabled && module.surfaceCategory !== 'operations').slice(0, 8);
+  const featuredModules = studioModules
+    .filter((module) => module.enabled && module.surfaceCategory !== 'operations')
+    .slice(0, 8);
 
   return (
-    <section className="stack-xl">
-      <div className="hero-grid">
-        <div className="stack-lg">
-          <p className="eyebrow">AI-native creative infrastructure</p>
-          <h1>Cinematic systems for media, memory, spatial storytelling, and intelligent creative operations.</h1>
-          <p className="lede">
-            URAI Studio is the premium production surface for the URAI ecosystem: a creative lab for symbolic visuals,
-            motion, cinema, music, spatial interfaces, and launch-ready AI experiences.
+    <section className="landing-page" data-urai-studio-page="home">
+      <div className="hero-section">
+        <div className="hero-copy">
+          <p className="eyebrow">URAI Studio · Cinematic AI systems</p>
+          <h1>Premium creative infrastructure for memory, media, and spatial intelligence.</h1>
+          <p className="hero-lede">
+            URAI Studio turns signals into story: production-grade tools for cinematic interfaces,
+            symbolic visual systems, spatial experiences, motion pipelines, and AI-native creative operations.
           </p>
-          <div className="button-row" aria-label="Primary calls to action">
-            {quickLinks.map(([label, href], index) => (
-              <Link className={index === 0 ? 'button button-primary' : 'button'} key={href} href={href}>
+
+          <div className="cta-row" aria-label="Primary calls to action">
+            {quickLinks.map(({ label, href, tone }) => (
+              <Link className={`button button-${tone}`} key={href} href={href}>
                 {label}
               </Link>
             ))}
           </div>
+
+          <div className="proof-strip" aria-label="Studio strengths">
+            {proofPoints.map((point) => (
+              <span key={point}>{point}</span>
+            ))}
+          </div>
         </div>
-        <HeroVisual />
+
+        <div className="hero-panel" aria-label="URAI Studio visual identity preview">
+          <HeroVisual />
+          <div className="hero-panel-copy">
+            <span>Live studio spine</span>
+            <strong>Motion · Cinema · Spatial · Visuals</strong>
+          </div>
+        </div>
       </div>
 
       <div className="grid three">
@@ -61,19 +83,21 @@ export default function Home() {
       <section className="section-panel">
         <div className="section-heading">
           <p className="eyebrow">Studio modules</p>
-          <h2>One studio lattice for every creative surface.</h2>
+          <h2>One studio spine for the URAI creative ecosystem.</h2>
           <p>
-            Public modules are wired to real routes with safe diagnostic states for integrations that require credentials.
+            Public modules are wired to real routes with safe diagnostic states for integrations that require
+            credentials.
           </p>
         </div>
-        <div className="grid">
-          {publicModules.map((module) => (
+
+        <div className="grid feature-grid">
+          {featuredModules.map((module) => (
             <article key={module.id} className="card module-card">
-              <div>
-                <p className="eyebrow">{module.owner}</p>
-                <h3>{module.name}</h3>
-                <p>{module.description}</p>
+              <div className="module-card-header">
+                <Link href={module.route}>{module.name}</Link>
+                <span className={`badge badge-${module.status}`}>{module.status}</span>
               </div>
+              <p>{module.description}</p>
               <Link href={module.route} className="text-link">
                 Open {module.name}
               </Link>
@@ -82,14 +106,17 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="cta-band">
+      <section className="launch-panel">
         <div>
           <p className="eyebrow">www.uraistudio.com</p>
-          <h2>Ready for a cinematic AI studio presence.</h2>
-          <p>Use the contact flow for project requests or the waitlist for early access updates.</p>
+          <h2>Built for a polished public launch at www.uraistudio.com.</h2>
+          <p>
+            Navigation, metadata, sitemap, robots, deployment environment documentation, and conversion CTAs are
+            aligned around a production website foundation.
+          </p>
         </div>
         <Link className="button button-primary" href="/contact">
-          Contact URAI Studio
+          Discuss a Build
         </Link>
       </section>
     </section>

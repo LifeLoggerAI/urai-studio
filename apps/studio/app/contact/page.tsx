@@ -8,8 +8,8 @@ export default function ContactPage() {
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setIsSubmitting(true);
     setMessage('');
+    setIsSubmitting(true);
 
     const form = event.currentTarget;
     const formData = new FormData(form);
@@ -30,7 +30,8 @@ export default function ContactPage() {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ email, name, projectType, message: body, website }),
     });
-    const result = await response.json().catch(() => ({ error: 'Unable to parse response.' }));
+
+    const result = await response.json().catch(() => ({ error: 'Unable to read the server response.' }));
 
     setIsSubmitting(false);
     setMessage(result.message || result.error || 'Thanks. Your request was received.');
@@ -38,25 +39,28 @@ export default function ContactPage() {
   }
 
   return (
-    <section className="stack-xl narrow-page">
+    <section className="narrow-page stack-xl">
       <div className="section-heading">
         <p className="eyebrow">Contact</p>
         <h1>Start a URAI Studio project.</h1>
         <p>
-          Share the creative system, website, motion package, cinematic demo, or spatial experience you want to build.
-          The form stores safely in Firebase when credentials are configured and returns a non-persistent fallback locally.
+          Share the creative system, website, motion package, cinematic demo, symbolic visual package, or spatial
+          experience you want to build. Firebase persistence is used when server credentials are configured; otherwise
+          local/demo environments return a safe fallback.
         </p>
       </div>
 
       <form onSubmit={submit} className="card form-card">
         <label>
           Name
-          <input name="name" autoComplete="name" placeholder="Adam Clamp" />
+          <input name="name" autoComplete="name" placeholder="Your name" />
         </label>
+
         <label>
           Email <span aria-hidden="true">*</span>
           <input name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
         </label>
+
         <label>
           Project type
           <select name="projectType" defaultValue="">
@@ -70,14 +74,18 @@ export default function ContactPage() {
             <option>URAI ecosystem integration</option>
           </select>
         </label>
+
         <label>
           Project note <span aria-hidden="true">*</span>
-          <textarea name="message" placeholder="Tell us what you want to build." required minLength={12} />
+          <textarea name="message" placeholder="Tell us what you want to build." minLength={12} required />
         </label>
+
         <input name="website" className="honeypot" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+
         <button className="button button-primary" type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Sending…' : 'Send project request'}
         </button>
+
         <p className="form-status" role="status" aria-live="polite">
           {message}
         </p>

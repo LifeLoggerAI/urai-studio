@@ -1,16 +1,18 @@
 {
   "name": "urai-studio-monorepo",
   "private": true,
-  "packageManager": "pnpm@9.5.0",
+  "packageManager": "pnpm@9.7.0",
   "scripts": {
-    "build": "pnpm --filter ./apps/* --filter ./packages/* build",
+    "build": "pnpm --filter studio build",
     "dev": "pnpm --filter studio dev",
-    "lint": "pnpm --filter ./apps/* --filter ./packages/* lint",
-    "typecheck": "pnpm --filter ./apps/* --filter ./packages/* typecheck",
-    "test": "pnpm --filter ./apps/* --filter ./packages/* test",
+    "lint": "pnpm --filter studio lint",
+    "typecheck": "pnpm --filter studio typecheck",
+    "test": "pnpm --filter studio test",
+    "smoke": "HOST=${HOST:-http://127.0.0.1:3000} bash scripts/smoke.sh",
+    "release:check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "emulators": "firebase emulators:start",
-    "seed:demo": "ts-node scripts/seed_demo_job.ts",
-    "lock:staging": "scripts/lock_urai_staging.sh"
+    "seed:demo": "pnpm exec ts-node scripts/seed_demo_job.ts",
+    "lock:staging": "bash scripts/lock_urai_staging.sh"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
