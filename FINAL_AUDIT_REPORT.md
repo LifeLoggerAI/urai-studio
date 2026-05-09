@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Implemented and continued the repo-level URAI Studio audit and enforcement layer requested in the master prompt. The work now includes Studio callable functions, Firebase security and index coverage, a static smoke test, required documentation artifacts, shared frontend contracts, callable-backed frontend controls, nested Studio route surfaces, a GitHub Actions audit workflow, Firebase Functions v2 callable compatibility hardening, frontend strict TypeScript / Next.js client-boundary hardening, shared Firebase client hardening, Studio registry/status hardening, system API/config hardening, and PR conflict cleanup.
+Implemented and continued the repo-level URAI Studio audit and enforcement layer requested in the master prompt. The work now includes Studio callable functions, Firebase security and index coverage, a static smoke test, required documentation artifacts, shared frontend contracts, callable-backed frontend controls, nested Studio route surfaces, a GitHub Actions audit workflow, Firebase Functions v2 callable compatibility hardening, frontend strict TypeScript / Next.js client-boundary hardening, shared Firebase client hardening, Studio registry/status hardening, system API/config hardening, health/readiness route hardening, Asset Factory integration hardening, and PR conflict cleanup.
 
 ## Files Changed or Added
 
@@ -17,7 +17,12 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 - `scripts/studio-smoke-test.js`
 - `package.json`
 - `.github/workflows/studio-audit.yml`
+- `apps/studio/app/api/health/route.ts`
 - `apps/studio/app/api/system/health/route.ts`
+- `apps/studio/app/api/integrations/asset-factory/health/route.ts`
+- `apps/studio/app/healthz/route.ts`
+- `apps/studio/app/readyz/route.ts`
+- `apps/studio/lib/integrations/assetFactory.ts`
 - `apps/studio/lib/firebaseClient.ts`
 - `apps/studio/lib/studio/config.ts`
 - `apps/studio/lib/studio/firebase.ts`
@@ -97,7 +102,10 @@ Implemented and continued the repo-level URAI Studio audit and enforcement layer
 - `apps/studio/lib/studio/firebase.ts` now exports typed `FirebaseDiagnostics`, including emulator visibility for Firestore, Auth, and Storage.
 - `apps/studio/lib/studio/integrations.ts` now exports typed integration diagnostics with configured/missing status and required flags.
 - `apps/studio/app/api/system/health/route.ts` now exports a force-dynamic no-store endpoint with an explicit `SystemHealthResponse`, returns `ok` from readiness, and responds with `503` when readiness blockers exist.
-- `scripts/studio-smoke-test.js` now validates config, Firebase diagnostics, integration diagnostics, and system health route hardening tokens.
+- `apps/studio/app/api/health/route.ts`, `apps/studio/app/healthz/route.ts`, and `apps/studio/app/readyz/route.ts` now export force-dynamic no-store responses with explicit response shapes.
+- `apps/studio/lib/integrations/assetFactory.ts` now has typed ping results, no-store fetches, timeout handling, URL normalization, and explicit health/manifest helpers.
+- `apps/studio/app/api/integrations/asset-factory/health/route.ts` now returns no-store status-coded health results based on Asset Factory reachability.
+- `scripts/studio-smoke-test.js` now validates config, Firebase diagnostics, integration diagnostics, health/readiness routes, Asset Factory integration, and system health route hardening tokens.
 
 ## Firebase Collections Supported
 
@@ -181,4 +189,4 @@ firebase deploy --only firestore:rules,firestore:indexes,storage,functions,hosti
 
 ## Final Confidence Level
 
-83%. The backend contracts, Firebase security/index coverage, Functions v2 callable compatibility hardening, frontend callable surfaces, frontend strictness hardening, shared Firebase client hardening, Studio registry/status hardening, system API/config hardening, documentation, static smoke test, predeploy hook, CI workflow, and PR conflict cleanup are implemented. Confidence remains capped until install/build/test/functions verification passes in a network-enabled environment.
+84%. The backend contracts, Firebase security/index coverage, Functions v2 callable compatibility hardening, frontend callable surfaces, frontend strictness hardening, shared Firebase client hardening, Studio registry/status hardening, system API/config hardening, health/readiness route hardening, Asset Factory integration hardening, documentation, static smoke test, predeploy hook, CI workflow, and PR conflict cleanup are implemented. Confidence remains capped until install/build/test/functions verification passes in a network-enabled environment.
