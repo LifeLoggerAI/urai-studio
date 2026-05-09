@@ -6,7 +6,7 @@
  * Static mode validates required repo files, frontend route files, callables,
  * Firebase rules, Functions v2 callable usage, Studio registry helpers, system API helpers,
  * health/readiness endpoints, integration helpers, system contract endpoints, module lookup helpers,
- * and CI workflow presence.
+ * route metadata, and CI workflow presence.
  */
 
 const fs = require('node:fs');
@@ -34,6 +34,12 @@ const requiredFiles = [
   'apps/studio/app/api/integrations/asset-factory/health/route.ts',
   'apps/studio/app/healthz/route.ts',
   'apps/studio/app/readyz/route.ts',
+  'apps/studio/app/dashboard/page.tsx',
+  'apps/studio/app/usage/page.tsx',
+  'apps/studio/app/integrations/page.tsx',
+  'apps/studio/app/settings/page.tsx',
+  'apps/studio/app/admin/page.tsx',
+  'apps/studio/app/analytics/page.tsx',
   'apps/studio/lib/integrations/assetFactory.ts',
   'apps/studio/lib/studio/config.ts',
   'apps/studio/lib/studio/firebase.ts',
@@ -78,6 +84,17 @@ function requireTokens(filePath, tokens, label) {
     }
   }
   return source;
+}
+
+for (const [filePath, canonical] of [
+  ['apps/studio/app/dashboard/page.tsx', '/dashboard'],
+  ['apps/studio/app/usage/page.tsx', '/usage'],
+  ['apps/studio/app/integrations/page.tsx', '/integrations'],
+  ['apps/studio/app/settings/page.tsx', '/settings'],
+  ['apps/studio/app/admin/page.tsx', '/admin'],
+  ['apps/studio/app/analytics/page.tsx', '/analytics'],
+]) {
+  requireTokens(filePath, ['Metadata', 'metadata', `canonical: '${canonical}'`], `${canonical} page metadata`);
 }
 
 requireTokens('apps/studio/lib/studio/config.ts', ['StudioConfig', 'studioConfig', 'siteUrl', 'firebaseProjectId'], 'config.ts');
