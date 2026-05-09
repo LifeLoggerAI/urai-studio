@@ -1,16 +1,38 @@
-export type SystemStatus='Live'|'Demo'|'Prototype'|'Internal'|'Planned';
-export interface SystemDef{ id:string; name:string; slug:string; status:SystemStatus; description:string; capabilities:string[]; dependencies:string[]; route:string; cta:string; visibility:'public'|'internal'; versionLane:string; relatedModule:string; }
-export const systems:SystemDef[]=[
-{id:'studio',name:'URAI Studio',slug:'studio',status:'Live',description:'Cinematic life interface and creative control surface.',capabilities:['module orchestration','life map storytelling'],dependencies:['privacy','admin'],route:'/studio',cta:'Explore Studio',visibility:'public',versionLane:'v1',relatedModule:'studio'},
+export type SystemStatus = 'Live' | 'Demo' | 'Prototype' | 'Internal' | 'Planned';
+export type SystemVisibility = 'public' | 'internal';
 
-{id:'asset-factory',name:'URAI Asset Factory',slug:'asset-factory',status:'Internal',description:'Asset generation orchestration bridge for studio modules.',capabilities:['job intake','manifest bridge'],dependencies:['studio'],route:'/asset-factory',cta:'Open Asset Factory',visibility:'public',versionLane:'v1',relatedModule:'asset-factory'},
-{id:'motion',name:'URAI Motion',slug:'motion',status:'Demo',description:'Motion language for memory bloom and scroll transitions.',capabilities:['timeline animation','export motion packs'],dependencies:['visuals'],route:'/motion',cta:'View Motion',visibility:'public',versionLane:'v1',relatedModule:'motion'},
-{id:'cinema',name:'URAI Cinema',slug:'cinema',status:'Demo',description:'Cinematic replay and weekly scroll films.',capabilities:['replay storyboards'],dependencies:['motion','music'],route:'/cinema',cta:'View Cinema',visibility:'public',versionLane:'v1',relatedModule:'cinema'},
-{id:'music',name:'URAI Music',slug:'music',status:'Prototype',description:'Narrator tone and ambient scoring system.',capabilities:['voice palette','ambient identity'],dependencies:['cinema'],route:'/music',cta:'View Music',visibility:'public',versionLane:'v1',relatedModule:'music'},
-{id:'visuals',name:'URAI Visuals',slug:'visuals',status:'Live',description:'Symbolic visual system, sky layers, and export packs.',capabilities:['brand lattice','asset exports'],dependencies:['studio'],route:'/visuals',cta:'View Visuals',visibility:'public',versionLane:'v1',relatedModule:'visuals'},
-{id:'spatial',name:'URAI Spatial',slug:'spatial',status:'Prototype',description:'Spatial storytelling roadmap for WebXR/AR/VR.',capabilities:['spatial prototypes'],dependencies:['studio'],route:'/spatial',cta:'View Spatial',visibility:'public',versionLane:'v1',relatedModule:'spatial'},
-{id:'privacy',name:'URAI Privacy',slug:'privacy',status:'Live',description:'Private by design controls and consent tiers.',capabilities:['consent controls','export/delete posture'],dependencies:[],route:'/privacy',cta:'Read Privacy',visibility:'public',versionLane:'v1',relatedModule:'privacy'},
-{id:'admin',name:'URAI Admin',slug:'admin',status:'Internal',description:'Operational controls and governance.',capabilities:['ops controls'],dependencies:['privacy'],route:'/admin',cta:'Admin Status',visibility:'public',versionLane:'v1',relatedModule:'admin'},
-{id:'foundation',name:'URAI Foundation',slug:'foundation',status:'Planned',description:'Research, governance, and long-horizon systems.',capabilities:['roadmap strategy'],dependencies:[],route:'/systems',cta:'Explore Foundation',visibility:'public',versionLane:'v1',relatedModule:'foundation'},
-{id:'labs',name:'URAI Labs LLC',slug:'labs',status:'Live',description:'Company and product stewardship.',capabilities:['product stewardship'],dependencies:[],route:'/contact',cta:'Contact URAI Labs',visibility:'public',versionLane:'v1',relatedModule:'labs'}
+export interface SystemDef {
+  id: string;
+  name: string;
+  slug: string;
+  status: SystemStatus;
+  description: string;
+  capabilities: string[];
+  dependencies: string[];
+  route: string;
+  cta: string;
+  visibility: SystemVisibility;
+  versionLane: string;
+  relatedModule: string;
+}
+
+export const systems: SystemDef[] = [
+  { id: 'studio', name: 'URAI Studio', slug: 'studio', status: 'Live', description: 'Cinematic life interface and creative control surface.', capabilities: ['module orchestration', 'life map storytelling'], dependencies: ['privacy', 'admin'], route: '/studio', cta: 'Explore Studio', visibility: 'public', versionLane: 'v1', relatedModule: 'studio' },
+  { id: 'asset-factory', name: 'URAI Asset Factory', slug: 'asset-factory', status: 'Internal', description: 'Asset generation orchestration bridge for studio modules.', capabilities: ['job intake', 'manifest bridge'], dependencies: ['studio'], route: '/asset-factory', cta: 'Open Asset Factory', visibility: 'public', versionLane: 'v1', relatedModule: 'asset-factory' },
+  { id: 'motion', name: 'URAI Motion', slug: 'motion', status: 'Demo', description: 'Motion language for memory bloom and scroll transitions.', capabilities: ['timeline animation', 'export motion packs'], dependencies: ['visuals'], route: '/motion', cta: 'View Motion', visibility: 'public', versionLane: 'v1', relatedModule: 'motion' },
+  { id: 'cinema', name: 'URAI Cinema', slug: 'cinema', status: 'Demo', description: 'Cinematic replay and weekly scroll films.', capabilities: ['replay storyboards'], dependencies: ['motion', 'music'], route: '/cinema', cta: 'View Cinema', visibility: 'public', versionLane: 'v1', relatedModule: 'cinema' },
+  { id: 'music', name: 'URAI Music', slug: 'music', status: 'Prototype', description: 'Narrator tone and ambient scoring system.', capabilities: ['voice palette', 'ambient identity'], dependencies: ['cinema'], route: '/music', cta: 'View Music', visibility: 'public', versionLane: 'v1', relatedModule: 'music' },
+  { id: 'visuals', name: 'URAI Visuals', slug: 'visuals', status: 'Live', description: 'Symbolic visual system, sky layers, and export packs.', capabilities: ['brand lattice', 'asset exports'], dependencies: ['studio'], route: '/visuals', cta: 'View Visuals', visibility: 'public', versionLane: 'v1', relatedModule: 'visuals' },
+  { id: 'spatial', name: 'URAI Spatial', slug: 'spatial', status: 'Prototype', description: 'Spatial storytelling roadmap for WebXR/AR/VR.', capabilities: ['spatial prototypes'], dependencies: ['studio'], route: '/spatial', cta: 'View Spatial', visibility: 'public', versionLane: 'v1', relatedModule: 'spatial' },
+  { id: 'privacy', name: 'URAI Privacy', slug: 'privacy', status: 'Live', description: 'Private by design controls and consent tiers.', capabilities: ['consent controls', 'export/delete posture'], dependencies: [], route: '/privacy', cta: 'Read Privacy', visibility: 'public', versionLane: 'v1', relatedModule: 'privacy' },
+  { id: 'admin', name: 'URAI Admin', slug: 'admin', status: 'Internal', description: 'Operational controls and governance.', capabilities: ['ops controls'], dependencies: ['privacy'], route: '/admin', cta: 'Admin Status', visibility: 'public', versionLane: 'v1', relatedModule: 'admin' },
+  { id: 'foundation', name: 'URAI Foundation', slug: 'foundation', status: 'Planned', description: 'Research, governance, and long-horizon systems.', capabilities: ['roadmap strategy'], dependencies: [], route: '/systems', cta: 'Explore Foundation', visibility: 'public', versionLane: 'v1', relatedModule: 'foundation' },
+  { id: 'labs', name: 'URAI Labs LLC', slug: 'labs', status: 'Live', description: 'Company and product stewardship.', capabilities: ['product stewardship'], dependencies: [], route: '/contact', cta: 'Contact URAI Labs', visibility: 'public', versionLane: 'v1', relatedModule: 'labs' },
 ];
+
+export const systemBySlug: Record<string, SystemDef> = Object.fromEntries(systems.map((system) => [system.slug, system]));
+export const systemByRoute: Record<string, SystemDef> = Object.fromEntries(systems.map((system) => [system.route, system]));
+
+export function publicSystems(): SystemDef[] {
+  return systems.filter((system) => system.visibility === 'public');
+}
