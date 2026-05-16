@@ -1,0 +1,22 @@
+# Firebase App Hosting configuration for URAI Studio.
+# Keep this file at repo root so Firebase can detect the backend cleanly.
+
+runConfig:
+  runtime: nodejs20
+  cpu: 1
+  memoryMiB: 1024
+  minInstances: 0
+  maxInstances: 10
+  concurrency: 80
+
+env:
+  - variable: NEXT_PUBLIC_SITE_URL
+    value: https://www.uraistudio.com
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NODE_ENV
+    value: production
+    availability:
+      - BUILD
+      - RUNTIME
