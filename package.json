@@ -2,6 +2,10 @@
   "name": "urai-studio-monorepo",
   "private": true,
   "packageManager": "pnpm@9.7.0",
+  "engines": {
+    "node": ">=20 <21",
+    "pnpm": "9.7.0"
+  },
   "scripts": {
     "build": "pnpm --filter studio build",
     "dev": "pnpm --filter studio dev",
@@ -16,7 +20,10 @@
     "seed:demo": "pnpm exec ts-node scripts/seed_demo_job.ts",
     "studio:clean": "rm -rf node_modules apps/studio/node_modules packages/*/node_modules apps/studio/.next .next",
     "studio:reinstall": "corepack enable && corepack prepare pnpm@9.7.0 --activate && pnpm install --no-frozen-lockfile",
-    "studio:repair": "pnpm run studio:clean && pnpm run studio:reinstall && pnpm --filter studio build"
+    "studio:repair": "bash scripts/firebase-studio-repair.sh",
+    "studio:preview": "pnpm -C apps/studio dev -- --hostname 0.0.0.0 --port ${PORT:-3000}",
+    "firebase:preview": "pnpm run studio:preview",
+    "firebase:emulators": "npx firebase emulators:start --only auth,firestore,storage,functions,hosting"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
