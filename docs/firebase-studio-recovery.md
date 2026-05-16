@@ -9,6 +9,7 @@ Use this when Firebase Studio gets stuck on **Building environment** or asks you
 - Next app source: `apps/studio`
 - Firebase Hosting source: `apps/studio`
 - Cloud Functions source: `functions`
+- Optional Firebase App Hosting config at repo root: `apphosting.yaml`
 
 ## Recovery commands
 
@@ -19,6 +20,8 @@ git pull
 pnpm run studio:repair
 ```
 
+The repair script bootstraps pnpm if needed, removes stale install/build artifacts, installs dependencies, builds the Studio app, and runs the static smoke test.
+
 If the repair script fails before pnpm is available, run the bootstrap manually:
 
 ```bash
@@ -26,9 +29,16 @@ corepack enable || true
 corepack prepare pnpm@9.7.0 --activate || npm i -g pnpm@9.7.0
 pnpm install --no-frozen-lockfile
 pnpm --filter studio build
+pnpm studio:smoke
 ```
 
 ## Start the Studio preview
+
+```bash
+pnpm run studio:preview
+```
+
+Equivalent direct command:
 
 ```bash
 pnpm -C apps/studio dev -- --hostname 0.0.0.0 --port 3000
@@ -37,6 +47,12 @@ pnpm -C apps/studio dev -- --hostname 0.0.0.0 --port 3000
 ## Start emulators only after the workspace boots
 
 Do not auto-start Firebase emulators during workspace startup. Start them manually after install/build succeeds:
+
+```bash
+pnpm run firebase:emulators
+```
+
+Equivalent direct command:
 
 ```bash
 npx firebase emulators:start --only auth,firestore,storage,functions,hosting
