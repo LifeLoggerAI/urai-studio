@@ -4,6 +4,14 @@
 
 - Source: `apps/studio`
 - Config: `firebase.json`
+- Preview command in Firebase Studio: `pnpm run studio:preview`
+
+## App Hosting
+
+- Config: `apphosting.yaml`
+- Runtime: Node 20
+- Public site URL default: `https://www.uraistudio.com`
+- App Hosting environment variables should be configured in Firebase Console for production secrets.
 
 ## Functions
 
@@ -99,10 +107,28 @@ Do not add composite indexes for public submission collections unless a real das
 
 Do not add client write access to `generated/**` or `public/studio-assets/**`. If generated output persistence is needed, write through Firebase Admin or a trusted backend job.
 
+## Firebase Studio Recovery
+
+If Firebase Studio hangs while building the environment, use:
+
+```bash
+git pull
+pnpm run studio:repair
+pnpm run studio:preview
+```
+
+Start emulators only after the app build succeeds:
+
+```bash
+pnpm run firebase:emulators
+```
+
 ## Deploy Commands
 
 ```bash
-pnpm install
+corepack enable || true
+corepack prepare pnpm@9.7.0 --activate || npm i -g pnpm@9.7.0
+pnpm install --no-frozen-lockfile
 pnpm lint
 pnpm typecheck
 pnpm test
