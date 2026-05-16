@@ -9,12 +9,13 @@
     "lint": "eslint . --ext .ts,.tsx",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "react": "^18.3.1"
+  "peerDependencies": {
+    "react": ">=18.3.1 <20"
   },
   "devDependencies": {
-    "@types/react": "^18.3.1",
+    "@types/react": "^19.0.0",
     "eslint": "^8.57.0",
+    "react": "^19.0.0",
     "tsup": "^8.0.2",
     "typescript": "^5.4.5"
   }
