@@ -7,7 +7,7 @@
  * Firebase rules, Functions v2 callable usage, Studio registry helpers, system API helpers,
  * health/readiness endpoints, integration helpers, system contract endpoints, module lookup helpers,
  * route metadata, static page metadata, submission APIs, submission rules, Firebase docs, Storage rules,
- * and CI workflow presence.
+ * App Hosting config, Firebase Studio recovery scripts, and CI workflow presence.
  */
 
 const fs = require('node:fs');
@@ -18,14 +18,19 @@ const requiredFiles = [
   'package.json',
   'pnpm-workspace.yaml',
   'firebase.json',
+  'apphosting.yaml',
   'firestore.rules',
   'storage.rules',
   'firestore.indexes.json',
   '.env.example',
+  '.idx/dev.nix',
   '.github/workflows/studio-audit.yml',
+  'docs/firebase-studio-recovery.md',
+  'scripts/firebase-studio-repair.sh',
   'functions/package.json',
   'functions/src/index.ts',
   'functions/src/studio-system.ts',
+  'apps/studio/package.json',
   'apps/studio/app/api/contact/route.ts',
   'apps/studio/app/api/waitlist/route.ts',
   'apps/studio/app/api/health/route.ts',
@@ -115,6 +120,13 @@ for (const [filePath, canonical] of [
 ]) {
   requireTokens(filePath, ['Metadata', 'metadata', `canonical: '${canonical}'`], `${canonical} page metadata`);
 }
+
+requireTokens('package.json', ['"node": ">=20 <21"', '"pnpm": "9.7.0"', 'studio:repair', 'studio:preview', 'firebase:emulators', 'react-dom'], 'root package.json');
+requireTokens('apps/studio/package.json', ['"next": "16.1.6"', '"react": "^19.0.0"', '"react-dom": "^19.0.0"'], 'apps/studio package.json');
+requireTokens('apphosting.yaml', ['runtime: nodejs20', 'NEXT_PUBLIC_SITE_URL', 'maxInstances'], 'apphosting.yaml');
+requireTokens('.idx/dev.nix', ['nodejs_20', 'pnpm install --no-frozen-lockfile', 'pnpm -C apps/studio dev', 'workspace'], '.idx/dev.nix');
+requireTokens('scripts/firebase-studio-repair.sh', ['pnpm@9.7.0', 'pnpm install --no-frozen-lockfile', 'pnpm --filter studio build', 'pnpm studio:smoke'], 'firebase-studio-repair.sh');
+requireTokens('docs/firebase-studio-recovery.md', ['pnpm run studio:repair', 'pnpm run studio:preview', 'pnpm run firebase:emulators', 'apphosting.yaml'], 'Firebase Studio recovery docs');
 
 requireTokens('apps/studio/app/system/page.tsx', ['metadata', "'../systems/page'"], '/system alias page');
 requireTokens('apps/studio/app/waitlist/WaitlistForm.tsx', ["'use client'", 'WaitlistForm', 'FormEvent', "fetch('/api/waitlist'"], 'waitlist client form');
