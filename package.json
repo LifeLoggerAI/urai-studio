@@ -20,6 +20,7 @@
     "seed:demo": "pnpm exec ts-node scripts/seed_demo_job.ts",
     "studio:clean": "rm -rf node_modules apps/studio/node_modules packages/*/node_modules apps/studio/.next .next",
     "studio:reinstall": "corepack enable && corepack prepare pnpm@9.7.0 --activate && pnpm install --no-frozen-lockfile",
+    "studio:doctor": "bash scripts/firebase-studio-doctor.sh",
     "studio:repair": "bash scripts/firebase-studio-repair.sh",
     "studio:preview": "pnpm -C apps/studio dev -- --hostname 0.0.0.0 --port ${PORT:-3000}",
     "firebase:preview": "pnpm run studio:preview",
