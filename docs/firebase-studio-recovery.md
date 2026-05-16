@@ -42,6 +42,10 @@ Do not auto-start Firebase emulators during workspace startup. Start them manual
 npx firebase emulators:start --only auth,firestore,storage,functions,hosting
 ```
 
+## CI and lockfile note
+
+The audit workflow intentionally uses `pnpm install --no-frozen-lockfile` while the Studio workspace is being repaired. This lets pnpm regenerate dependency metadata after React/Next alignment changes. Once the workspace is stable, the workflow can be switched back to `pnpm install --frozen-lockfile`.
+
 ## Why this matters
 
 Firebase Studio can appear stuck when the workspace attempts to build the Nix environment, install packages, and start long-running emulators at the same time. This repo keeps the startup path small and moves emulators to an explicit manual step.
