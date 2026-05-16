@@ -5,7 +5,9 @@
 Run these from the repository root in a network-enabled checkout:
 
 ```bash
-pnpm install
+corepack enable || true
+corepack prepare pnpm@9.7.0 --activate || npm i -g pnpm@9.7.0
+pnpm install --no-frozen-lockfile
 pnpm lint
 pnpm typecheck
 pnpm test
@@ -17,6 +19,22 @@ pnpm studio:smoke
 
 Do not create `LOCK.md`, deploy broadly, or claim the repo is verified until the install, lint, typecheck, app build, functions build, tests, and smoke check pass in CI, Firebase Studio, Codespaces, or a local checkout.
 
+## Firebase Studio Recovery Test
+
+When validating Firebase Studio specifically, run:
+
+```bash
+git pull
+pnpm run studio:repair
+pnpm run studio:preview
+```
+
+Then open the preview and confirm `/`, `/healthz`, `/readyz`, `/api/health`, and `/status` respond. Start emulators only after the app builds:
+
+```bash
+pnpm run firebase:emulators
+```
+
 ## GitHub Actions
 
 The workflow at `.github/workflows/studio-audit.yml` is expected to run the audit chain for pushes and manual dispatch. Review workflow logs before release lock.
@@ -26,6 +44,10 @@ The workflow at `.github/workflows/studio-audit.yml` is expected to run the audi
 `pnpm studio:smoke` runs `scripts/studio-smoke-test.js` and verifies the static contract surface, including:
 
 - Required repository files exist.
+- Firebase Studio recovery files exist: `.idx/dev.nix`, `scripts/firebase-studio-repair.sh`, and `docs/firebase-studio-recovery.md`.
+- Firebase App Hosting config exists at `apphosting.yaml` and references Node 20 runtime.
+- Root package metadata pins Node 20, pnpm 9.7.0, React 19 overrides, and Studio recovery scripts.
+- Studio app package aligns Next 16 with React 19.
 - Studio callable exports exist in `functions/src/studio-system.ts`.
 - Functions use Firebase Functions v2 callable APIs.
 - `functions/src/index.ts` exports the Studio system module.
@@ -41,6 +63,7 @@ The workflow at `.github/workflows/studio-audit.yml` is expected to run the audi
 ## Manual QA Checklist
 
 - Open `/`.
+- Open `/healthz`, `/readyz`, `/api/health`, and `/status`.
 - Open `/studio`.
 - Open `/studio/projects`, `/studio/assets`, `/studio/exports`, `/studio/admin`, `/studio/settings`, and `/studio/xr`.
 - Open `/dashboard`, `/usage`, `/integrations`, `/settings`, `/admin`, `/analytics`.
