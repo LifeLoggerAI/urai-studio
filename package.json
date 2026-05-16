@@ -13,7 +13,10 @@
     "audit": "pnpm lint && pnpm typecheck && pnpm test && pnpm studio:smoke",
     "release:check": "pnpm run audit && pnpm build",
     "emulators": "firebase emulators:start",
-    "seed:demo": "pnpm exec ts-node scripts/seed_demo_job.ts"
+    "seed:demo": "pnpm exec ts-node scripts/seed_demo_job.ts",
+    "studio:clean": "rm -rf node_modules apps/studio/node_modules packages/*/node_modules apps/studio/.next .next",
+    "studio:reinstall": "corepack enable && corepack prepare pnpm@9.7.0 --activate && pnpm install --no-frozen-lockfile",
+    "studio:repair": "pnpm run studio:clean && pnpm run studio:reinstall && pnpm --filter studio build"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
@@ -23,8 +26,8 @@
   },
   "pnpm": {
     "overrides": {
-      "react": "^18.3.1",
-      "react-dom": "^18.3.1"
+      "react": "^19.0.0",
+      "react-dom": "^19.0.0"
     }
   }
 }
