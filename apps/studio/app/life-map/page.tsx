@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 
 import { ImmersiveLifeWorld } from '@/components/urai/ImmersiveLifeWorld';
 
+import './life-map.css';
+
 export const metadata: Metadata = {
   title: 'URAI Life Map',
   description:
