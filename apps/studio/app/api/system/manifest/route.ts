@@ -3,9 +3,9 @@ import { NextResponse } from 'next/server';
 import { studioConfig } from '@/lib/studio/config';
 import { firebaseDiagnostics } from '@/lib/studio/firebase';
 import { studioIntegrations, type StudioIntegrationDiagnostic } from '@/lib/studio/integrations';
-import { studioModules, type StudioModule } from '@/lib/studio/modules';
+import { studioModules } from '@/lib/studio/modules';
 import { readinessSummary } from '@/lib/studio/status';
-import { systemCapabilities, type SystemCapability } from '@/lib/studio/types';
+import { systemCapabilities, type StudioModule, type SystemCapability } from '@/lib/studio/types';
 
 export const dynamic = 'force-dynamic';
 
