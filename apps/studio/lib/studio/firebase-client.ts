@@ -59,7 +59,7 @@ export function getStudioAuth(): Auth | null {
 
 export function getStudioFunctions(): Functions | null {
   const app = getStudioFirebaseApp();
-  return app ? getFunctions(app) : null;
+  return app ? getFunctions(app, 'us-central1') : null;
 }
 
 export async function ensureStudioUser(): Promise<User> {
