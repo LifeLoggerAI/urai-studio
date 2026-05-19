@@ -31,6 +31,22 @@ function renderPayload(payload: unknown): string {
   }
 }
 
+function serializeError(error: unknown) {
+  if (typeof error !== 'object' || error === null) {
+    return { message: String(error) };
+  }
+
+  const record = error as Record<string, unknown>;
+  return {
+    name: record.name,
+    code: record.code,
+    message: record.message,
+    details: record.details,
+    stack: record.stack,
+    customData: record.customData,
+  };
+}
+
 export function StudioActionPanel() {
   const [state, setState] = useState<ActionState>(initialState);
   const [latestExportJobId, setLatestExportJobId] = useState<string>('');
@@ -43,9 +59,19 @@ export function StudioActionPanel() {
       if (exportJobId) setLatestExportJobId(exportJobId);
       setState({ status: 'success', message: `${label} completed.`, payload: result });
     } catch (error) {
+      const serializedError = serializeError(error);
+      const message = typeof serializedError.message === 'string' && serializedError.message.length > 0
+        ? serializedError.message
+        : `${label} failed with an unknown error.`;
       setState({
         status: 'error',
-        message: error instanceof Error ? error.message : `${label} failed with an unknown error.`,
+        message,
+        payload: {
+          label,
+          firebaseProjectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+          functionsRegion: 'us-central1',
+          error: serializedError,
+        },
       });
     }
   }
