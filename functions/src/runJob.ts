@@ -1,14 +1,21 @@
-
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { getStorage } from "firebase-admin/storage";
-import * as sharp from "sharp";
+import sharp from "sharp";
 import { promisify } from "util";
 import * as stream from "stream";
 
 const db = admin.firestore();
 const storage = getStorage();
 const pipeline = promisify(stream.pipeline);
+
+type OutputRecord = {
+  type: string;
+  storagePath: string;
+  bytes: string | number | undefined;
+  createdAt: admin.firestore.FieldValue;
+  url?: string;
+};
 
 export const runJob = functions.firestore.document("jobs/{jobId}").onUpdate(async (change, context) => {
   const jobData = change.after.data();
@@ -32,7 +39,7 @@ export const runJob = functions.firestore.document("jobs/{jobId}").onUpdate(asyn
 
     const bucket = storage.bucket();
     const inputFile = bucket.file(contentData.input.storagePath);
-    const outputs = [];
+    const outputs: OutputRecord[] = [];
 
     if (contentData.input.mimeType.startsWith("image/")) {
       const sizes = { thumb: 200, medium: 800, large: 1600 };
@@ -53,7 +60,6 @@ export const runJob = functions.firestore.document("jobs/{jobId}").onUpdate(asyn
         });
       }
     } else {
-      // For now, just copy unknown types
       const outputPath = `outputs/${ownerUid}/${contentId}/normalized`;
       const outputFile = bucket.file(outputPath);
       await inputFile.copy(outputFile);
@@ -67,9 +73,8 @@ export const runJob = functions.firestore.document("jobs/{jobId}").onUpdate(asyn
       });
     }
 
-    // Generate download URLs
     for (const output of outputs) {
-      const expires = Date.now() + 60 * 60 * 1000; // 1 hour
+      const expires = Date.now() + 60 * 60 * 1000;
       const [url] = await bucket.file(output.storagePath).getSignedUrl({
         action: "read",
         expires,
@@ -85,7 +90,7 @@ export const runJob = functions.firestore.document("jobs/{jobId}").onUpdate(asyn
 
     await jobRef.update({
       status: "succeeded",
-      result: { message: "Processing complete." },
+      result: { message: "Processing complete.", jobId: context.params.jobId },
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
   } catch (error) {
