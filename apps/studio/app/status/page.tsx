@@ -14,11 +14,11 @@ export const metadata: Metadata = {
 const publicSignals = [
   'Core website live',
   'System contracts available',
-  'Studio actions partially enabled',
+  'Studio actions feature-gated',
   'Generation backends feature-gated',
-  'Firebase connected',
+  'Firebase readiness surfaced',
   'Privacy contract available',
-  'Export formats ready',
+  'Export formats defined',
 ];
 
 export default function StatusPage() {
@@ -27,14 +27,14 @@ export default function StatusPage() {
       <p className="eyebrow">System status</p>
       <h1>URAI Studio diagnostics</h1>
       <p className="hero-lede">
-        Public status is intentionally confidence-focused. Raw Firebase payloads, callable traces, and operator diagnostics live in Studio Admin.
+        Public status is intentionally confidence-focused. Raw Firebase payloads, callable traces, and operator diagnostics stay gated away from public visitors.
       </p>
 
       <div className="grid three">
         <article className="card status-operational">
           <p className="eyebrow">Health</p>
-          <h2>Operational</h2>
-          <p>Core public website, status routes, system contracts, and integration surfaces are deployed.</p>
+          <h2>Public shell online</h2>
+          <p>Core public website, status routes, system contracts, and integration surfaces are available without claiming unconfigured backends are live.</p>
         </article>
         <article className="card">
           <p className="eyebrow">Service</p>
@@ -56,7 +56,7 @@ export default function StatusPage() {
         <div className="grid feature-grid">
           {publicSignals.map((signal) => (
             <article className="card proof-card" key={signal}>
-              <p className="eyebrow">Verified</p>
+              <p className="eyebrow">Visible</p>
               <h3>{signal}</h3>
             </article>
           ))}
