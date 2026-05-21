@@ -7,5 +7,6 @@ import './storage-rules.test.mjs';
 import './admin-gates.test.mjs';
 import './status-copy.test.mjs';
 import './legal-pages.test.mjs';
+import './module-copy.test.mjs';
 
 console.log('all Studio regression tests passed');
