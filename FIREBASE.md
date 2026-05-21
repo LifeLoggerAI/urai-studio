@@ -66,9 +66,24 @@ These collections are written only by trusted server routes through Firebase Adm
   - Duplicate check: `where('email', '==', email).limit(1)`
   - Composite index required: no
   - Client rule: `allow read, write: if false;`
-- `contactMessages`
+- `contactRequests`
   - Written by: `apps/studio/app/api/contact/route.ts`
   - Query pattern: write-only through server route
+  - Composite index required: no
+  - Client rule: `allow read, write: if false;`
+- `projectRequests`
+  - Written by: `apps/studio/app/api/contact/route.ts`
+  - Query pattern: write-only through server route
+  - Composite index required: no
+  - Client rule: `allow read, write: if false;`
+- `integrationRequests`
+  - Written by: `apps/studio/app/api/contact/route.ts`
+  - Query pattern: write-only through server route
+  - Composite index required: no
+  - Client rule: `allow read, write: if false;`
+- `contactMessages`
+  - Reserved compatibility collection for older contact flows.
+  - Query pattern: write-only through trusted server route if used.
   - Composite index required: no
   - Client rule: `allow read, write: if false;`
 
@@ -78,8 +93,8 @@ These collections are written only by trusted server routes through Firebase Adm
 
 The public submission collections do not need composite indexes at this time:
 
-- `waitlist` uses a single-field equality duplicate check on `email`, which Firestore supports through automatic single-field indexing.
-- `contactMessages` is write-only through the server route and currently has no client or dashboard query path.
+- `waitlist` uses a single-field equality duplicate check, which Firestore supports through automatic single-field indexing.
+- `contactRequests`, `projectRequests`, `integrationRequests`, and `contactMessages` are write-only through trusted server routes and currently have no client or dashboard query path.
 
 Do not add composite indexes for public submission collections unless a real dashboard/query path is implemented.
 
