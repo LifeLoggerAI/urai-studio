@@ -1,4 +1,3 @@
-
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { getStorage } from "firebase-admin/storage";
@@ -20,18 +19,18 @@ export const refreshOutputUrls = functions.https.onCall(async (data, context) =>
 
   const contentRef = db.collection("contentItems").doc(contentId);
   const contentDoc = await contentRef.get();
+  const contentData = contentDoc.data();
 
-  if (!contentDoc.exists || contentDoc.data()?.ownerUid !== uid) {
+  if (!contentDoc.exists || !contentData || contentData.ownerUid !== uid) {
     throw new functions.https.HttpsError("permission-denied", "You do not have permission to access this content.");
   }
 
-  const contentData = contentDoc.data();
-  const outputs = contentData.outputs || [];
+  const outputs = Array.isArray(contentData.outputs) ? contentData.outputs : [];
   const bucket = storage.bucket();
 
   for (const output of outputs) {
     if (output.storagePath) {
-      const expires = Date.now() + 60 * 60 * 1000; // 1 hour
+      const expires = Date.now() + 60 * 60 * 1000;
       const [url] = await bucket.file(output.storagePath).getSignedUrl({
         action: "read",
         expires,

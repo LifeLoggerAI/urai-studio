@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 
 import './globals.css';
-import './system.css';
+import './aaa-system-lock.css';
 
 import { Footer } from '@/components/site/Footer';
 import { Header } from '@/components/site/Header';

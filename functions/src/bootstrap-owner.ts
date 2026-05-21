@@ -4,7 +4,6 @@ import * as admin from "firebase-admin";
 export const bootstrapOwner = functions.https.onCall(async (data, context) => {
     const db = admin.firestore();
 
-    // Ensure the user is authenticated.
     if (!context.auth) {
         throw new functions.https.HttpsError(
             "unauthenticated",
@@ -12,8 +11,9 @@ export const bootstrapOwner = functions.https.onCall(async (data, context) => {
         );
     }
 
-    const uid = context.auth.uid;
-    const email = context.auth.token.email;
+    const auth = context.auth;
+    const uid = auth.uid;
+    const email = auth.token.email;
 
     const systemConfigRef = db.doc("system/config");
 
@@ -43,9 +43,8 @@ export const bootstrapOwner = functions.https.onCall(async (data, context) => {
         const userRef = db.doc(`studioUsers/${uid}`);
         const userDoc = await transaction.get(userRef);
 
-        // Create or update the user with the owner role.
         if (userDoc.exists) {
-            transaction.update(userRef, { 
+            transaction.update(userRef, {
                 role: "owner",
                 updatedAt: admin.firestore.FieldValue.serverTimestamp()
             });
@@ -53,7 +52,7 @@ export const bootstrapOwner = functions.https.onCall(async (data, context) => {
             transaction.set(userRef, {
                 uid,
                 email,
-                displayName: context.auth.token.name || "",
+                displayName: auth.token.name || "",
                 role: "owner",
                 disabled: false,
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -61,7 +60,6 @@ export const bootstrapOwner = functions.https.onCall(async (data, context) => {
             });
         }
 
-        // Disable future bootstrapping and log the action.
         transaction.update(systemConfigRef, { allowBootstrapOwner: false });
 
         const auditLogRef = db.collection("auditLogs").doc();
