@@ -34,6 +34,7 @@ for (const file of [
   'firestore.indexes.json',
   'functions/src/studio-system.ts',
   'apps/studio/app/page.tsx',
+  'apps/studio/app/admin/page.tsx',
   'apps/studio/app/studio/admin/page.tsx',
   'apps/studio/app/api/contact/route.ts',
   'apps/studio/app/api/waitlist/route.ts',
@@ -57,6 +58,7 @@ has('apps/studio/components/site/MagicalHomeExperience.tsx', [
 ]);
 
 has('apps/studio/app/page.tsx', ['MagicalHomeExperience', '<MagicalHomeExperience />']);
+has('apps/studio/app/admin/page.tsx', ['adminQaEnabled', 'NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLED', 'admin-gated']);
 has('apps/studio/app/studio/admin/page.tsx', ['adminQaEnabled', 'NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLED', 'studio-admin-gated']);
 has('apphosting.yaml', ['runtime: nodejs20', 'NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLED', 'value: "false"']);
 has('apps/studio/app/api/contact/route.ts', ["collection('contactRequests')", "collection('projectRequests')", "collection('integrationRequests')", 'bot_rejected', 'invalid_json']);
