@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { CinematicHero } from '@/components/site/CinematicHero';
+import { MagicalHomeExperience } from '@/components/site/MagicalHomeExperience';
 import { SystemOfSystemsMap } from '@/components/site/SystemOfSystemsMap';
 import { studioModules } from '@/lib/studio/modules';
 import { proofPoints } from '@/lib/studio/system-of-systems';
@@ -65,6 +66,8 @@ export default function Home() {
           </article>
         ))}
       </section>
+
+      <MagicalHomeExperience />
 
       <SystemOfSystemsMap compact />
 
