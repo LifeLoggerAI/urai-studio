@@ -8,7 +8,9 @@ assert.ok(statusPage.includes('Firebase readiness surfaced'), 'status page must 
 assert.ok(statusPage.includes('feature-gated instead of faking live status'), 'status page must describe feature-gated posture');
 assert.ok(statusPage.includes('/api/system/health'), 'status page must link to health JSON');
 assert.ok(statusPage.includes('/api/system/manifest'), 'status page must link to manifest JSON');
+assert.ok(statusPage.includes('Gated Admin QA'), 'status page must describe admin link as gated');
 assert.ok(!statusPage.includes('Firebase connected'), 'status page must not overclaim Firebase connection');
 assert.ok(!statusPage.includes('<h2>Operational</h2>'), 'status page must not label all systems operational by default');
+assert.ok(!statusPage.includes('Admin Diagnostics'), 'status page must not imply public admin diagnostics are open');
 
 console.log('public status copy coverage passed');
