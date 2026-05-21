@@ -20,7 +20,29 @@ const checks = [
   'Load Studio dashboard summary',
 ];
 
+function adminQaEnabled() {
+  return process.env.NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLED === 'true' || process.env.STUDIO_ADMIN_QA_ENABLED === 'true';
+}
+
 export default function StudioAdminPage() {
+  if (!adminQaEnabled()) {
+    return (
+      <section data-urai-studio-page="studio-admin-gated" className="page-stack">
+        <p className="eyebrow">Admin QA gated</p>
+        <h1>Studio verification panel is disabled for public demo mode.</h1>
+        <p className="hero-lede">
+          The operator QA surface is intentionally hidden unless Studio admin QA is enabled in the deployment environment.
+          Public visitors can still review the Studio system map, privacy posture, and safe module diagnostics.
+        </p>
+        <div className="cta-row">
+          <Link className="button button-primary" href="/studio">Open Studio overview</Link>
+          <Link className="button button-secondary" href="/status">View public status</Link>
+          <Link className="button button-secondary" href="/privacy">Read privacy</Link>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section data-urai-studio-page="studio-admin" className="page-stack">
       <p className="eyebrow">Admin QA</p>
