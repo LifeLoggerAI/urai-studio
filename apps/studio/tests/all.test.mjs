@@ -5,5 +5,6 @@ import './v1-home.test.mjs';
 import './public-submissions.test.mjs';
 import './storage-rules.test.mjs';
 import './admin-gates.test.mjs';
+import './status-copy.test.mjs';
 
 console.log('all Studio regression tests passed');
