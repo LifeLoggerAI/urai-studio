@@ -72,7 +72,7 @@ export default function StatusPage() {
         <Link className="button button-secondary" href="/api/system/manifest">Manifest JSON</Link>
         <Link className="button button-secondary" href="/api/system/capabilities">Capabilities JSON</Link>
         <Link className="button button-primary" href="/api/system/integration-contract">Integration Contract</Link>
-        <Link className="button button-secondary" href="/studio/admin">Admin Diagnostics</Link>
+        <Link className="button button-secondary" href="/studio/admin">Gated Admin QA</Link>
       </div>
     </section>
   );
