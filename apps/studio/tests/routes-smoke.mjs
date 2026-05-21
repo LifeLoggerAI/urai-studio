@@ -25,6 +25,7 @@ const routes = [
   '/dashboard',
   '/assets',
   '/integrations',
+  '/admin',
   '/jobs',
   '/settings',
   '/usage',
@@ -34,7 +35,7 @@ const routes = [
   '/readyz',
 ];
 
-assert.equal(routes.length, 31);
+assert.equal(routes.length, 32);
 assert.ok(routes.includes('/systems'));
 assert.ok(routes.includes('/system'));
 assert.ok(routes.includes('/studio'));
@@ -42,6 +43,7 @@ assert.ok(routes.includes('/studio/projects'));
 assert.ok(routes.includes('/studio/assets'));
 assert.ok(routes.includes('/studio/exports'));
 assert.ok(routes.includes('/studio/admin'));
+assert.ok(routes.includes('/admin'));
 assert.ok(routes.includes('/studio/settings'));
 assert.ok(routes.includes('/studio/xr'));
 assert.ok(routes.includes('/privacy'));
