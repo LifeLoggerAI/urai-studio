@@ -1,84 +1,79 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { proofPoints } from '@/lib/studio/system-of-systems';
+
 export const metadata: Metadata = {
   title: 'Status',
-  description: 'URAI Studio system status, health diagnostics, and production integration posture.',
+  description: 'URAI Studio public status, system confidence, and production integration posture.',
   alternates: {
     canonical: '/status',
   },
 };
 
-async function fetchHealth() {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/system/health`,
-      { cache: 'no-store' },
-    );
+const publicSignals = [
+  'Core website live',
+  'System contracts available',
+  'Studio actions feature-gated',
+  'Generation backends feature-gated',
+  'Firebase readiness surfaced',
+  'Privacy contract available',
+  'Export formats defined',
+];
 
-    if (!res.ok) {
-      return { ok: false, error: `health_http_${res.status}` };
-    }
-
-    return await res.json();
-  } catch {
-    return { ok: false, error: 'health_unavailable_in_current_runtime' };
-  }
-}
-
-export default async function StatusPage() {
-  const health = await fetchHealth();
-  const isHealthy = Boolean(health?.ok);
-
+export default function StatusPage() {
   return (
     <section data-urai-studio-page="status" className="page-stack">
       <p className="eyebrow">System status</p>
       <h1>URAI Studio diagnostics</h1>
       <p className="hero-lede">
-        Status is contract-driven and intentionally transparent. Unconfigured generation, billing,
-        auth, storage, or tenant systems should appear as limited or feature-gated instead of pretending to be live.
+        Public status is intentionally confidence-focused. Raw Firebase payloads, callable traces, and operator diagnostics stay gated away from public visitors.
       </p>
 
-      <div className="grid">
-        <article className="card">
+      <div className="grid three">
+        <article className="card status-operational">
           <p className="eyebrow">Health</p>
-          <h2>{isHealthy ? 'Operational' : 'Limited'}</h2>
-          <p>
-            {isHealthy
-              ? 'The health API responded successfully in the current runtime.'
-              : 'The health API could not be reached from this runtime. Verify deployment host, NEXT_PUBLIC_SITE_URL, and API routes.'}
-          </p>
+          <h2>Public shell online</h2>
+          <p>Core public website, status routes, system contracts, and integration surfaces are available without claiming unconfigured backends are live.</p>
         </article>
         <article className="card">
           <p className="eyebrow">Service</p>
-          <h2>{health?.service || 'urai-studio'}</h2>
-          <p>Primary public service identity for www.uraistudio.com and integration contract consumers.</p>
+          <h2>urai-studio</h2>
+          <p>Primary public service identity for URAI Studio and integration contract consumers.</p>
         </article>
         <article className="card">
-          <p className="eyebrow">Contracts</p>
-          <h2>Available</h2>
-          <p>Use manifest, capabilities, integration contract, and OpenAPI endpoints for release verification.</p>
+          <p className="eyebrow">Posture</p>
+          <h2>Transparent</h2>
+          <p>Unconfigured generation, billing, tenant, or external systems are feature-gated instead of faking live status.</p>
         </article>
+      </div>
+
+      <section className="section-panel">
+        <div className="section-heading">
+          <p className="eyebrow">Public signals</p>
+          <h2>Launch-facing system confidence.</h2>
+        </div>
+        <div className="grid feature-grid">
+          {publicSignals.map((signal) => (
+            <article className="card proof-card" key={signal}>
+              <p className="eyebrow">Visible</p>
+              <h3>{signal}</h3>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <div className="proof-strip" aria-label="System proof points">
+        {proofPoints.map((point) => <span key={point}>{point}</span>)}
       </div>
 
       <div className="cta-row" aria-label="Status API links">
-        <Link className="button button-secondary" href="/api/system/health">
-          Health JSON
-        </Link>
-        <Link className="button button-secondary" href="/api/system/manifest">
-          Manifest JSON
-        </Link>
-        <Link className="button button-secondary" href="/api/system/capabilities">
-          Capabilities JSON
-        </Link>
-        <Link className="button button-primary" href="/api/system/integration-contract">
-          Integration Contract
-        </Link>
+        <Link className="button button-secondary" href="/api/system/health">Health JSON</Link>
+        <Link className="button button-secondary" href="/api/system/manifest">Manifest JSON</Link>
+        <Link className="button button-secondary" href="/api/system/capabilities">Capabilities JSON</Link>
+        <Link className="button button-primary" href="/api/system/integration-contract">Integration Contract</Link>
+        <Link className="button button-secondary" href="/studio/admin">Gated Admin QA</Link>
       </div>
-
-      <pre className="card" aria-label="Raw health response">
-        {JSON.stringify(health, null, 2)}
-      </pre>
     </section>
   );
 }

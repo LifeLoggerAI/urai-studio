@@ -15,6 +15,11 @@ env:
     availability:
       - BUILD
       - RUNTIME
+  - variable: NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLED
+    value: "false"
+    availability:
+      - BUILD
+      - RUNTIME
   - variable: NODE_ENV
     value: production
     availability:

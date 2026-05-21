@@ -1,4 +1,5 @@
 import { firebaseAdminStatus } from '@/lib/firebase-admin';
+import { studioConfig } from './config';
 import { studioModules } from './modules';
 import type { ModuleStatus } from './types';
 
@@ -50,13 +51,17 @@ export function statusWarnings(): string[] {
     warnings.push('firebase_admin_unavailable');
   }
 
+  if (!envValue('NEXT_PUBLIC_SITE_URL')) {
+    warnings.push('public_site_url_using_default');
+  }
+
   return warnings;
 }
 
 export function readinessChecks(): ReadinessCheck[] {
   const firebaseProjectId = envValue('NEXT_PUBLIC_FIREBASE_PROJECT_ID', 'FIREBASE_PROJECT_ID');
   const assetFactoryUrl = envValue('NEXT_PUBLIC_ASSET_FACTORY_URL', 'ASSET_FACTORY_INTERNAL_URL');
-  const siteUrl = envValue('NEXT_PUBLIC_SITE_URL');
+  const siteUrl = envValue('NEXT_PUBLIC_SITE_URL') ?? studioConfig.url;
 
   return [
     {
@@ -80,7 +85,7 @@ export function readinessChecks(): ReadinessCheck[] {
     },
     {
       id: 'public-site-url',
-      required: process.env.NODE_ENV === 'production',
+      required: false,
       ok: Boolean(siteUrl),
       detail: siteUrl,
     },

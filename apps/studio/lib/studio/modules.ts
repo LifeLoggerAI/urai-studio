@@ -131,7 +131,7 @@ export const studioModules: StudioModule[] = [
   defineModule({
     id: 'admin',
     name: 'Admin',
-    description: 'Admin and controls.',
+    description: 'Gated admin surface for operator-only diagnostics and configuration state.',
     route: '/admin',
     status: 'fallback',
     hostingUrl: process.env.NEXT_PUBLIC_URAI_ADMIN_URL,
@@ -140,10 +140,10 @@ export const studioModules: StudioModule[] = [
     requiredEnv: ['NEXT_PUBLIC_URAI_ADMIN_URL'],
     owner: 'URAI Admin',
     surfaceCategory: 'operations',
-    inputs: ['control actions'],
-    outputs: ['config updates'],
+    inputs: ['gated diagnostics', 'operator review'],
+    outputs: ['read-only status', 'configuration posture'],
     capabilities: ['admin-control'],
-    fallbackBehavior: 'Read-only diagnostics when disconnected.',
+    fallbackBehavior: 'Show gated public-demo state unless admin QA is explicitly enabled.',
     productionCritical: true,
   }),
   defineModule({
