@@ -7,7 +7,8 @@
  * Firebase rules, Functions v2 callable usage, Studio registry helpers, system API helpers,
  * health/readiness endpoints, integration helpers, system contract endpoints, module lookup helpers,
  * route metadata, static page metadata, submission APIs, submission rules, Firebase docs, Storage rules,
- * App Hosting config, Firebase Studio recovery scripts, doctor script, and CI workflow presence.
+ * App Hosting config, Firebase Studio recovery scripts, doctor script, CI workflow presence,
+ * V1 magical home markers, and public-demo admin QA gating.
  */
 
 const fs = require('node:fs');
@@ -67,6 +68,7 @@ const requiredFiles = [
   'apps/studio/lib/studio/systems.ts',
   'apps/studio/lib/studio/types.ts',
   'apps/studio/lib/studio/firebase-client.ts',
+  'apps/studio/components/site/MagicalHomeExperience.tsx',
   'apps/studio/components/studio/ModuleOverviewPage.tsx',
   'apps/studio/components/studio/StudioActionPanel.tsx',
   'apps/studio/app/studio/page.tsx',
@@ -76,6 +78,7 @@ const requiredFiles = [
   'apps/studio/app/studio/admin/page.tsx',
   'apps/studio/app/studio/settings/page.tsx',
   'apps/studio/app/studio/xr/page.tsx',
+  'apps/studio/tests/v1-home.test.mjs',
   'README.md',
   'SYSTEM_MAP.md',
   'AUDIT_REPORT.md',
@@ -123,12 +126,28 @@ for (const [filePath, canonical] of [
 }
 
 requireTokens('package.json', ['"node": ">=20 <21"', '"pnpm": "9.7.0"', 'studio:doctor', 'studio:repair', 'studio:preview', 'firebase:emulators', 'react-dom'], 'root package.json');
-requireTokens('apps/studio/package.json', ['"next": "16.1.6"', '"react": "^19.0.0"', '"react-dom": "^19.0.0"'], 'apps/studio package.json');
-requireTokens('apphosting.yaml', ['runtime: nodejs20', 'NEXT_PUBLIC_SITE_URL', 'maxInstances'], 'apphosting.yaml');
+requireTokens('apps/studio/package.json', ['"next": "16.1.6"', '"react": "^19.0.0"', '"react-dom": "^19.0.0"', 'tests/v1-home.test.mjs'], 'apps/studio package.json');
+requireTokens('apphosting.yaml', ['runtime: nodejs20', 'NEXT_PUBLIC_SITE_URL', 'NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLED', 'value: "false"', 'maxInstances'], 'apphosting.yaml');
 requireTokens('.idx/dev.nix', ['nodejs_20', 'pnpm install --no-frozen-lockfile', 'pnpm -C apps/studio dev', 'workspace'], '.idx/dev.nix');
 requireTokens('scripts/firebase-studio-repair.sh', ['pnpm@9.7.0', 'pnpm install --no-frozen-lockfile', 'pnpm --filter studio build', 'pnpm studio:smoke'], 'firebase-studio-repair.sh');
 requireTokens('scripts/firebase-studio-doctor.sh', ['workspace doctor', 'node', 'pnpm', 'apphosting.yaml', 'studio:doctor'], 'firebase-studio-doctor.sh');
 requireTokens('docs/firebase-studio-recovery.md', ['pnpm run studio:repair', 'pnpm run studio:preview', 'pnpm run firebase:emulators', 'apphosting.yaml'], 'Firebase Studio recovery docs');
+
+requireTokens('apps/studio/app/page.tsx', ['MagicalHomeExperience', '<MagicalHomeExperience />'], 'home page V1 magical home wiring');
+requireTokens('apps/studio/components/site/MagicalHomeExperience.tsx', [
+  'data-urai-v1-home-experience',
+  'data-urai-v1-home-shell="ground-orb-chat"',
+  'data-urai-home-layer="ground-world"',
+  'data-urai-home-layer="orb-chat"',
+  'data-urai-home-layer="chat-interface"',
+  'data-urai-home-layer="sky-memory-stars"',
+  'data-urai-v1-field-reconstruction',
+  'relationship fields',
+  'recovery fields',
+  'emotional field reconstruction',
+  'asset factory handoff',
+], 'V1 magical home component');
+requireTokens('apps/studio/app/studio/admin/page.tsx', ['adminQaEnabled', 'NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLED', 'STUDIO_ADMIN_QA_ENABLED', 'studio-admin-gated'], 'Studio admin QA gate');
 
 requireTokens('apps/studio/app/system/page.tsx', ['metadata', "'../systems/page'"], '/system alias page');
 requireTokens('apps/studio/app/waitlist/WaitlistForm.tsx', ["'use client'", 'WaitlistForm', 'FormEvent', "fetch('/api/waitlist'"], 'waitlist client form');
