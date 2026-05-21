@@ -173,5 +173,17 @@ service cloud.firestore {
     match /contactMessages/{id} {
       allow read, write: if false;
     }
+
+    match /contactRequests/{id} {
+      allow read, write: if false;
+    }
+
+    match /projectRequests/{id} {
+      allow read, write: if false;
+    }
+
+    match /integrationRequests/{id} {
+      allow read, write: if false;
+    }
   }
 }
