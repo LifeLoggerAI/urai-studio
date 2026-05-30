@@ -8,9 +8,9 @@ import { studioModules } from '@/lib/studio/modules';
 import { proofPoints } from '@/lib/studio/system-of-systems';
 
 export const metadata: Metadata = {
-  title: 'URAI Studio',
+  title: 'URAI Studio | AI campaigns built to stop the scroll',
   description:
-    'The cinematic operating system for memory, media, spatial intelligence, symbolic visuals, motion, and URAI system-of-systems workflows.',
+    'URAI Studio builds cinematic AI campaigns, launch films, music visuals, product visuals, social content systems, and brand worlds for creators, founders, and teams.',
   alternates: {
     canonical: '/',
   },
@@ -18,25 +18,25 @@ export const metadata: Metadata = {
 
 const pathways = [
   {
-    title: 'Creator Scroll',
-    eyebrow: 'Creators',
-    body: 'Turn a project, memory world, brand story, or symbolic idea into a cinematic scroll with scripts, assets, and export-ready structure.',
+    title: 'Campaign Sprint',
+    eyebrow: 'Brands and founders',
+    body: 'Turn a product, launch, artist story, or brand world into a cinematic AI campaign with scripts, assets, scenes, and platform-ready structure.',
     href: '/contact',
     cta: 'Start a Project',
   },
   {
-    title: 'Studio System',
-    eyebrow: 'Teams',
-    body: 'Build repeatable production workflows across motion, cinema, visuals, music, asset generation, and launch operations.',
+    title: 'Content System',
+    eyebrow: 'Creators and teams',
+    body: 'Build a repeatable content engine across motion, cinema, visuals, music, asset generation, storyboards, and launch operations.',
     href: '/studio',
-    cta: 'Open Studio',
+    cta: 'Explore Studio System',
   },
   {
-    title: 'Enterprise Intelligence',
+    title: 'Custom Brand World',
     eyebrow: 'Partners',
-    body: 'Connect URAI Studio to private workflows, system contracts, admin diagnostics, data governance, and future licensing layers.',
+    body: 'Scope a larger creative system for campaigns, characters, visual identity, production workflows, and private collaboration paths after review.',
     href: '/contact',
-    cta: 'Contact URAI Labs',
+    cta: 'Contact URAI Studio',
   },
 ];
 
@@ -74,11 +74,11 @@ export default function Home() {
       <section className="section-panel">
         <div className="section-heading">
           <p className="eyebrow">Studio modules</p>
-          <h2>One studio spine for the URAI creative ecosystem.</h2>
+          <h2>One studio spine for cinematic AI production.</h2>
           <p>
-            URAI Studio is the professional creative layer for Asset Factory, Spatial, Motion, Cinema,
-            Music, Visuals, Analytics, Jobs, and future enterprise API workflows. Public modules are wired
-            to real routes with safe diagnostic states for integrations that require credentials.
+            URAI Studio is the commercial creative layer for campaigns, launch films, motion, cinema,
+            music, visuals, social assets, brand worlds, and production-ready exports. Public modules
+            stay client-facing; private diagnostics and operator tools stay out of the sales surface.
           </p>
         </div>
 
@@ -107,10 +107,10 @@ export default function Home() {
       <section className="section-panel">
         <div className="section-heading">
           <p className="eyebrow">Export center</p>
-          <h2>From signal to shareable cinematic package.</h2>
+          <h2>From idea to shareable cinematic package.</h2>
           <p>
-            URAI Studio is designed to prepare production artifacts for downstream publishing, editing,
-            spatial review, and investor-ready demos.
+            URAI Studio prepares campaign artifacts for editing, publishing, review, and handoff without
+            turning internal pipeline status into public launch claims.
           </p>
         </div>
         <div className="grid three">
@@ -118,7 +118,7 @@ export default function Home() {
             <article className="card" key={format}>
               <p className="eyebrow">Export format</p>
               <h3>{format}</h3>
-              <p>Included in the Studio export manifest contract when the export job is processed.</p>
+              <p>Included in the Studio export manifest when the project scope includes that deliverable.</p>
             </article>
           ))}
         </div>
@@ -127,7 +127,7 @@ export default function Home() {
       <section className="section-panel">
         <div className="section-heading">
           <p className="eyebrow">Creator pathways</p>
-          <h2>Choose the layer you want URAI Studio to build.</h2>
+          <h2>Choose the creative layer you want URAI Studio to build.</h2>
         </div>
         <div className="grid three">
           {pathways.map((pathway) => (
@@ -143,11 +143,11 @@ export default function Home() {
 
       <section className="launch-panel trust-band">
         <div>
-          <p className="eyebrow">Privacy-first creative infrastructure</p>
-          <h2>Consent is the operating layer.</h2>
+          <p className="eyebrow">Privacy-aware creative infrastructure</p>
+          <h2>Polished public work. Protected private operations.</h2>
           <p>
-            URAI Studio keeps public pages polished and confident while operator-level diagnostics, Firebase errors,
-            and callable payloads stay inside admin surfaces.
+            URAI Studio keeps client-facing pages clear and confident while operator diagnostics,
+            internal payloads, credentials, and private project details stay inside protected surfaces.
           </p>
         </div>
         <div className="cta-row">
