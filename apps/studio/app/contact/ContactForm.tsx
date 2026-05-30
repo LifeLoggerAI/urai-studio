@@ -4,7 +4,7 @@ import { type FormEvent, useState } from 'react';
 
 type ContactState = 'idle' | 'submitting' | 'success' | 'error';
 
-const systems = ['Studio', 'Asset Factory', 'Motion', 'Cinema', 'Music', 'Visuals', 'Spatial', 'Privacy', 'Admin', 'Foundation', 'Labs'];
+const systems = ['Campaign sprint', 'Launch film', 'Music visual', 'Product visual', 'Social content system', 'Brand world', 'AI character campaign', 'Monthly retainer'];
 
 export function ContactForm() {
   const [message, setMessage] = useState('');
@@ -13,7 +13,7 @@ export function ContactForm() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setState('submitting');
-    setMessage('Saving your request to the URAI Studio intake layer...');
+    setMessage('Saving your request to the URAI Studio project intake layer...');
 
     const form = event.currentTarget;
     const formData = new FormData(form);
@@ -27,12 +27,14 @@ export function ContactForm() {
       interestedSystems: formData.getAll('interestedSystems').map(String),
       message: String(formData.get('message') || '').trim(),
       website: String(formData.get('website') || '').trim(),
-      source: 'urai-studio-contact',
+      source: 'urai-studio-project-intake',
+      formType: 'project',
+      sourceDomain: 'uraistudio.com',
     };
 
     if (!payload.email.includes('@') || payload.message.length < 10 || payload.useCase.length < 4) {
       setState('error');
-      setMessage('Add a valid email, a clear use case, and a project message with at least 10 characters.');
+      setMessage('Add a valid email, a clear project type, and a project message with at least 10 characters.');
       return;
     }
 
@@ -48,7 +50,7 @@ export function ContactForm() {
       if (response.ok) form.reset();
     } catch {
       setState('error');
-      setMessage('The contact endpoint is not reachable in this runtime. Retry after deployment or contact URAI Labs directly.');
+      setMessage('The project intake endpoint is not reachable in this runtime. Retry after deployment or email URAI Studio directly.');
     }
   }
 
@@ -56,7 +58,7 @@ export function ContactForm() {
     <form onSubmit={submit} className="card form-card" aria-describedby="contact-status">
       <label htmlFor="contact-name">
         <strong>Name</strong>
-        <input id="contact-name" name="name" type="text" placeholder="Adam Clamp" autoComplete="name" />
+        <input id="contact-name" name="name" type="text" placeholder="Your name" autoComplete="name" />
       </label>
 
       <label htmlFor="contact-email">
@@ -65,19 +67,22 @@ export function ContactForm() {
       </label>
 
       <label htmlFor="contact-company">
-        <strong>Company</strong>
-        <input id="contact-company" name="company" type="text" placeholder="Company or project name" autoComplete="organization" />
+        <strong>Company or brand</strong>
+        <input id="contact-company" name="company" type="text" placeholder="Company, artist, product, or project name" autoComplete="organization" />
       </label>
 
       <label htmlFor="contact-use-case">
-        <strong>Use case</strong>
+        <strong>Project type</strong>
         <select id="contact-use-case" name="useCase" required defaultValue="">
-          <option value="" disabled>Select a path</option>
-          <option>Creator cinematic scroll</option>
-          <option>Studio production system</option>
-          <option>Enterprise integration</option>
-          <option>Investor or partner review</option>
-          <option>URAI system-of-systems build</option>
+          <option value="" disabled>Select a project type</option>
+          <option>Cinematic AI campaign</option>
+          <option>Launch film or trailer</option>
+          <option>Music visual</option>
+          <option>Product visual</option>
+          <option>Short-form social content system</option>
+          <option>Custom brand world</option>
+          <option>AI character campaign</option>
+          <option>Monthly creative retainer</option>
         </select>
       </label>
 
@@ -105,7 +110,7 @@ export function ContactForm() {
       </div>
 
       <fieldset className="system-checkboxes">
-        <legend>Interested systems</legend>
+        <legend>Interested deliverables</legend>
         <div className="checkbox-grid">
           {systems.map((system) => (
             <label key={system}>
@@ -122,7 +127,7 @@ export function ContactForm() {
           id="contact-message"
           name="message"
           rows={6}
-          placeholder="Tell us what you want URAI Studio to build, integrate, generate, replay, visualize, or launch."
+          placeholder="Tell us what you want URAI Studio to create, launch, visualize, package, or produce."
           required
         />
       </label>
@@ -133,11 +138,11 @@ export function ContactForm() {
       <input id="contact-website" name="website" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
 
       <button className="button button-primary" type="submit" disabled={state === 'submitting'}>
-        {state === 'submitting' ? 'Submitting...' : 'Start a Production Conversation'}
+        {state === 'submitting' ? 'Submitting...' : 'Start a Project'}
       </button>
 
       <p id="contact-status" role={state === 'error' ? 'alert' : 'status'} className={`form-status status-${state}`}>
-        {message || 'Use this form for production builds, demos, enterprise integrations, investor conversations, and launch support.'}
+        {message || 'Use this form for Studio projects, production packages, content systems, launch films, and brand worlds.'}
       </p>
     </form>
   );
