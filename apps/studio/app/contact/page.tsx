@@ -4,29 +4,29 @@ import Link from 'next/link';
 import { ContactForm } from './ContactForm';
 
 export const metadata: Metadata = {
-  title: 'Contact',
+  title: 'Start a Project | URAI Studio',
   description:
-    'Contact URAI Labs about URAI Studio production builds, generated media workflows, enterprise integration, and launch support.',
+    'Contact URAI Studio for cinematic AI campaigns, launch films, music visuals, product visuals, social content systems, and brand worlds.',
   alternates: {
     canonical: '/contact',
   },
 };
 
 const contactPaths = [
-  'Production website and launch readiness',
-  'Generated media and Asset Factory workflows',
-  'Spatial, motion, cinema, music, and visual systems',
-  'Enterprise API, admin, analytics, and privacy integration',
+  'Cinematic AI campaign or launch film',
+  'Short-form social content system',
+  'Music visual, product visual, or trailer',
+  'Custom brand world, character, or visual identity package',
 ];
 
 export default function ContactPage() {
   return (
     <section data-urai-studio-page="contact" className="page-stack narrow-page">
-      <p className="eyebrow">Contact</p>
-      <h1>Start a URAI Studio production conversation.</h1>
+      <p className="eyebrow">Project intake</p>
+      <h1>Start a URAI Studio project.</h1>
       <p className="hero-lede">
-        Use this page for serious build requests, launch support, enterprise integrations, and connecting URAI Studio
-        into the broader URAI system-of-systems.
+        Use this page for Studio work: campaigns, launch films, music visuals, product visuals,
+        social content systems, custom brand worlds, and production-ready creative packages.
       </p>
 
       <div className="grid feature-grid">
@@ -41,13 +41,14 @@ export default function ContactPage() {
           </article>
 
           <article className="card">
-            <h2>Before production activation</h2>
+            <h2>Before production starts</h2>
             <p>
-              Generation, billing, private asset downloads, dashboards, and admin workflows are activated only after
-              real environment variables, authentication, tenant scoping, and provider contracts are verified.
+              Scope, usage rights, assets, timeline, budget, and approval flow should be clear before
+              URAI Studio begins production. Internal diagnostics, credentials, and private project details
+              stay out of the public sales surface.
             </p>
-            <Link className="button button-secondary" href="/api/system/integration-contract">
-              Review Integration Contract
+            <Link className="button button-secondary" href="/privacy">
+              Review Privacy
             </Link>
           </article>
         </div>
