@@ -1,0 +1,46 @@
+name: URAI Production Verify
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  verify:
+    name: Build, test, and QA
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            corepack prepare pnpm@9.7.0 --activate
+            pnpm install --frozen-lockfile
+          else
+            npm install
+          fi
+
+      - name: Run typecheck
+        run: |
+          if [ -f pnpm-lock.yaml ]; then pnpm run typecheck --if-present; else npm run typecheck --if-present; fi
+
+      - name: Run tests
+        run: |
+          if [ -f pnpm-lock.yaml ]; then pnpm test --if-present; else npm test --if-present; fi
+
+      - name: Build
+        run: |
+          if [ -f pnpm-lock.yaml ]; then pnpm run build --if-present; else npm run build --if-present; fi
+
+      - name: Run URAI QA
+        run: |
+          if [ -f pnpm-lock.yaml ]; then pnpm run urai:qa --if-present; else npm run urai:qa --if-present; fi
