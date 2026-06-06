@@ -39,6 +39,7 @@ export async function GET() {
     '/api/system/manifest',
     '/api/system/capabilities',
     '/api/system/integration-contract',
+    '/api/system/urai-contract',
     '/api/system/openapi',
     '/healthz',
     '/readyz',
