@@ -27,6 +27,10 @@ function text(value: unknown, fallback = '') {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : fallback;
 }
 
+function optionalText(value: unknown) {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
+}
+
 function stringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string').map((item) => item.trim()).filter(Boolean) : [];
 }
@@ -61,8 +65,8 @@ export async function POST(req: Request) {
 
   const body = asRecord(rawBody);
   const prompt = text(body.prompt);
-  const projectId = text(body.projectId, undefined as unknown as string);
-  const briefId = text(body.briefId, undefined as unknown as string);
+  const projectId = optionalText(body.projectId);
+  const briefId = optionalText(body.briefId);
   const tenantId = text(body.tenantId, 'public-studio');
   const userId = text(body.userId, 'anonymous-studio-user');
   const kind = text(body.kind, 'asset_bundle_export') as StudioJobKind;
