@@ -35,6 +35,8 @@ API_ROUTES=(
   /api/system/capabilities
   /api/system/integration-contract
   /api/system/urai-contract
+  /api/studio/jobs
+  /api/studio/exports
   /api/system/openapi
   /healthz
   /sitemap.xml
@@ -228,9 +230,15 @@ check_json_field /healthz type liveness
 check_json_field /api/system/urai-contract service urai-studio
 check_json_field /api/system/urai-contract appRoot apps/studio
 check_json_field /api/system/urai-contract contract.canonicalStudioAppPath apps/studio
+check_json_field /api/studio/exports service urai-studio
+check_json_field /api/studio/exports tenantScoped true
 check_json_contains /api/system/urai-contract V1_GENESIS_HOME
 check_json_contains /api/system/urai-contract V5_MIRROR_OF_BECOMING
 check_json_contains /api/system/integration-contract /api/system/urai-contract
+check_json_contains /api/system/integration-contract /api/studio/jobs
+check_json_contains /api/system/integration-contract /api/studio/exports
+check_json_contains /api/studio/jobs tenantScoped
+check_json_contains /api/studio/exports tenantScoped
 
 if [ "$EXPECT_READY" = "true" ]; then
   check_status /readyz 200
@@ -267,6 +275,34 @@ invalid_contact_status="$(
 
 echo "[OK] /api/contact invalid input -> 400"
 
-rm -f /tmp/urai-smoke-waitlist /tmp/urai-smoke-contact
+invalid_job_status="$(
+  curl -L -sS \
+    -o /tmp/urai-smoke-job \
+    -w "%{http_code}" \
+    -H 'content-type: application/json' \
+    -d '{"prompt":"short"}' \
+    "${HOST}/api/studio/jobs"
+)" || fail "invalid studio job request failed"
+
+[ "$invalid_job_status" = "400" ] ||
+  fail "invalid studio job returned $invalid_job_status, expected 400"
+
+echo "[OK] /api/studio/jobs invalid prompt -> 400"
+
+invalid_export_status="$(
+  curl -L -sS \
+    -o /tmp/urai-smoke-export \
+    -w "%{http_code}" \
+    -H 'content-type: application/json' \
+    -d '{"kind":"json"}' \
+    "${HOST}/api/studio/exports"
+)" || fail "invalid studio export request failed"
+
+[ "$invalid_export_status" = "400" ] ||
+  fail "invalid studio export returned $invalid_export_status, expected 400"
+
+echo "[OK] /api/studio/exports invalid project -> 400"
+
+rm -f /tmp/urai-smoke-waitlist /tmp/urai-smoke-contact /tmp/urai-smoke-job /tmp/urai-smoke-export
 
 echo "[PASS] URAI Studio smoke completed against ${HOST}"
