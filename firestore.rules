@@ -59,8 +59,7 @@ service cloud.firestore {
     match /assets/{id} {
       allow read: if isStudioMember(resource.data.studioId);
       allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
-      allow update: if isStudioMember(resource.data.studioId);
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      allow update, delete: if isStudioMember(resource.data.studioId);
     }
 
     match /outputs/{id} {
@@ -86,6 +85,7 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Legacy client-owned Studio documents. These remain uid-scoped for old clients.
     match /studioProjects/{id} {
       allow read, update, delete: if ownsExisting();
       allow create: if ownsIncoming();
@@ -162,6 +162,21 @@ service cloud.firestore {
     match /vrSessions/{id} {
       allow read, update, delete: if ownsExisting();
       allow create: if ownsIncoming();
+    }
+
+    // Runtime system-contract collections are written only by trusted server/API routes
+    // through Firebase Admin. Client SDK access is denied until tenant membership claims
+    // and end-user private dashboards are fully wired and audited.
+    match /studioBriefs/{id} {
+      allow read, write: if false;
+    }
+
+    match /studioJobs/{id} {
+      allow read, write: if false;
+    }
+
+    match /studioExports/{id} {
+      allow read, write: if false;
     }
 
     // Public forms are written only through trusted server routes using Firebase Admin.
