@@ -32,6 +32,10 @@ const requiredDocs = [
   'docs/contracts/URAI_SYSTEM_CONTRACT.md',
 ];
 
+const requiredRuntimeContracts = [
+  'apps/studio/lib/urai-system-contract.ts',
+];
+
 const requiredContractTerms = [
   'StudioProject',
   'StudioBrief',
@@ -47,9 +51,9 @@ const requiredContractTerms = [
   'V3_PATTERN_REFLECTION',
   'V4_WEBXR_HANDOFF',
   'V5_MIRROR_OF_BECOMING',
-  'tenantScoped = true',
-  'adFreeCoreExperience = true',
-  'externalMarketingLayerEnabled = false',
+  'tenantScoped',
+  'adFreeCoreExperience',
+  'externalMarketingLayerEnabled',
 ];
 
 const userFacingRoots = [
@@ -110,12 +114,24 @@ for (const doc of requiredDocs) {
   }
 }
 
-const contractPath = path.join(repoRoot, 'docs/contracts/URAI_SYSTEM_CONTRACT.md');
-if (existsSync(contractPath)) {
+for (const contractFile of requiredRuntimeContracts) {
+  if (!existsSync(path.join(repoRoot, contractFile))) {
+    fail('required runtime contract is missing', [contractFile]);
+  }
+}
+
+const contractFilesToValidate = [
+  'docs/contracts/URAI_SYSTEM_CONTRACT.md',
+  ...requiredRuntimeContracts,
+];
+
+for (const contractFile of contractFilesToValidate) {
+  const contractPath = path.join(repoRoot, contractFile);
+  if (!existsSync(contractPath)) continue;
   const contract = read(contractPath);
   const missingTerms = requiredContractTerms.filter((term) => !contract.includes(term));
   if (missingTerms.length > 0) {
-    fail('canonical system contract is missing required gates', missingTerms);
+    fail(`${contractFile} is missing required gates`, missingTerms);
   }
 }
 
@@ -177,4 +193,4 @@ if (internalLabels.length > 0) {
 }
 
 if (process.exitCode) process.exit(process.exitCode);
-console.log('done-done guard passed: canonical docs and contracts exist, and production imports avoid deprecated app roots.');
+console.log('done-done guard passed: canonical docs and runtime contracts exist, and production imports avoid deprecated app roots.');
