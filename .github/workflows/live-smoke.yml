@@ -15,6 +15,15 @@ on:
         options:
           - 'true'
           - 'false'
+      expect_protected_auth:
+        description: Whether protected Studio APIs must reject unauthenticated requests
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+          - 'auto'
 
 jobs:
   live-smoke:
@@ -33,4 +42,5 @@ jobs:
         env:
           HOST: ${{ inputs.host }}
           EXPECT_READY: ${{ inputs.expect_ready }}
+          EXPECT_PROTECTED_AUTH: ${{ inputs.expect_protected_auth }}
         run: pnpm smoke
