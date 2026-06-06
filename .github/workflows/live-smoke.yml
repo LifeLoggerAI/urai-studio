@@ -1,0 +1,36 @@
+name: Live Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      host:
+        description: Live host to verify
+        required: true
+        default: https://www.uraistudio.com
+      expect_ready:
+        description: Whether /readyz must return ready
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  live-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.7.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --no-frozen-lockfile
+      - name: Run live smoke
+        env:
+          HOST: ${{ inputs.host }}
+          EXPECT_READY: ${{ inputs.expect_ready }}
+        run: pnpm smoke
