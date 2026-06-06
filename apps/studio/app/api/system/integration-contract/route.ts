@@ -40,6 +40,8 @@ export async function GET() {
     '/api/system/capabilities',
     '/api/system/integration-contract',
     '/api/system/urai-contract',
+    '/api/studio/jobs',
+    '/api/studio/exports',
     '/api/system/openapi',
     '/healthz',
     '/readyz',
