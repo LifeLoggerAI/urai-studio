@@ -34,6 +34,7 @@ API_ROUTES=(
   /api/system/manifest
   /api/system/capabilities
   /api/system/integration-contract
+  /api/system/urai-contract
   /api/system/openapi
   /healthz
   /sitemap.xml
@@ -112,6 +113,30 @@ check_json_field() {
   fi
 
   echo "[OK] $path $field=$expected"
+}
+
+check_json_contains() {
+  local path="$1"
+  local token="$2"
+  local url="${HOST}${path}"
+  local body
+
+  body="$(mktemp)"
+  curl -L -sS -o "$body" "$url" || {
+    rm -f "$body"
+    fail "request failed: $url"
+  }
+
+  grep -q "$token" "$body" || {
+    echo "--- response body for $url ---" >&2
+    cat "$body" >&2 || true
+    echo >&2
+    rm -f "$body"
+    fail "$url missing token: $token"
+  }
+
+  rm -f "$body"
+  echo "[OK] $path contains $token"
 }
 
 check_html_route() {
@@ -200,6 +225,12 @@ done
 
 check_json_field /api/system/health service urai-studio
 check_json_field /healthz type liveness
+check_json_field /api/system/urai-contract service urai-studio
+check_json_field /api/system/urai-contract appRoot apps/studio
+check_json_field /api/system/urai-contract contract.canonicalStudioAppPath apps/studio
+check_json_contains /api/system/urai-contract V1_GENESIS_HOME
+check_json_contains /api/system/urai-contract V5_MIRROR_OF_BECOMING
+check_json_contains /api/system/integration-contract /api/system/urai-contract
 
 if [ "$EXPECT_READY" = "true" ]; then
   check_status /readyz 200
