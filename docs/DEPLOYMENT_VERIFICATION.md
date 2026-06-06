@@ -29,16 +29,22 @@ pnpm release:check
 For production readiness:
 
 ```bash
-HOST=https://www.uraistudio.com EXPECT_READY=true pnpm smoke
+HOST=https://www.uraistudio.com EXPECT_READY=true EXPECT_PROTECTED_AUTH=true pnpm smoke
 ```
 
 If Firebase Admin or readiness credentials are intentionally not configured yet, use this only as a partial verification:
 
 ```bash
-HOST=https://www.uraistudio.com EXPECT_READY=false pnpm smoke
+HOST=https://www.uraistudio.com EXPECT_READY=false EXPECT_PROTECTED_AUTH=true pnpm smoke
 ```
 
-Partial verification means the public routes and safe system APIs respond, but the deployment is not fully ready.
+Partial verification means the public routes and safe system APIs respond and protected APIs reject unauthenticated requests, but the deployment is not fully ready.
+
+For local development only, protected APIs may use the local fallback mode:
+
+```bash
+HOST=http://127.0.0.1:3000 EXPECT_READY=false EXPECT_PROTECTED_AUTH=false pnpm smoke
+```
 
 ## GitHub Actions verification
 
@@ -51,6 +57,7 @@ Manual live smoke inputs:
 
 - `host`: `https://www.uraistudio.com`
 - `expect_ready`: `true` for full production readiness, `false` for partial readiness.
+- `expect_protected_auth`: `true` for production. This requires unauthenticated protected Studio APIs to return `401`.
 
 ## Live smoke coverage
 
@@ -62,8 +69,9 @@ The live smoke script verifies:
 - `/api/system/health` identifies `urai-studio`;
 - `/api/system/urai-contract` exposes the runtime URAI contract;
 - `/api/system/integration-contract` advertises runtime contract, job, and export APIs;
-- `/api/studio/jobs` and `/api/studio/exports` expose tenant-scoped contract metadata;
-- invalid waitlist, contact, job, and export requests fail safely with `400`;
+- `/api/studio/jobs` and `/api/studio/exports` reject unauthenticated production requests with `401` when `EXPECT_PROTECTED_AUTH=true`;
+- local fallback can still validate contract metadata when `EXPECT_PROTECTED_AUTH=false`;
+- invalid waitlist and contact requests fail safely with `400`;
 - `/readyz` passes when `EXPECT_READY=true`.
 
 ## Done-done verification standard
@@ -72,11 +80,12 @@ A deployment is live-working verified only when all are true:
 
 1. `Studio Audit` passes on the commit deployed to production.
 2. The hosting provider confirms production is serving that commit or an equivalent build artifact.
-3. `Live Smoke` passes against `https://www.uraistudio.com` with `EXPECT_READY=true`.
+3. `Live Smoke` passes against `https://www.uraistudio.com` with `EXPECT_READY=true` and `EXPECT_PROTECTED_AUTH=true`.
 4. Firebase Admin-backed persistence is configured for production.
-5. A real Studio job can be created and listed under a tenant-scoped record.
-6. A real Studio export can be queued with `tenantScoped=true`.
-7. No live route exposes debug, placeholder, test-mode, or secret content.
+5. Unauthenticated protected Studio APIs return `401` in production.
+6. A real authenticated Studio job can be created and listed under a tenant-scoped record.
+7. A real authenticated Studio export can be queued with `tenantScoped=true`.
+8. No live route exposes debug, placeholder, test-mode, or secret content.
 
 ## Current blocker language
 
