@@ -76,9 +76,10 @@ has('apps/studio/app/api/system/urai-contract/route.ts', ['URAI_SYSTEM_CONTRACT'
 has('apps/studio/app/api/studio/jobs/route.ts', ['createStudioJob', 'listTenantJobs', 'runtimeStoreStatus', 'invalid_prompt']);
 has('apps/studio/app/api/studio/exports/route.ts', ['createStudioExport', 'runtimeStoreStatus', 'tenantScoped', 'invalid_project']);
 has('docs/contracts/URAI_SYSTEM_CONTRACT.md', ['StudioJob', 'StudioAsset', 'StudioExport', 'UraiPassport', 'V1_GENESIS_HOME', 'V5_MIRROR_OF_BECOMING']);
-has('firestore.rules', ['match /waitlist/{id}', 'match /contactRequests/{id}', 'match /projectRequests/{id}', 'match /integrationRequests/{id}', 'allow read, write: if false;']);
+has('firestore.rules', ['match /waitlist/{id}', 'match /contactRequests/{id}', 'match /projectRequests/{id}', 'match /integrationRequests/{id}', 'match /studioBriefs/{id}', 'match /studioJobs/{id}', 'match /studioExports/{id}', 'allow read, write: if false;']);
+has('firestore.indexes.json', ['"collectionGroup": "studioBriefs"', '"collectionGroup": "studioJobs"', '"collectionGroup": "studioExports"', '"fieldPath": "tenantId"']);
 has('storage.rules', ['match /generated/{uid}/studio', 'match /public/studio-assets', 'allow write: if false;', 'request.auth.uid == uid', 'isStudioMember(studioId)']);
-has('.github/workflows/studio-audit.yml', ['pnpm lint', 'pnpm typecheck', 'pnpm test', 'pnpm build', 'pnpm --dir functions build', 'pnpm studio:smoke']);
+has('.github/workflows/studio-audit.yml', ['pnpm done-done:guard', 'pnpm lint', 'pnpm typecheck', 'pnpm test', 'pnpm build', 'pnpm --dir functions build', 'pnpm studio:smoke']);
 has('functions/src/studio-system.ts', ['export const ping', 'export const seedStudioDemo', 'export const getStudioDashboard', 'firebase-functions/v2/https']);
 
 console.log('[urai-studio:smoke-v1] passed');
