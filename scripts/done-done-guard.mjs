@@ -29,6 +29,27 @@ const productionRoots = [
 const requiredDocs = [
   'README.md',
   'docs/URAI_STUDIO_DONE_DONE_LOCK.md',
+  'docs/contracts/URAI_SYSTEM_CONTRACT.md',
+];
+
+const requiredContractTerms = [
+  'StudioProject',
+  'StudioBrief',
+  'StudioJob',
+  'StudioAsset',
+  'StudioExport',
+  'UraiPassport',
+  'PassportPermission',
+  'ConsentRequirement',
+  'SafetyBoundary',
+  'V1_GENESIS_HOME',
+  'V2_COGNITIVE_MIRROR',
+  'V3_PATTERN_REFLECTION',
+  'V4_WEBXR_HANDOFF',
+  'V5_MIRROR_OF_BECOMING',
+  'tenantScoped = true',
+  'adFreeCoreExperience = true',
+  'externalMarketingLayerEnabled = false',
 ];
 
 const userFacingRoots = [
@@ -86,6 +107,15 @@ function fail(message, details = []) {
 for (const doc of requiredDocs) {
   if (!existsSync(path.join(repoRoot, doc))) {
     fail('required done-done documentation is missing', [doc]);
+  }
+}
+
+const contractPath = path.join(repoRoot, 'docs/contracts/URAI_SYSTEM_CONTRACT.md');
+if (existsSync(contractPath)) {
+  const contract = read(contractPath);
+  const missingTerms = requiredContractTerms.filter((term) => !contract.includes(term));
+  if (missingTerms.length > 0) {
+    fail('canonical system contract is missing required gates', missingTerms);
   }
 }
 
@@ -147,4 +177,4 @@ if (internalLabels.length > 0) {
 }
 
 if (process.exitCode) process.exit(process.exitCode);
-console.log('done-done guard passed: canonical docs exist and production imports avoid deprecated app roots.');
+console.log('done-done guard passed: canonical docs and contracts exist, and production imports avoid deprecated app roots.');
