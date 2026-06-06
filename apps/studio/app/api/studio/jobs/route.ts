@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { requireStudioAuth } from '@/lib/studio-auth';
 import { createStudioJob, listTenantJobs, runtimeStoreStatus } from '@/lib/studio-runtime-store';
 import type { StudioExportKind, StudioJobKind } from '@/lib/urai-system-contract';
 
@@ -35,10 +36,23 @@ function stringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string').map((item) => item.trim()).filter(Boolean) : [];
 }
 
+function authErrorResponse(auth: Awaited<ReturnType<typeof requireStudioAuth>>) {
+  return json(
+    {
+      ok: false,
+      status: auth.error?.code ?? 'unauthorized',
+      error: auth.error ?? { code: 'unauthorized', message: 'Studio API authentication failed.' },
+      authMode: auth.authMode,
+    },
+    401,
+  );
+}
+
 export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const tenantId = url.searchParams.get('tenantId') ?? 'public-studio';
-  const result = await listTenantJobs(tenantId);
+  const auth = await requireStudioAuth(req);
+  if (!auth.ok) return authErrorResponse(auth);
+
+  const result = await listTenantJobs(auth.tenantId);
 
   if (!result.ok) {
     return json(
@@ -46,6 +60,8 @@ export async function GET(req: Request) {
         ok: !isProduction,
         status: result.error ?? 'runtime_store_unconfigured',
         persisted: false,
+        authMode: auth.authMode,
+        tenantId: auth.tenantId,
         store: runtimeStoreStatus(),
         data: !isProduction ? [] : undefined,
         error: isProduction ? { code: result.error, message: 'Studio job persistence is unavailable.' } : undefined,
@@ -54,10 +70,13 @@ export async function GET(req: Request) {
     );
   }
 
-  return json({ ok: true, status: 'listed', persisted: true, store: runtimeStoreStatus(), data: result.data });
+  return json({ ok: true, status: 'listed', persisted: true, authMode: auth.authMode, tenantId: auth.tenantId, store: runtimeStoreStatus(), data: result.data });
 }
 
 export async function POST(req: Request) {
+  const auth = await requireStudioAuth(req);
+  if (!auth.ok) return authErrorResponse(auth);
+
   const rawBody = await req.json().catch(() => null);
   if (!rawBody) {
     return json({ ok: false, status: 'invalid_json', error: { code: 'invalid_json', message: 'Request body must be valid JSON.' } }, 400);
@@ -67,8 +86,6 @@ export async function POST(req: Request) {
   const prompt = text(body.prompt);
   const projectId = optionalText(body.projectId);
   const briefId = optionalText(body.briefId);
-  const tenantId = text(body.tenantId, 'public-studio');
-  const userId = text(body.userId, 'anonymous-studio-user');
   const kind = text(body.kind, 'asset_bundle_export') as StudioJobKind;
   const requestedExports = stringArray(body.requestedExports) as StudioExportKind[];
 
@@ -82,8 +99,8 @@ export async function POST(req: Request) {
     kind,
     prompt,
     requestedExports: requestedExports.length ? requestedExports : ['json'],
-    tenantId,
-    userId,
+    tenantId: auth.tenantId,
+    userId: auth.uid,
   });
 
   if (!result.ok) {
@@ -92,6 +109,8 @@ export async function POST(req: Request) {
         ok: !isProduction,
         status: result.error ?? 'runtime_store_unconfigured',
         persisted: false,
+        authMode: auth.authMode,
+        tenantId: auth.tenantId,
         store: runtimeStoreStatus(),
         data: !isProduction
           ? {
@@ -99,8 +118,8 @@ export async function POST(req: Request) {
               kind,
               prompt,
               requestedExports: requestedExports.length ? requestedExports : ['json'],
-              tenantId,
-              userId,
+              tenantId: auth.tenantId,
+              userId: auth.uid,
             }
           : undefined,
         error: isProduction ? { code: result.error, message: 'Studio job persistence is unavailable.' } : undefined,
@@ -109,5 +128,5 @@ export async function POST(req: Request) {
     );
   }
 
-  return json({ ok: true, status: 'queued', persisted: true, store: runtimeStoreStatus(), data: result.data });
+  return json({ ok: true, status: 'queued', persisted: true, authMode: auth.authMode, tenantId: auth.tenantId, store: runtimeStoreStatus(), data: result.data });
 }
