@@ -36,12 +36,15 @@ for (const file of [
   'docs/contracts/URAI_SYSTEM_CONTRACT.md',
   'functions/src/studio-system.ts',
   'apps/studio/lib/urai-system-contract.ts',
+  'apps/studio/lib/studio-runtime-store.ts',
   'apps/studio/app/page.tsx',
   'apps/studio/app/admin/page.tsx',
   'apps/studio/app/studio/admin/page.tsx',
   'apps/studio/app/api/contact/route.ts',
   'apps/studio/app/api/waitlist/route.ts',
   'apps/studio/app/api/system/urai-contract/route.ts',
+  'apps/studio/app/api/studio/jobs/route.ts',
+  'apps/studio/app/api/studio/exports/route.ts',
   'apps/studio/components/site/MagicalHomeExperience.tsx',
   'apps/studio/tests/all.test.mjs',
   'apps/studio/tests/public-submissions.test.mjs',
@@ -68,7 +71,10 @@ has('apphosting.yaml', ['runtime: nodejs20', 'NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLE
 has('apps/studio/app/api/contact/route.ts', ["collection('contactRequests')", "collection('projectRequests')", "collection('integrationRequests')", 'bot_rejected', 'invalid_json']);
 has('apps/studio/app/api/waitlist/route.ts', ["collection('waitlist')", 'bot_rejected', 'invalid_json']);
 has('apps/studio/lib/urai-system-contract.ts', ['URAI_SYSTEM_CONTRACT', 'StudioJob', 'StudioAsset', 'StudioExport', 'UraiPassport', 'V1_GENESIS_HOME', 'V2_COGNITIVE_MIRROR', 'V3_PATTERN_REFLECTION', 'V4_WEBXR_HANDOFF', 'V5_MIRROR_OF_BECOMING']);
+has('apps/studio/lib/studio-runtime-store.ts', ['createStudioJob', 'createStudioExport', 'listTenantJobs', 'tenantScoped', 'studioJobs', 'studioExports']);
 has('apps/studio/app/api/system/urai-contract/route.ts', ['URAI_SYSTEM_CONTRACT', 'URAI_SYSTEM_CONTRACT_VERSION', 'Cache-Control']);
+has('apps/studio/app/api/studio/jobs/route.ts', ['createStudioJob', 'listTenantJobs', 'runtimeStoreStatus', 'invalid_prompt']);
+has('apps/studio/app/api/studio/exports/route.ts', ['createStudioExport', 'runtimeStoreStatus', 'tenantScoped', 'invalid_project']);
 has('docs/contracts/URAI_SYSTEM_CONTRACT.md', ['StudioJob', 'StudioAsset', 'StudioExport', 'UraiPassport', 'V1_GENESIS_HOME', 'V5_MIRROR_OF_BECOMING']);
 has('firestore.rules', ['match /waitlist/{id}', 'match /contactRequests/{id}', 'match /projectRequests/{id}', 'match /integrationRequests/{id}', 'allow read, write: if false;']);
 has('storage.rules', ['match /generated/{uid}/studio', 'match /public/studio-assets', 'allow write: if false;', 'request.auth.uid == uid', 'isStudioMember(studioId)']);
