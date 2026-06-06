@@ -3,6 +3,7 @@ set -euo pipefail
 
 HOST="${HOST:-http://127.0.0.1:3000}"
 EXPECT_READY="${EXPECT_READY:-true}"
+EXPECT_PROTECTED_AUTH="${EXPECT_PROTECTED_AUTH:-auto}"
 PLACEHOLDERS='TODO|lorem ipsum|coming soon|\[object Object\]'
 SECRET_PATTERN='SECRET|PRIVATE_KEY|TOKEN|PASSWORD'
 
@@ -28,19 +29,22 @@ HTML_ROUTES=(
   /status
 )
 
-API_ROUTES=(
+PUBLIC_API_ROUTES=(
   /api/health
   /api/system/health
   /api/system/manifest
   /api/system/capabilities
   /api/system/integration-contract
   /api/system/urai-contract
-  /api/studio/jobs
-  /api/studio/exports
   /api/system/openapi
   /healthz
   /sitemap.xml
   /robots.txt
+)
+
+PROTECTED_API_ROUTES=(
+  /api/studio/jobs
+  /api/studio/exports
 )
 
 echo "URAI Studio smoke host: ${HOST}"
@@ -217,12 +221,68 @@ check_api_route() {
   echo "[OK] api $route"
 }
 
+check_protected_api_route() {
+  local route="$1"
+  local body
+  local code
+  local url="${HOST}${route}"
+
+  body="$(mktemp)"
+  code="$(curl -L -sS -o "$body" -w "%{http_code}" "$url")" || {
+    rm -f "$body"
+    fail "request failed: $url"
+  }
+
+  if [ "$EXPECT_PROTECTED_AUTH" = "true" ] && [ "$code" != "401" ]; then
+    echo "--- response body for $url ---" >&2
+    cat "$body" >&2 || true
+    echo >&2
+    rm -f "$body"
+    fail "$url returned $code, expected unauthenticated 401"
+  fi
+
+  if [ "$EXPECT_PROTECTED_AUTH" = "false" ] && [ "$code" != "200" ]; then
+    echo "--- response body for $url ---" >&2
+    cat "$body" >&2 || true
+    echo >&2
+    rm -f "$body"
+    fail "$url returned $code, expected local fallback 200"
+  fi
+
+  if [ "$EXPECT_PROTECTED_AUTH" = "auto" ] && [ "$code" != "200" ] && [ "$code" != "401" ]; then
+    echo "--- response body for $url ---" >&2
+    cat "$body" >&2 || true
+    echo >&2
+    rm -f "$body"
+    fail "$url returned $code, expected 200 local fallback or 401 protected"
+  fi
+
+  if grep -Eiq "$SECRET_PATTERN" "$body"; then
+    rm -f "$body"
+    fail "possible secret exposure: $route"
+  fi
+
+  if [ "$code" = "401" ]; then
+    grep -q 'missing_bearer_token' "$body" || grep -q 'unauthorized' "$body" || {
+      rm -f "$body"
+      fail "$route returned 401 without auth error code"
+    }
+  fi
+
+  rm -f "$body"
+  echo "[OK] protected api $route -> $code"
+}
+
 for route in "${HTML_ROUTES[@]}"; do
   check_html_route "$route"
 done
 
-for route in "${API_ROUTES[@]}"; do
+for route in "${PUBLIC_API_ROUTES[@]}"; do
   check_api_route "$route"
+done
+
+for route in "${PROTECTED_API_ROUTES[@]}"; do
+  check_protected_api_route "$route"
 done
 
 check_json_field /api/system/health service urai-studio
@@ -230,15 +290,17 @@ check_json_field /healthz type liveness
 check_json_field /api/system/urai-contract service urai-studio
 check_json_field /api/system/urai-contract appRoot apps/studio
 check_json_field /api/system/urai-contract contract.canonicalStudioAppPath apps/studio
-check_json_field /api/studio/exports service urai-studio
-check_json_field /api/studio/exports tenantScoped true
 check_json_contains /api/system/urai-contract V1_GENESIS_HOME
 check_json_contains /api/system/urai-contract V5_MIRROR_OF_BECOMING
 check_json_contains /api/system/integration-contract /api/system/urai-contract
 check_json_contains /api/system/integration-contract /api/studio/jobs
 check_json_contains /api/system/integration-contract /api/studio/exports
-check_json_contains /api/studio/jobs tenantScoped
-check_json_contains /api/studio/exports tenantScoped
+
+if [ "$EXPECT_PROTECTED_AUTH" != "true" ]; then
+  check_json_contains /api/studio/jobs tenantScoped
+  check_json_field /api/studio/exports service urai-studio
+  check_json_field /api/studio/exports tenantScoped true
+fi
 
 if [ "$EXPECT_READY" = "true" ]; then
   check_status /readyz 200
@@ -275,33 +337,63 @@ invalid_contact_status="$(
 
 echo "[OK] /api/contact invalid input -> 400"
 
-invalid_job_status="$(
-  curl -L -sS \
-    -o /tmp/urai-smoke-job \
-    -w "%{http_code}" \
-    -H 'content-type: application/json' \
-    -d '{"prompt":"short"}' \
-    "${HOST}/api/studio/jobs"
-)" || fail "invalid studio job request failed"
+if [ "$EXPECT_PROTECTED_AUTH" = "true" ]; then
+  unauth_job_status="$(
+    curl -L -sS \
+      -o /tmp/urai-smoke-job \
+      -w "%{http_code}" \
+      -H 'content-type: application/json' \
+      -d '{"prompt":"short"}' \
+      "${HOST}/api/studio/jobs"
+  )" || fail "unauthenticated studio job request failed"
 
-[ "$invalid_job_status" = "400" ] ||
-  fail "invalid studio job returned $invalid_job_status, expected 400"
+  [ "$unauth_job_status" = "401" ] ||
+    fail "unauthenticated studio job returned $unauth_job_status, expected 401"
 
-echo "[OK] /api/studio/jobs invalid prompt -> 400"
+  echo "[OK] /api/studio/jobs unauthenticated -> 401"
 
-invalid_export_status="$(
-  curl -L -sS \
-    -o /tmp/urai-smoke-export \
-    -w "%{http_code}" \
-    -H 'content-type: application/json' \
-    -d '{"kind":"json"}' \
-    "${HOST}/api/studio/exports"
-)" || fail "invalid studio export request failed"
+  unauth_export_status="$(
+    curl -L -sS \
+      -o /tmp/urai-smoke-export \
+      -w "%{http_code}" \
+      -H 'content-type: application/json' \
+      -d '{"kind":"json"}' \
+      "${HOST}/api/studio/exports"
+  )" || fail "unauthenticated studio export request failed"
 
-[ "$invalid_export_status" = "400" ] ||
-  fail "invalid studio export returned $invalid_export_status, expected 400"
+  [ "$unauth_export_status" = "401" ] ||
+    fail "unauthenticated studio export returned $unauth_export_status, expected 401"
 
-echo "[OK] /api/studio/exports invalid project -> 400"
+  echo "[OK] /api/studio/exports unauthenticated -> 401"
+else
+  invalid_job_status="$(
+    curl -L -sS \
+      -o /tmp/urai-smoke-job \
+      -w "%{http_code}" \
+      -H 'content-type: application/json' \
+      -d '{"prompt":"short"}' \
+      "${HOST}/api/studio/jobs"
+  )" || fail "invalid studio job request failed"
+
+  [ "$invalid_job_status" = "400" ] ||
+    fail "invalid studio job returned $invalid_job_status, expected 400"
+
+  echo "[OK] /api/studio/jobs invalid prompt -> 400"
+
+  invalid_export_status="$(
+    curl -L -sS \
+      -o /tmp/urai-smoke-export \
+      -w "%{http_code}" \
+      -H 'content-type: application/json' \
+      -d '{"kind":"json"}' \
+      "${HOST}/api/studio/exports"
+  )" || fail "invalid studio export request failed"
+
+  [ "$invalid_export_status" = "400" ] ||
+    fail "invalid studio export returned $invalid_export_status, expected 400"
+
+  echo "[OK] /api/studio/exports invalid project -> 400"
+fi
 
 rm -f /tmp/urai-smoke-waitlist /tmp/urai-smoke-contact /tmp/urai-smoke-job /tmp/urai-smoke-export
 
