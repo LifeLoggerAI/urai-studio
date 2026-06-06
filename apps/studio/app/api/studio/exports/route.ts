@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { requireStudioAuth } from '@/lib/studio-auth';
 import { createStudioExport, runtimeStoreStatus } from '@/lib/studio-runtime-store';
 import type { StudioExportKind } from '@/lib/urai-system-contract';
 
@@ -31,12 +32,29 @@ function stringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string').map((item) => item.trim()).filter(Boolean) : [];
 }
 
-export async function GET() {
+function authErrorResponse(auth: Awaited<ReturnType<typeof requireStudioAuth>>) {
+  return json(
+    {
+      ok: false,
+      status: auth.error?.code ?? 'unauthorized',
+      error: auth.error ?? { code: 'unauthorized', message: 'Studio API authentication failed.' },
+      authMode: auth.authMode,
+    },
+    401,
+  );
+}
+
+export async function GET(req: Request) {
+  const auth = await requireStudioAuth(req);
+  if (!auth.ok) return authErrorResponse(auth);
+
   return json({
     ok: true,
     status: 'ready',
     service: 'urai-studio',
     endpoint: '/api/studio/exports',
+    authMode: auth.authMode,
+    tenantId: auth.tenantId,
     store: runtimeStoreStatus(),
     requiredFields: ['projectId', 'kind'],
     tenantScoped: true,
@@ -44,6 +62,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const auth = await requireStudioAuth(req);
+  if (!auth.ok) return authErrorResponse(auth);
+
   const rawBody = await req.json().catch(() => null);
   if (!rawBody) {
     return json({ ok: false, status: 'invalid_json', error: { code: 'invalid_json', message: 'Request body must be valid JSON.' } }, 400);
@@ -52,8 +73,6 @@ export async function POST(req: Request) {
   const body = asRecord(rawBody);
   const projectId = text(body.projectId);
   const jobId = text(body.jobId);
-  const tenantId = text(body.tenantId, 'public-studio');
-  const userId = text(body.userId, 'anonymous-studio-user');
   const kind = text(body.kind, 'json') as StudioExportKind;
   const assetIds = stringArray(body.assetIds);
 
@@ -66,8 +85,8 @@ export async function POST(req: Request) {
     jobId: jobId || undefined,
     assetIds,
     kind,
-    tenantId,
-    userId,
+    tenantId: auth.tenantId,
+    userId: auth.uid,
   });
 
   if (!result.ok) {
@@ -76,6 +95,8 @@ export async function POST(req: Request) {
         ok: !isProduction,
         status: result.error ?? 'runtime_store_unconfigured',
         persisted: false,
+        authMode: auth.authMode,
+        tenantId: auth.tenantId,
         store: runtimeStoreStatus(),
         data: !isProduction
           ? {
@@ -84,8 +105,8 @@ export async function POST(req: Request) {
               jobId: jobId || undefined,
               assetIds,
               kind,
-              tenantId,
-              userId,
+              tenantId: auth.tenantId,
+              userId: auth.uid,
               tenantScoped: true,
             }
           : undefined,
@@ -95,5 +116,5 @@ export async function POST(req: Request) {
     );
   }
 
-  return json({ ok: true, status: 'queued', persisted: true, store: runtimeStoreStatus(), data: result.data });
+  return json({ ok: true, status: 'queued', persisted: true, authMode: auth.authMode, tenantId: auth.tenantId, store: runtimeStoreStatus(), data: result.data });
 }
