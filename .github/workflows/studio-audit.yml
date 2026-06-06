@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   audit:
@@ -18,6 +20,7 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --no-frozen-lockfile
+      - run: pnpm done-done:guard
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
