@@ -61,7 +61,7 @@ export function statusWarnings(): string[] {
 export function readinessChecks(): ReadinessCheck[] {
   const firebaseProjectId = envValue('NEXT_PUBLIC_FIREBASE_PROJECT_ID', 'FIREBASE_PROJECT_ID');
   const assetFactoryUrl = envValue('NEXT_PUBLIC_ASSET_FACTORY_URL', 'ASSET_FACTORY_INTERNAL_URL');
-  const siteUrl = envValue('NEXT_PUBLIC_SITE_URL') ?? studioConfig.url;
+  const siteUrl = envValue('NEXT_PUBLIC_SITE_URL') ?? studioConfig.siteUrl;
 
   return [
     {
