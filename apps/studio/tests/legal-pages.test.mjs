@@ -15,7 +15,12 @@ assert.ok(terms.includes('must not claim completed generation unless a real back
 assert.ok(terms.includes('launch-ready legal scaffold for review'), 'terms page must identify legal review scaffold');
 
 for (const source of [privacy, terms]) {
-  assert.ok(!source.includes('guaranteed completely secure.'), 'legal pages must not guarantee total security');
+  assert.ok(
+    !source.includes('we guarantee complete security') &&
+      !source.includes('we guarantee completely secure') &&
+      !source.includes('will always be secure'),
+    'legal pages must not make absolute security guarantees',
+  );
   assert.ok(!source.includes('guaranteed uninterrupted'), 'legal pages must not guarantee uninterrupted service');
 }
 
