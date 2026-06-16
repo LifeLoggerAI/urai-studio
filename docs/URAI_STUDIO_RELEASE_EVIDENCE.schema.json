@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://urai.studio/schemas/release-evidence.schema.json",
+  "title": "URAI Studio Release Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "repository",
+    "commitSha",
+    "recordedAt",
+    "gates"
+  ],
+  "properties": {
+    "repository": {
+      "const": "LifeLoggerAI/urai-studio"
+    },
+    "commitSha": {
+      "type": "string",
+      "minLength": 7
+    },
+    "recordedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "environment": {
+      "type": "string",
+      "enum": ["local", "ci", "staging", "production"]
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "install",
+        "lint",
+        "typecheck",
+        "tests",
+        "appBuild",
+        "functionsBuild",
+        "doneDoneGuard",
+        "releaseCheck",
+        "smoke"
+      ],
+      "properties": {
+        "install": {"$ref": "#/$defs/gate"},
+        "lint": {"$ref": "#/$defs/gate"},
+        "typecheck": {"$ref": "#/$defs/gate"},
+        "tests": {"$ref": "#/$defs/gate"},
+        "appBuild": {"$ref": "#/$defs/gate"},
+        "functionsBuild": {"$ref": "#/$defs/gate"},
+        "doneDoneGuard": {"$ref": "#/$defs/gate"},
+        "releaseCheck": {"$ref": "#/$defs/gate"},
+        "smoke": {"$ref": "#/$defs/gate"},
+        "deploy": {"$ref": "#/$defs/gate"},
+        "liveSmoke": {"$ref": "#/$defs/gate"}
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "$defs": {
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["pass", "fail", "blocked", "not_run"]
+        },
+        "evidence": {
+          "type": "string"
+        },
+        "recordedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}
