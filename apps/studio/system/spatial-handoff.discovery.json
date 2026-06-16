@@ -1,0 +1,23 @@
+{
+  "service": "urai-studio",
+  "consumerSystem": "urai-spatial",
+  "schemaVersion": "0.1.0",
+  "route": "/api/system/spatial-handoff",
+  "exportRoute": "/api/studio/exports",
+  "typescriptContract": "apps/studio/lib/studio-spatial-handoff.ts",
+  "openapiFragment": "apps/studio/system/spatial-handoff.openapi.json",
+  "requiredExportField": "spatialHandoff",
+  "defaultStatus": "fallback_only",
+  "defaultRenderer": "fallback_cards",
+  "guardHelpers": [
+    "createFallbackStudioSpatialManifest",
+    "validateStudioSpatialManifest",
+    "listBlockedStudioSpatialClaims",
+    "isStudioSpatialManifestReleaseSafe"
+  ],
+  "testFiles": [
+    "apps/studio/tests/studio-spatial-handoff.test.mjs",
+    "apps/studio/tests/export-handoff.test.mjs",
+    "apps/studio/tests/spatial-handoff-openapi.test.mjs"
+  ]
+}
