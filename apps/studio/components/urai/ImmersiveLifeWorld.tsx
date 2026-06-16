@@ -387,7 +387,7 @@ export function ImmersiveLifeWorld() {
           <div className="chat-message from-urai">Your world is calm. Tell me where you want the next bloom to open, or simply rest here.</div>
           <label>
             <span>Speak into the orb</span>
-            <textarea placeholder="Share a thought, memory, question, or feeling…" />
+            <textarea />
           </label>
           <button className="world-action" type="button">Send to companion</button>
         </div>

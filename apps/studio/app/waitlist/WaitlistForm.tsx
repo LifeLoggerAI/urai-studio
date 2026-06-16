@@ -44,7 +44,7 @@ export function WaitlistForm() {
     <form onSubmit={submit} className="card form-card">
       <label>
         Email
-        <input name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
+        <input name="email" type="email" autoComplete="email" required />
       </label>
 
       <label>

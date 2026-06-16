@@ -1,3 +1,33 @@
+export const STUDIO_SPATIAL_HANDOFF_REQUIRED_GATES = [
+  'StudioProject',
+  'StudioBrief',
+  'StudioJob',
+  'StudioAsset',
+  'StudioExport',
+  'UraiPassport',
+  'PassportPermission',
+  'ConsentRequirement',
+  'SafetyBoundary',
+  'V1_GENESIS_HOME',
+  'V2_COGNITIVE_MIRROR',
+  'V3_PATTERN_REFLECTION',
+  'V4_WEBXR_HANDOFF',
+  'V5_MIRROR_OF_BECOMING',
+  'adFreeCoreExperience',
+  'externalMarketingLayerEnabled',
+] as const;
+
+export type StudioSpatialHandoffRequiredGate =
+  (typeof STUDIO_SPATIAL_HANDOFF_REQUIRED_GATES)[number];
+
+export const STUDIO_SPATIAL_HANDOFF_GUARDRAILS = {
+  requiredGateRegistry: STUDIO_SPATIAL_HANDOFF_REQUIRED_GATES,
+  adFreeCoreExperience: true,
+  externalMarketingLayerEnabled: false,
+  notes:
+    'Studio exports remain fallback-only until consent, release evidence, safety boundaries, and runtime gate checks are present.',
+} as const;
+
 export const STUDIO_SPATIAL_HANDOFF_VERSION = '0.1.0' as const;
 
 export type StudioSpatialExportStatus =

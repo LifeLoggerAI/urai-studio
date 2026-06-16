@@ -202,7 +202,7 @@ for (const file of activeFiles) {
     pattern.lastIndex = 0;
     for (const match of content.matchAll(pattern)) {
       const target = match[1];
-      if (deprecatedRoots.some((root) => target === root || target.startsWith(`${root}/`) || target.includes(`/${root}/`))) {
+      if (deprecatedRoots.some((root) => target === root || target.startsWith(`${root}/`) || target === `@/${root}` || target.startsWith(`@/${root}/`))) {
         deprecatedImports.push(`${relFile} imports ${target}`);
       }
     }

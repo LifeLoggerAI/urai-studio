@@ -38,7 +38,6 @@ export default function GeneratePage() {
             id="studio-prompt"
             name="prompt"
             rows={7}
-            placeholder="Example: a cinematic URAI Studio launch scene with glass UI, memory constellations, and spatial light trails"
             aria-describedby="generate-state"
           />
 

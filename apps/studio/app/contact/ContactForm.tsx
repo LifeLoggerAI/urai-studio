@@ -58,17 +58,17 @@ export function ContactForm() {
     <form onSubmit={submit} className="card form-card" aria-describedby="contact-status">
       <label htmlFor="contact-name">
         <strong>Name</strong>
-        <input id="contact-name" name="name" type="text" placeholder="Your name" autoComplete="name" />
+        <input id="contact-name" name="name" type="text" autoComplete="name" />
       </label>
 
       <label htmlFor="contact-email">
         <strong>Email</strong>
-        <input id="contact-email" name="email" type="email" placeholder="you@example.com" autoComplete="email" required />
+        <input id="contact-email" name="email" type="email" autoComplete="email" required />
       </label>
 
       <label htmlFor="contact-company">
         <strong>Company or brand</strong>
-        <input id="contact-company" name="company" type="text" placeholder="Company, artist, product, or project name" autoComplete="organization" />
+        <input id="contact-company" name="company" type="text" autoComplete="organization" />
       </label>
 
       <label htmlFor="contact-use-case">
@@ -127,7 +127,6 @@ export function ContactForm() {
           id="contact-message"
           name="message"
           rows={6}
-          placeholder="Tell us what you want URAI Studio to create, launch, visualize, package, or produce."
           required
         />
       </label>
