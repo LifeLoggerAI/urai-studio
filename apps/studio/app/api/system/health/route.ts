@@ -10,14 +10,17 @@ export const dynamic = 'force-dynamic';
 const configuredIntegrations = studioIntegrations.filter((integration) => integration.status === 'configured');
 const missingIntegrations = studioIntegrations.filter((integration) => integration.status === 'missing');
 const requiredMissingIntegrations = missingIntegrations.filter((integration) => integration.required);
+const configured = configuredIntegrations;
+const missing = missingIntegrations;
+const requiredMissing = requiredMissingIntegrations;
 
 const integrationSummary = () => {
   return {
     total: studioIntegrations.length,
-    configured: configuredIntegrations.length,
-    missing: missingIntegrations.length,
-    requiredMissing: requiredMissingIntegrations.length,
-    requiredMissingIds: requiredMissingIntegrations.map((integration) => integration.id),
+    configured: configured.length,
+    missing: missing.length,
+    requiredMissing: requiredMissing.length,
+    requiredMissingIds: requiredMissing.map((integration) => integration.id),
   };
 };
 
