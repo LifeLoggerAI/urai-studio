@@ -4,7 +4,25 @@ import * as admin from "firebase-admin";
 const db = admin.firestore();
 const storage = admin.storage();
 
-type JobOutput = { path?: string; message?: string };
+type JobOutput = {
+  path?: string;
+  message?: string;
+  mode: "fallback";
+  readyForExternalUse: false;
+  contentType?: string;
+  fallbackOnly: true;
+};
+
+const fallbackOutput = (input: {
+  path?: string;
+  message?: string;
+  contentType?: string;
+}): JobOutput => ({
+  ...input,
+  mode: "fallback",
+  readyForExternalUse: false,
+  fallbackOnly: true,
+});
 
 const writeAuditLog = (
   actorUid: string,
@@ -45,27 +63,27 @@ const processJob = async (job: admin.firestore.DocumentData): Promise<JobOutput>
 
   switch (kind) {
     case "clip_render":
-      outputFile = bucket.file(`projects/${projectId}/renders/${id}/placeholder.mp4`);
-      await outputFile.save("This is a placeholder for a rendered clip.");
-      outputData = { path: outputFile.name };
+      outputFile = bucket.file(`projects/${projectId}/renders/${id}/fallback-clip.txt`);
+      await outputFile.save("Fallback clip artifact.");
+      outputData = fallbackOutput({ path: outputFile.name, contentType: "text/plain" });
       break;
     case "thumbnail":
-      outputFile = bucket.file(`projects/${projectId}/renders/${id}/thumbnail.jpg`);
-      await outputFile.save("This is a placeholder for a thumbnail.");
-      outputData = { path: outputFile.name };
+      outputFile = bucket.file(`projects/${projectId}/renders/${id}/fallback-thumbnail.txt`);
+      await outputFile.save("Fallback thumbnail artifact.");
+      outputData = fallbackOutput({ path: outputFile.name, contentType: "text/plain" });
       break;
     case "captions":
-      outputFile = bucket.file(`projects/${projectId}/renders/${id}/captions.srt`);
-      await outputFile.save("1\n00:00:01,000 --> 00:00:02,000\nPlaceholder caption");
-      outputData = { path: outputFile.name };
+      outputFile = bucket.file(`projects/${projectId}/renders/${id}/fallback-captions.srt`);
+      await outputFile.save("1\n00:00:01,000 --> 00:00:02,000\nFallback caption artifact");
+      outputData = fallbackOutput({ path: outputFile.name, contentType: "application/x-subrip" });
       break;
     case "package_export":
-      outputFile = bucket.file(`projects/${projectId}/exports/${id}/package.zip`);
-      await outputFile.save("This is a placeholder for a packaged export.");
-      outputData = { path: outputFile.name };
+      outputFile = bucket.file(`projects/${projectId}/exports/${id}/fallback-package-manifest.json`);
+      await outputFile.save(JSON.stringify({ mode: "fallback", readyForExternalUse: false, fallbackOnly: true }));
+      outputData = fallbackOutput({ path: outputFile.name, contentType: "application/json" });
       break;
     case "publish":
-      outputData = { message: "Publish job processed successfully." };
+      outputData = fallbackOutput({ message: "Publish job recorded in fallback mode." });
       break;
     default:
       throw new Error(`Unknown job kind: ${kind}`);
@@ -145,8 +163,9 @@ export const jobRunner = functions.pubsub
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
 
-        await logJobEvent(jobId, "state_change", "Job succeeded.");
-        await writeAuditLog("system", "job_succeeded", `jobs/${jobId}`, claimedJobData, (await jobRef.get()).data());
+        await logJobEvent(jobId, "artifact", "Fallback artifact generated.", output);
+        await logJobEvent(jobId, "state_change", "Job succeeded in fallback mode.");
+        await writeAuditLog("system", "job_succeeded_fallback", `jobs/${jobId}`, claimedJobData, (await jobRef.get()).data());
         finalState = "succeeded";
       } catch (e: unknown) {
         const errorMessage = e instanceof Error ? e.message : "Unknown job error";
