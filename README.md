@@ -8,8 +8,11 @@ URAI Studio has a real app/backend foundation, but it must not be called product
 
 Canonical status documents:
 
+- `docs/URAI_STUDIO_DOCS_INDEX_2026-06-16.md` - current navigation index for audit docs, contracts, guards, and proof templates.
 - `docs/URAI_STUDIO_FULL_AUDIT.md` - full repo/system audit, blocker list, and safe release language.
 - `docs/URAI_STUDIO_SYSTEM_PIPELINES_AUDIT_2026-06-16.md` - system-of-systems pipeline audit across Jobs, Content, Asset Factory, Spatial, Analytics, Marketing, Admin, Privacy, Investors, and B2B Portal.
+- `docs/URAI_STUDIO_REMAINING_BLOCKERS_2026-06-16.md` - current proof blockers that must be cleared before final lock.
+- `docs/URAI_STUDIO_DEPLOY_EVIDENCE_TEMPLATE.md` - deploy proof record template for observed CI, deploy target, base URL, and remote endpoint checks.
 - `docs/URAI_STUDIO_RELEASE_EVIDENCE.md` - release proof ledger that must be completed before production lock.
 - `docs/URAI_STUDIO_RELEASE_EVIDENCE.schema.json` - machine-readable release evidence shape.
 - `docs/URAI_STUDIO_ECOSYSTEM_URL_KEYS.md` - public ecosystem URL key map for diagnostics.
@@ -66,12 +69,19 @@ pnpm run firebase:emulators
 ```bash
 pnpm done-done:guard
 pnpm evidence:guard
+pnpm health:guard
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
 pnpm --dir functions build
 pnpm studio:smoke
+```
+
+The combined audit command is:
+
+```bash
+pnpm audit
 ```
 
 ## Full release proof commands
@@ -90,7 +100,7 @@ After deployment:
 HOST=https://www.uraistudio.com bash scripts/smoke.sh
 ```
 
-Record the output in `docs/URAI_STUDIO_RELEASE_EVIDENCE.md` before claiming production freeze.
+Record the output in `docs/URAI_STUDIO_RELEASE_EVIDENCE.md` and `docs/URAI_STUDIO_DEPLOY_EVIDENCE_TEMPLATE.md` before claiming production freeze.
 
 ## Environment variables
 
