@@ -8,5 +8,6 @@ import './admin-gates.test.mjs';
 import './status-copy.test.mjs';
 import './legal-pages.test.mjs';
 import './module-copy.test.mjs';
+import './studio-spatial-handoff.test.mjs';
 
 console.log('all Studio regression tests passed');
