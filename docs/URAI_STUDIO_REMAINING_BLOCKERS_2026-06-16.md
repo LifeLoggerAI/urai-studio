@@ -4,7 +4,7 @@ This note records repo-side and evidence-side blockers after the Studio completi
 
 ## Status
 
-URAI Studio now has stronger repository gates for system pipelines, release evidence shape, Spatial handoff discovery, export handoff output, health readiness, fallback-only job outputs, automatic test discovery, legacy-root drift, security-surface presence, source hygiene, canonical OpenAPI route coverage, and ecosystem environment-key alignment.
+URAI Studio now has stronger repository gates for system pipelines, release evidence shape, Spatial handoff discovery, export handoff output, health readiness, fallback-only job outputs, automatic test discovery, legacy-root drift, security-surface presence, source hygiene, canonical OpenAPI route coverage, ecosystem environment-key alignment, and system manifest handoff coverage.
 
 This document does not mark the system production complete. It records what still needs proof or follow-up before a final release lock.
 
@@ -21,6 +21,10 @@ This document does not mark the system production complete. It records what stil
 ### Health summary CI coverage
 
 The standalone health summary guard still could not be added to `package.json` because the package-file replacement repeats existing cleanup commands. A focused workflow now exists at `.github/workflows/studio-health-guard.yml` and runs `scripts/health-summary-guard.mjs` on push, pull request, and manual dispatch.
+
+### System manifest handoff regression coverage
+
+The system manifest route advertises the Spatial handoff metadata, and `apps/studio/tests/system-manifest-spatial-handoff.test.mjs` now protects that block through the auto-discovered Studio test path.
 
 ## Remaining blockers
 
@@ -63,17 +67,8 @@ Follow-up:
 - wire `scripts/health-summary-guard.mjs` into the local audit script once safe package edits are possible
 - keep the focused CI workflow and auto-discovered test as baseline coverage
 
-### 4. System manifest handoff block needs stronger direct regression coverage
-
-The system manifest route now advertises the Spatial handoff metadata. Direct manifest-specific tests were blocked, so this should be covered by a focused test or smoke check in a later pass.
-
-Follow-up:
-
-- add a manifest regression test once connector filtering allows it
-- or add a smaller route-contract guard that does not duplicate blocked strings
-
 ## Safe current claim
 
-URAI Studio is materially more complete and more guarded than before this pass. It has stronger contracts, fallback-safe export handoff wiring, health readiness summaries, release evidence structure, source hygiene checks, OpenAPI handoff alignment, ecosystem URL-key alignment, and automatic test discovery.
+URAI Studio is materially more complete and more guarded than before this pass. It has stronger contracts, fallback-safe export handoff wiring, health readiness summaries, release evidence structure, source hygiene checks, OpenAPI handoff alignment, ecosystem URL-key alignment, system manifest handoff coverage, and automatic test discovery.
 
 It is not final production-locked until CI, release, deploy, and live smoke evidence are recorded for the current commit.
