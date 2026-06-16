@@ -26,7 +26,21 @@ export function priceForPlan(plan: string): { priceId: string; tier: Plan } {
   return { priceId: hit.priceId, tier: hit.tier };
 }
 
-export async function setUserBilling(uid: string, patch: any) {
+type BillingPatch = {
+  status?: string;
+  tier?: Plan;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  currentPeriodEnd?: string;
+};
+
+type BillingRecord = BillingPatch;
+
+type UserBillingDocument = {
+  billing?: BillingRecord;
+};
+
+export async function setUserBilling(uid: string, patch: BillingPatch) {
   const db = adminDb;
   await db.collection("users").doc(uid).set(
     {
@@ -42,8 +56,9 @@ export async function setUserBilling(uid: string, patch: any) {
 export async function getUserPlan(uid: string): Promise<{ active: boolean; tier: Plan }> {
   const db = adminDb;
   const snap = await db.collection("users").doc(uid).get();
-  const billing = (snap.data() as any)?.billing || {};
+  const user = snap.data() as UserBillingDocument | undefined;
+  const billing = user?.billing ?? {};
   const status = String(billing.status || "inactive");
-  const tier = (billing.tier as Plan) || "none";
+  const tier = billing.tier || "none";
   return { active: status === "active", tier };
 }

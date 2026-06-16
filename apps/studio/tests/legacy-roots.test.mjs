@@ -7,7 +7,9 @@ const rootPackage = fs.readFileSync(new URL('../../../package.json', import.meta
 assert.ok(workspace.includes('apps/*'), 'workspace must include canonical apps packages');
 assert.ok(workspace.includes('packages/*'), 'workspace must include shared packages');
 
-for (const legacyRoot of ['uraistudio-app', '\napp\n', '\nstudio\n']) {
+const forbiddenWorkspaceRoots = ['uraistudio-app', '\napp\n', '\nstudio\n'];
+
+for (const legacyRoot of forbiddenWorkspaceRoots) {
   assert.ok(!workspace.includes(legacyRoot), `workspace must not include legacy root ${legacyRoot}`);
 }
 
@@ -15,4 +17,4 @@ for (const scriptToken of ['--filter studio build', '--filter studio dev', '--fi
   assert.ok(rootPackage.includes(scriptToken), `root package must target canonical studio workspace script: ${scriptToken}`);
 }
 
-console.log('legacy root workspace coverage passed');
+console.log('legacy root workspace coverage passed: urai-studio canonical app root');
