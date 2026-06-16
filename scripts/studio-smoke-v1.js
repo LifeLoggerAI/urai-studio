@@ -66,6 +66,8 @@ for (const file of [
   'functions/src/studio-system.ts',
   'functions/src/create-job.ts',
   'functions/src/job-runner.ts',
+  'apps/studio/system/spatial-handoff.discovery.json',
+  'apps/studio/system/spatial-handoff.openapi.json',
   'apps/studio/lib/urai-system-contract.ts',
   'apps/studio/lib/studio-runtime-store.ts',
   'apps/studio/lib/studio-spatial-handoff.ts',
@@ -86,6 +88,9 @@ for (const file of [
   'apps/studio/tests/public-submissions.test.mjs',
   'apps/studio/tests/storage-rules.test.mjs',
   'apps/studio/tests/studio-spatial-handoff.test.mjs',
+  'apps/studio/tests/spatial-handoff-openapi.test.mjs',
+  'apps/studio/tests/spatial-handoff-discovery.test.mjs',
+  'apps/studio/tests/export-handoff.test.mjs',
   'apps/studio/tests/integrations.test.mjs',
   'apps/studio/tests/create-job-validation.test.mjs',
   'apps/studio/tests/job-runner-fallback.test.mjs',
@@ -117,11 +122,13 @@ has('apps/studio/app/api/waitlist/route.ts', ["collection('waitlist')", 'bot_rej
 has('apps/studio/lib/urai-system-contract.ts', ['URAI_SYSTEM_CONTRACT', 'StudioJob', 'StudioAsset', 'StudioExport', 'UraiPassport', 'V1_GENESIS_HOME', 'V2_COGNITIVE_MIRROR', 'V3_PATTERN_REFLECTION', 'V4_WEBXR_HANDOFF', 'V5_MIRROR_OF_BECOMING']);
 has('apps/studio/lib/studio-runtime-store.ts', ['createStudioJob', 'createStudioExport', 'listTenantJobs', 'tenantScoped', 'studioJobs', 'studioExports']);
 has('apps/studio/lib/studio-spatial-handoff.ts', ['STUDIO_SPATIAL_HANDOFF_VERSION', 'DEFAULT_STUDIO_SPATIAL_RUNTIME_MATRIX', 'validateStudioSpatialManifest', 'listBlockedStudioSpatialClaims', 'isStudioSpatialManifestReleaseSafe']);
+has('apps/studio/system/spatial-handoff.discovery.json', ['"route": "/api/system/spatial-handoff"', '"exportRoute": "/api/studio/exports"', '"requiredExportField": "spatialHandoff"', '"defaultStatus": "fallback_only"', '"defaultRenderer": "fallback_cards"']);
+has('apps/studio/system/spatial-handoff.openapi.json', ['"/api/system/spatial-handoff"', 'spatialHandoff', 'fallback_only']);
 has('apps/studio/lib/studio/integrations.ts', ['asset-factory', 'spatial', 'jobs', 'content', 'analytics', 'marketing', 'admin', 'privacy', 'investors', 'b2b-portal']);
 has('apps/studio/app/api/system/urai-contract/route.ts', ['URAI_SYSTEM_CONTRACT', 'URAI_SYSTEM_CONTRACT_VERSION', 'Cache-Control']);
 has('apps/studio/app/api/system/spatial-handoff/route.ts', ['STUDIO_SPATIAL_HANDOFF_VERSION', 'DEFAULT_STUDIO_SPATIAL_RUNTIME_MATRIX', 'evidenceRequiredRuntimeTargets', 'fallback_cards']);
 has('apps/studio/app/api/studio/jobs/route.ts', ['createStudioJob', 'listTenantJobs', 'runtimeStoreStatus', 'invalid_prompt']);
-has('apps/studio/app/api/studio/exports/route.ts', ['createStudioExport', 'runtimeStoreStatus', 'tenantScoped', 'invalid_project']);
+has('apps/studio/app/api/studio/exports/route.ts', ['createStudioExport', 'runtimeStoreStatus', 'tenantScoped', 'invalid_project', 'createFallbackStudioSpatialManifest', 'spatialHandoff']);
 has('functions/src/create-job.ts', ['normalizeCreateJobPayload', 'allowedKinds', 'projectId', 'kind', 'priority']);
 has('functions/src/job-runner.ts', ['fallbackOutput', 'fallbackOnly: true', 'readyForExternalUse: false', 'fallback-clip.txt', 'fallback-package-manifest.json', 'job_succeeded_fallback']);
 has('docs/contracts/URAI_SYSTEM_CONTRACT.md', ['StudioJob', 'StudioAsset', 'StudioExport', 'UraiPassport', 'V1_GENESIS_HOME', 'V5_MIRROR_OF_BECOMING']);
