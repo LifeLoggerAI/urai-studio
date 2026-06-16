@@ -38,6 +38,7 @@ for (const file of [
   'docs/URAI_STUDIO_ECOSYSTEM_URL_KEYS.md',
   'functions/src/studio-system.ts',
   'functions/src/create-job.ts',
+  'functions/src/job-runner.ts',
   'apps/studio/lib/urai-system-contract.ts',
   'apps/studio/lib/studio-runtime-store.ts',
   'apps/studio/lib/studio-spatial-handoff.ts',
@@ -88,6 +89,7 @@ has('apps/studio/app/api/system/spatial-handoff/route.ts', ['STUDIO_SPATIAL_HAND
 has('apps/studio/app/api/studio/jobs/route.ts', ['createStudioJob', 'listTenantJobs', 'runtimeStoreStatus', 'invalid_prompt']);
 has('apps/studio/app/api/studio/exports/route.ts', ['createStudioExport', 'runtimeStoreStatus', 'tenantScoped', 'invalid_project']);
 has('functions/src/create-job.ts', ['normalizeCreateJobPayload', 'allowedKinds', 'projectId', 'kind', 'priority']);
+has('functions/src/job-runner.ts', ['fallbackOutput', 'fallbackOnly: true', 'readyForExternalUse: false', 'fallback-clip.txt', 'fallback-package-manifest.json', 'job_succeeded_fallback']);
 has('docs/contracts/URAI_SYSTEM_CONTRACT.md', ['StudioJob', 'StudioAsset', 'StudioExport', 'UraiPassport', 'V1_GENESIS_HOME', 'V5_MIRROR_OF_BECOMING']);
 has('docs/URAI_STUDIO_SYSTEM_PIPELINES_AUDIT_2026-06-16.md', ['Jobs Pipeline', 'Content Pipeline', 'Asset Factory Pipeline', 'Spatial Pipeline', 'Analytics Pipeline', 'Marketing Pipeline', 'B2B Portal']);
 has('docs/URAI_STUDIO_ECOSYSTEM_URL_KEYS.md', ['NEXT_PUBLIC_ASSET_FACTORY_URL', 'NEXT_PUBLIC_URAI_SPATIAL_URL', 'NEXT_PUBLIC_URAI_JOBS_URL', 'NEXT_PUBLIC_URAI_CONTENT_URL', 'NEXT_PUBLIC_URAI_ANALYTICS_URL', 'NEXT_PUBLIC_B2B_PORTAL_URL']);
