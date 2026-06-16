@@ -62,6 +62,7 @@ for (const file of [
   'docs/contracts/URAI_SYSTEM_CONTRACT.md',
   'docs/URAI_STUDIO_SYSTEM_PIPELINES_AUDIT_2026-06-16.md',
   'docs/URAI_STUDIO_ECOSYSTEM_URL_KEYS.md',
+  'docs/URAI_STUDIO_RELEASE_EVIDENCE.schema.json',
   'functions/src/studio-system.ts',
   'functions/src/create-job.ts',
   'functions/src/job-runner.ts',
@@ -80,17 +81,22 @@ for (const file of [
   'apps/studio/app/api/studio/exports/route.ts',
   'apps/studio/components/site/MagicalHomeExperience.tsx',
   'apps/studio/tests/all.test.mjs',
+  'apps/studio/tests/all-runner.test.mjs',
+  'apps/studio/tests/legacy-roots.test.mjs',
   'apps/studio/tests/public-submissions.test.mjs',
   'apps/studio/tests/storage-rules.test.mjs',
   'apps/studio/tests/studio-spatial-handoff.test.mjs',
   'apps/studio/tests/integrations.test.mjs',
   'apps/studio/tests/create-job-validation.test.mjs',
   'apps/studio/tests/job-runner-fallback.test.mjs',
+  'apps/studio/tests/release-evidence-schema.test.mjs',
 ]) {
   exists(file);
 }
 
 has('apps/studio/tests/all.test.mjs', ['readdirSync', "file.endsWith('.test.mjs')", 'await import', 'all Studio regression tests passed']);
+has('apps/studio/tests/all-runner.test.mjs', ['auto-discovers every .test.mjs file', 'forbiddenManualImports', 'await import']);
+has('apps/studio/tests/legacy-roots.test.mjs', ['apps/*', 'packages/*', 'forbiddenWorkspaceRoots', 'urai-studio canonical app root']);
 has('apps/studio/components/site/MagicalHomeExperience.tsx', [
   'data-urai-v1-home-experience',
   'data-urai-v1-home-shell="ground-orb-chat"',
@@ -121,6 +127,7 @@ has('functions/src/job-runner.ts', ['fallbackOutput', 'fallbackOnly: true', 'rea
 has('docs/contracts/URAI_SYSTEM_CONTRACT.md', ['StudioJob', 'StudioAsset', 'StudioExport', 'UraiPassport', 'V1_GENESIS_HOME', 'V5_MIRROR_OF_BECOMING']);
 has('docs/URAI_STUDIO_SYSTEM_PIPELINES_AUDIT_2026-06-16.md', ['Jobs Pipeline', 'Content Pipeline', 'Asset Factory Pipeline', 'Spatial Pipeline', 'Analytics Pipeline', 'Marketing Pipeline', 'B2B Portal']);
 has('docs/URAI_STUDIO_ECOSYSTEM_URL_KEYS.md', ['NEXT_PUBLIC_ASSET_FACTORY_URL', 'NEXT_PUBLIC_URAI_SPATIAL_URL', 'NEXT_PUBLIC_URAI_JOBS_URL', 'NEXT_PUBLIC_URAI_CONTENT_URL', 'NEXT_PUBLIC_URAI_ANALYTICS_URL', 'NEXT_PUBLIC_B2B_PORTAL_URL']);
+has('docs/URAI_STUDIO_RELEASE_EVIDENCE.schema.json', ['URAI Studio release evidence record', 'repo', 'commitSha', 'recordedAt', 'environment', 'gates', 'install', 'lint', 'typecheck', 'tests', 'appBuild', 'functionsBuild', 'doneDoneGuard', 'releaseCheck', 'smoke']);
 has('firestore.rules', ['match /waitlist/{id}', 'match /contactRequests/{id}', 'match /projectRequests/{id}', 'match /integrationRequests/{id}', 'match /studioBriefs/{id}', 'match /studioJobs/{id}', 'match /studioExports/{id}', 'allow read, write: if false;']);
 has('firestore.indexes.json', ['"collectionGroup": "studioBriefs"', '"collectionGroup": "studioJobs"', '"collectionGroup": "studioExports"', '"fieldPath": "tenantId"']);
 has('storage.rules', ['match /generated/{uid}/studio', 'match /public/studio-assets', 'allow write: if false;', 'request.auth.uid == uid', 'isStudioMember(studioId)']);
