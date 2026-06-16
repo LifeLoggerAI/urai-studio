@@ -34,21 +34,29 @@ for (const file of [
   'firestore.indexes.json',
   'docs/URAI_STUDIO_DONE_DONE_LOCK.md',
   'docs/contracts/URAI_SYSTEM_CONTRACT.md',
+  'docs/URAI_STUDIO_SYSTEM_PIPELINES_AUDIT_2026-06-16.md',
   'functions/src/studio-system.ts',
+  'functions/src/create-job.ts',
   'apps/studio/lib/urai-system-contract.ts',
   'apps/studio/lib/studio-runtime-store.ts',
+  'apps/studio/lib/studio-spatial-handoff.ts',
+  'apps/studio/lib/studio/integrations.ts',
   'apps/studio/app/page.tsx',
   'apps/studio/app/admin/page.tsx',
   'apps/studio/app/studio/admin/page.tsx',
   'apps/studio/app/api/contact/route.ts',
   'apps/studio/app/api/waitlist/route.ts',
   'apps/studio/app/api/system/urai-contract/route.ts',
+  'apps/studio/app/api/system/spatial-handoff/route.ts',
   'apps/studio/app/api/studio/jobs/route.ts',
   'apps/studio/app/api/studio/exports/route.ts',
   'apps/studio/components/site/MagicalHomeExperience.tsx',
   'apps/studio/tests/all.test.mjs',
   'apps/studio/tests/public-submissions.test.mjs',
   'apps/studio/tests/storage-rules.test.mjs',
+  'apps/studio/tests/studio-spatial-handoff.test.mjs',
+  'apps/studio/tests/integrations.test.mjs',
+  'apps/studio/tests/create-job-validation.test.mjs',
 ]) {
   exists(file);
 }
@@ -72,10 +80,15 @@ has('apps/studio/app/api/contact/route.ts', ["collection('contactRequests')", "c
 has('apps/studio/app/api/waitlist/route.ts', ["collection('waitlist')", 'bot_rejected', 'invalid_json']);
 has('apps/studio/lib/urai-system-contract.ts', ['URAI_SYSTEM_CONTRACT', 'StudioJob', 'StudioAsset', 'StudioExport', 'UraiPassport', 'V1_GENESIS_HOME', 'V2_COGNITIVE_MIRROR', 'V3_PATTERN_REFLECTION', 'V4_WEBXR_HANDOFF', 'V5_MIRROR_OF_BECOMING']);
 has('apps/studio/lib/studio-runtime-store.ts', ['createStudioJob', 'createStudioExport', 'listTenantJobs', 'tenantScoped', 'studioJobs', 'studioExports']);
+has('apps/studio/lib/studio-spatial-handoff.ts', ['STUDIO_SPATIAL_HANDOFF_VERSION', 'DEFAULT_STUDIO_SPATIAL_RUNTIME_MATRIX', 'validateStudioSpatialManifest', 'listBlockedStudioSpatialClaims', 'isStudioSpatialManifestReleaseSafe']);
+has('apps/studio/lib/studio/integrations.ts', ['asset-factory', 'spatial', 'jobs', 'content', 'analytics', 'marketing', 'admin', 'privacy', 'investors', 'b2b-portal']);
 has('apps/studio/app/api/system/urai-contract/route.ts', ['URAI_SYSTEM_CONTRACT', 'URAI_SYSTEM_CONTRACT_VERSION', 'Cache-Control']);
+has('apps/studio/app/api/system/spatial-handoff/route.ts', ['STUDIO_SPATIAL_HANDOFF_VERSION', 'DEFAULT_STUDIO_SPATIAL_RUNTIME_MATRIX', 'evidenceRequiredRuntimeTargets', 'fallback_cards']);
 has('apps/studio/app/api/studio/jobs/route.ts', ['createStudioJob', 'listTenantJobs', 'runtimeStoreStatus', 'invalid_prompt']);
 has('apps/studio/app/api/studio/exports/route.ts', ['createStudioExport', 'runtimeStoreStatus', 'tenantScoped', 'invalid_project']);
+has('functions/src/create-job.ts', ['normalizeCreateJobPayload', 'allowedKinds', 'projectId', 'kind', 'priority']);
 has('docs/contracts/URAI_SYSTEM_CONTRACT.md', ['StudioJob', 'StudioAsset', 'StudioExport', 'UraiPassport', 'V1_GENESIS_HOME', 'V5_MIRROR_OF_BECOMING']);
+has('docs/URAI_STUDIO_SYSTEM_PIPELINES_AUDIT_2026-06-16.md', ['Jobs Pipeline', 'Content Pipeline', 'Asset Factory Pipeline', 'Spatial Pipeline', 'Analytics Pipeline', 'Marketing Pipeline', 'B2B Portal']);
 has('firestore.rules', ['match /waitlist/{id}', 'match /contactRequests/{id}', 'match /projectRequests/{id}', 'match /integrationRequests/{id}', 'match /studioBriefs/{id}', 'match /studioJobs/{id}', 'match /studioExports/{id}', 'allow read, write: if false;']);
 has('firestore.indexes.json', ['"collectionGroup": "studioBriefs"', '"collectionGroup": "studioJobs"', '"collectionGroup": "studioExports"', '"fieldPath": "tenantId"']);
 has('storage.rules', ['match /generated/{uid}/studio', 'match /public/studio-assets', 'allow write: if false;', 'request.auth.uid == uid', 'isStudioMember(studioId)']);
