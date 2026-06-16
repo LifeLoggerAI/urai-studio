@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { STUDIO_SPATIAL_HANDOFF_VERSION } from '@/lib/studio-spatial-handoff';
 import { studioConfig } from '@/lib/studio/config';
 import { firebaseDiagnostics } from '@/lib/studio/firebase';
 import { studioIntegrations, type StudioIntegrationDiagnostic } from '@/lib/studio/integrations';
@@ -21,6 +22,15 @@ type SystemManifestResponse = {
   modules: StudioModule[];
   capabilities: readonly SystemCapability[];
   integrations: StudioIntegrationDiagnostic[];
+  spatialHandoff: {
+    schemaVersion: typeof STUDIO_SPATIAL_HANDOFF_VERSION;
+    discovery: '/api/system/spatial-handoff';
+    exportField: 'spatialHandoff';
+    exportRoute: '/api/studio/exports';
+    staticDiscovery: 'apps/studio/system/spatial-handoff.discovery.json';
+    fallbackStatus: 'fallback_only';
+    fallbackRenderer: 'fallback_cards';
+  };
   deployment: {
     hosting: 'firebase';
     canonical: string;
@@ -47,6 +57,15 @@ export async function GET() {
     modules: studioModules,
     capabilities: systemCapabilities,
     integrations: studioIntegrations,
+    spatialHandoff: {
+      schemaVersion: STUDIO_SPATIAL_HANDOFF_VERSION,
+      discovery: '/api/system/spatial-handoff',
+      exportField: 'spatialHandoff',
+      exportRoute: '/api/studio/exports',
+      staticDiscovery: 'apps/studio/system/spatial-handoff.discovery.json',
+      fallbackStatus: 'fallback_only',
+      fallbackRenderer: 'fallback_cards',
+    },
     deployment: { hosting: 'firebase', canonical },
     persistenceMode: 'firebase',
     fallbackActive: !readiness.ok,
