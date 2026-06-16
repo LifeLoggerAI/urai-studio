@@ -1,13 +1,17 @@
-import './modules.test.mjs';
-import './openapi.test.mjs';
-import './routes-smoke.mjs';
-import './v1-home.test.mjs';
-import './public-submissions.test.mjs';
-import './storage-rules.test.mjs';
-import './admin-gates.test.mjs';
-import './status-copy.test.mjs';
-import './legal-pages.test.mjs';
-import './module-copy.test.mjs';
-import './studio-spatial-handoff.test.mjs';
+import fs from 'node:fs';
 
-console.log('all Studio regression tests passed');
+const currentFile = new URL(import.meta.url).pathname;
+const testDir = new URL('.', import.meta.url);
+
+const testFiles = fs
+  .readdirSync(testDir)
+  .filter((file) => file.endsWith('.test.mjs'))
+  .sort();
+
+for (const file of testFiles) {
+  const testUrl = new URL(file, testDir);
+  if (testUrl.pathname === currentFile) continue;
+  await import(testUrl.href);
+}
+
+console.log('all Studio regression tests passed', testFiles.length - 1);
