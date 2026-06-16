@@ -122,6 +122,22 @@ function walk(dir, files = []) {
   return files;
 }
 
+function walkAny(dir, files = []) {
+  if (!existsSync(dir)) return files;
+  for (const entry of readdirSync(dir)) {
+    const full = path.join(dir, entry);
+    const rel = toPosix(path.relative(repoRoot, full));
+    if (rel.startsWith('node_modules/') || rel.startsWith('.git/') || rel.startsWith('.next/')) continue;
+    const stat = statSync(full);
+    if (stat.isDirectory()) {
+      walkAny(full, files);
+    } else {
+      files.push(full);
+    }
+  }
+  return files;
+}
+
 function read(filePath) {
   return readFileSync(filePath, 'utf8');
 }
@@ -176,6 +192,7 @@ for (const [file, terms] of requiredPipelineTerms.entries()) {
 }
 
 const activeFiles = productionRoots.flatMap((root) => walk(path.join(repoRoot, root)));
+const activeAnyFiles = productionRoots.flatMap((root) => walkAny(path.join(repoRoot, root)));
 const deprecatedImports = [];
 
 for (const file of activeFiles) {
@@ -194,6 +211,20 @@ for (const file of activeFiles) {
 
 if (deprecatedImports.length > 0) {
   fail('production code imports deprecated app roots', deprecatedImports);
+}
+
+const unneutralizedActiveBackups = [];
+for (const file of activeAnyFiles) {
+  const relFile = toPosix(path.relative(repoRoot, file));
+  if (!relFile.includes('.bak')) continue;
+  const content = read(file);
+  if (!content.includes('Archived placeholder') || !content.includes('export {};')) {
+    unneutralizedActiveBackups.push(relFile);
+  }
+}
+
+if (unneutralizedActiveBackups.length > 0) {
+  fail('active Studio source contains unneutralized backup artifacts', unneutralizedActiveBackups);
 }
 
 const deprecatedExisting = [];
