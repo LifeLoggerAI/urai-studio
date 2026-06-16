@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { requireStudioAuth } from '@/lib/studio-auth';
 import { createStudioExport, runtimeStoreStatus } from '@/lib/studio-runtime-store';
+import { createFallbackStudioSpatialManifest } from '@/lib/studio-spatial-handoff';
 import type { StudioExportKind } from '@/lib/urai-system-contract';
 
 export const dynamic = 'force-dynamic';
@@ -44,6 +45,25 @@ function authErrorResponse(auth: Awaited<ReturnType<typeof requireStudioAuth>>) 
   );
 }
 
+function createExportHandoff(input: {
+  exportId: string;
+  projectId: string;
+  jobId?: string;
+  tenantId: string;
+  userId: string;
+  kind: StudioExportKind;
+}) {
+  return createFallbackStudioSpatialManifest({
+    exportId: input.exportId,
+    projectId: input.projectId,
+    jobId: input.jobId,
+    tenantId: input.tenantId,
+    userId: input.userId,
+    title: `URAI Studio ${input.kind} export`,
+    description: 'Fallback-safe Studio export manifest for URAI Spatial validation.',
+  });
+}
+
 export async function GET(req: Request) {
   const auth = await requireStudioAuth(req);
   if (!auth.ok) return authErrorResponse(auth);
@@ -58,6 +78,11 @@ export async function GET(req: Request) {
     store: runtimeStoreStatus(),
     requiredFields: ['projectId', 'kind'],
     tenantScoped: true,
+    spatialHandoff: {
+      includedInPostResponses: true,
+      defaultStatus: 'fallback_only',
+      validator: '/api/system/spatial-handoff',
+    },
   });
 }
 
@@ -90,6 +115,16 @@ export async function POST(req: Request) {
   });
 
   if (!result.ok) {
+    const contractExportId = `contract_${projectId}_${kind}`;
+    const handoffManifest = createExportHandoff({
+      exportId: contractExportId,
+      projectId,
+      jobId: jobId || undefined,
+      tenantId: auth.tenantId,
+      userId: auth.uid,
+      kind,
+    });
+
     return json(
       {
         ok: !isProduction,
@@ -98,9 +133,11 @@ export async function POST(req: Request) {
         authMode: auth.authMode,
         tenantId: auth.tenantId,
         store: runtimeStoreStatus(),
+        spatialHandoff: handoffManifest,
         data: !isProduction
           ? {
               contractOnly: true,
+              id: contractExportId,
               projectId,
               jobId: jobId || undefined,
               assetIds,
@@ -116,5 +153,23 @@ export async function POST(req: Request) {
     );
   }
 
-  return json({ ok: true, status: 'queued', persisted: true, authMode: auth.authMode, tenantId: auth.tenantId, store: runtimeStoreStatus(), data: result.data });
+  const handoffManifest = createExportHandoff({
+    exportId: result.data.id,
+    projectId: result.data.projectId,
+    jobId: result.data.jobId,
+    tenantId: result.data.tenantId,
+    userId: result.data.userId,
+    kind: result.data.kind,
+  });
+
+  return json({
+    ok: true,
+    status: 'queued',
+    persisted: true,
+    authMode: auth.authMode,
+    tenantId: auth.tenantId,
+    store: runtimeStoreStatus(),
+    spatialHandoff: handoffManifest,
+    data: result.data,
+  });
 }
