@@ -1,8 +1,15 @@
 import assert from 'node:assert/strict';
-import spec from '../system/spatial-handoff.openapi.json' with { type: 'json' };
+import fragmentSpec from '../system/spatial-handoff.openapi.json' with { type: 'json' };
+import canonicalSpec from '../system/urai-studio.openapi.json' with { type: 'json' };
 
-assert.equal(spec.openapi, '3.0.3');
-assert.ok(spec.paths['/api/system/spatial-handoff']);
-assert.ok(spec.paths['/api/system/spatial-handoff'].get);
+const route = '/api/system/spatial-handoff';
 
-console.log('spatial handoff openapi fragment passed');
+assert.equal(fragmentSpec.openapi, '3.0.3');
+assert.ok(fragmentSpec.paths[route]);
+assert.ok(fragmentSpec.paths[route].get);
+
+assert.equal(canonicalSpec.openapi, '3.0.3');
+assert.ok(canonicalSpec.paths[route], 'canonical Studio OpenAPI must include the Spatial handoff route');
+assert.ok(canonicalSpec.paths[route].get, 'canonical Studio OpenAPI must expose the Spatial handoff GET contract');
+
+console.log('spatial handoff openapi fragment and canonical route passed');
