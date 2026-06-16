@@ -21,6 +21,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm done-done:guard
+      - run: node scripts/evidence-schema-guard.mjs
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
