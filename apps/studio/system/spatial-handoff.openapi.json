@@ -14,5 +14,14 @@
         }
       }
     }
+  },
+  "components": {
+    "schemas": {
+      "spatialHandoff": {
+        "type": "object",
+        "description": "Studio-to-Spatial export handoff manifest returned by URAI Studio export APIs.",
+        "additionalProperties": true
+      }
+    }
   }
 }
