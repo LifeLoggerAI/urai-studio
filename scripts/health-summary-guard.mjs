@@ -3,14 +3,21 @@ import path from 'node:path';
 
 const root = process.cwd();
 const routePath = path.join(root, 'apps/studio/app/api/system/health/route.ts');
+const testPath = path.join(root, 'apps/studio/tests/health-summary.test.mjs');
 
-if (!fs.existsSync(routePath)) {
-  throw new Error('health route is missing');
+for (const [label, file] of [
+  ['health route', routePath],
+  ['health summary test', testPath],
+]) {
+  if (!fs.existsSync(file)) {
+    throw new Error(`${label} is missing`);
+  }
 }
 
-const src = fs.readFileSync(routePath, 'utf8');
+const routeSrc = fs.readFileSync(routePath, 'utf8');
+const testSrc = fs.readFileSync(testPath, 'utf8');
 
-const requiredTokens = [
+const routeTokens = [
   'integrationSummary',
   'configured.length',
   'missing.length',
@@ -19,9 +26,21 @@ const requiredTokens = [
   'integrationSummary: integrationSummary()',
 ];
 
-for (const token of requiredTokens) {
-  if (!src.includes(token)) {
+for (const token of routeTokens) {
+  if (!routeSrc.includes(token)) {
     throw new Error(`health summary guard failed: ${token}`);
+  }
+}
+
+const testTokens = [
+  'integrationSummary',
+  'requiredMissingIds:',
+  'health summary response coverage passed',
+];
+
+for (const token of testTokens) {
+  if (!testSrc.includes(token)) {
+    throw new Error(`health summary test guard failed: ${token}`);
   }
 }
 
