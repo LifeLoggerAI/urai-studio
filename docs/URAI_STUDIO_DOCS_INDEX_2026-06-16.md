@@ -33,6 +33,7 @@ This index points to the current repo-side documents and machine-readable contra
 - `apps/studio/tests/env-example-ecosystem.test.mjs` — environment example and integration registry alignment test.
 - `apps/studio/tests/export-handoff.test.mjs` — export handoff regression test.
 - `apps/studio/tests/health-summary.test.mjs` — health summary regression test.
+- `apps/studio/tests/readme-proof-path.test.mjs` — README proof-path navigation regression test.
 - `apps/studio/tests/security-surface-presence.test.mjs` — security surface presence guard.
 - `apps/studio/tests/source-hygiene.test.mjs` — active source hygiene guard.
 - `apps/studio/tests/spatial-handoff-discovery.test.mjs` — static handoff discovery regression test.
