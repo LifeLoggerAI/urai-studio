@@ -24,6 +24,32 @@ function has(file, tokens) {
   }
 }
 
+function walk(dir) {
+  const absolute = path.join(root, dir);
+  if (!fs.existsSync(absolute)) return [];
+
+  const found = [];
+  for (const entry of fs.readdirSync(absolute, { withFileTypes: true })) {
+    const relative = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      found.push(...walk(relative));
+    } else {
+      found.push(relative);
+    }
+  }
+  return found;
+}
+
+function archivedBackupsAreNeutralized(dir) {
+  for (const file of walk(dir)) {
+    if (!file.includes('.bak')) continue;
+    const src = read(file);
+    if (!src.includes('Archived placeholder') || !src.includes('export {};')) {
+      throw new Error(`${file} is an active backup artifact; neutralize or remove it`);
+    }
+  }
+}
+
 for (const file of [
   'package.json',
   'pnpm-workspace.yaml',
@@ -98,5 +124,7 @@ has('firestore.indexes.json', ['"collectionGroup": "studioBriefs"', '"collection
 has('storage.rules', ['match /generated/{uid}/studio', 'match /public/studio-assets', 'allow write: if false;', 'request.auth.uid == uid', 'isStudioMember(studioId)']);
 has('.github/workflows/studio-audit.yml', ['pnpm done-done:guard', 'pnpm lint', 'pnpm typecheck', 'pnpm test', 'pnpm build', 'pnpm --dir functions build', 'pnpm studio:smoke']);
 has('functions/src/studio-system.ts', ['export const ping', 'export const seedStudioDemo', 'export const getStudioDashboard', 'firebase-functions/v2/https']);
+
+archivedBackupsAreNeutralized('apps/studio/src');
 
 console.log('[urai-studio:smoke-v1] passed');
