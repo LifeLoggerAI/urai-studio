@@ -1,5 +1,19 @@
 "use client";
 
+type StudioJobsClientRow = {
+  id?: string;
+  type?: string;
+  status?: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  [key: string]: unknown;
+};
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+
 import { useEffect, useState } from "react";
 import { listJobs } from "@/lib/firestoreStudio";
 
@@ -17,7 +31,7 @@ export default function JobsClient() {
         setErr(null);
         const rows = await listJobs(50);
         if (alive) setJobs(Array.isArray(rows) ? rows : []);
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (alive) setErr(e?.message || "jobs_load_failed");
       } finally {
         if (alive) setLoading(false);
@@ -35,7 +49,7 @@ export default function JobsClient() {
 
       {!loading && !err && (
         <ul style={{ marginTop: 12 }}>
-          {jobs.map((j: any, i: number) => (
+          {jobs.map((j: StudioJobsClientRow, i: number) => (
             <li key={j?.id || i} style={{ padding: "8px 0", borderBottom: "1px solid #eee" }}>
               <div style={{ fontWeight: 600 }}>{j?.id || "(no id)"}</div>
               <div style={{ opacity: 0.7, fontSize: 12 }}>{String(j?.status || j?.state || "unknown")}</div>

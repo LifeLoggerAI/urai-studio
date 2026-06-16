@@ -24,7 +24,12 @@
     },
     "environment": {
       "type": "string",
-      "enum": ["local", "ci", "staging", "production"]
+      "enum": [
+        "local",
+        "ci",
+        "staging",
+        "production"
+      ]
     },
     "gates": {
       "type": "object",
@@ -41,33 +46,65 @@
         "smoke"
       ],
       "properties": {
-        "install": {"$ref": "#/$defs/gate"},
-        "lint": {"$ref": "#/$defs/gate"},
-        "typecheck": {"$ref": "#/$defs/gate"},
-        "tests": {"$ref": "#/$defs/gate"},
-        "appBuild": {"$ref": "#/$defs/gate"},
-        "functionsBuild": {"$ref": "#/$defs/gate"},
-        "doneDoneGuard": {"$ref": "#/$defs/gate"},
-        "releaseCheck": {"$ref": "#/$defs/gate"},
-        "smoke": {"$ref": "#/$defs/gate"},
-        "deploy": {"$ref": "#/$defs/gate"},
-        "liveSmoke": {"$ref": "#/$defs/gate"}
+        "install": {
+          "$ref": "#/$defs/gate"
+        },
+        "lint": {
+          "$ref": "#/$defs/gate"
+        },
+        "typecheck": {
+          "$ref": "#/$defs/gate"
+        },
+        "tests": {
+          "$ref": "#/$defs/gate"
+        },
+        "appBuild": {
+          "$ref": "#/$defs/gate"
+        },
+        "functionsBuild": {
+          "$ref": "#/$defs/gate"
+        },
+        "doneDoneGuard": {
+          "$ref": "#/$defs/gate"
+        },
+        "releaseCheck": {
+          "$ref": "#/$defs/gate"
+        },
+        "smoke": {
+          "$ref": "#/$defs/gate"
+        },
+        "deploy": {
+          "$ref": "#/$defs/gate"
+        },
+        "liveSmoke": {
+          "$ref": "#/$defs/gate"
+        }
       }
     },
     "notes": {
       "type": "array",
-      "items": {"type": "string"}
+      "items": {
+        "type": "string"
+      }
     }
   },
   "$defs": {
     "gate": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "evidence"],
+      "required": [
+        "status",
+        "evidence"
+      ],
       "properties": {
         "status": {
           "type": "string",
-          "enum": ["pass", "fail", "blocked", "not_run"]
+          "enum": [
+            "pass",
+            "fail",
+            "blocked",
+            "not_run"
+          ]
         },
         "evidence": {
           "type": "string"
@@ -78,5 +115,6 @@
         }
       }
     }
-  }
+  },
+  "description": "URAI Studio release evidence record. Schema for recording URAI Studio release evidence across install, lint, typecheck, tests, app build, functions build, done-done guard, release check, and smoke gates."
 }

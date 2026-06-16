@@ -18,7 +18,7 @@ export type ListJobsParams = {
   cursor?: string;      // updatedAt ISO of last row (simple cursor)
 };
 
-function toIso(v: any): string | null {
+function toIso(v: unknown): string | null {
   if (!v) return null;
   if (typeof v === "string") return v;
   if (v.toDate) return v.toDate().toISOString();
@@ -44,7 +44,7 @@ export async function listJobs(params: ListJobsParams): Promise<{ rows: JobRow[]
     // find doc by updatedAt == cursor (best-effort), else skip cursor
     const snap = await ref.get();
     const docs = snap.docs;
-    const idx = docs.findIndex((d) => toIso((d.data() as any).updatedAt) === cursor);
+    const idx = docs.findIndex((d) => toIso((d.data() as Record<string, unknown>).updatedAt) === cursor);
     if (idx >= 0 && idx < docs.length - 1) {
       ref = ref.startAfter(docs[idx]).limit(limit);
     }
@@ -52,7 +52,7 @@ export async function listJobs(params: ListJobsParams): Promise<{ rows: JobRow[]
 
   const snap = await ref.get();
   let rows = snap.docs.map((d) => {
-    const data = d.data() as any;
+    const data = d.data() as Record<string, unknown>;
     return {
       id: d.id,
       type: data.type,

@@ -3,7 +3,16 @@
 
 import Link from 'next/link';
 
-export default function JobsTable({ jobs }: { jobs: any[] }) {
+type StudioJobTableRow = {
+  id?: string;
+  type?: string;
+  status?: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  [key: string]: unknown;
+};
+
+export default function JobsTable({ jobs }: { jobs: StudioJobTableRow[] }) {
   if (!jobs || jobs.length === 0) {
     return (
       <div className="text-center py-12">
