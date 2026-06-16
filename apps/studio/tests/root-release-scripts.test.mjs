@@ -6,8 +6,10 @@ const scripts = rootPackage.scripts ?? {};
 
 assert.equal(scripts['done-done:guard'], 'node scripts/done-done-guard.mjs');
 assert.equal(scripts['evidence:guard'], 'node scripts/evidence-schema-guard.mjs');
+assert.equal(scripts['health:guard'], 'node scripts/health-summary-guard.mjs');
 assert.ok(scripts.audit.includes('pnpm done-done:guard'), 'audit must run the done-done guard');
 assert.ok(scripts.audit.includes('pnpm evidence:guard'), 'audit must run the evidence guard');
+assert.ok(scripts.audit.includes('pnpm health:guard'), 'audit must run the health guard');
 assert.ok(scripts.audit.includes('pnpm lint'), 'audit must run lint');
 assert.ok(scripts.audit.includes('pnpm typecheck'), 'audit must run typecheck');
 assert.ok(scripts.audit.includes('pnpm test'), 'audit must run tests');
