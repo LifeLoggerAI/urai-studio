@@ -193,6 +193,22 @@ check_api_route() {
   }
 
   if [ "$code" != "200" ]; then
+    if [ "$route" = "/api/system/health" ] && [ "$EXPECT_READY" = "false" ] && [ "$code" = "503" ]; then
+      node -e "
+        const fs = require('fs');
+        const data = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
+        if (data.service && data.service !== 'urai-studio') process.exit(2);
+        if (data.ok !== false) process.exit(3);
+        if (data.readiness?.status !== 'degraded') process.exit(4);
+      " "$body" || {
+        rm -f "$body"
+        fail "$route returned invalid degraded health JSON"
+      }
+      rm -f "$body"
+      echo "[OK] api $route -> 503 degraded allowed"
+      return
+    fi
+
     echo "--- response body for $url ---" >&2
     cat "$body" >&2 || true
     echo >&2
