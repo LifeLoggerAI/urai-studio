@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# URAI Studio App
 
-## Getting Started
+Canonical app root: `apps/studio`
+Framework: Next.js App Router
+Package manager: pnpm `9.7.0`
+Runtime target: Node `>=20 <21`
 
-First, run the development server:
+This is the production-facing URAI Studio web app. It is the public and authenticated Studio surface for cinematic AI campaign pages, Studio modules, project workflows, assets, jobs, exports, contact/waitlist flows, privacy/status pages, and system diagnostics.
+
+## What belongs here
+
+- Public Studio pages and routes.
+- Authenticated Studio dashboard and project surfaces.
+- Studio module UI.
+- Client-safe Firebase usage.
+- Public integration/status/manifest views.
+- Shared app components used by the canonical Studio app.
+
+## What does not belong here
+
+- Firebase Admin credentials.
+- Raw private user data.
+- Provider secrets.
+- Historical app roots from `uraistudio-app/**`, root `app/**`, or root `studio/**`.
+- Claims that generation, billing, XR, or live cross-repo provider integrations are complete unless backed by deployment and smoke evidence.
+
+## Run locally
+
+From the repository root:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+corepack prepare pnpm@9.7.0 --activate
+pnpm install --no-frozen-lockfile
+pnpm --filter studio dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Or run directly from this app folder:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open `http://localhost:3000` unless a different port is configured by the environment.
 
-## Learn More
+## Required checks before calling this app release-ready
 
-To learn more about Next.js, take a look at the following resources:
+From the repository root:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm --dir functions build
+pnpm done-done:guard
+pnpm release:check
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Local smoke:
 
-## Deploy on Vercel
+```bash
+HOST=http://127.0.0.1:3000 bash scripts/smoke.sh
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Production smoke after deploy:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+HOST=https://www.uraistudio.com bash scripts/smoke.sh
+```
+
+## Canonical release boundary
+
+The app can be described as a polished Studio shell and backend foundation when the app builds and smoke tests pass.
+
+The app cannot be described as fully done-done until the repo has recorded proof for:
+
+- clean dependency install
+- lint
+- typecheck
+- tests
+- Next build
+- functions build
+- done-done guard
+- Firebase deploy
+- live production smoke
+- real generation provider behavior or explicit feature gates
+- real export package/download behavior
+- tenant-scoped dashboard, job, asset, export, and admin behavior
+
+See `../../docs/URAI_STUDIO_FULL_AUDIT.md` and `../../docs/URAI_STUDIO_DONE_DONE_LOCK.md` for the current completion contract.
