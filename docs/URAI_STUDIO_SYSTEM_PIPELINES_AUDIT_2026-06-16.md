@@ -187,3 +187,16 @@ Resolution rule: final release copy should use the most conservative status from
 ## Safe current claim
 
 URAI Studio is a real Studio app and backend foundation with system contracts, Firebase functions, diagnostics, smoke gates, and safer handoff boundaries. It is not fully live system-of-systems complete until the remaining adapters, tests, deploy proof, and live smoke evidence are recorded.
+
+## Smoke-required ecosystem pipeline guardrails
+
+This audit keeps explicit named guardrails for the connected URAI ecosystem pipelines. These labels are intentionally stable because release smoke checks use them to prevent drift in cross-repo handoff coverage.
+
+- Jobs Pipeline: Studio job creation, tenant scoping, fallback-safe queueing, and job status evidence must remain documented and test-covered.
+- Content Pipeline: content generation/export paths must stay contract-bound and avoid claiming unsupported provider output without evidence.
+- Asset Factory Pipeline: asset job handoff, fallback asset metadata, and external readiness flags must remain explicit.
+- Spatial Pipeline: Studio exports must include the `spatialHandoff` contract and fallback-safe renderer expectations.
+- Analytics Pipeline: diagnostics must distinguish configured integrations from missing required integrations.
+- Marketing Pipeline: public copy must avoid unsupported XR/provider/biometric claims unless verified.
+- B2B Portal: B2B handoff language must remain separated from consumer fallback-safe Studio launch paths.
+

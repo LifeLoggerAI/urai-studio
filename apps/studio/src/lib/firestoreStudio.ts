@@ -43,12 +43,12 @@ export async function getJob(id: string) {
 
   const docRef = doc(_db, "studioJobs", id);
   const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? ({ id: docSnap.id, ...docSnap.data() } as any) : null;
+  return docSnap.exists() ? ({ id: docSnap.id, ...docSnap.data() } as Record<string, unknown>) : null;
 }
 
 export async function requestReplay(jobId: string) {
   const _db = safeDbOr<null>(null);
-  if (_db === null) return { ok: false, jobId, replayId: null as any };
+  if (_db === null) return { ok: false, jobId, replayId: null as Record<string, unknown> };
 
   const replayId = uuidv4();
   const jobRef = doc(_db, "studioJobs", jobId);
