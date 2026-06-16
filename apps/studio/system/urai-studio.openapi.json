@@ -7,6 +7,8 @@
     "/api/system/capabilities": {"get": {"responses": {"200": {"description": "ok"}}}},
     "/api/system/integration-contract": {"get": {"responses": {"200": {"description": "ok"}}}},
     "/api/system/openapi": {"get": {"responses": {"200": {"description": "ok"}}}},
+    "/api/system/spatial-handoff": {"get": {"responses": {"200": {"description": "ok"}}}},
+    "/api/studio/exports": {"get": {"responses": {"200": {"description": "ok"}}}, "post": {"responses": {"200": {"description": "ok"}}}},
     "/api/integrations/asset-factory/health": {"get": {"responses": {"200": {"description": "ok"}}}},
     "/api/integrations/asset-factory/manifest": {"get": {"responses": {"200": {"description": "ok"}}}}
   }
