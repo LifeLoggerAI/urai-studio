@@ -75,6 +75,23 @@ export interface StudioSpatialExportManifest {
   };
 }
 
+export interface StudioSpatialValidationResult {
+  ok: boolean;
+  errors: string[];
+  blockedClaims: string[];
+}
+
+export const STUDIO_SPATIAL_UNSUPPORTED_RUNTIME_TARGETS: SpatialRuntimeTarget[] = [
+  'quest_vr',
+  'visionos',
+  'handheld_ar',
+];
+
+export const STUDIO_SPATIAL_EVIDENCE_REQUIRED_TARGETS: SpatialRuntimeTarget[] = [
+  'three_scene',
+  'webxr_manifest',
+];
+
 export const DEFAULT_STUDIO_SPATIAL_RUNTIME_MATRIX: Record<
   SpatialRuntimeTarget,
   SpatialCapabilityState
@@ -86,6 +103,15 @@ export const DEFAULT_STUDIO_SPATIAL_RUNTIME_MATRIX: Record<
   visionos: 'unsupported',
   handheld_ar: 'unsupported',
 };
+
+const REQUIRED_RUNTIME_TARGETS: SpatialRuntimeTarget[] = [
+  'web_2d_fallback',
+  'three_scene',
+  'webxr_manifest',
+  'quest_vr',
+  'visionos',
+  'handheld_ar',
+];
 
 export const createFallbackStudioSpatialManifest = (input: {
   exportId: string;
@@ -134,14 +160,100 @@ export const createFallbackStudioSpatialManifest = (input: {
   };
 };
 
+const hasValue = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0;
+
+export const listBlockedStudioSpatialClaims = (
+  manifest: StudioSpatialExportManifest,
+): string[] => {
+  const blocked: string[] = [];
+
+  for (const target of STUDIO_SPATIAL_UNSUPPORTED_RUNTIME_TARGETS) {
+    if (manifest.targetRuntimes[target] === 'verified') {
+      blocked.push(`unsupported-runtime:${target}`);
+    }
+  }
+
+  for (const target of STUDIO_SPATIAL_EVIDENCE_REQUIRED_TARGETS) {
+    if (manifest.targetRuntimes[target] === 'verified') {
+      const hasReleaseEvidence =
+        hasValue(manifest.releaseEvidence.studioBuildSha) &&
+        hasValue(manifest.releaseEvidence.spatialBuildSha) &&
+        hasValue(manifest.releaseEvidence.validatorName) &&
+        hasValue(manifest.releaseEvidence.validatedAt);
+
+      if (!hasReleaseEvidence) {
+        blocked.push(`missing-release-evidence:${target}`);
+      }
+    }
+  }
+
+  if (manifest.scene.renderer !== 'fallback_cards' && manifest.status === 'fallback_only') {
+    blocked.push('fallback-status-with-advanced-renderer');
+  }
+
+  if (manifest.consent.requiredCategories.length > 0 && manifest.consent.receiptIds.length === 0) {
+    blocked.push('missing-consent-receipts');
+  }
+
+  return blocked;
+};
+
+export const validateStudioSpatialManifest = (
+  manifest: StudioSpatialExportManifest,
+): StudioSpatialValidationResult => {
+  const errors: string[] = [];
+
+  if (manifest.schemaVersion !== STUDIO_SPATIAL_HANDOFF_VERSION) {
+    errors.push('schema-version-mismatch');
+  }
+
+  if (manifest.producerSystem !== 'urai-studio') {
+    errors.push('producer-system-mismatch');
+  }
+
+  if (manifest.consumerSystem !== 'urai-spatial') {
+    errors.push('consumer-system-mismatch');
+  }
+
+  for (const field of ['exportId', 'projectId', 'tenantId', 'userId', 'createdAt', 'updatedAt'] as const) {
+    if (!hasValue(manifest[field])) {
+      errors.push(`missing-${field}`);
+    }
+  }
+
+  for (const target of REQUIRED_RUNTIME_TARGETS) {
+    if (!manifest.targetRuntimes[target]) {
+      errors.push(`missing-runtime-target:${target}`);
+    }
+  }
+
+  if (!Array.isArray(manifest.assets)) {
+    errors.push('assets-must-be-array');
+  } else {
+    for (const asset of manifest.assets) {
+      if (asset.tenantScoped !== true) {
+        errors.push(`asset-not-tenant-scoped:${asset.id || 'unknown'}`);
+      }
+    }
+  }
+
+  if (!hasValue(manifest.scene.title)) {
+    errors.push('missing-scene-title');
+  }
+
+  if (manifest.safety.containsPrivateRawData !== false) {
+    errors.push('unsafe-raw-data-flag');
+  }
+
+  const blockedClaims = listBlockedStudioSpatialClaims(manifest);
+
+  return {
+    ok: errors.length === 0 && blockedClaims.length === 0,
+    errors,
+    blockedClaims,
+  };
+};
+
 export const isStudioSpatialManifestReleaseSafe = (
   manifest: StudioSpatialExportManifest,
-): boolean => {
-  if (manifest.producerSystem !== 'urai-studio') return false;
-  if (manifest.consumerSystem !== 'urai-spatial') return false;
-  if (manifest.safety.containsPrivateRawData !== false) return false;
-  if (!manifest.tenantId || !manifest.userId || !manifest.projectId || !manifest.exportId) return false;
-
-  const unsupportedTargets: SpatialRuntimeTarget[] = ['quest_vr', 'visionos', 'handheld_ar'];
-  return unsupportedTargets.every((target) => manifest.targetRuntimes[target] !== 'verified');
-};
+): boolean => validateStudioSpatialManifest(manifest).ok;
