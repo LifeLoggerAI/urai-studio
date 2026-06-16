@@ -24,6 +24,8 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      - run: node apps/studio/tests/integrations.test.mjs
+      - run: node apps/studio/tests/create-job-validation.test.mjs
       - run: pnpm build
       - run: pnpm --dir functions install --no-frozen-lockfile
       - run: pnpm --dir functions build
