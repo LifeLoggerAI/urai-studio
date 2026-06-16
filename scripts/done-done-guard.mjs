@@ -30,10 +30,24 @@ const requiredDocs = [
   'README.md',
   'docs/URAI_STUDIO_DONE_DONE_LOCK.md',
   'docs/contracts/URAI_SYSTEM_CONTRACT.md',
+  'docs/URAI_STUDIO_SYSTEM_PIPELINES_AUDIT_2026-06-16.md',
+  'docs/URAI_STUDIO_ECOSYSTEM_URL_KEYS.md',
 ];
 
 const requiredRuntimeContracts = [
   'apps/studio/lib/urai-system-contract.ts',
+  'apps/studio/lib/studio-spatial-handoff.ts',
+];
+
+const requiredPipelineFiles = [
+  'apps/studio/lib/studio/integrations.ts',
+  'apps/studio/app/api/system/spatial-handoff/route.ts',
+  'functions/src/create-job.ts',
+  'functions/src/job-runner.ts',
+  'apps/studio/tests/studio-spatial-handoff.test.mjs',
+  'apps/studio/tests/integrations.test.mjs',
+  'apps/studio/tests/create-job-validation.test.mjs',
+  'apps/studio/tests/job-runner-fallback.test.mjs',
 ];
 
 const requiredContractTerms = [
@@ -55,6 +69,16 @@ const requiredContractTerms = [
   'adFreeCoreExperience',
   'externalMarketingLayerEnabled',
 ];
+
+const requiredPipelineTerms = new Map([
+  ['docs/URAI_STUDIO_SYSTEM_PIPELINES_AUDIT_2026-06-16.md', ['Jobs Pipeline', 'Content Pipeline', 'Asset Factory Pipeline', 'Spatial Pipeline', 'Analytics Pipeline', 'Marketing Pipeline', 'B2B Portal']],
+  ['docs/URAI_STUDIO_ECOSYSTEM_URL_KEYS.md', ['NEXT_PUBLIC_ASSET_FACTORY_URL', 'NEXT_PUBLIC_URAI_SPATIAL_URL', 'NEXT_PUBLIC_URAI_JOBS_URL', 'NEXT_PUBLIC_URAI_CONTENT_URL', 'NEXT_PUBLIC_URAI_ANALYTICS_URL', 'NEXT_PUBLIC_B2B_PORTAL_URL']],
+  ['apps/studio/lib/studio-spatial-handoff.ts', ['validateStudioSpatialManifest', 'listBlockedStudioSpatialClaims', 'DEFAULT_STUDIO_SPATIAL_RUNTIME_MATRIX', 'fallback_cards']],
+  ['apps/studio/lib/studio/integrations.ts', ['asset-factory', 'spatial', 'jobs', 'content', 'analytics', 'marketing', 'admin', 'privacy', 'investors', 'b2b-portal']],
+  ['apps/studio/app/api/system/spatial-handoff/route.ts', ['STUDIO_SPATIAL_HANDOFF_VERSION', 'DEFAULT_STUDIO_SPATIAL_RUNTIME_MATRIX', 'fallback_cards']],
+  ['functions/src/create-job.ts', ['normalizeCreateJobPayload', 'allowedKinds', 'projectId', 'kind', 'priority']],
+  ['functions/src/job-runner.ts', ['fallbackOutput', 'fallbackOnly: true', 'readyForExternalUse: false', 'job_succeeded_fallback']],
+]);
 
 const userFacingRoots = [
   'apps/studio/app',
@@ -120,6 +144,12 @@ for (const contractFile of requiredRuntimeContracts) {
   }
 }
 
+for (const pipelineFile of requiredPipelineFiles) {
+  if (!existsSync(path.join(repoRoot, pipelineFile))) {
+    fail('required system pipeline guardrail is missing', [pipelineFile]);
+  }
+}
+
 const contractFilesToValidate = [
   'docs/contracts/URAI_SYSTEM_CONTRACT.md',
   ...requiredRuntimeContracts,
@@ -132,6 +162,16 @@ for (const contractFile of contractFilesToValidate) {
   const missingTerms = requiredContractTerms.filter((term) => !contract.includes(term));
   if (missingTerms.length > 0) {
     fail(`${contractFile} is missing required gates`, missingTerms);
+  }
+}
+
+for (const [file, terms] of requiredPipelineTerms.entries()) {
+  const filePath = path.join(repoRoot, file);
+  if (!existsSync(filePath)) continue;
+  const content = read(filePath);
+  const missingTerms = terms.filter((term) => !content.includes(term));
+  if (missingTerms.length > 0) {
+    fail(`${file} is missing required pipeline guardrails`, missingTerms);
   }
 }
 
@@ -193,4 +233,4 @@ if (internalLabels.length > 0) {
 }
 
 if (process.exitCode) process.exit(process.exitCode);
-console.log('done-done guard passed: canonical docs and runtime contracts exist, and production imports avoid deprecated app roots.');
+console.log('done-done guard passed: canonical docs, runtime contracts, and system pipeline guardrails exist.');
