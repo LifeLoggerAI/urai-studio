@@ -19,7 +19,7 @@
     "schemas": {
       "spatialHandoff": {
         "type": "object",
-        "description": "Studio-to-Spatial export handoff manifest returned by URAI Studio export APIs.",
+        "description": "Studio-to-Spatial export handoff manifest returned by URAI Studio export APIs. Default handoff status is fallback_only.",
         "additionalProperties": true
       }
     }
