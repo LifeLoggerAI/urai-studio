@@ -87,6 +87,26 @@ const normalizeCreateJobPayload = (data: unknown): CreateJobPayload => {
     };
 };
 
+const assertProjectOwnership = async (
+    db: FirebaseFirestore.Firestore,
+    projectId: string,
+    uid: string
+): Promise<void> => {
+    const projectDoc = await db.doc(`projects/${projectId}`).get();
+
+    if (!projectDoc.exists) {
+        throw new functions.https.HttpsError("not-found", "Project not found.");
+    }
+
+    const project = projectDoc.data();
+    if (!project || project.ownerUid !== uid) {
+        throw new functions.https.HttpsError(
+            "permission-denied",
+            "You do not have permission to create a job for this project."
+        );
+    }
+};
+
 export const createJob = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError(
@@ -115,6 +135,7 @@ export const createJob = functions.https.onCall(async (data, context) => {
     }
 
     const payload = normalizeCreateJobPayload(data);
+    await assertProjectOwnership(db, payload.projectId, uid);
 
     const jobRef = db.collection("jobs").doc();
     const auditLogRef = db.collection("auditLogs").doc();
