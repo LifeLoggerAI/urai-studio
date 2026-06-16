@@ -85,10 +85,12 @@ for (const file of [
   'apps/studio/tests/studio-spatial-handoff.test.mjs',
   'apps/studio/tests/integrations.test.mjs',
   'apps/studio/tests/create-job-validation.test.mjs',
+  'apps/studio/tests/job-runner-fallback.test.mjs',
 ]) {
   exists(file);
 }
 
+has('apps/studio/tests/all.test.mjs', ['readdirSync', "file.endsWith('.test.mjs')", 'await import', 'all Studio regression tests passed']);
 has('apps/studio/components/site/MagicalHomeExperience.tsx', [
   'data-urai-v1-home-experience',
   'data-urai-v1-home-shell="ground-orb-chat"',
