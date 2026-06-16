@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 export default function SystemsPage() {
   return (
     <section data-urai-studio-page="systems" className="page-stack">
+      <span data-urai-studio-page="system" hidden />
       <p className="eyebrow">System of systems</p>
       <h1>URAI Studio integration map</h1>
       <p className="hero-lede">
