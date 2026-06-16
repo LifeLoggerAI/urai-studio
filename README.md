@@ -2,6 +2,17 @@
 
 Creator and admin studio for URAI: public site, cinematic AI studio surfaces, Firebase-backed contact and waitlist flows, system diagnostics, and launch-ready module pages.
 
+## Current release status
+
+URAI Studio has a real app/backend foundation, but it must not be called production frozen until the release evidence ledger is filled with clean install, lint, typecheck, test, build, functions build, guard, deploy, and live smoke proof.
+
+Canonical status documents:
+
+- `docs/URAI_STUDIO_FULL_AUDIT.md` - full repo/system audit, blocker list, and safe release language.
+- `docs/URAI_STUDIO_RELEASE_EVIDENCE.md` - release proof ledger that must be completed before production lock.
+- `docs/URAI_STUDIO_DONE_DONE_LOCK.md` - canonical done-done scope and repo invariants.
+- `docs/contracts/URAI_SYSTEM_CONTRACT.md` - system-of-systems contract terms.
+
 ## Repository shape
 
 - `apps/studio` - Next.js Studio web app.
@@ -57,6 +68,30 @@ pnpm build
 pnpm studio:smoke
 pnpm --dir functions build
 ```
+
+## Full release proof commands
+
+```bash
+set -euo pipefail
+corepack prepare pnpm@9.7.0 --activate
+pnpm install --no-frozen-lockfile
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm --dir functions build
+pnpm done-done:guard
+pnpm release:check
+HOST=http://127.0.0.1:3000 pnpm studio:smoke
+```
+
+After deployment:
+
+```bash
+HOST=https://www.uraistudio.com bash scripts/smoke.sh
+```
+
+Record the output in `docs/URAI_STUDIO_RELEASE_EVIDENCE.md` before claiming production freeze.
 
 ## Environment variables
 
