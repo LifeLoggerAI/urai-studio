@@ -1,15 +1,18 @@
 # URAI Studio
 
-Creator and admin studio for URAI: public site, cinematic AI studio surfaces, Firebase-backed contact and waitlist flows, system diagnostics, and launch-ready module pages.
+Creator and admin studio for URAI: public site, cinematic AI studio surfaces, Firebase-backed contact and waitlist flows, system diagnostics, and launch-safe module pages.
 
 ## Current release status
 
-URAI Studio has a real app/backend foundation, but it must not be called production frozen until the release evidence ledger is filled with clean install, lint, typecheck, test, build, functions build, guard, deploy, and live smoke proof.
+URAI Studio has a real app/backend foundation, but it must not be called production frozen until the release evidence ledger is filled with clean install, lint, typecheck, test, app build, Functions build, guard, deploy, and live smoke proof.
 
 Canonical status documents:
 
 - `docs/URAI_STUDIO_FULL_AUDIT.md` - full repo/system audit, blocker list, and safe release language.
+- `docs/URAI_STUDIO_SYSTEM_PIPELINES_AUDIT_2026-06-16.md` - system-of-systems pipeline audit across Jobs, Content, Asset Factory, Spatial, Analytics, Marketing, Admin, Privacy, Investors, and B2B Portal.
 - `docs/URAI_STUDIO_RELEASE_EVIDENCE.md` - release proof ledger that must be completed before production lock.
+- `docs/URAI_STUDIO_RELEASE_EVIDENCE.schema.json` - machine-readable release evidence shape.
+- `docs/URAI_STUDIO_ECOSYSTEM_URL_KEYS.md` - public ecosystem URL key map for diagnostics.
 - `docs/URAI_STUDIO_DONE_DONE_LOCK.md` - canonical done-done scope and repo invariants.
 - `docs/contracts/URAI_SYSTEM_CONTRACT.md` - system-of-systems contract terms.
 
@@ -61,12 +64,14 @@ pnpm run firebase:emulators
 ## Audit commands
 
 ```bash
+pnpm done-done:guard
+pnpm evidence:guard
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
-pnpm studio:smoke
 pnpm --dir functions build
+pnpm studio:smoke
 ```
 
 ## Full release proof commands
@@ -75,12 +80,6 @@ pnpm --dir functions build
 set -euo pipefail
 corepack prepare pnpm@9.7.0 --activate
 pnpm install --no-frozen-lockfile
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm build
-pnpm --dir functions build
-pnpm done-done:guard
 pnpm release:check
 HOST=http://127.0.0.1:3000 pnpm studio:smoke
 ```
@@ -109,11 +108,14 @@ FIREBASE_PRIVATE_KEY=
 NEXT_PUBLIC_ASSET_FACTORY_URL=
 ASSET_FACTORY_INTERNAL_URL=
 NEXT_PUBLIC_URAI_SPATIAL_URL=
+NEXT_PUBLIC_URAI_JOBS_URL=
+NEXT_PUBLIC_URAI_CONTENT_URL=
 NEXT_PUBLIC_URAI_MARKETING_URL=
 NEXT_PUBLIC_URAI_ANALYTICS_URL=
 NEXT_PUBLIC_URAI_ADMIN_URL=
 NEXT_PUBLIC_URAI_PRIVACY_URL=
 NEXT_PUBLIC_URAI_INVESTORS_URL=
+NEXT_PUBLIC_B2B_PORTAL_URL=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 ```
