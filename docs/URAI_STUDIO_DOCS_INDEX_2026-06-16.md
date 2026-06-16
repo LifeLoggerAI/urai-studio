@@ -2,7 +2,7 @@
 
 Updated: 2026-06-16
 
-This index points to the current repo-side documents and machine-readable contract files that describe the Studio app, integrations, health surface, export handoff, deploy proof path, and remaining verification work.
+This index points to the current repo-side documents and machine-readable contract files that describe the Studio app, integrations, health surface, export handoff, proof path, and remaining verification work.
 
 ## Core status and audit documents
 
@@ -10,7 +10,8 @@ This index points to the current repo-side documents and machine-readable contra
 - `docs/URAI_STUDIO_SYSTEM_PIPELINES_AUDIT_2026-06-16.md` — system-of-systems pipeline audit.
 - `docs/URAI_STUDIO_REMAINING_BLOCKERS_2026-06-16.md` — current unresolved verification and alignment items.
 - `docs/URAI_STUDIO_HEALTH_READINESS.md` — health endpoint readiness contract.
-- `docs/URAI_STUDIO_DEPLOY_EVIDENCE_TEMPLATE.md` — deploy proof record template that must be completed with observed CI, deploy, and remote smoke evidence.
+- `docs/URAI_STUDIO_CI_DEPLOY_HANDOFF.md` — CI and endpoint verification handoff.
+- `docs/URAI_STUDIO_DEPLOY_EVIDENCE_TEMPLATE.md` — evidence record template for observed checks.
 
 ## Machine-readable contract files
 
