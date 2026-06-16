@@ -11,10 +11,10 @@ const requiredTokens = [
   "validator: '/api/system/spatial-handoff'",
   'contractExportId',
   'tenantScoped: true',
-  'result.data.id',
-  'result.data.projectId',
-  'result.data.tenantId',
-  'result.data.userId',
+  'exportData.id',
+  'exportData.projectId',
+  'exportData.tenantId',
+  'exportData.userId',
 ];
 
 for (const token of requiredTokens) {

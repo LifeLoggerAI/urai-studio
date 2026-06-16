@@ -121,7 +121,7 @@ export function ImmersiveLifeWorld() {
   const [mapTransform, setMapTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ pointerId: 0, x: 0, y: 0, tx: 0, ty: 0 });
-  const transitionTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const transitionTimer = useRef<number | null>(null);
 
   const selectedMemory = useMemo(
     () => memories.find((memory) => memory.id === selectedMemoryId) ?? memories[0],

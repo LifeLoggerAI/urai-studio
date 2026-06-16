@@ -153,13 +153,32 @@ export async function POST(req: Request) {
     );
   }
 
+  const exportData = result.data;
+  if (!exportData) {
+    return json(
+      {
+        ok: false,
+        status: 'runtime_store_empty_result',
+        persisted: false,
+        authMode: auth.authMode,
+        tenantId: auth.tenantId,
+        store: runtimeStoreStatus(),
+        error: {
+          code: 'runtime_store_empty_result',
+          message: 'Studio export persistence did not return an export record.',
+        },
+      },
+      500,
+    );
+  }
+
   const handoffManifest = createExportHandoff({
-    exportId: result.data.id,
-    projectId: result.data.projectId,
-    jobId: result.data.jobId,
-    tenantId: result.data.tenantId,
-    userId: result.data.userId,
-    kind: result.data.kind,
+    exportId: exportData.id,
+    projectId: exportData.projectId,
+    jobId: exportData.jobId,
+    tenantId: exportData.tenantId,
+    userId: exportData.userId,
+    kind: exportData.kind,
   });
 
   return json({
@@ -170,6 +189,6 @@ export async function POST(req: Request) {
     tenantId: auth.tenantId,
     store: runtimeStoreStatus(),
     spatialHandoff: handoffManifest,
-    data: result.data,
+    data: exportData,
   });
 }

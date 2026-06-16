@@ -23,6 +23,10 @@ test('env example documents public ecosystem integration urls used by Studio', (
 
   for (const key of requiredPublicUrlKeys) {
     assert.match(envExample, new RegExp(`^${key}=`, 'm'), `.env.example is missing ${key}`);
-    assert.match(integrations, new RegExp(`publicUrlKey: '${key}'`), `integrations.ts is missing ${key}`);
+    assert.match(
+      integrations,
+      new RegExp(`(?:publicUrlKey:\\s*'${key}'|integration\\([^\\n]+,\\s*'${key}')`),
+      `integrations.ts is missing ${key}`,
+    );
   }
 });
