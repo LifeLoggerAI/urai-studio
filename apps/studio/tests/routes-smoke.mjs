@@ -31,11 +31,12 @@ const routes = [
   '/usage',
   '/api/health',
   '/api/system/health',
+  '/api/system/spatial-handoff',
   '/healthz',
   '/readyz',
 ];
 
-assert.equal(routes.length, 32);
+assert.equal(routes.length, 33);
 assert.ok(routes.includes('/systems'));
 assert.ok(routes.includes('/system'));
 assert.ok(routes.includes('/studio'));
@@ -51,5 +52,6 @@ assert.ok(routes.includes('/terms'));
 assert.ok(routes.includes('/status'));
 assert.ok(routes.includes('/readyz'));
 assert.ok(routes.includes('/dashboard'));
+assert.ok(routes.includes('/api/system/spatial-handoff'));
 
 console.log('static route declaration passed', routes.length);
