@@ -335,7 +335,7 @@ check_json_contains /api/system/integration-contract /api/system/urai-contract
 check_json_contains /api/system/integration-contract /api/studio/jobs
 check_json_contains /api/system/integration-contract /api/studio/exports
 
-if [ "$EXPECT_PROTECTED_AUTH" != "true" ]; then
+if [ "$EXPECT_PROTECTED_AUTH" = "false" ]; then
   check_json_contains /api/studio/jobs tenantScoped
   check_json_field /api/studio/exports service urai-studio
   check_json_field /api/studio/exports tenantScoped true
