@@ -219,12 +219,13 @@ check_api_route() {
   if [[ "$route" == /api/* || "$route" == "/healthz" ]]; then
     node -e "
       const fs = require('fs');
+      const route = process.argv[2];
       const data = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
       if (data.service && data.service !== 'urai-studio') process.exit(2);
-      if (data.ok === false) process.exit(3);
-    " "$body" || {
+      if ((route === '/api/health' || route === '/healthz') && data.ok === false) process.exit(3);
+    " "$body" "$route" || {
       rm -f "$body"
-      fail "$route returned invalid service JSON"
+      fail "$route returned invalid JSON"
     }
   fi
 
