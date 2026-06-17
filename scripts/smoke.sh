@@ -282,6 +282,19 @@ check_protected_api_route() {
     fail "$url returned $code, expected 200 local fallback or 401 protected"
   fi
 
+  if [ "$code" = "401" ]; then
+    grep -q 'missing_bearer_token' "$body" || grep -q 'unauthorized' "$body" || {
+      echo "--- response body for $url ---" >&2
+      cat "$body" >&2 || true
+      echo >&2
+      rm -f "$body"
+      fail "$route returned 401 without expected auth error"
+    }
+    rm -f "$body"
+    echo "[OK] protected api $route -> 401 auth required"
+    return
+  fi
+
   case "$route" in
     /api/system/integration-contract|/api/system/urai-contract|/api/system/openapi|/api/system/manifest|/api/system/capabilities)
       # Contract/spec endpoints may document secret-bearing environment key names.
@@ -294,13 +307,6 @@ check_protected_api_route() {
       fi
       ;;
   esac
-
-  if [ "$code" = "401" ]; then
-    grep -q 'missing_bearer_token' "$body" || grep -q 'unauthorized' "$body" || {
-      rm -f "$body"
-      fail "$route returned 401 without auth error code"
-    }
-  fi
 
   rm -f "$body"
   echo "[OK] protected api $route -> $code"
