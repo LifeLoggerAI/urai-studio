@@ -22,3 +22,5 @@ apps/**/.bak/
 /simple_deploy.sh
 /urai_studio_*.sh
 node_modules
+
+functions/lib/
