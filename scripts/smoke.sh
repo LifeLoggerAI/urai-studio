@@ -376,7 +376,7 @@ invalid_contact_status="$(
 
 echo "[OK] /api/contact invalid input -> 400"
 
-if [ "$EXPECT_PROTECTED_AUTH" = "true" ]; then
+if [ "$EXPECT_PROTECTED_AUTH" != "false" ]; then
   unauth_job_status="$(
     curl -L -sS \
       -o /tmp/urai-smoke-job \
