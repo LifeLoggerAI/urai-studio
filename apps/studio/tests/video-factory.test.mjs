@@ -3,6 +3,11 @@ import fs from 'node:fs';
 
 const factorySource = fs.readFileSync(new URL('../lib/studio-video-factory.ts', import.meta.url), 'utf8');
 const routeSource = fs.readFileSync(new URL('../app/api/studio/video-factory/route.ts', import.meta.url), 'utf8');
+const manifestStart = factorySource.indexOf('export const URAI_REPLAY_TEASER_TEMPLATE');
+
+assert.notEqual(manifestStart, -1, 'Video Factory manifest constant must exist.');
+
+const manifestSource = factorySource.slice(manifestStart);
 
 function unique(values) {
   return new Set(values).size === values.length;
@@ -16,16 +21,16 @@ function section(source, startMarker, endMarker) {
   return source.slice(start, end);
 }
 
-const routeCaptureSection = section(factorySource, 'routeCaptures:', 'shots:');
-const assetPromptSection = section(factorySource, 'assetPrompts:', 'routeCaptures:');
-const shotSection = section(factorySource, 'shots:', 'voiceover:');
+const routeCaptureSection = section(manifestSource, 'routeCaptures:', 'shots:');
+const assetPromptSection = section(manifestSource, 'assetPrompts:', 'routeCaptures:');
+const shotSection = section(manifestSource, 'shots:', 'voiceover:');
 
 const routeCaptures = [...routeCaptureSection.matchAll(/route:\s*'([^']+)'/g)].map((match) => match[1]);
 const routeCaptureIds = [...routeCaptureSection.matchAll(/id:\s*'([^']+)'/g)].map((match) => match[1]);
 const assetPromptIds = [...assetPromptSection.matchAll(/id:\s*'([^']+)'/g)].map((match) => match[1]);
 const shotIds = [...shotSection.matchAll(/id:\s*'([^']+)'/g)].map((match) => match[1]);
 const shotDurations = [...shotSection.matchAll(/durationSeconds:\s*(\d+)/g)].map((match) => Number(match[1]));
-const manifestDuration = Number(/durationSeconds:\s*(\d+)/.exec(factorySource)?.[1]);
+const manifestDuration = Number(/durationSeconds:\s*(\d+)/.exec(manifestSource)?.[1]);
 
 assert.ok(factorySource.includes("jobKind: 'video_generation'"), 'Video Factory must queue video_generation jobs.');
 assert.ok(factorySource.includes("['mp4', 'srt', 'json']"), 'Video Factory must request mp4, srt, and json outputs.');
