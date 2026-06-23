@@ -1,0 +1,78 @@
+name: URAI Studio Video Factory Verification
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'apps/studio/**'
+      - 'packages/**'
+      - 'scripts/studio-video-*.mjs'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '_audit/20260623_urai_studio_video_factory/**'
+      - '.github/workflows/video-factory-verification.yml'
+
+jobs:
+  verify-video-factory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '9.7.0'
+
+      - name: Install
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Test
+        run: pnpm --filter studio test
+
+      - name: Typecheck
+        run: pnpm --filter studio typecheck
+
+      - name: Build
+        run: pnpm --filter studio build
+
+      - name: Install browser for route capture
+        run: pnpm --filter studio exec playwright install chromium
+
+      - name: Start Studio server
+        run: |
+          pnpm --filter studio dev -- --hostname 0.0.0.0 --port 3000 > /tmp/urai-studio-dev.log 2>&1 &
+          echo $! > /tmp/urai-studio-dev.pid
+          for attempt in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:3000/studio/video-factory >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/urai-studio-dev.log
+          exit 1
+
+      - name: Generate render artifacts
+        env:
+          STUDIO_BASE_URL: http://127.0.0.1:3000
+        run: pnpm run video-factory:render-artifacts
+
+      - name: Capture route evidence
+        env:
+          SPATIAL_BASE_URL: https://urai.app
+        run: pnpm run video-factory:capture
+
+      - name: Upload Video Factory evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: urai-studio-video-factory-evidence
+          path: |
+            _audit/20260623_urai_studio_video_factory/**
+            /tmp/urai-studio-dev.log
