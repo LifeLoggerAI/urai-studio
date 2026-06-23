@@ -52,6 +52,9 @@ export default function StudioPage() {
         <Link className="button button-primary" href="/generate">
           Start Intake
         </Link>
+        <Link className="button button-secondary" href="/studio/video-factory">
+          Video Factory
+        </Link>
         <Link className="button button-secondary" href="/studio/projects">
           Studio Projects
         </Link>
