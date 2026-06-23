@@ -9,6 +9,7 @@ import {
   validateVideoFactoryManifest,
 } from '@/lib/studio-video-factory';
 import { QueueReplayTeaserButton } from './QueueReplayTeaserButton';
+import { RenderArtifactPanel } from './RenderArtifactPanel';
 
 export const metadata: Metadata = {
   title: 'Studio Video Factory',
@@ -62,6 +63,7 @@ export default function StudioVideoFactoryPage() {
       </div>
 
       <QueueReplayTeaserButton templateId={queuePayload.templateId} prompt={queuePayload.prompt} />
+      <RenderArtifactPanel />
 
       <section className="section-panel">
         <div className="section-heading">
