@@ -8,6 +8,7 @@ import {
   sumShotDurationsSeconds,
   validateVideoFactoryManifest,
 } from '@/lib/studio-video-factory';
+import { QueueReplayTeaserButton } from './QueueReplayTeaserButton';
 
 export const metadata: Metadata = {
   title: 'Studio Video Factory',
@@ -59,6 +60,8 @@ export default function StudioVideoFactoryPage() {
           <p>Video Factory requests video, subtitle, and manifest outputs through the Studio job contract.</p>
         </article>
       </div>
+
+      <QueueReplayTeaserButton templateId={queuePayload.templateId} prompt={queuePayload.prompt} />
 
       <section className="section-panel">
         <div className="section-heading">
