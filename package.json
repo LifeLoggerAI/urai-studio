@@ -14,6 +14,8 @@
     "test": "pnpm --filter studio test",
     "smoke": "HOST=${HOST:-http://127.0.0.1:3000} bash scripts/smoke.sh",
     "studio:smoke": "node scripts/studio-smoke-v1.js",
+    "video-factory:capture": "node scripts/studio-video-route-capture.mjs",
+    "video-factory:render-artifacts": "node scripts/studio-video-render-artifacts.mjs",
     "done-done:guard": "node scripts/done-done-guard.mjs",
     "evidence:guard": "node scripts/evidence-schema-guard.mjs",
     "health:guard": "node scripts/health-summary-guard.mjs",
