@@ -8,6 +8,8 @@ Implemented:
 - Studio page
 - regression tests
 - audit document
+- renderer package
+- render package smoke test
 
 Checks covered:
 - /home is canonical Home World capture
@@ -19,6 +21,10 @@ Checks covered:
 - exports include mp4, srt, and json
 - API validates before queueing
 - API uses the existing Studio job path
+- renderer builds route capture plan
+- renderer builds subtitle text
+- renderer builds export manifest
+- renderer records planned output artifact paths
 
 Run in Cloud Shell:
 
@@ -29,9 +35,18 @@ pnpm --filter studio typecheck
 pnpm --filter studio build
 ```
 
+Video Factory source proof:
+
+- apps/studio/lib/studio-video-factory.ts
+- apps/studio/lib/studio-video-renderer.ts
+- apps/studio/app/api/studio/video-factory/route.ts
+- apps/studio/app/studio/video-factory/page.tsx
+- apps/studio/tests/video-factory.test.mjs
+- apps/studio/tests/video-factory-page.test.mjs
+- apps/studio/tests/video-render-package.test.mjs
+
 Next target:
-- add the runtime renderer for final video files
-- add route capture
-- add video assembly
+- add browser route capture worker
+- add final file composition worker
 - add output storage links
 - link /studio/video-factory from the Studio dashboard
