@@ -48,8 +48,21 @@ function serializeError(error: unknown) {
 }
 
 export function StudioActionPanel() {
+  const qaEnabled = process.env.NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLED === 'true';
   const [state, setState] = useState<ActionState>(initialState);
   const [latestExportJobId, setLatestExportJobId] = useState<string>('');
+
+  if (!qaEnabled) {
+    return (
+      <section className="section-panel" aria-label="URAI Studio action panel gated">
+        <div className="section-heading">
+          <p className="eyebrow">Actions gated</p>
+          <h2>Studio action controls are disabled for this deployment.</h2>
+          <p>Enable the Studio QA flag only in controlled verification environments.</p>
+        </div>
+      </section>
+    );
+  }
 
   async function run(label: string, action: () => Promise<unknown>) {
     setState({ status: 'running', message: `${label} is running...` });
