@@ -19,9 +19,9 @@ for (const token of [
   assert.ok(src.includes(token), `runtime store must include ${token}`);
 }
 
-assert.ok(src.includes('provider: "feature-gated"'), 'runtime jobs must remain provider feature-gated until a real provider is wired');
-assert.ok(src.includes('model: "contract-only"'), 'runtime jobs must remain contract-only until a real model is wired');
+assert.ok(src.includes("provider: 'feature-gated'") || src.includes('provider: "feature-gated"'), 'runtime jobs must remain provider feature-gated until a real provider is wired');
+assert.ok(src.includes("model: 'contract-only'") || src.includes('model: "contract-only"'), 'runtime jobs must remain contract-only until a real model is wired');
 assert.ok(src.includes('downloadUrl: undefined'), 'exports must not fake download URLs');
-assert.ok(src.includes('.where("tenantId", "==", tenantId)'), 'tenant job listing must query tenantId');
+assert.ok(src.includes(".where('tenantId', '==', tenantId)") || src.includes('.where("tenantId", "==", tenantId)'), 'tenant job listing must query tenantId');
 
 console.log('studio runtime store contract regression passed');
