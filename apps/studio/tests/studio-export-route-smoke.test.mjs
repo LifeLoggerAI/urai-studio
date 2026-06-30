@@ -9,6 +9,12 @@ assert.ok(src.includes('createFallbackStudioSpatialManifest'), 'exports route mu
 assert.ok(src.includes('Cache-Control'), 'exports route must set cache control');
 assert.ok(src.includes('persisted: false'), 'exports route must report unpersisted fallback responses');
 assert.ok(src.includes('persisted: true'), 'exports route must report persisted responses only after store success');
-assert.ok(src.indexOf('requireStudioAuth(req)') < src.indexOf('createStudioExport'), 'exports route must authenticate before export creation');
+const postIndex = src.indexOf('export async function POST');
+const authIndex = src.indexOf('requireStudioAuth(req)', postIndex);
+const exportCreationIndex = src.indexOf('createStudioExport', authIndex + 1);
+assert.ok(postIndex >= 0, 'exports route must expose a POST handler');
+assert.ok(authIndex >= 0, 'exports route must require studio auth');
+assert.ok(exportCreationIndex >= 0, 'exports route must create exports after auth');
+assert.ok(authIndex < exportCreationIndex, 'exports route must authenticate before export creation');
 
 console.log('studio export route smoke regression passed');
