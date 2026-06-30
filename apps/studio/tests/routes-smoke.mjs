@@ -2,6 +2,13 @@ import assert from 'node:assert/strict';
 
 const routes = [
   '/',
+  '/about',
+  '/start',
+  '/work',
+  '/case-studies',
+  '/packages',
+  '/pricing',
+  '/services',
   '/systems',
   '/system',
   '/studio',
@@ -39,7 +46,15 @@ const routes = [
   '/readyz',
 ];
 
-assert.equal(routes.length, 36);
+assert.equal(routes.length, 43);
+assert.ok(routes.includes('/'));
+assert.ok(routes.includes('/about'));
+assert.ok(routes.includes('/start'));
+assert.ok(routes.includes('/work'));
+assert.ok(routes.includes('/case-studies'));
+assert.ok(routes.includes('/packages'));
+assert.ok(routes.includes('/pricing'));
+assert.ok(routes.includes('/services'));
 assert.ok(routes.includes('/systems'));
 assert.ok(routes.includes('/system'));
 assert.ok(routes.includes('/studio'));
