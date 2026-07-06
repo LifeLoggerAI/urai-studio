@@ -78,14 +78,17 @@ export async function requireStudioAuth(req: Request): Promise<StudioAuthContext
 
   try {
     const decoded = await adminAuth.verifyIdToken(token);
-    const tenantId = safeTenant(
+    const tokenTenant =
       typeof decoded.tenantId === 'string'
         ? decoded.tenantId
         : typeof decoded.studioId === 'string'
           ? decoded.studioId
-          : requestedTenant,
-      requestedTenant,
-    );
+          : null;
+
+    // Production tenant scope must come from a verified token. When no explicit
+    // tenant claim exists, bind the request to the authenticated user instead of
+    // accepting a caller-controlled x-urai-tenant-id header.
+    const tenantId = safeTenant(tokenTenant, decoded.uid);
 
     return {
       ok: true,
