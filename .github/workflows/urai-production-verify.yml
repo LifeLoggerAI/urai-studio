@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   verify:
     name: Build, test, and QA
@@ -16,6 +19,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: pnpm
 
       - name: Enable Corepack
         run: corepack enable
@@ -30,17 +34,54 @@ jobs:
           fi
 
       - name: Run typecheck
+        shell: bash
         run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm run typecheck --if-present; else npm run typecheck --if-present; fi
+          mkdir -p ci-receipts
+          set -o pipefail
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm run typecheck --if-present 2>&1 | tee ci-receipts/typecheck.log
+          else
+            npm run typecheck --if-present 2>&1 | tee ci-receipts/typecheck.log
+          fi
 
       - name: Run tests
+        shell: bash
         run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm test --if-present; else npm test --if-present; fi
+          mkdir -p ci-receipts
+          set -o pipefail
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm test --if-present 2>&1 | tee ci-receipts/tests.log
+          else
+            npm test --if-present 2>&1 | tee ci-receipts/tests.log
+          fi
 
       - name: Build
+        shell: bash
         run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm run build --if-present; else npm run build --if-present; fi
+          mkdir -p ci-receipts
+          set -o pipefail
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm run build --if-present 2>&1 | tee ci-receipts/build.log
+          else
+            npm run build --if-present 2>&1 | tee ci-receipts/build.log
+          fi
 
       - name: Run URAI QA
+        shell: bash
         run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm run urai:qa --if-present; else npm run urai:qa --if-present; fi
+          mkdir -p ci-receipts
+          set -o pipefail
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm run urai:qa --if-present 2>&1 | tee ci-receipts/urai-qa.log
+          else
+            npm run urai:qa --if-present 2>&1 | tee ci-receipts/urai-qa.log
+          fi
+
+      - name: Upload production verification receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: urai-production-verify-receipts-${{ github.run_id }}
+          path: ci-receipts
+          if-no-files-found: warn
+          retention-days: 30
