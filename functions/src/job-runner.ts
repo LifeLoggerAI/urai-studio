@@ -154,7 +154,7 @@ export const jobRunner = functions.pubsub
         });
 
         if (claimOutcome === "max_attempts") {
-          const terminalJobData = (await jobRef.get()).data();
+          const terminalJobData = (await jobRef.get()).data() ?? null;
           await logJobEvent(jobId, "state_change", "Job failed: Maximum attempts reached.");
           await writeAuditLog("system", "job_failed_max_attempts", `jobs/${jobId}`, jobDoc.data(), terminalJobData);
           continue;
@@ -178,7 +178,7 @@ export const jobRunner = functions.pubsub
 
         await logJobEvent(jobId, "artifact", "Fallback artifact generated.", output);
         await logJobEvent(jobId, "state_change", "Job succeeded in fallback mode.");
-        await writeAuditLog("system", "job_succeeded_fallback", `jobs/${jobId}`, claimedJobData, (await jobRef.get()).data());
+        await writeAuditLog("system", "job_succeeded_fallback", `jobs/${jobId}`, claimedJobData, (await jobRef.get()).data() ?? null);
         finalState = "succeeded";
       } catch (e: unknown) {
         const errorMessage = e instanceof Error ? e.message : "Unknown job error";
@@ -203,7 +203,7 @@ export const jobRunner = functions.pubsub
 
         if (finalState === "failed") {
           await logJobEvent(jobId, "state_change", `Job failed after ${attempt} attempts.`);
-          await writeAuditLog("system", "job_failed", `jobs/${jobId}`, currentJobData, (await jobRef.get()).data());
+          await writeAuditLog("system", "job_failed", `jobs/${jobId}`, currentJobData, (await jobRef.get()).data() ?? null);
         }
       }
     }
