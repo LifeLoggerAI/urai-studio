@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { adminAuth, firebaseAdminStatus } from '@/lib/firebase-admin';
 
 export type StudioAuthContext = {
@@ -27,10 +28,18 @@ function bearerToken(req: Request): string | null {
   return match?.[1]?.trim() || null;
 }
 
-function safeTenant(value: string | null | undefined, fallback: string) {
+function safeTenant(value: string | null | undefined, fallback: string): string {
   const normalized = value?.trim();
   if (!normalized) return fallback;
-  return normalized.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 96) || fallback;
+
+  if (/^[a-zA-Z0-9_-]{1,96}$/.test(normalized)) {
+    return normalized;
+  }
+
+  // Do not collapse distinct verified identities by merely deleting unsafe
+  // characters. A stable digest remains a valid Firestore/Storage path segment
+  // while preserving one-to-one tenant fallback semantics.
+  return `tenant_${createHash('sha256').update(normalized).digest('hex').slice(0, 48)}`;
 }
 
 export async function requireStudioAuth(req: Request): Promise<StudioAuthContext> {
@@ -40,10 +49,11 @@ export async function requireStudioAuth(req: Request): Promise<StudioAuthContext
 
   if (!token) {
     if (!production) {
+      const localUid = safeTenant(header(req, 'x-urai-user-id'), DEFAULT_LOCAL_UID);
       return {
         ok: true,
         production,
-        uid: header(req, 'x-urai-user-id')?.trim() || DEFAULT_LOCAL_UID,
+        uid: localUid,
         tenantId: requestedTenant,
         authMode: 'local_fallback',
       };
@@ -86,9 +96,10 @@ export async function requireStudioAuth(req: Request): Promise<StudioAuthContext
           : null;
 
     // Production tenant scope must come from a verified token. When no explicit
-    // tenant claim exists, bind the request to the authenticated user instead of
-    // accepting a caller-controlled x-urai-tenant-id header.
-    const tenantId = safeTenant(tokenTenant, decoded.uid);
+    // tenant claim exists, bind the request to a collision-resistant, path-safe
+    // derivative of the authenticated UID instead of a caller-controlled header.
+    const uidTenant = safeTenant(decoded.uid, DEFAULT_LOCAL_TENANT);
+    const tenantId = safeTenant(tokenTenant, uidTenant);
 
     return {
       ok: true,
