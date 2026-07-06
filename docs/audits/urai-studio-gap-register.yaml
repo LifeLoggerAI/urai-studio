@@ -1,0 +1,89 @@
+repository: LifeLoggerAI/urai-studio
+audited_head: 4a1ce1bf39c821212f5b7565453761d85aad545c
+audit_date: 2026-07-06
+gaps:
+  - id: STU-001
+    priority: P0
+    status: fixed_on_audit_branch
+    title: Bind production tenant scope to verified identity
+    evidence:
+      - apps/studio/lib/studio-auth.ts
+    acceptance:
+      - Verified tenant claim is used when present
+      - Authenticated uid is the fallback
+      - Request headers cannot select production tenant scope
+  - id: STU-002
+    priority: P0
+    status: fixed_on_audit_branch
+    title: Stop maximum-attempt jobs before processing
+    evidence:
+      - functions/src/job-runner.ts
+    acceptance:
+      - Terminal outcome exits before processJob
+      - Terminal event and audit record are written
+  - id: STU-003
+    priority: P0
+    status: open
+    title: Restrict membership creation and role changes
+    evidence:
+      - firestore.rules
+    acceptance:
+      - Membership creation requires an authorized invitation or trusted server action
+      - Role changes are owner controlled
+      - Firebase emulator authorization tests pass
+  - id: STU-004
+    priority: P0
+    status: open
+    title: Produce current-head release and rollback evidence
+    evidence:
+      - docs/URAI_STUDIO_RELEASE_EVIDENCE.md
+      - .github/workflows/studio-ci.yml
+    acceptance:
+      - Frozen install and release check pass
+      - Functions build passes
+      - Local and production smoke pass
+      - Deployed and rollback SHAs are recorded
+  - id: STU-005
+    priority: P1
+    status: open
+    title: Align readiness with production-critical integrations
+    evidence:
+      - apps/studio/lib/studio/status.ts
+      - apps/studio/lib/studio/integrations.ts
+      - apps/studio/lib/studio/modules.ts
+  - id: STU-006
+    priority: P1
+    status: open
+    title: Strictly validate job and export kinds
+    evidence:
+      - apps/studio/app/api/studio/jobs/route.ts
+      - apps/studio/lib/studio-runtime-store.ts
+  - id: STU-007
+    priority: P1
+    status: open
+    title: Consolidate overlapping persistence models
+    evidence:
+      - firestore.rules
+      - functions/src/studio-system.ts
+      - apps/studio/lib/studio-runtime-store.ts
+  - id: STU-008
+    priority: P1
+    status: open
+    title: Replace fallback generation with feature-gated provider adapters
+    evidence:
+      - functions/src/job-runner.ts
+      - functions/src/studio-system.ts
+  - id: STU-009
+    priority: P1
+    status: open
+    title: Create authorized durable export packages
+    evidence:
+      - functions/src/studio-system.ts
+      - apps/studio/lib/studio-runtime-store.ts
+  - id: STU-010
+    priority: P1
+    status: open
+    title: Prove authenticated cross-repository integrations
+    evidence:
+      - apps/studio/lib/studio/integrations.ts
+      - docs/contracts
