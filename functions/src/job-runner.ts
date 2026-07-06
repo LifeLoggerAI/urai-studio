@@ -119,6 +119,7 @@ export const jobRunner = functions.pubsub
       const jobId = jobDoc.id;
       const jobRef = db.collection("jobs").doc(jobId);
       let finalState = "failed";
+      let claimOutcome: "skipped" | "claimed" | "max_attempts" = "skipped";
 
       try {
         await db.runTransaction(async (transaction) => {
@@ -138,7 +139,7 @@ export const jobRunner = functions.pubsub
               error: { message: "Maximum attempts reached." },
               updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             });
-            await logJobEvent(jobId, "state_change", "Job failed: Maximum attempts reached.");
+            claimOutcome = "max_attempts";
             return;
           }
 
@@ -149,7 +150,19 @@ export const jobRunner = functions.pubsub
             attempt: attempt + 1,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           });
+          claimOutcome = "claimed";
         });
+
+        if (claimOutcome === "max_attempts") {
+          const terminalJobData = (await jobRef.get()).data();
+          await logJobEvent(jobId, "state_change", "Job failed: Maximum attempts reached.");
+          await writeAuditLog("system", "job_failed_max_attempts", `jobs/${jobId}`, jobDoc.data(), terminalJobData);
+          continue;
+        }
+
+        if (claimOutcome !== "claimed") {
+          continue;
+        }
 
         const claimedJobData = (await jobRef.get()).data()!;
         await logJobEvent(jobId, "state_change", `Job claimed by runner ${runnerId}. Attempt ${claimedJobData.attempt}.`);
