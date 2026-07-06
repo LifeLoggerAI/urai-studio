@@ -13,7 +13,18 @@ type JobOutput = {
   fallbackOnly: true;
 };
 
-type ClaimOutcome = "skipped" | "claimed" | "max_attempts";
+type ClaimOutcome =
+  | { status: "skipped" }
+  | {
+      status: "max_attempts";
+      before: admin.firestore.DocumentData;
+      job: admin.firestore.DocumentData;
+    }
+  | {
+      status: "claimed";
+      before: admin.firestore.DocumentData;
+      job: admin.firestore.DocumentData;
+    };
 
 const fallbackOutput = (input: {
   path?: string;
@@ -125,70 +136,113 @@ export const jobRunner = functions.pubsub
       try {
         const claimOutcome = await db.runTransaction<ClaimOutcome>(async (transaction) => {
           const freshJobDoc = await transaction.get(jobRef);
-          if (!freshJobDoc.exists) return "skipped";
+          if (!freshJobDoc.exists) return { status: "skipped" };
 
           const jobData = freshJobDoc.data()!;
           const { state, attempt = 0 } = jobData;
 
           if (state !== "queued" && (state !== "running" || jobData.leaseExpiresAt > now)) {
-            return "skipped";
+            return { status: "skipped" };
           }
 
           if (attempt >= maxJobAttempts) {
-            transaction.update(jobRef, {
+            const terminalJobData = {
+              ...jobData,
               state: "failed",
               error: { message: "Maximum attempts reached." },
-              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              updatedAt: now,
+            };
+            transaction.update(jobRef, {
+              state: terminalJobData.state,
+              error: terminalJobData.error,
+              updatedAt: terminalJobData.updatedAt,
             });
-            return "max_attempts";
+            return { status: "max_attempts", before: jobData, job: terminalJobData };
           }
 
-          transaction.update(jobRef, {
+          const claimedJobData = {
+            ...jobData,
             state: "running",
             claimedBy: runnerId,
             leaseExpiresAt,
             attempt: attempt + 1,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: now,
+          };
+          transaction.update(jobRef, {
+            state: claimedJobData.state,
+            claimedBy: claimedJobData.claimedBy,
+            leaseExpiresAt: claimedJobData.leaseExpiresAt,
+            attempt: claimedJobData.attempt,
+            updatedAt: claimedJobData.updatedAt,
           });
-          return "claimed";
+          return { status: "claimed", before: jobData, job: claimedJobData };
         });
 
-        if (claimOutcome === "max_attempts") {
-          const terminalJobData = (await jobRef.get()).data() ?? null;
+        if (claimOutcome.status === "max_attempts") {
           await logJobEvent(jobId, "state_change", "Job failed: Maximum attempts reached.");
-          await writeAuditLog("system", "job_failed_max_attempts", `jobs/${jobId}`, jobDoc.data(), terminalJobData);
+          await writeAuditLog(
+            "system",
+            "job_failed_max_attempts",
+            `jobs/${jobId}`,
+            claimOutcome.before,
+            claimOutcome.job
+          );
           continue;
         }
 
-        if (claimOutcome !== "claimed") {
+        if (claimOutcome.status !== "claimed") {
           continue;
         }
 
-        const claimedJobData = (await jobRef.get()).data()!;
+        const claimedJobData = claimOutcome.job;
         await logJobEvent(jobId, "state_change", `Job claimed by runner ${runnerId}. Attempt ${claimedJobData.attempt}.`);
 
         const output = await processJob({ id: jobId, ...claimedJobData });
-
-        await jobRef.update({
+        const succeededAt = admin.firestore.Timestamp.now();
+        const succeededJobData = {
+          ...claimedJobData,
           state: "succeeded",
           output,
           error: null,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: succeededAt,
+        };
+
+        await jobRef.update({
+          state: succeededJobData.state,
+          output: succeededJobData.output,
+          error: succeededJobData.error,
+          updatedAt: succeededJobData.updatedAt,
         });
 
         await logJobEvent(jobId, "artifact", "Fallback artifact generated.", output);
         await logJobEvent(jobId, "state_change", "Job succeeded in fallback mode.");
-        await writeAuditLog("system", "job_succeeded_fallback", `jobs/${jobId}`, claimedJobData, (await jobRef.get()).data() ?? null);
+        await writeAuditLog(
+          "system",
+          "job_succeeded_fallback",
+          `jobs/${jobId}`,
+          claimedJobData,
+          succeededJobData
+        );
         finalState = "succeeded";
       } catch (e: unknown) {
         const errorMessage = e instanceof Error ? e.message : "Unknown job error";
         const errorStack = e instanceof Error ? e.stack : undefined;
         console.error(`Error processing job ${jobId}:`, e);
-        const currentJobData = (await jobRef.get()).data()!;
-        const { attempt } = currentJobData;
+        const currentJobData = (await jobRef.get()).data() ?? null;
+        if (!currentJobData) {
+          console.error(`Job ${jobId} disappeared before failure state could be recorded.`);
+          continue;
+        }
 
-        const error = { message: errorMessage, stack: errorStack };
-        const updateData: admin.firestore.UpdateData<admin.firestore.DocumentData> = { error };
+        const attempt = Number(currentJobData.attempt ?? 0);
+        const error: { message: string; stack?: string } = { message: errorMessage };
+        if (errorStack) error.stack = errorStack;
+
+        const failedAt = admin.firestore.Timestamp.now();
+        const updateData: admin.firestore.UpdateData<admin.firestore.DocumentData> = {
+          error,
+          updatedAt: failedAt,
+        };
 
         if (attempt >= maxJobAttempts) {
           updateData.state = "failed";
@@ -197,13 +251,19 @@ export const jobRunner = functions.pubsub
           finalState = "retry";
         }
 
-        updateData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
         await jobRef.update(updateData);
         await logJobEvent(jobId, "log", `Job error: ${errorMessage}`);
 
         if (finalState === "failed") {
+          const failedJobData = { ...currentJobData, ...updateData };
           await logJobEvent(jobId, "state_change", `Job failed after ${attempt} attempts.`);
-          await writeAuditLog("system", "job_failed", `jobs/${jobId}`, currentJobData, (await jobRef.get()).data() ?? null);
+          await writeAuditLog(
+            "system",
+            "job_failed",
+            `jobs/${jobId}`,
+            currentJobData,
+            failedJobData
+          );
         }
       }
     }
