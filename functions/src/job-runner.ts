@@ -13,6 +13,8 @@ type JobOutput = {
   fallbackOnly: true;
 };
 
+type ClaimOutcome = "skipped" | "claimed" | "max_attempts";
+
 const fallbackOutput = (input: {
   path?: string;
   message?: string;
@@ -119,18 +121,17 @@ export const jobRunner = functions.pubsub
       const jobId = jobDoc.id;
       const jobRef = db.collection("jobs").doc(jobId);
       let finalState = "failed";
-      let claimOutcome: "skipped" | "claimed" | "max_attempts" = "skipped";
 
       try {
-        await db.runTransaction(async (transaction) => {
+        const claimOutcome = await db.runTransaction<ClaimOutcome>(async (transaction) => {
           const freshJobDoc = await transaction.get(jobRef);
-          if (!freshJobDoc.exists) return;
+          if (!freshJobDoc.exists) return "skipped";
 
           const jobData = freshJobDoc.data()!;
           const { state, attempt = 0 } = jobData;
 
           if (state !== "queued" && (state !== "running" || jobData.leaseExpiresAt > now)) {
-            return;
+            return "skipped";
           }
 
           if (attempt >= maxJobAttempts) {
@@ -139,8 +140,7 @@ export const jobRunner = functions.pubsub
               error: { message: "Maximum attempts reached." },
               updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             });
-            claimOutcome = "max_attempts";
-            return;
+            return "max_attempts";
           }
 
           transaction.update(jobRef, {
@@ -150,7 +150,7 @@ export const jobRunner = functions.pubsub
             attempt: attempt + 1,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           });
-          claimOutcome = "claimed";
+          return "claimed";
         });
 
         if (claimOutcome === "max_attempts") {
