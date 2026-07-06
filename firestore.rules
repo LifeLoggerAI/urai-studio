@@ -62,8 +62,7 @@ service cloud.firestore {
       // Studio creation and the initial owner membership must be one trusted,
       // server-authorized operation. Firebase Admin bypasses client rules.
       allow create: if false;
-      allow update: if canAdminister(studioId)
-        && request.resource.data.id == resource.data.id;
+      allow update: if canAdminister(studioId);
       allow delete: if isOwner(studioId);
     }
 
