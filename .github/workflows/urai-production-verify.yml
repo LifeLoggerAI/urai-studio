@@ -7,81 +7,104 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: urai-studio-production-verify-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+env:
+  TARGET_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
 jobs:
   verify:
     name: Build, test, and QA
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout exact candidate
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ env.TARGET_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Prove exact clean candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '20'
-          cache: pnpm
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: |
-          if [ -f pnpm-lock.yaml ]; then
-            corepack prepare pnpm@9.7.0 --activate
-            pnpm install --frozen-lockfile
-          else
-            npm install
-          fi
-
-      - name: Run typecheck
+      - name: Enable exact pnpm
         shell: bash
         run: |
-          mkdir -p ci-receipts
-          set -o pipefail
-          if [ -f pnpm-lock.yaml ]; then
-            pnpm run typecheck --if-present 2>&1 | tee ci-receipts/typecheck.log
-          else
-            npm run typecheck --if-present 2>&1 | tee ci-receipts/typecheck.log
-          fi
+          set -euo pipefail
+          corepack enable
+          corepack prepare pnpm@9.7.0 --activate
+          test "$(pnpm --version)" = "9.7.0"
 
-      - name: Run tests
+      - name: Install exact dependencies
         shell: bash
         run: |
+          set -euo pipefail
           mkdir -p ci-receipts
-          set -o pipefail
-          if [ -f pnpm-lock.yaml ]; then
-            pnpm test --if-present 2>&1 | tee ci-receipts/tests.log
-          else
-            npm test --if-present 2>&1 | tee ci-receipts/tests.log
-          fi
+          pnpm install --frozen-lockfile 2>&1 | tee ci-receipts/install.log
+          test -z "$(git status --porcelain --untracked-files=all)"
 
-      - name: Build
+      - name: Run exact-head verification suite
         shell: bash
         run: |
+          set -uo pipefail
           mkdir -p ci-receipts
-          set -o pipefail
-          if [ -f pnpm-lock.yaml ]; then
-            pnpm run build --if-present 2>&1 | tee ci-receipts/build.log
-          else
-            npm run build --if-present 2>&1 | tee ci-receipts/build.log
-          fi
+          status=0
+          run_check() {
+            local name="$1"
+            shift
+            "$@" 2>&1 | tee "ci-receipts/${name}.log"
+            local code=${PIPESTATUS[0]}
+            if [ "$code" -ne 0 ]; then status=1; fi
+          }
+          run_check typecheck pnpm run typecheck
+          run_check tests pnpm test
+          run_check build pnpm run build
+          run_check functions-build pnpm --dir functions build
+          run_check urai-qa pnpm run urai:qa --if-present
+          printf '%s\n' "$status" > ci-receipts/status.txt
+          exit 0
 
-      - name: Run URAI QA
-        shell: bash
-        run: |
-          mkdir -p ci-receipts
-          set -o pipefail
-          if [ -f pnpm-lock.yaml ]; then
-            pnpm run urai:qa --if-present 2>&1 | tee ci-receipts/urai-qa.log
-          else
-            npm run urai:qa --if-present 2>&1 | tee ci-receipts/urai-qa.log
-          fi
-
-      - name: Upload production verification receipts
+      - name: Write exact-head receipt
         if: always()
-        uses: actions/upload-artifact@v4
+        shell: bash
+        run: |
+          cat > ci-receipts/receipt.txt <<EOF
+          URAI Studio exact-head production verification receipt
+          Repository: ${GITHUB_REPOSITORY}
+          Candidate: ${TARGET_SHA}
+          Checked out: $(git rev-parse HEAD)
+          Run ID: ${GITHUB_RUN_ID}
+          Certification: false
+          Deployment: false
+          Boundary: source verification only; emulator migration, live integrations, provider rails, deployment, monitoring and rollback remain separate gates.
+          EOF
+
+      - name: Upload exact-head verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: urai-production-verify-receipts-${{ github.run_id }}
-          path: ci-receipts
+          name: urai-studio-production-verify-${{ env.TARGET_SHA }}
+          path: ci-receipts/**
           if-no-files-found: warn
-          retention-days: 30
+          retention-days: 90
+
+      - name: Enforce exact-head result and clean source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(cat ci-receipts/status.txt)" = "0"
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          git status --porcelain=v1 --untracked-files=all | tee ci-receipts/final-source-status.log
+          test ! -s ci-receipts/final-source-status.log
