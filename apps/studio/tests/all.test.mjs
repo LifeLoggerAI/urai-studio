@@ -1,6 +1,8 @@
 import fs from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-const currentFile = new URL(import.meta.url).pathname;
+const currentFile = fileURLToPath(import.meta.url);
 const testDir = new URL('.', import.meta.url);
 
 const testFiles = fs
@@ -8,10 +10,23 @@ const testFiles = fs
   .filter((file) => file.endsWith('.test.mjs'))
   .sort();
 
+let executed = 0;
 for (const file of testFiles) {
   const testUrl = new URL(file, testDir);
-  if (testUrl.pathname === currentFile) continue;
-  await import(testUrl.href);
+  const testPath = fileURLToPath(testUrl);
+  if (testPath === currentFile) continue;
+
+  const result = spawnSync(process.execPath, [testPath], {
+    cwd: fileURLToPath(testDir),
+    env: process.env,
+    stdio: 'inherit',
+  });
+
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    throw new Error(`${file} failed with exit status ${result.status ?? 'unknown'}`);
+  }
+  executed += 1;
 }
 
-console.log('all Studio regression tests passed', testFiles.length - 1);
+console.log('all Studio regression tests passed', executed);
