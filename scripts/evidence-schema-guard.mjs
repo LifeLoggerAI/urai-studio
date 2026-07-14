@@ -16,7 +16,14 @@ const requiredFiles = [
 const requiredTokens = new Map([
   ['docs/URAI_STUDIO_RELEASE_EVIDENCE.schema.json', ['repo', 'commitSha', 'recordedAt', 'environment', 'gates', 'install', 'lint', 'typecheck', 'tests', 'appBuild', 'functionsBuild', 'doneDoneGuard', 'releaseCheck', 'smoke']],
   ['apps/studio/tests/release-evidence-schema.test.mjs', ['URAI_STUDIO_RELEASE_EVIDENCE.schema.json', 'requiredGates', 'install', 'smoke']],
-  ['apps/studio/tests/all-runner.test.mjs', ['auto-discovers every .test.mjs file', 'forbiddenManualImports', 'await import']],
+  ['apps/studio/tests/all-runner.test.mjs', [
+    'readdirSync',
+    "file.endsWith('.test.mjs')",
+    'spawnSync',
+    'process.execPath',
+    'forbiddenManualImports',
+    "src.includes('await import(testUrl.href)')",
+  ]],
   ['apps/studio/tests/legacy-roots.test.mjs', ['forbiddenWorkspaceRoots', 'apps/*', 'packages/*']],
 ]);
 
