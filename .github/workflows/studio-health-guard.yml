@@ -7,12 +7,81 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: urai-studio-health-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+env:
+  TARGET_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
 jobs:
   health-guard:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout exact reviewed head
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ env.TARGET_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+
+      - name: Prove exact clean head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 20
-      - run: node scripts/health-summary-guard.mjs
+
+      - name: Capture health guard
+        id: health
+        shell: bash
+        run: |
+          set +e
+          set -o pipefail
+          evidence_dir="$RUNNER_TEMP/studio-health-guard"
+          rm -rf -- "$evidence_dir"
+          mkdir -p -- "$evidence_dir"
+          node scripts/health-summary-guard.mjs 2>&1 | tee "$evidence_dir/health-summary-guard.log"
+          status=${PIPESTATUS[0]}
+          printf '%s\n' "$status" > "$evidence_dir/exit-code.txt"
+          {
+            echo 'URAI Studio exact-head health guard receipt'
+            echo "Repository: $GITHUB_REPOSITORY"
+            echo "Candidate: $TARGET_SHA"
+            echo "Checked out: $(git rev-parse HEAD)"
+            echo "Run ID: $GITHUB_RUN_ID"
+            echo 'Certification: false'
+            echo 'Deployment: false'
+            echo 'Boundary: source health-contract verification only; observed integrations, providers, migration, deployment, monitoring and rollback remain separate gates.'
+          } > "$evidence_dir/receipt.txt"
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload health guard evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: urai-studio-health-guard-${{ env.TARGET_SHA }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/studio-health-guard
+          if-no-files-found: error
+          retention-days: 365
+
+      - name: Prove final clean head
+        if: always()
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Enforce health guard
+        shell: bash
+        run: test "${{ steps.health.outputs.status }}" = '0'
