@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: urai-studio-production-verify-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  group: urai-studio-production-verify-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ env.TARGET_SHA }}
-          fetch-depth: 0
+          fetch-depth: 1
           persist-credentials: false
 
       - name: Prove exact clean candidate
@@ -51,20 +51,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p ci-receipts
-          pnpm install --frozen-lockfile 2>&1 | tee ci-receipts/install.log
+          receipt_dir="$RUNNER_TEMP/urai-studio-production-verify"
+          rm -rf -- "$receipt_dir"
+          mkdir -p -- "$receipt_dir"
+          pnpm install --frozen-lockfile 2>&1 | tee "$receipt_dir/install.log"
           test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Run exact-head verification suite
         shell: bash
         run: |
           set -uo pipefail
-          mkdir -p ci-receipts
+          receipt_dir="$RUNNER_TEMP/urai-studio-production-verify"
           status=0
           run_check() {
             local name="$1"
             shift
-            "$@" 2>&1 | tee "ci-receipts/${name}.log"
+            "$@" 2>&1 | tee "$receipt_dir/${name}.log"
             local code=${PIPESTATUS[0]}
             if [ "$code" -ne 0 ]; then status=1; fi
           }
@@ -72,15 +74,21 @@ jobs:
           run_check tests pnpm test
           run_check build pnpm run build
           run_check functions-build pnpm --dir functions build
-          run_check urai-qa pnpm run urai:qa --if-present
-          printf '%s\n' "$status" > ci-receipts/status.txt
+          if node -e "const p=require('./package.json'); process.exit(typeof p.scripts?.['urai:qa'] === 'string' ? 0 : 1)"; then
+            run_check urai-qa pnpm run urai:qa
+          else
+            printf '%s\n' 'urai:qa is not declared; no QA script was claimed or executed.' > "$receipt_dir/urai-qa-not-declared.log"
+          fi
+          printf '%s\n' "$status" > "$receipt_dir/status.txt"
           exit 0
 
       - name: Write exact-head receipt
         if: always()
         shell: bash
         run: |
-          cat > ci-receipts/receipt.txt <<EOF
+          receipt_dir="$RUNNER_TEMP/urai-studio-production-verify"
+          mkdir -p -- "$receipt_dir"
+          cat > "$receipt_dir/receipt.txt" <<EOF
           URAI Studio exact-head production verification receipt
           Repository: ${GITHUB_REPOSITORY}
           Candidate: ${TARGET_SHA}
@@ -96,15 +104,17 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: urai-studio-production-verify-${{ env.TARGET_SHA }}
-          path: ci-receipts/**
-          if-no-files-found: warn
+          path: ${{ runner.temp }}/urai-studio-production-verify/**
+          if-no-files-found: error
           retention-days: 90
 
       - name: Enforce exact-head result and clean source
         shell: bash
         run: |
           set -euo pipefail
-          test "$(cat ci-receipts/status.txt)" = "0"
+          receipt_dir="$RUNNER_TEMP/urai-studio-production-verify"
+          test "$(cat "$receipt_dir/status.txt")" = "0"
           test "$(git rev-parse HEAD)" = "$TARGET_SHA"
-          git status --porcelain=v1 --untracked-files=all | tee ci-receipts/final-source-status.log
-          test ! -s ci-receipts/final-source-status.log
+          git diff --exit-code
+          git diff --cached --exit-code
+          test -z "$(git status --porcelain --untracked-files=all)"
