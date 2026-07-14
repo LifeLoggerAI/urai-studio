@@ -12,7 +12,7 @@
     "lint": "pnpm --filter studio lint",
     "typecheck": "pnpm --filter studio typecheck",
     "test": "pnpm --filter studio test",
-    "test:rules": "npx --yes firebase-tools@15.18.0 emulators:exec --project urai-studio-ci --only firestore,storage \"node scripts/studio-membership-emulator-matrix.mjs\"",
+    "test:rules": "npx --yes firebase-tools@15.18.0 emulators:exec --config firebase.rules-emulator.json --project urai-studio-ci --only firestore,storage \"node scripts/studio-membership-emulator-matrix.mjs\"",
     "smoke": "HOST=${HOST:-http://127.0.0.1:3000} bash scripts/smoke.sh",
     "studio:smoke": "node scripts/studio-smoke-v1.js",
     "video-factory:capture": "node scripts/studio-video-route-capture.mjs",
