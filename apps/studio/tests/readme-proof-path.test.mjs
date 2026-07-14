@@ -1,7 +1,9 @@
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const repoRoot = join(process.cwd(), '..', '..');
+const testDirectory = dirname(fileURLToPath(import.meta.url));
+const repoRoot = resolve(testDirectory, '..', '..', '..');
 const readme = await readFile(join(repoRoot, 'README.md'), 'utf8');
 
 const requiredSnippets = [
