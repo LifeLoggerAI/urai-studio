@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const repoRoot = join(process.cwd(), '../..');
+const testDirectory = dirname(fileURLToPath(import.meta.url));
+const repoRoot = resolve(testDirectory, '..', '..', '..');
 const indexPath = join(repoRoot, 'docs/URAI_STUDIO_DOCS_INDEX_2026-06-16.md');
 
 assert.ok(existsSync(indexPath), 'docs index should exist');
