@@ -1,0 +1,351 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "before-the-rest-of-the-world",
+  "title": "Before the Rest of the World",
+  "authority": {
+    "githubIssue": "LifeLoggerAI/urai-studio#61",
+    "driveFolderId": "1oBsUMvJbwRz1g3ih5EW9LIyhBSve6gn5",
+    "driveProductionAuthorityId": "16KBYMvyC2prvTezu6eheLyOIBPiR-6WmpcI5bi2DSKg",
+    "driveMasterScriptId": "1M_qfKw-J4UNeeEEq_hGynA1pxF245F1pZ4mtNu_8aBU",
+    "driveMasterScriptIndexId": "18H8sGlFW-X4LTJmOmZF0wYCGyxOmhg8L9CA0jZXCRB4",
+    "driveAssetIndexId": "13J_ISCJsTAVZFXmSGDYxoCi6wQjdAzzONjP1ydNtf9k"
+  },
+  "distribution": {
+    "classification": "private-review-only",
+    "publicReleaseAuthorized": false,
+    "recipientChain": ["Adam", "Mark Wilson", "Doug Wilson"]
+  },
+  "master": {
+    "targetRuntimeSeconds": 600,
+    "minimumRuntimeSeconds": 480,
+    "maximumRuntimeSeconds": 600,
+    "resolution": "1920x1080",
+    "frameRate": 24,
+    "aspectRatio": "16:9",
+    "videoCodec": "h264",
+    "audioCodec": "aac",
+    "audioSampleRateHz": 48000,
+    "loudnessTargetLufs": -16,
+    "truePeakMaxDbtp": -1.0
+  },
+  "systems": {
+    "googleDrive": {
+      "role": "canon-approvals-provenance-delivery-receipts"
+    },
+    "github": {
+      "role": "orchestration-manifests-workflows-hashes-evidence"
+    },
+    "openAIPlatform": {
+      "role": "bounded-motion-and-narration-provider",
+      "projectTarget": "Personal / Default project",
+      "secretStorage": "github-environment-secret-only"
+    },
+    "assetFactory": {
+      "repository": "LifeLoggerAI/asset-factory",
+      "role": "cinematic-motion-recreation-transitions-provider-receipts"
+    },
+    "uraiSpatial": {
+      "repository": "LifeLoggerAI/urai-spatial",
+      "role": "founder-approved-final-product-capture-only"
+    },
+    "uraiStudio": {
+      "repository": "LifeLoggerAI/urai-studio",
+      "role": "edit-conform-captions-mix-master-package"
+    }
+  },
+  "nonNegotiableGates": {
+    "noSlideshow": true,
+    "noDemoLookingProductFootage": true,
+    "noGeneratedUiRepresentedAsProduct": true,
+    "noUnapprovedPortraits": true,
+    "noUnsupportedClaims": true,
+    "founderVisualApprovalRequired": true,
+    "exactProductCaptureShaRequired": true,
+    "familyScenesClassifiedAsCinematicRecreation": true,
+    "dougSeatIsInvitationNotAppointment": true,
+    "markIsBridgeNotEvidence": true
+  },
+  "sequences": [
+    {
+      "id": "S01",
+      "name": "Before the Explanation",
+      "timecode": "00:00-00:42",
+      "durationSeconds": 42,
+      "narrativePurpose": "Private invitation and credibility reset",
+      "visualSources": ["generated-motion", "practical-cinematic-plates", "title-design"],
+      "requiredShots": [
+        "dawn-road-wide",
+        "green-vintage-sports-car-tracking",
+        "mechanical-detail-motion",
+        "empty-theater-screen-wake"
+      ],
+      "audio": ["score-act1-intro", "road-ambience", "sub-bass-rise", "final-narration"]
+    },
+    {
+      "id": "S02",
+      "name": "The Life That Disappears",
+      "timecode": "00:42-01:26",
+      "durationSeconds": 44,
+      "narrativePurpose": "Show fragmentation of ordinary human life",
+      "visualSources": ["generated-motion", "motion-graphics"],
+      "requiredShots": [
+        "kitchen-light-human-presence",
+        "highway-memory-fragment",
+        "call-ending-closeup",
+        "unopened-photo",
+        "map-location-fade",
+        "message-history-dissolve",
+        "fragmented-panes-separation"
+      ],
+      "audio": ["score-act1-fragmentation", "domestic-room-tone", "phone-tail", "final-narration"]
+    },
+    {
+      "id": "S03",
+      "name": "A Private World Around One Life",
+      "timecode": "01:26-02:18",
+      "durationSeconds": 52,
+      "narrativePurpose": "Introduce UrAi as one connected system of systems",
+      "visualSources": ["generated-motion", "approved-concept-visualization", "system-diagram-motion"],
+      "requiredShots": [
+        "fragments-turn-toward-center",
+        "private-world-formation",
+        "connected-reality-orbit",
+        "home-orb-lifemap-ground-system-reveal"
+      ],
+      "audio": ["score-act2-world-formation", "energy-connections", "final-narration"]
+    },
+    {
+      "id": "S04",
+      "name": "Home, Orb, and Continuity",
+      "timecode": "02:18-03:05",
+      "durationSeconds": 47,
+      "narrativePurpose": "Show the front door and passive continuity principle",
+      "visualSources": ["approved-urai-product-capture", "clearly-labeled-concept-visualization-fallback"],
+      "requiredShots": [
+        "home-sanctuary-arrival",
+        "orb-physical-response",
+        "memory-place-parallax",
+        "context-to-continuity-transition"
+      ],
+      "productRoutes": ["/", "/home"],
+      "blockingAuthorities": ["LifeLoggerAI/urai-spatial#863"],
+      "audio": ["score-act2-home", "world-ambience", "orb-response", "final-narration"]
+    },
+    {
+      "id": "S05",
+      "name": "Life Map, Focus, and Replay",
+      "timecode": "03:05-03:58",
+      "durationSeconds": 53,
+      "narrativePurpose": "Demonstrate spatial navigation through memory",
+      "visualSources": ["approved-urai-product-capture", "clearly-labeled-concept-visualization-fallback"],
+      "requiredShots": [
+        "home-to-ascent",
+        "lifemap-near-mid-far-travel",
+        "memory-selection-arrival",
+        "focus-open",
+        "replay-transition",
+        "source-confidence-display"
+      ],
+      "productRoutes": ["/life-map", "/focus", "/replay"],
+      "blockingAuthorities": ["LifeLoggerAI/urai-spatial#853"],
+      "audio": ["score-act3-lifemap", "spatial-wind", "constellation-tones", "final-narration"]
+    },
+    {
+      "id": "S06",
+      "name": "Ground: The Work Beneath the World",
+      "timecode": "03:58-04:50",
+      "durationSeconds": 52,
+      "narrativePurpose": "Explain governed specialized intelligence",
+      "visualSources": ["approved-urai-product-capture", "generated-motion"],
+      "requiredShots": [
+        "descent-to-ground",
+        "ordered-infrastructure-wide",
+        "specialized-job-chambers",
+        "permission-gate-motion",
+        "receipt-trail",
+        "human-authority-stop-gate"
+      ],
+      "productRoutes": ["/ground"],
+      "blockingAuthorities": ["LifeLoggerAI/urai-spatial#850"],
+      "audio": ["score-act3-ground", "infrastructure-ambience", "controlled-impacts", "final-narration"]
+    },
+    {
+      "id": "S07",
+      "name": "Rights Are Part of the Product",
+      "timecode": "04:50-05:42",
+      "durationSeconds": 52,
+      "narrativePurpose": "Make privacy and ownership operational",
+      "visualSources": ["motion-graphics", "approved-product-capture", "generated-motion"],
+      "requiredShots": [
+        "human-centered-consent-boundary",
+        "permission-gate-open-close",
+        "export-package-formation",
+        "deletion-branch-removal",
+        "provenance-chain"
+      ],
+      "audio": ["score-act4-rights", "gate-mechanics", "data-movement", "final-narration"]
+    },
+    {
+      "id": "S08",
+      "name": "Built for More Than One Kind of Person",
+      "timecode": "05:42-06:28",
+      "durationSeconds": 46,
+      "narrativePurpose": "Show accessibility as foundational architecture",
+      "visualSources": ["generated-motion", "approved-product-capture", "motion-graphics"],
+      "requiredShots": [
+        "visual-sound-cues",
+        "haptic-language",
+        "spoken-spatial-navigation",
+        "reduced-motion-world",
+        "sensory-safe-focus",
+        "private-return-home"
+      ],
+      "audio": ["score-act4-accessibility", "haptic-visual-motif", "final-narration"]
+    },
+    {
+      "id": "S09",
+      "name": "Receipts, Not Theater",
+      "timecode": "06:28-07:18",
+      "durationSeconds": 50,
+      "narrativePurpose": "Prove engineering and operational discipline",
+      "visualSources": ["real-repository-evidence", "motion-graphics", "artifact-capture"],
+      "requiredShots": [
+        "cinematic-world-to-evidence-deconstruction",
+        "exact-commit",
+        "workflow-run",
+        "artifact-hash",
+        "permission-decision",
+        "provider-receipt",
+        "rollback-path",
+        "system-chain-operating-repeatedly"
+      ],
+      "audio": ["score-act5-evidence", "mechanical-clockwork", "final-narration"]
+    },
+    {
+      "id": "S10",
+      "name": "From One Life to Human Scale",
+      "timecode": "07:18-08:10",
+      "durationSeconds": 52,
+      "narrativePurpose": "Expand from one private world to global possibility",
+      "visualSources": ["generated-motion", "motion-graphics"],
+      "requiredShots": [
+        "single-private-world",
+        "many-bounded-worlds",
+        "language-and-accessibility-variation",
+        "explicit-consent-signal-release",
+        "anonymized-research-layer",
+        "human-reality-layer-pullback"
+      ],
+      "audio": ["score-act5-global-rise", "world-choir-texture", "final-narration"]
+    },
+    {
+      "id": "S11",
+      "name": "What Makes It Consequential",
+      "timecode": "08:10-08:58",
+      "durationSeconds": 48,
+      "narrativePurpose": "Show the ecosystem converging into operations",
+      "visualSources": ["real-repository-evidence", "generated-motion", "motion-graphics"],
+      "requiredShots": [
+        "repositories-and-teams-convergence",
+        "governed-asset-flow",
+        "private-public-boundary",
+        "foundation-and-stewardship",
+        "ecosystem-system-of-systems-wide"
+      ],
+      "audio": ["score-act6-consequence", "system-pulse", "final-narration"]
+    },
+    {
+      "id": "S12",
+      "name": "The Invitation",
+      "timecode": "08:58-09:42",
+      "durationSeconds": 44,
+      "narrativePurpose": "Earn the request for a serious examination",
+      "visualSources": ["generated-motion", "cinematic-recreation"],
+      "requiredShots": [
+        "dark-architectural-chamber",
+        "mark-illuminated-seat",
+        "doug-empty-invitation-seat",
+        "camera-past-seats-to-living-system"
+      ],
+      "audio": ["score-act6-invitation", "room-tone", "intentional-silence", "final-narration"]
+    },
+    {
+      "id": "S13",
+      "name": "Title and Stinger",
+      "timecode": "09:42-10:00",
+      "durationSeconds": 18,
+      "narrativePurpose": "Close with restraint and personal warmth",
+      "visualSources": ["title-design"],
+      "requiredShots": ["black-title", "private-urai-film-subtitle", "final-black"],
+      "audio": ["score-final-resolution", "intentional-silence", "final-narration"]
+    }
+  ],
+  "providerPlan": {
+    "policy": "independently-receipted-bounded-tranches",
+    "automaticRetryAuthorized": false,
+    "remixAuthorized": false,
+    "tranches": [
+      {
+        "id": "T1",
+        "purpose": "opening-fragmentation-world-formation",
+        "maximumVideoCalls": 12,
+        "maximumSpeechCalls": 0,
+        "maximumReservedSpendUsd": "15.00"
+      },
+      {
+        "id": "T2",
+        "purpose": "ground-rights-accessibility",
+        "maximumVideoCalls": 12,
+        "maximumSpeechCalls": 0,
+        "maximumReservedSpendUsd": "15.00"
+      },
+      {
+        "id": "T3",
+        "purpose": "global-consequence-invitation",
+        "maximumVideoCalls": 12,
+        "maximumSpeechCalls": 0,
+        "maximumReservedSpendUsd": "15.00"
+      },
+      {
+        "id": "T4",
+        "purpose": "final-narration",
+        "maximumVideoCalls": 0,
+        "maximumSpeechCalls": 1,
+        "maximumReservedSpendUsd": "2.00"
+      }
+    ],
+    "maximumTotalReservedSpendUsd": "47.00"
+  },
+  "audioPlan": {
+    "narration": {
+      "status": "required",
+      "source": "authoritative-drive-master-script",
+      "voiceDirection": "calm, intelligent, warm, grounded, emotionally restrained, never salesy",
+      "pronunciation": {"UrAi": "your eye"}
+    },
+    "music": {
+      "status": "required",
+      "policy": "original-or-properly-licensed",
+      "acts": 6,
+      "loopingSingleBedProhibited": true
+    },
+    "soundDesign": {
+      "status": "required",
+      "layers": ["room-tone", "ambience", "movement", "transitions", "restrained-impacts", "foley", "intentional-silence"]
+    }
+  },
+  "deliverables": [
+    "full-master-1080p.mp4",
+    "full-master-captioned-1080p.mp4",
+    "full-master-phone-sendable.mp4",
+    "full-master.srt",
+    "poster.png",
+    "thumbnail.jpg",
+    "sha256sums.txt",
+    "provider-receipt.json",
+    "product-capture-receipt.json",
+    "music-sound-provenance.json",
+    "private-delivery-receipt.md"
+  ],
+  "completionRule": "No artifact is final until the complete 8-10 minute master passes visual, factual, privacy, provenance, caption, and audio review and receives explicit founder approval."
+}
