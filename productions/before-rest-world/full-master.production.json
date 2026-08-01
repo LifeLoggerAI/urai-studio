@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "before-the-rest-of-the-world",
+  "title": "Before the Rest of the World",
+  "authority": {
+    "githubIssue": "LifeLoggerAI/urai-studio#61",
+    "driveFolderId": "1oBsUMvJbwRz1g3ih5EW9LIyhBSve6gn5",
+    "productionAuthorityDocumentId": "16KBYMvyC2prvTezu6eheLyOIBPiR-6WmpcI5bi2DSKg",
+    "masterScriptDocumentId": "1M_qfKw-J4UNeeEEq_hGynA1pxF245F1pZ4mtNu_8aBU",
+    "masterScriptIndexDocumentId": "18H8sGlFW-X4LTJmOmZF0wYCGyxOmhg8L9CA0jZXCRB4",
+    "assetIndexDocumentId": "13J_ISCJsTAVZFXmSGDYxoCi6wQjdAzzONjP1ydNtf9k"
+  },
+  "delivery": {
+    "targetRuntimeSeconds": 600,
+    "minimumRuntimeSeconds": 480,
+    "maximumRuntimeSeconds": 600,
+    "frameRate": 24,
+    "masterResolution": "1920x1080",
+    "aspectRatio": "16:9",
+    "primaryCodec": "h264",
+    "audioCodec": "aac",
+    "captionFormats": ["burned-in", "srt"],
+    "privateReviewOnly": true,
+    "publicReleaseAuthorized": false
+  },
+  "systems": [
+    {
+      "id": "drive-canon",
+      "owner": "Google Drive",
+      "responsibilities": ["script canon", "approvals", "provenance index", "delivery receipts"]
+    },
+    {
+      "id": "studio-orchestrator",
+      "owner": "LifeLoggerAI/urai-studio",
+      "responsibilities": ["production graph", "edit decision list", "conform", "captions", "mix", "mastering", "delivery package"]
+    },
+    {
+      "id": "asset-factory",
+      "owner": "LifeLoggerAI/asset-factory",
+      "responsibilities": ["provider-backed motion", "cinematic recreations", "transitions", "asset hashes", "provider receipts"]
+    },
+    {
+      "id": "spatial-capture",
+      "owner": "LifeLoggerAI/urai-spatial",
+      "responsibilities": ["approved exact-build product capture", "route evidence", "visual acceptance receipts"]
+    },
+    {
+      "id": "openai-provider",
+      "owner": "OpenAI Platform",
+      "responsibilities": ["bounded motion generation", "directed narration generation"]
+    }
+  ],
+  "sequences": [
+    {"id":"S01","start":"00:00","end":"00:42","title":"Before the Explanation","visualMode":"cinematic-recreation","generatedMotionShots":3,"productCaptureRequired":false},
+    {"id":"S02","start":"00:42","end":"01:26","title":"The Life That Disappears","visualMode":"cinematic-recreation","generatedMotionShots":4,"productCaptureRequired":false},
+    {"id":"S03","start":"01:26","end":"02:18","title":"A Private World Around One Life","visualMode":"hybrid-concept","generatedMotionShots":4,"productCaptureRequired":false},
+    {"id":"S04","start":"02:18","end":"03:05","title":"Home, Orb, and Continuity","visualMode":"actual-product-or-labeled-concept","generatedMotionShots":0,"productCaptureRequired":true,"requiredRoutes":["home","orb"]},
+    {"id":"S05","start":"03:05","end":"03:58","title":"Life Map, Focus, and Replay","visualMode":"actual-product-or-labeled-concept","generatedMotionShots":0,"productCaptureRequired":true,"requiredRoutes":["life-map","focus","replay"]},
+    {"id":"S06","start":"03:58","end":"04:50","title":"Ground: The Work Beneath the World","visualMode":"actual-product-or-labeled-concept","generatedMotionShots":2,"productCaptureRequired":true,"requiredRoutes":["ground"]},
+    {"id":"S07","start":"04:50","end":"05:42","title":"Rights Are Part of the Product","visualMode":"cinematic-systems-visualization","generatedMotionShots":3,"productCaptureRequired":false},
+    {"id":"S08","start":"05:42","end":"06:28","title":"Built for More Than One Kind of Person","visualMode":"cinematic-systems-visualization","generatedMotionShots":3,"productCaptureRequired":false},
+    {"id":"S09","start":"06:28","end":"07:18","title":"Receipts, Not Theater","visualMode":"evidence-motion-graphics","generatedMotionShots":0,"productCaptureRequired":false},
+    {"id":"S10","start":"07:18","end":"08:10","title":"From One Life to Human Scale","visualMode":"cinematic-concept","generatedMotionShots":4,"productCaptureRequired":false},
+    {"id":"S11","start":"08:10","end":"08:58","title":"What Makes It Consequential","visualMode":"evidence-and-cinematic-hybrid","generatedMotionShots":2,"productCaptureRequired":false},
+    {"id":"S12","start":"08:58","end":"09:42","title":"The Invitation","visualMode":"cinematic-recreation","generatedMotionShots":3,"productCaptureRequired":false},
+    {"id":"S13","start":"09:42","end":"10:00","title":"Title and Stinger","visualMode":"title-design","generatedMotionShots":0,"productCaptureRequired":false}
+  ],
+  "providerPlan": {
+    "videoModel": "sora-2",
+    "videoSize": "1280x720",
+    "secondsPerGeneratedClip": 12,
+    "plannedGeneratedClips": 28,
+    "narrationModel": "gpt-4o-mini-tts",
+    "narrationVoice": "onyx",
+    "plannedNarrationCalls": 4,
+    "musicPolicy": "original-local-or-properly-licensed",
+    "automaticRetryAuthorized": false,
+    "maximumVideoCallsPerTranche": 7,
+    "maximumNarrationCallsPerTranche": 1,
+    "maximumEstimatedProviderSpendUsd": "40.00",
+    "publicReleaseAuthorized": false
+  },
+  "productCaptureGate": {
+    "required": true,
+    "acceptedOnlyFromExactSha": true,
+    "founderApprovalRequired": true,
+    "rejectConditions": [
+      "placeholder primitives",
+      "debug geometry",
+      "flat photo composites",
+      "unfinished avatar",
+      "weak physical grounding",
+      "giant instruction panels",
+      "shortcut-pill clutter",
+      "browser chrome",
+      "console output",
+      "demo-like presentation"
+    ],
+    "fallback": "exclude runtime footage and use clearly labeled cinematic concept visualization"
+  },
+  "truthRules": {
+    "familyScenes": "cinematic recreation, not archival footage",
+    "markRole": "trusted bridge only",
+    "dougSeat": "invitation, not appointment",
+    "generatedUi": "never represented as actual product",
+    "unsupportedClaims": "prohibited",
+    "officialThirdPartyMarks": "prohibited without explicit authority"
+  },
+  "acceptance": {
+    "mustPlayStartToFinish": true,
+    "mustContainProfessionalNarration": true,
+    "mustContainMusicAndSoundDesign": true,
+    "mustContainNoPlaceholderMaterial": true,
+    "mustPassTelevisionReview": true,
+    "mustPassFactualContinuityPrivacyProvenanceCaptionVisualAudioReview": true,
+    "founderApprovalRequired": true
+  }
+}
