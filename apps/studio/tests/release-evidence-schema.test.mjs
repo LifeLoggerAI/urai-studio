@@ -7,17 +7,31 @@ const schema = JSON.parse(
 
 assert.equal(schema.title, 'URAI Studio Release Evidence');
 assert.equal(schema.properties.repository.const, 'LifeLoggerAI/urai-studio');
-assert.ok(schema.required.includes('commitSha'));
-assert.ok(schema.required.includes('recordedAt'));
-assert.ok(schema.required.includes('gates'));
+for (const field of ['commitSha', 'recordedAt', 'environment', 'gates']) {
+  assert.ok(schema.required.includes(field), `missing required release evidence field: ${field}`);
+}
+assert.equal(schema.properties.commitSha.pattern, '^[0-9a-f]{40}$');
 
 const requiredGates = schema.properties.gates.required;
-for (const gate of ['install', 'lint', 'typecheck', 'tests', 'appBuild', 'functionsBuild', 'doneDoneGuard', 'releaseCheck', 'smoke']) {
+for (const gate of [
+  'install',
+  'lint',
+  'typecheck',
+  'tests',
+  'appBuild',
+  'functionsBuild',
+  'doneDoneGuard',
+  'releaseCheck',
+  'providerReadiness',
+  'binaryArtifacts',
+  'smoke',
+]) {
   assert.ok(requiredGates.includes(gate), `missing release gate: ${gate}`);
 }
 
 assert.deepEqual(schema.$defs.gate.properties.status.enum, ['pass', 'fail', 'blocked', 'not_run']);
 assert.equal(schema.$defs.gate.required.includes('status'), true);
 assert.equal(schema.$defs.gate.required.includes('evidence'), true);
+assert.equal(schema.$defs.gate.properties.evidence.minLength, 1);
 
 console.log('release evidence schema coverage passed');
