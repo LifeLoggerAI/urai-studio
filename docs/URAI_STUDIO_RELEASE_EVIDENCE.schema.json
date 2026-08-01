@@ -126,5 +126,5 @@
       }
     }
   },
-  "description": "URAI Studio exact-head release evidence. Source checks, provider readiness, binary artifact truth, deployment, and live verification are separate gates and must never be inferred from one another."
+  "description": "URAI Studio release evidence record for one exact head and environment. Source checks, provider readiness, binary artifact truth, deployment, and live verification are separate gates and must never be inferred from one another."
 }
