@@ -19,6 +19,7 @@
     "done-done:guard": "node scripts/done-done-guard.mjs",
     "evidence:guard": "node scripts/evidence-schema-guard.mjs",
     "release:evidence:guard": "node scripts/release-evidence-boundary-guard.mjs",
+    "release:evidence:source": "node scripts/write-source-release-evidence.mjs",
     "health:guard": "node scripts/health-summary-guard.mjs",
     "provider:check": "node scripts/provider-readiness.mjs",
     "provider:check:strict": "URAI_PROVIDER_STRICT=true node scripts/provider-readiness.mjs",
