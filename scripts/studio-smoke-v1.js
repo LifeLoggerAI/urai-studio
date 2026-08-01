@@ -99,8 +99,8 @@ for (const file of [
   exists(file);
 }
 
-has('apps/studio/tests/all.test.mjs', ['readdirSync', "file.endsWith('.test.mjs')", 'await import', 'all Studio regression tests passed']);
-has('apps/studio/tests/all-runner.test.mjs', ['auto-discovers every .test.mjs file', 'forbiddenManualImports', 'await import']);
+has('apps/studio/tests/all.test.mjs', ['readdirSync', "file.endsWith('.test.mjs')", 'spawnSync', 'process.execPath', 'all Studio regression tests passed']);
+has('apps/studio/tests/all-runner.test.mjs', ['readdirSync', "file.endsWith('.test.mjs')", 'spawnSync', 'process.execPath', 'forbiddenManualImports', "src.includes('await import(testUrl.href)')"]);
 has('apps/studio/tests/legacy-roots.test.mjs', ['apps/*', 'packages/*', 'forbiddenWorkspaceRoots', 'urai-studio canonical app root']);
 has('apps/studio/components/site/MagicalHomeExperience.tsx', [
   'data-urai-v1-home-experience',

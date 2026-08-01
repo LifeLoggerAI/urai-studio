@@ -4,17 +4,33 @@ service firebase.storage {
 
     function isSignedIn() { return request.auth != null; }
 
+    function membershipPath(studioId) {
+      return /databases/(default)/documents/memberships/$(request.auth.uid + "_" + studioId);
+    }
+
     function isStudioMember(studioId) {
       return isSignedIn()
-        && exists(/databases/(default)/documents/memberships/$(request.auth.uid + "_" + studioId));
+        && firestore.exists(membershipPath(studioId))
+        && firestore.get(membershipPath(studioId)).data.uid == request.auth.uid
+        && firestore.get(membershipPath(studioId)).data.studioId == studioId
+        && firestore.get(membershipPath(studioId)).data.status == "active";
+    }
+
+    function canEdit(studioId) {
+      return isStudioMember(studioId)
+        && firestore.get(membershipPath(studioId)).data.role in ["owner", "admin", "editor"];
     }
 
     match /studios/{studioId}/uploads/{allPaths=**} {
-      allow read, write: if isStudioMember(studioId);
+      allow read: if isStudioMember(studioId);
+      allow write: if canEdit(studioId);
     }
 
+    // Generated outputs are worker-owned. Active members may read them, but
+    // browser clients cannot impersonate the render/export worker.
     match /studios/{studioId}/outputs/{allPaths=**} {
-      allow read, write: if isStudioMember(studioId);
+      allow read: if isStudioMember(studioId);
+      allow write: if false;
     }
 
     match /user-uploads/{uid}/studio/{allPaths=**} {

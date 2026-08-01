@@ -4,43 +4,117 @@ on:
   workflow_dispatch:
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: urai-studio-production-verify-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  TARGET_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
 jobs:
   verify:
     name: Build, test, and QA
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout exact candidate
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ env.TARGET_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Prove exact clean candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '20'
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install dependencies
+      - name: Enable exact pnpm
+        shell: bash
         run: |
-          if [ -f pnpm-lock.yaml ]; then
-            corepack prepare pnpm@9.7.0 --activate
-            pnpm install --frozen-lockfile
+          set -euo pipefail
+          corepack enable
+          corepack prepare pnpm@9.7.0 --activate
+          test "$(pnpm --version)" = "9.7.0"
+
+      - name: Install exact dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          receipt_dir="$RUNNER_TEMP/urai-studio-production-verify"
+          rm -rf -- "$receipt_dir"
+          mkdir -p -- "$receipt_dir"
+          pnpm install --frozen-lockfile 2>&1 | tee "$receipt_dir/install.log"
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Run exact-head verification suite
+        shell: bash
+        run: |
+          set -uo pipefail
+          receipt_dir="$RUNNER_TEMP/urai-studio-production-verify"
+          status=0
+          run_check() {
+            local name="$1"
+            shift
+            "$@" 2>&1 | tee "$receipt_dir/${name}.log"
+            local code=${PIPESTATUS[0]}
+            if [ "$code" -ne 0 ]; then status=1; fi
+          }
+          run_check typecheck pnpm run typecheck
+          run_check tests pnpm test
+          run_check build pnpm run build
+          run_check functions-build pnpm --dir functions build
+          if node -e "const p=require('./package.json'); process.exit(typeof p.scripts?.['urai:qa'] === 'string' ? 0 : 1)"; then
+            run_check urai-qa pnpm run urai:qa
           else
-            npm install
+            printf '%s\n' 'urai:qa is not declared; no QA script was claimed or executed.' > "$receipt_dir/urai-qa-not-declared.log"
           fi
+          printf '%s\n' "$status" > "$receipt_dir/status.txt"
+          exit 0
 
-      - name: Run typecheck
+      - name: Write exact-head receipt
+        if: always()
+        shell: bash
         run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm run typecheck --if-present; else npm run typecheck --if-present; fi
+          receipt_dir="$RUNNER_TEMP/urai-studio-production-verify"
+          mkdir -p -- "$receipt_dir"
+          cat > "$receipt_dir/receipt.txt" <<EOF
+          URAI Studio exact-head production verification receipt
+          Repository: ${GITHUB_REPOSITORY}
+          Candidate: ${TARGET_SHA}
+          Checked out: $(git rev-parse HEAD)
+          Run ID: ${GITHUB_RUN_ID}
+          Certification: false
+          Deployment: false
+          Boundary: source verification only; emulator migration, live integrations, provider rails, deployment, monitoring and rollback remain separate gates.
+          EOF
 
-      - name: Run tests
-        run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm test --if-present; else npm test --if-present; fi
+      - name: Upload exact-head verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: urai-studio-production-verify-${{ env.TARGET_SHA }}
+          path: ${{ runner.temp }}/urai-studio-production-verify/**
+          if-no-files-found: error
+          retention-days: 90
 
-      - name: Build
+      - name: Enforce exact-head result and clean source
+        shell: bash
         run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm run build --if-present; else npm run build --if-present; fi
-
-      - name: Run URAI QA
-        run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm run urai:qa --if-present; else npm run urai:qa --if-present; fi
+          set -euo pipefail
+          receipt_dir="$RUNNER_TEMP/urai-studio-production-verify"
+          test "$(cat "$receipt_dir/status.txt")" = "0"
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          git diff --exit-code
+          git diff --cached --exit-code
+          test -z "$(git status --porcelain --untracked-files=all)"

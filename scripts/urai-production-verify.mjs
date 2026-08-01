@@ -1,24 +1,22 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
-const hasPnpm = existsSync('pnpm-lock.yaml');
-const hasPackage = existsSync('package.json');
-const runner = hasPnpm ? 'pnpm' : 'npm';
-const commands = [];
-
-if (hasPackage) {
-  commands.push([runner, ['run', 'typecheck', '--if-present']]);
-  commands.push([runner, ['test', '--if-present']]);
-  commands.push([runner, ['run', 'build', '--if-present']]);
-  commands.push([runner, ['run', 'urai:qa', '--if-present']]);
+if (!existsSync('package.json')) {
+  console.log('No package.json found; nothing to verify.');
+  process.exit(0);
 }
 
-let failed = false;
-for (const [cmd, args] of commands) {
-  console.log(`\n> ${cmd} ${args.join(' ')}`);
-  const result = spawnSync(cmd, args, { stdio: 'inherit', shell: process.platform === 'win32' });
-  if (result.status !== 0) failed = true;
+const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+const runner = existsSync('pnpm-lock.yaml') ? 'pnpm' : 'npm';
+const requestedScripts = ['typecheck', 'test', 'build', 'urai:qa'];
+const scripts = requestedScripts.filter((name) => typeof pkg.scripts?.[name] === 'string');
+
+for (const script of scripts) {
+  const args = ['run', script];
+  console.log(`\n> ${runner} ${args.join(' ')}`);
+  const result = spawnSync(runner, args, { stdio: 'inherit', shell: process.platform === 'win32' });
+  if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
-if (!commands.length) console.log('No package.json found; nothing to verify.');
-process.exit(failed ? 1 : 0);
+if (!scripts.length) console.log('No declared production verification scripts found.');
+process.exit(0);

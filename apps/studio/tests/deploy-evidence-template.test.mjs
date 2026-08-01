@@ -1,9 +1,11 @@
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const repoRoot = resolve(process.cwd(), '..', '..');
+const testDirectory = dirname(fileURLToPath(import.meta.url));
+const repoRoot = resolve(testDirectory, '..', '..', '..');
 const templatePath = resolve(repoRoot, 'docs/URAI_STUDIO_DEPLOY_EVIDENCE_TEMPLATE.md');
 
 const requiredFragments = [

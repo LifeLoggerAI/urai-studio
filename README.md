@@ -6,12 +6,26 @@ Creator and admin studio for URAI: public site, cinematic AI studio surfaces, Fi
 
 URAI Studio has a real app/backend foundation, but it must not be called production frozen until the release evidence ledger is filled with clean install, lint, typecheck, test, app build, Functions build, guard, deploy, and live smoke proof.
 
-Canonical status documents:
+Canonical current audit and operations documents:
 
-- `docs/URAI_STUDIO_DOCS_INDEX_2026-06-16.md` - current navigation index for audit docs, contracts, guards, and proof templates.
-- `docs/URAI_STUDIO_FULL_AUDIT.md` - full repo/system audit, blocker list, and safe release language.
-- `docs/URAI_STUDIO_SYSTEM_PIPELINES_AUDIT_2026-06-16.md` - system-of-systems pipeline audit across Jobs, Content, Asset Factory, Spatial, Analytics, Marketing, Admin, Privacy, Investors, and B2B Portal.
-- `docs/URAI_STUDIO_REMAINING_BLOCKERS_2026-06-16.md` - current proof blockers that must be cleared before final lock.
+- `docs/audits/URAI_STUDIO_FULL_REPO_AUDIT.md` — current evidence-backed repository audit.
+- `docs/audits/URAI_STUDIO_SYSTEM_INVENTORY.md` — application, API, function, persistence, integration, and operations inventory.
+- `docs/audits/URAI_STUDIO_GAP_REGISTER.md` — prioritized human-readable gap register.
+- `docs/audits/urai-studio-gap-register.yaml` — machine-readable P0/P1 gap register.
+- `docs/audits/URAI_STUDIO_SECURITY_PRIVACY_AUDIT.md` — security, authorization, privacy, and data-rights findings.
+- `docs/audits/URAI_STUDIO_TEST_AND_RELEASE_AUDIT.md` — test coverage, CI/CD, deployment evidence, and missing-test matrix.
+- `docs/architecture/URAI_STUDIO_CANONICAL_ARCHITECTURE.md` — canonical V50 architecture and migration direction.
+- `docs/roadmap/URAI_STUDIO_V50_V100_V150_V200_ROADMAP.md` — dependency-ordered completion roadmap and scorecard.
+- `docs/operations/URAI_STUDIO_RELEASE_RUNBOOK.md` — release gates and evidence requirements.
+- `docs/operations/URAI_STUDIO_ROLLBACK_AND_INCIDENT_RUNBOOK.md` — rollback, containment, recovery, and incident evidence.
+- `docs/operations/URAI_STUDIO_PROVIDER_COST_CONTROL.md` — disabled-by-default provider and spend controls.
+
+Supporting status documents:
+
+- `docs/URAI_STUDIO_DOCS_INDEX_2026-06-16.md` - navigation index for earlier audit docs, contracts, guards, and proof templates.
+- `docs/URAI_STUDIO_FULL_AUDIT.md` - earlier repo/system audit snapshot and safe release language.
+- `docs/URAI_STUDIO_SYSTEM_PIPELINES_AUDIT_2026-06-16.md` - earlier system-of-systems pipeline audit.
+- `docs/URAI_STUDIO_REMAINING_BLOCKERS_2026-06-16.md` - earlier proof-blocker snapshot.
 - `docs/URAI_STUDIO_DEPLOY_EVIDENCE_TEMPLATE.md` - deploy proof record template for observed CI, deploy target, base URL, and remote endpoint checks.
 - `docs/URAI_STUDIO_RELEASE_EVIDENCE.md` - release proof ledger that must be completed before production lock.
 - `docs/URAI_STUDIO_RELEASE_EVIDENCE.schema.json` - machine-readable release evidence shape.
@@ -46,7 +60,7 @@ pnpm build
 pnpm run studio:preview
 ```
 
-The preview script runs the Studio app under `apps/studio` on the configured port.
+The preview script runs the Studio app under `apps/studio` on the configured port. The non-frozen install is limited to local dependency-repair workflows; release and CI verification use the committed lockfile.
 
 ## Firebase Studio recovery
 
@@ -89,18 +103,18 @@ pnpm audit
 ```bash
 set -euo pipefail
 corepack prepare pnpm@9.7.0 --activate
-pnpm install --no-frozen-lockfile
+pnpm install --frozen-lockfile
 pnpm release:check
-HOST=http://127.0.0.1:3000 pnpm studio:smoke
+HOST=http://127.0.0.1:3000 EXPECT_READY=false pnpm studio:smoke
 ```
 
 After deployment:
 
 ```bash
-HOST=https://www.uraistudio.com bash scripts/smoke.sh
+HOST=https://www.uraistudio.com EXPECT_READY=true EXPECT_PROTECTED_AUTH=true bash scripts/smoke.sh
 ```
 
-Record the output in `docs/URAI_STUDIO_RELEASE_EVIDENCE.md` and `docs/URAI_STUDIO_DEPLOY_EVIDENCE_TEMPLATE.md` before claiming production freeze.
+Record the output in `docs/URAI_STUDIO_RELEASE_EVIDENCE.md` and `docs/URAI_STUDIO_DEPLOY_EVIDENCE_TEMPLATE.md` before claiming production freeze. Also record the exact deployed SHA and last-known-good rollback SHA.
 
 ## Environment variables
 
@@ -133,5 +147,7 @@ STRIPE_WEBHOOK_SECRET=
 ## Deployment notes
 
 - Firebase Studio should not auto-start emulators during workspace boot.
-- `pnpm install --no-frozen-lockfile` is intentionally used while the dependency graph is being repaired and React/Next are aligned.
-- Once CI is green and the lockfile is regenerated on a real workstation or CI repair run, switch the audit workflow back to frozen lockfile mode.
+- Dependency repair may use `pnpm install --no-frozen-lockfile`, but any resulting lockfile change must be reviewed and committed before release verification.
+- CI and release verification must use `pnpm install --frozen-lockfile`.
+- The canonical production deployment mechanism—Firebase Hosting, Firebase App Hosting, or an explicitly documented combination—must be resolved and recorded before deployment.
+- No provider-backed feature may be enabled without explicit credentials, billing, budget, privacy, and kill-switch approval.

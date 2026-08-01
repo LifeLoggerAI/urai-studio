@@ -7,6 +7,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   audit:
     runs-on: ubuntu-latest
@@ -19,15 +22,83 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-      - run: pnpm install --no-frozen-lockfile
-      - run: pnpm done-done:guard
-      - run: node scripts/evidence-schema-guard.mjs
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm test
-      - run: node apps/studio/tests/integrations.test.mjs
-      - run: node apps/studio/tests/create-job-validation.test.mjs
-      - run: pnpm build
-      - run: pnpm --dir functions install --no-frozen-lockfile
-      - run: pnpm --dir functions build
-      - run: pnpm studio:smoke
+      - run: pnpm install --frozen-lockfile
+
+      - name: Run done-done guard
+        shell: bash
+        run: |
+          mkdir -p ci-receipts
+          set -o pipefail
+          pnpm done-done:guard 2>&1 | tee ci-receipts/done-done-guard.log
+
+      - name: Run evidence schema guard
+        shell: bash
+        run: |
+          mkdir -p ci-receipts
+          set -o pipefail
+          node scripts/evidence-schema-guard.mjs 2>&1 | tee ci-receipts/evidence-schema-guard.log
+
+      - name: Run lint
+        shell: bash
+        run: |
+          mkdir -p ci-receipts
+          set -o pipefail
+          pnpm lint 2>&1 | tee ci-receipts/lint.log
+
+      - name: Run typecheck
+        shell: bash
+        run: |
+          mkdir -p ci-receipts
+          set -o pipefail
+          pnpm typecheck 2>&1 | tee ci-receipts/typecheck.log
+
+      - name: Run tests
+        shell: bash
+        run: |
+          mkdir -p ci-receipts
+          set -o pipefail
+          pnpm test 2>&1 | tee ci-receipts/tests.log
+
+      - name: Run integration declaration test
+        shell: bash
+        run: |
+          mkdir -p ci-receipts
+          set -o pipefail
+          node apps/studio/tests/integrations.test.mjs 2>&1 | tee ci-receipts/integrations.log
+
+      - name: Run create-job validation test
+        shell: bash
+        run: |
+          mkdir -p ci-receipts
+          set -o pipefail
+          node apps/studio/tests/create-job-validation.test.mjs 2>&1 | tee ci-receipts/create-job-validation.log
+
+      - name: Build Studio
+        shell: bash
+        run: |
+          mkdir -p ci-receipts
+          set -o pipefail
+          pnpm build 2>&1 | tee ci-receipts/studio-build.log
+
+      - name: Build Functions
+        shell: bash
+        run: |
+          mkdir -p ci-receipts
+          set -o pipefail
+          pnpm --dir functions build 2>&1 | tee ci-receipts/functions-build.log
+
+      - name: Run Studio smoke
+        shell: bash
+        run: |
+          mkdir -p ci-receipts
+          set -o pipefail
+          pnpm studio:smoke 2>&1 | tee ci-receipts/studio-smoke.log
+
+      - name: Upload Studio audit receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-audit-receipts-${{ github.run_id }}
+          path: ci-receipts
+          if-no-files-found: warn
+          retention-days: 30

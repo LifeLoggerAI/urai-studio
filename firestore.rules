@@ -6,78 +6,119 @@ service cloud.firestore {
     function ownsExisting() { return isSignedIn() && resource.data.uid == request.auth.uid; }
     function ownsIncoming() { return isSignedIn() && request.resource.data.uid == request.auth.uid; }
 
-    function isStudioMember(studioId) {
+    function membershipId(studioId) {
+      return request.auth.uid + "_" + studioId;
+    }
+
+    function membershipPath(studioId) {
+      return /databases/$(database)/documents/memberships/$(membershipId(studioId));
+    }
+
+    function membershipIsActive(studioId) {
       return isSignedIn()
-        && exists(/databases/$(database)/documents/memberships/$(request.auth.uid + "_" + studioId));
+        && exists(membershipPath(studioId))
+        && get(membershipPath(studioId)).data.uid == request.auth.uid
+        && get(membershipPath(studioId)).data.studioId == studioId
+        && get(membershipPath(studioId)).data.status == "active";
     }
 
-    function membershipDoc(studioId) {
-      return get(/databases/$(database)/documents/memberships/$(request.auth.uid + "_" + studioId));
+    function roleIsOneOf(studioId, roles) {
+      return membershipIsActive(studioId)
+        && get(membershipPath(studioId)).data.role in roles;
     }
 
-    function roleIs(studioId, role) {
-      return isStudioMember(studioId)
-        && membershipDoc(studioId).data.role == role;
+    function canView(studioId) {
+      return membershipIsActive(studioId);
     }
 
-    match /studios/{studioId} {
-      allow read: if isStudioMember(studioId);
-      allow create: if isSignedIn();
-      allow update, delete: if roleIs(studioId, "owner");
+    function canEdit(studioId) {
+      return roleIsOneOf(studioId, ["owner", "admin", "editor"]);
     }
 
-    match /memberships/{membershipId} {
-      allow read: if isSignedIn() && membershipId.startsWith(request.auth.uid + "_");
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && membershipId.startsWith(request.auth.uid + "_");
+    function canAdminister(studioId) {
+      return roleIsOneOf(studioId, ["owner", "admin"]);
     }
 
-    function studioScoped() {
+    function isOwner(studioId) {
+      return roleIsOneOf(studioId, ["owner"]);
+    }
+
+    function incomingStudioId() {
+      return request.resource.data.studioId;
+    }
+
+    function hasIncomingStudioId() {
       return request.resource.data.studioId is string;
     }
 
+    function studioIdIsImmutable() {
+      return hasIncomingStudioId()
+        && resource.data.studioId is string
+        && request.resource.data.studioId == resource.data.studioId;
+    }
+
+    match /studios/{studioId} {
+      allow read: if canView(studioId);
+      // Studio creation and the initial owner membership must be one trusted,
+      // server-authorized operation. Firebase Admin bypasses client rules.
+      allow create: if false;
+      allow update: if canAdminister(studioId);
+      allow delete: if isOwner(studioId);
+    }
+
+    match /memberships/{membershipDocumentId} {
+      allow read: if isSignedIn()
+        && (
+          (resource.data.uid == request.auth.uid
+            && membershipDocumentId == request.auth.uid + "_" + resource.data.studioId)
+          || canAdminister(resource.data.studioId)
+        );
+      // Membership grants, role transitions, suspension and revocation are
+      // server-owned. A client must never self-assign owner/admin membership.
+      allow create, update, delete: if false;
+    }
+
     match /clipRequests/{id} {
-      allow read: if isStudioMember(resource.data.studioId);
-      allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
-      allow update: if isStudioMember(resource.data.studioId);
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      allow read: if canView(resource.data.studioId);
+      allow create: if hasIncomingStudioId() && canEdit(incomingStudioId());
+      allow update: if studioIdIsImmutable() && canEdit(resource.data.studioId);
+      allow delete: if canAdminister(resource.data.studioId);
     }
 
     match /jobs/{id} {
-      allow read: if isStudioMember(resource.data.studioId);
-      allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
-      allow update: if isStudioMember(resource.data.studioId);
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      allow read: if canView(resource.data.studioId);
+      allow create: if hasIncomingStudioId() && canEdit(incomingStudioId());
+      allow update: if studioIdIsImmutable() && canEdit(resource.data.studioId);
+      allow delete: if canAdminister(resource.data.studioId);
     }
 
+    // Worker lifecycle records are trusted-server state. Clients may inspect
+    // records for their active Studio but cannot impersonate a worker.
     match /jobRuns/{id} {
-      allow read: if isStudioMember(resource.data.studioId);
-      allow create, update: if isStudioMember(request.resource.data.studioId);
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      allow read: if canView(resource.data.studioId);
+      allow create, update, delete: if false;
     }
 
     match /assets/{id} {
-      allow read: if isStudioMember(resource.data.studioId);
-      allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
-      allow update, delete: if isStudioMember(resource.data.studioId);
+      allow read: if canView(resource.data.studioId);
+      allow create: if hasIncomingStudioId() && canEdit(incomingStudioId());
+      allow update: if studioIdIsImmutable() && canEdit(resource.data.studioId);
+      allow delete: if canAdminister(resource.data.studioId);
     }
 
     match /outputs/{id} {
-      allow read: if isStudioMember(resource.data.studioId);
-      allow create, update: if isStudioMember(request.resource.data.studioId);
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      allow read: if canView(resource.data.studioId);
+      allow create, update, delete: if false;
     }
 
     match /deadLetters/{id} {
-      allow read: if isStudioMember(resource.data.studioId);
-      allow create, update: if isStudioMember(request.resource.data.studioId);
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      allow read: if canAdminister(resource.data.studioId);
+      allow create, update, delete: if false;
     }
 
     match /auditLogs/{id} {
-      allow read: if isStudioMember(resource.data.studioId);
-      allow create: if isStudioMember(request.resource.data.studioId);
-      allow update, delete: if false;
+      allow read: if canAdminister(resource.data.studioId);
+      allow create, update, delete: if false;
     }
 
     match /users/{uid} {
@@ -85,7 +126,8 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Legacy client-owned Studio documents. These remain uid-scoped for old clients.
+    // Legacy client-owned Studio documents remain uid-scoped only while the
+    // canonical tenant migration is incomplete. No new role model is added here.
     match /studioProjects/{id} {
       allow read, update, delete: if ownsExisting();
       allow create: if ownsIncoming();
@@ -164,9 +206,7 @@ service cloud.firestore {
       allow create: if ownsIncoming();
     }
 
-    // Runtime system-contract collections are written only by trusted server/API routes
-    // through Firebase Admin. Client SDK access is denied until tenant membership claims
-    // and end-user private dashboards are fully wired and audited.
+    // Runtime system-contract collections are written only by trusted server/API routes.
     match /studioBriefs/{id} {
       allow read, write: if false;
     }
@@ -180,7 +220,6 @@ service cloud.firestore {
     }
 
     // Public forms are written only through trusted server routes using Firebase Admin.
-    // Client SDK access is denied to prevent scraping, enumeration, or direct writes.
     match /waitlist/{id} {
       allow read, write: if false;
     }

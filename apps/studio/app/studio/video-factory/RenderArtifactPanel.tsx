@@ -11,7 +11,7 @@ export function RenderArtifactPanel() {
         <p className="eyebrow">Render artifacts</p>
         <h2>Deterministic package before binary MP4 composition.</h2>
         <p>
-          The render API produces the timeline, captions, JSON manifest, planned MP4 path, and command plan. The local artifact composer writes JSON and SRT files and an MP4 placeholder when FFmpeg composition is not available.
+          The render API produces the timeline, captions, JSON manifest, planned MP4 path, and command plan. The local artifact composer writes JSON and SRT files plus an explicit fallback receipt when FFmpeg composition is unavailable; it does not present that receipt as a playable video.
         </p>
       </div>
       <div className="cta-row" aria-label="Video Factory render links">

@@ -42,14 +42,28 @@ jobs:
           node-version: 20
           cache: pnpm
 
+      - name: Setup Java for Firebase emulators
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Release check
-        run: pnpm release:check
+        shell: bash
+        run: |
+          mkdir -p ci-receipts
+          set -o pipefail
+          pnpm release:check 2>&1 | tee ci-receipts/release-check.log
 
       - name: Static smoke declaration
-        run: pnpm --filter studio smoke:static
+        shell: bash
+        run: |
+          mkdir -p ci-receipts
+          set -o pipefail
+          pnpm --filter studio smoke:static 2>&1 | tee ci-receipts/static-smoke.log
 
       - name: Start Studio server
         run: |
@@ -68,7 +82,22 @@ jobs:
         env:
           HOST: http://127.0.0.1:3000
           EXPECT_READY: "false"
-        run: bash scripts/smoke.sh
+        shell: bash
+        run: |
+          mkdir -p ci-receipts
+          set -o pipefail
+          bash scripts/smoke.sh 2>&1 | tee ci-receipts/runtime-smoke.log
+
+      - name: Upload CI receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-ci-receipts-${{ github.run_id }}
+          path: |
+            ci-receipts
+            /tmp/urai-studio.log
+          if-no-files-found: warn
+          retention-days: 30
 
       - name: Stop Studio server
         if: always()
