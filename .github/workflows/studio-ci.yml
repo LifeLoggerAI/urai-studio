@@ -12,26 +12,38 @@ permissions:
   contents: read
 
 concurrency:
-  group: studio-ci-${{ github.ref }}
+  group: studio-ci-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
+
+env:
+  TARGET_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
   verify-studio:
-    name: Typecheck, lint, test, build, and smoke studio
+    name: Exact-head source, build, smoke, and evidence
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     env:
       NEXT_PUBLIC_SITE_URL: https://www.uraistudio.com
-      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ci-placeholder
-      NEXT_PUBLIC_FIREBASE_APP_ID: ci-placeholder
-      FIREBASE_PROJECT_ID: ci-placeholder
-      FIREBASE_CLIENT_EMAIL: ci@example.com
-      FIREBASE_PRIVATE_KEY: ci-placeholder
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ci-unconfigured
+      NEXT_PUBLIC_FIREBASE_APP_ID: ci-unconfigured
+      FIREBASE_PROJECT_ID: ci-unconfigured
+      FIREBASE_CLIENT_EMAIL: ci@example.invalid
+      FIREBASE_PRIVATE_KEY: ci-unconfigured
 
     steps:
-      - name: Checkout
+      - name: Checkout exact reviewed SHA
         uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_SHA }}
+          persist-credentials: false
+
+      - name: Verify exact clean checkout
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Enable Corepack
         run: corepack enable
@@ -42,10 +54,10 @@ jobs:
           node-version: 20
           cache: pnpm
 
-      - name: Install dependencies
+      - name: Install frozen dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Release check
+      - name: Source-only release check
         run: pnpm release:check
 
       - name: Static smoke declaration
@@ -69,6 +81,19 @@ jobs:
           HOST: http://127.0.0.1:3000
           EXPECT_READY: "false"
         run: bash scripts/smoke.sh
+
+      - name: Write exact-head source evidence
+        env:
+          EVIDENCE_OUTPUT: release-evidence/studio-source-${{ env.TARGET_SHA }}.json
+        run: pnpm release:evidence:source
+
+      - name: Upload exact-head source evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-source-evidence-${{ env.TARGET_SHA }}
+          path: release-evidence/studio-source-${{ env.TARGET_SHA }}.json
+          if-no-files-found: error
+          retention-days: 365
 
       - name: Stop Studio server
         if: always()
