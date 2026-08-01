@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "before-the-rest-of-the-world",
+  "authority": "LifeLoggerAI/urai-studio#61",
+  "masterScriptDocumentId": "1M_qfKw-J4UNeeEEq_hGynA1pxF245F1pZ4mtNu_8aBU",
+  "videoModel": "sora-2",
+  "videoSize": "1280x720",
+  "secondsPerShot": 12,
+  "privateReviewOnly": true,
+  "publicReleaseAuthorized": false,
+  "tranches": [
+    {
+      "id": "A",
+      "maximumVideoCalls": 7,
+      "maximumNarrationCalls": 1,
+      "shots": [
+        {"id":"A01","sequence":"S01","classification":"cinematic-recreation","prompt":"Prestige documentary opening at dawn. A vintage dark-green European-style sports coupe travels alone on a quiet tree-lined road near an old university district, no logos, no recognizable school marks, no visible driver identity. Low tracking camera close to wet pavement, realistic suspension movement, soft morning haze, restrained amber sunlight, 35mm cinema lens, physically believable motion, premium color science, no text, no interface, no slideshow movement."},
+        {"id":"A02","sequence":"S01","classification":"cinematic-recreation","prompt":"Empty private screening theater before a presentation. Camera glides slowly from the back row toward a black cinema screen as aisle lights dim one by one. Subtle dust in projector air, realistic velvet seats, deep shadows, expensive restrained atmosphere, no people, no logos, no text, continuous dolly motion, prestige documentary realism."},
+        {"id":"A03","sequence":"S01","classification":"cinematic-transition","prompt":"Abstract but physically grounded transition from precision machinery to a vast living information architecture. Close details of gears, airflow, control surfaces, and distribution lines gradually align into luminous pathways in darkness. Camera moves continuously through the transformation, elegant and restrained, realistic materials, no text, no recognizable brand, no interface mockup."},
+        {"id":"A04","sequence":"S02","classification":"cinematic-recreation","prompt":"One ordinary human day shown in a single flowing cinematic shot: warm kitchen light at dawn, a hand lifts keys, transition through a car windshield on a highway, a phone call ends, an unopened photograph rests in a drawer. No identifiable face, no readable phone UI, natural movement, emotionally restrained, realistic lighting and sound-ready visual detail."},
+        {"id":"A05","sequence":"S02","classification":"cinematic-concept","prompt":"Human-life fragments separate into isolated physical panes suspended in a dark architectural space: location, voice waveform, photograph, calendar, relationship silhouette, and health rhythm represented without readable private data. Camera passes between panes as they drift farther apart. Realistic glass, depth, parallax, atmospheric falloff, no text, no fake app UI."},
+        {"id":"A06","sequence":"S02","classification":"cinematic-recreation","prompt":"A quiet room after someone has left. An empty chair, an old voicemail recorder light, a map pin fading on a paper map, a family photograph turned face down. The camera slowly circles with natural handheld micro-movement, melancholy but not sentimental, realistic domestic detail, no identifiable people, no text."},
+        {"id":"A07","sequence":"S03","classification":"cinematic-concept","prompt":"The scattered panes of a human life stop drifting and rotate toward a dark central space. Fine threads of light connect them and begin forming an inhabitable world with paths, atmosphere, thresholds, distant architecture, and a calm luminous center. Continuous camera orbit and forward travel, physically coherent scale and lighting, not a dashboard, not a flat interface, premium science-fiction realism."}
+      ]
+    },
+    {
+      "id": "B",
+      "maximumVideoCalls": 7,
+      "maximumNarrationCalls": 1,
+      "shots": [
+        {"id":"B01","sequence":"S03","classification":"cinematic-concept","prompt":"A private living world organized around one anonymous human silhouette. Memory places, relationship constellations, goals, rights boundaries, and creative artifacts occupy distinct spatial regions around the person without exposing readable data. Camera travels from human scale to architectural scale, coherent materials, cinematic volumetric light, premium restrained design."},
+        {"id":"B02","sequence":"S03","classification":"cinematic-concept","prompt":"One system of systems visualized as connected but distinct realms: sanctuary home, luminous orb, life-map sky, focus chamber, replay theater, governed infrastructure ground, privacy gate, accessibility paths, evidence vault. Camera flies continuously through one connected architecture, no labels, no UI, no logos, realistic world-space transitions."},
+        {"id":"B03","sequence":"S03","classification":"cinematic-concept","prompt":"A calm central orb physically integrated into a sanctuary environment. It illuminates terrain, architecture, nearby memory artifacts, and atmospheric particles while responding to an unseen person approaching. Real reflections, contact lighting, shadow, subtle surface movement, no interface panels, no placeholder geometry, continuous cinematic push-in."},
+        {"id":"B04","sequence":"S06","classification":"cinematic-concept","prompt":"Descent beneath a luminous personal world into a vast governed infrastructure environment. Multiple specialized chambers are visible at different depths, connected by controlled pathways. Restrained worker-like light presences move with purpose, every action leaving a trace of light, no uncontrolled swarm, no labels, no debug geometry, premium architectural science-fiction realism."},
+        {"id":"B05","sequence":"S06","classification":"cinematic-concept","prompt":"Inside a governed private AI workforce chamber, specialized nonhuman luminous presences perform bounded tasks at separate stations: media preparation, continuity review, accessibility inspection, permission check, provenance recording. Camera moves laterally through the room, each station visibly isolated by permissions, no text, no humanoid celebrity likenesses, no chaotic hologram clutter."},
+        {"id":"B06","sequence":"S06","classification":"cinematic-concept","prompt":"A release gate inside a cinematic infrastructure world stops an artifact before it exits. Permission boundaries close, provenance lines remain attached, a human-controlled approval light stays dark. Continuous physical motion, elegant restrained design, clear cause and effect without readable text, no interface mockup."},
+        {"id":"B07","sequence":"S06","classification":"cinematic-concept","prompt":"A completed bounded job travels through a secure architectural pipeline and resolves into an immutable receipt object with visible hash-like geometry but no readable numbers. Camera follows the artifact from task chamber to evidence vault. Real materials, controlled lighting, deliberate motion, technically credible, no corporate logos."}
+      ]
+    },
+    {
+      "id": "C",
+      "maximumVideoCalls": 7,
+      "maximumNarrationCalls": 1,
+      "shots": [
+        {"id":"C01","sequence":"S07","classification":"cinematic-systems-visualization","prompt":"Anonymous person at the center of a private data architecture. Multiple signal paths approach but stop at explicit physical consent boundaries. Some gates open; others remain closed. Camera circles the person while boundaries respond with clear, calm motion. No readable personal data, no text, no medical claims, premium minimal design."},
+        {"id":"C02","sequence":"S07","classification":"cinematic-systems-visualization","prompt":"A complete personal export represented as a sealed, organized archive leaving a private world under the person's control. A separate deletion action removes one branch cleanly while provenance remains on retained authorized material. Continuous motion, physically understandable metaphor, no text, no fake software UI."},
+        {"id":"C03","sequence":"S07","classification":"cinematic-systems-visualization","prompt":"A generated memory scene reveals its provenance layers: recorded source, inferred context, and artistic reconstruction remain visibly distinct as transparent spatial layers. Camera moves through all three without merging them into false certainty. Elegant documentary-science-fiction realism, no labels, no identifiable people."},
+        {"id":"C04","sequence":"S08","classification":"cinematic-systems-visualization","prompt":"One dignified spatial world adapts for different human needs without changing identity: visual sound pulses, haptic pathways, spoken navigation waves, reduced-motion calm route, high-contrast orientation, simplified focus path. Show adaptations as environmental behavior rather than medical imagery. Continuous camera travel, inclusive and premium, no text."},
+        {"id":"C05","sequence":"S08","classification":"cinematic-recreation","prompt":"A deaf adult experiences an important environmental sound translated into elegant visible light and subtle wearable haptic feedback while remaining fully in control. Anonymous person, realistic everyday setting, respectful documentary tone, no disability cliché, no readable device UI, continuous natural movement."},
+        {"id":"C06","sequence":"S08","classification":"cinematic-recreation","prompt":"A blind adult navigates a calm interior using spatial audio guidance and a simple return-home action represented through environmental sound and tactile orientation. Anonymous person, respectful realism, no miracle framing, no medical claim, no readable interface, natural camera movement."},
+        {"id":"C07","sequence":"S09","classification":"cinematic-transition","prompt":"A beautiful cinematic world separates into exact operational evidence: repository commits, build artifacts, immutable hashes, tests, permission gates, cost controls, approvals, and rollback paths represented as real physical documents and secure digital objects. Camera moves through the evidence vault with restrained precision. No readable private data, no fake claims, no logos."}
+      ]
+    },
+    {
+      "id": "D",
+      "maximumVideoCalls": 7,
+      "maximumNarrationCalls": 1,
+      "shots": [
+        {"id":"D01","sequence":"S10","classification":"cinematic-concept","prompt":"Begin inside one private human world, then pull back to reveal many distinct private worlds across a city, continent, and planet. Every world remains enclosed by its own visible boundary; identities never merge. Languages and accessibility patterns vary subtly. Only a few explicitly permitted anonymized signals travel to a separate research layer. Continuous immense pullback, premium realism."},
+        {"id":"D02","sequence":"S10","classification":"cinematic-concept","prompt":"Millions of private worlds visualized as separate luminous habitats across Earth at night, each with its own boundary and human center. No central intelligence swallowing them, no social-network aesthetic. Camera moves in orbit while controlled anonymous research patterns form a separate layer above the planet. Restrained, awe-inspiring, scientifically credible."},
+        {"id":"D03","sequence":"S10","classification":"cinematic-concept","prompt":"A Human Reality Layer represented as a governed global architecture built from anonymized, permissioned patterns rather than raw personal histories. Distinct privacy walls remain visible around every source world. Camera travels through multilingual and accessibility-aware structures. No text, no logos, no claims of existing adoption."},
+        {"id":"D04","sequence":"S10","classification":"cinematic-concept","prompt":"Research, accessibility, and prevention possibilities emerge from carefully bounded anonymous patterns: safer navigation, communication access, early support signals, and public-benefit insights represented through humane environments. Avoid medical cure imagery and surveillance visuals. Continuous cinematic motion, realistic and restrained."},
+        {"id":"D05","sequence":"S11","classification":"cinematic-hybrid","prompt":"A connected operating ecosystem at human scale: product world, studio, asset factory, privacy, governed jobs, communications, foundation work, and long-term stewardship appear as separate rooms in one living institution. People are anonymous silhouettes, no unsupported partner logos, no advisor portraits, camera moves through the whole structure in one continuous shot."},
+        {"id":"D06","sequence":"S12","classification":"cinematic-recreation","prompt":"Dark architectural chamber with two seats facing a vast living system beyond glass. One seat is softly illuminated and occupied only by an indistinct anonymous silhouette; the second seat is empty and carries no title. Camera moves past both seats toward the system, making the empty seat feel like an invitation rather than an appointment. No text, no logos, premium restrained emotion."},
+        {"id":"D07","sequence":"S12","classification":"cinematic-recreation","prompt":"Final invitation shot. The camera leaves the empty seat behind and enters the immense connected UrAi system, revealing scale, architecture, human-centered boundaries, and distant light. The shot ends in controlled darkness suitable for a title card. No text within generated video, no logos, no triumphant sales tone, prestige documentary finish."}
+      ]
+    }
+  ],
+  "narration": {
+    "model": "gpt-4o-mini-tts",
+    "voice": "onyx",
+    "pronunciation": "Pronounce UrAi as 'your eye'.",
+    "direction": "Calm, confident prestige-documentary narrator. Warm, intelligent, grounded, emotionally restrained, never salesy. Natural breath and deliberate pauses.",
+    "segments": [
+      {"id":"N-A","sequences":["S01","S02","S03"],"source":"Drive master script 00:00–02:18"},
+      {"id":"N-B","sequences":["S04","S05","S06"],"source":"Drive master script 02:18–04:50"},
+      {"id":"N-C","sequences":["S07","S08","S09"],"source":"Drive master script 04:50–07:18"},
+      {"id":"N-D","sequences":["S10","S11","S12","S13"],"source":"Drive master script 07:18–10:00"}
+    ]
+  }
+}
