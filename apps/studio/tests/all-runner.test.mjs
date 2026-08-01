@@ -10,7 +10,8 @@ const testFiles = fs
 
 assert.ok(runner.includes('readdirSync'), 'all.test.mjs must discover the test directory');
 assert.ok(runner.includes("file.endsWith('.test.mjs')"), 'all.test.mjs must discover test files by suffix');
-assert.ok(runner.includes("file !== 'all.test.mjs'"), 'all.test.mjs must exclude only itself');
+assert.ok(runner.includes('testUrl.pathname === currentFile'), 'all.test.mjs must identify itself by canonical path');
+assert.ok(runner.includes('continue'), 'all.test.mjs must skip importing itself');
 assert.ok(runner.includes('await import'), 'all.test.mjs must dynamically import each discovered test');
 
 const forbiddenManualImports = testFiles.filter((file) =>
