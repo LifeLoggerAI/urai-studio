@@ -1,7 +1,6 @@
 import * as admin from 'firebase-admin';
 
 type FirebaseAdminMode =
-  | 'service-account'
   | 'application-default'
   | 'unconfigured'
   | 'error';
@@ -9,17 +8,9 @@ type FirebaseAdminMode =
 let firebaseAdminMode: FirebaseAdminMode = 'unconfigured';
 let firebaseAdminInitError: string | null = null;
 
-function hasPemShape(value: string | undefined): value is string {
-  return (
-    !!value &&
-    value.includes('-----BEGIN PRIVATE KEY-----') &&
-    value.includes('-----END PRIVATE KEY-----')
-  );
-}
-
 function initAdmin() {
   if (admin.apps.length) {
-    firebaseAdminMode = 'service-account';
+    firebaseAdminMode = 'application-default';
     return;
   }
 
@@ -27,24 +18,7 @@ function initAdmin() {
     process.env.FIREBASE_PROJECT_ID ||
     process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-
   try {
-    if (projectId && clientEmail && hasPemShape(privateKey)) {
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId,
-          clientEmail,
-          privateKey,
-        }),
-        projectId,
-      });
-
-      firebaseAdminMode = 'service-account';
-      return;
-    }
-
     if (projectId && process.env.GOOGLE_APPLICATION_CREDENTIALS) {
       admin.initializeApp({
         credential: admin.credential.applicationDefault(),
