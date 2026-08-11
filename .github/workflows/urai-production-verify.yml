@@ -31,16 +31,20 @@ jobs:
 
       - name: Run typecheck
         run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm run typecheck --if-present; else npm run typecheck --if-present; fi
+          if [ -f pnpm-lock.yaml ]; then pnpm run typecheck; else npm run typecheck --if-present; fi
 
       - name: Run tests
         run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm test --if-present; else npm test --if-present; fi
+          if [ -f pnpm-lock.yaml ]; then pnpm test; else npm test --if-present; fi
 
       - name: Build
         run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm run build --if-present; else npm run build --if-present; fi
+          if [ -f pnpm-lock.yaml ]; then pnpm run build; else npm run build --if-present; fi
 
       - name: Run URAI QA
         run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm run urai:qa --if-present; else npm run urai:qa --if-present; fi
+          if [ -f pnpm-lock.yaml ]; then
+            if pnpm run | grep -q 'urai:qa'; then pnpm run urai:qa; fi
+          else
+            npm run urai:qa --if-present
+          fi
