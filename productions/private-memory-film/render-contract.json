@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "id": "private-memory-film-v1",
+  "visibility": "private-delivery-only",
+  "targetRuntimeSeconds": {
+    "minimum": 360,
+    "maximum": 420
+  },
+  "picture": {
+    "masterAspectRatio": "2.39:1",
+    "counselAspectRatio": "16:9",
+    "frameRate": 24,
+    "masterResolution": "4K",
+    "reviewResolution": "1080p",
+    "motionRequired": true,
+    "stillPanSubstituteAllowed": false
+  },
+  "audio": {
+    "requiredMixes": ["stereo", "5.1"],
+    "requiredStems": ["dialogue", "music", "effects", "ambience"],
+    "syntheticThirdPartyVoiceAllowed": false,
+    "directToCameraRevealMustBeRealRecording": true
+  },
+  "privacy": {
+    "publicRepositoryMayContainPrivateSceneData": false,
+    "publicRepositoryMayContainIdentityMedia": false,
+    "publicRepositoryMayContainLegalFacts": false,
+    "publishTargets": []
+  },
+  "truthGates": {
+    "requireEvidenceLedger": true,
+    "allowFabricatedReaction": false,
+    "allowFabricatedTestimony": false,
+    "allowDisputedEventReenactment": false,
+    "allowUnverifiedServiceHistory": false,
+    "allowUnverifiedAnalytics": false,
+    "allowPassiveSurveillanceClaim": false
+  },
+  "identityQc": {
+    "requireApprovedReferenceSet": true,
+    "rejectIdentityDrift": true,
+    "rejectTattooMismatch": true,
+    "rejectDeadEyes": true,
+    "rejectBrokenHands": true,
+    "rejectSlidingFeet": true,
+    "rejectWardrobeDiscontinuity": true,
+    "rejectGeographyMismatch": true
+  },
+  "scenePackage": {
+    "requireEntranceHandleFrames": true,
+    "requireExitHandleFrames": true,
+    "requireCameraAndLensMetadata": true,
+    "requireWardrobeState": true,
+    "requireEmotionalState": true,
+    "requireEnvironmentSoundPlan": true,
+    "requireSourceReceiptIds": true
+  },
+  "requiredArtifacts": [
+    "cinematic-master-4k",
+    "counsel-master-4k-16x9",
+    "private-review-1080p",
+    "stereo-mix",
+    "surround-5.1-mix",
+    "dialogue-stem",
+    "music-stem",
+    "effects-stem",
+    "ambience-stem",
+    "captions-srt",
+    "shot-manifest-json",
+    "evidence-ledger-json",
+    "qc-report-json",
+    "sha256sums"
+  ],
+  "finalAcceptance": {
+    "humanReviewRequired": true,
+    "counselReviewBeforeAnyOtherUse": true,
+    "failedQcMayNotBeLabeledFinal": true
+  }
+}
