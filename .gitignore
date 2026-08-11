@@ -24,3 +24,15 @@ apps/**/.bak/
 node_modules
 
 functions/lib/
+
+# Local environment and secret material
+.env
+.env.*
+!.env.example
+*.pem
+*.p8
+*serviceAccount*.json
+*service-account*.json
+**/serviceAccountKey.json
+firebase-service-account*.json
+gcp-service-account*.json
