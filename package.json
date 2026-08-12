@@ -16,6 +16,7 @@
     "studio:smoke": "node scripts/studio-smoke-v1.js",
     "video-factory:capture": "node scripts/studio-video-route-capture.mjs",
     "video-factory:render-artifacts": "node scripts/studio-video-render-artifacts.mjs",
+    "media-master:capture-plan": "node scripts/media-master-capture-plan.mjs",
     "done-done:guard": "node scripts/done-done-guard.mjs",
     "evidence:guard": "node scripts/evidence-schema-guard.mjs",
     "health:guard": "node scripts/health-summary-guard.mjs",
