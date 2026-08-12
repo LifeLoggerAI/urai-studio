@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "urai-v1-v5-audio-reconciliation-20260812",
+  "status": "candidate-reuse-reconciled",
+  "authority": {
+    "spatialRepository": "LifeLoggerAI/urai-spatial",
+    "spatialExactSha": "fc1a63be2a10dad8d12d46ca5a1384bbcedda729",
+    "cueManifest": "operations/assets/spatial-audio-cue-manifest-v1.json",
+    "productionReceipt": "operations/assets/production-receipts/spatial-audio-production-v1.json"
+  },
+  "policy": {
+    "regenerateAcceptedAssets": false,
+    "paidGenerationAuthorized": false,
+    "publicReleaseAuthorized": false,
+    "finalHumanAudioApprovalRequired": true,
+    "sourceHeadReceiptIsHistoricalForgeInput": true
+  },
+  "reconciledCandidates": [
+    {"id":"home-ambient-v1","role":"ambient","runtimeRoute":"/home","sha256":"1e33ec8145a5b64d73df210457d296c816d9f76c4b7970bdeebabeb194997587","stateClass":"C","action":"reuse-and-verify-current-runtime"},
+    {"id":"ground-ambient-v1","role":"ambient","runtimeRoute":"/ground","sha256":"71c38c9e852988fe00e1605301996f12029a4aa0ce1e29f4734dc66f96957e16","stateClass":"A","action":"reuse-do-not-regenerate"},
+    {"id":"life-map-ambient-v1","role":"ambient","runtimeRoute":"/life-map","sha256":"ae8ee7bb0fe339dbd8a43ad96a8b71ee3560c3642b58b2d0e889560d843747ed","stateClass":"C","action":"reuse-and-verify-current-runtime"},
+    {"id":"focus-ambient-v1","role":"ambient","runtimeRoute":"/focus","sha256":"7c2ccea550652e6be261603d484a163a9cdbe0f19b07e959a22c8382cc188dea","stateClass":"C","action":"reuse-and-verify-current-runtime"},
+    {"id":"replay-ambient-v1","role":"ambient","runtimeRoute":"/replay","sha256":"1b0a5208d0a0c83ce079d50e9cf96b5fb5b0eeb1384cb253354c45fd8cb3c4cb","stateClass":"C","action":"reuse-and-verify-current-runtime"},
+    {"id":"portal-transition-v1","role":"transition","runtimeRoute":"global","sha256":"ea9122def5fdb51f944232007350ef307ce5e5efb34e16dca8218d35e5c0e405","stateClass":"C","action":"reuse-and-verify-current-runtime"},
+    {"id":"orb-confirm-v1","role":"ui","runtimeRoute":"global","sha256":"dc2d0709c25a8ff7c5d4d746492872ddd7a2c9efe16c9672cec22adfd9fed43a","stateClass":"C","action":"reuse-and-verify-current-runtime"},
+    {"id":"ui-error-v1","role":"ui","runtimeRoute":"global","sha256":"13877ffcc18b83435fdf693ccd45c3dd3df6376dc75879e1f75ca18e0aef80e9","stateClass":"C","action":"reuse-and-verify-current-runtime"}
+  ],
+  "genuineGapFamilies": [
+    "mirror-ambient",
+    "shadow-ambient",
+    "legacy-ambient",
+    "passport-ambient",
+    "council-ambient",
+    "orb-listening",
+    "orb-speaking",
+    "orb-comfort",
+    "orb-alert",
+    "star-activation",
+    "recovery-bloom",
+    "threshold-event",
+    "chat-event",
+    "narrator-profiles",
+    "authorized-cinematic-music"
+  ],
+  "gapRule": "A family listed as a gap is not generation authority. Before production, reconcile current runtime and Drive asset-lock state; only missing, failed, rejected or superseded nodes may enter generation.",
+  "provenance": "Existing eight candidates are deterministic URAI procedural production audio with repository-side hashes and no third-party sampled media per Spatial production receipt."
+}
