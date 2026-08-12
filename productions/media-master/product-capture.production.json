@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "urai-v1-v5-product-capture",
+  "parentMediaMaster": "./urai-v1-v5-media-master.production.json",
+  "authority": {
+    "githubIssue": "LifeLoggerAI/urai-studio#70",
+    "parentStudioCommit": "3b19357bfba5765ce4a3bcf897d8ee34642f6213",
+    "driveControlSpreadsheetId": "1jlP8jl-A4pTEHFDCIEr4uNESAuUvBFeMkR-6FPmKo30",
+    "canonicalRuntimeRepository": "LifeLoggerAI/urai-spatial"
+  },
+  "truthBoundary": {
+    "captureMayRunAgainstApprovedCandidate": true,
+    "captureDoesNotEqualRuntimeCertification": true,
+    "captureDoesNotEqualFounderApproval": true,
+    "captureDoesNotEqualPublicRelease": true,
+    "generatedUiMayNotSubstituteForProductCapture": true,
+    "exactRuntimeShaRequired": true,
+    "runtimeBaseUrlRequired": true,
+    "providerSpendAuthorized": false,
+    "publicReleaseAuthorized": false
+  },
+  "masterProfile": {
+    "width": 3840,
+    "height": 2160,
+    "aspectRatio": "16:9",
+    "deviceScaleFactor": 1,
+    "fullPage": false,
+    "textlessPreferred": true,
+    "audio": "capture-separately-when-required"
+  },
+  "derivatives": [
+    {"id":"master-16x9","width":3840,"height":2160,"aspectRatio":"16:9"},
+    {"id":"hd-16x9","width":1920,"height":1080,"aspectRatio":"16:9"},
+    {"id":"vertical-9x16","width":1080,"height":1920,"aspectRatio":"9:16"},
+    {"id":"square-1x1","width":1080,"height":1080,"aspectRatio":"1:1"}
+  ],
+  "requiredReceiptFields": [
+    "captureId",
+    "world",
+    "repository",
+    "exactSha",
+    "baseUrl",
+    "route",
+    "viewport",
+    "capturedAt",
+    "artifactPath",
+    "sha256",
+    "technicalQa",
+    "visualQa",
+    "founderApproval",
+    "releaseAuthorization"
+  ],
+  "surfaces": [
+    {"id":"home","world":"Home","route":"/home","priority":"P0","captureStates":["arrival","idle"]},
+    {"id":"orb","world":"Orb","route":"/home","priority":"P0","captureStates":["presence","listen","speak"]},
+    {"id":"ground","world":"Ground","route":"/ground","priority":"P0","captureStates":["arrival","walkable-wide"]},
+    {"id":"life-map","world":"Life Map","route":"/life-map","priority":"P0","captureStates":["wide","navigation","star-selected"]},
+    {"id":"focus","world":"Focus","route":"/focus","priority":"P0","captureStates":["arrival","memory-focus"]},
+    {"id":"replay","world":"Replay","route":"/replay","priority":"P0","captureStates":["entry","playback","return"]},
+    {"id":"council","world":"Council","route":"/council","priority":"P1","captureStates":["entry","assembled"]},
+    {"id":"mirror","world":"Mirror","route":"/mirror","priority":"P1","captureStates":["entry","hero"]},
+    {"id":"shadow","world":"Shadow","route":"/shadow","priority":"P1","captureStates":["entry","hero"]},
+    {"id":"legacy","world":"Legacy","route":"/legacy","priority":"P1","captureStates":["entry","hero"]},
+    {"id":"passport","world":"Passport","route":"/passport","priority":"P1","captureStates":["entry","permissions"]},
+    {"id":"ar","world":"AR","route":null,"priority":"P2","captureStates":["preview"],"requiresDeviceSpecificAuthority":true},
+    {"id":"vr","world":"VR","route":null,"priority":"P2","captureStates":["preview"],"requiresDeviceSpecificAuthority":true},
+    {"id":"xr","world":"XR","route":null,"priority":"P2","captureStates":["preview"],"requiresDeviceSpecificAuthority":true}
+  ],
+  "execution": {
+    "planner": "../../scripts/media-master-capture-plan.mjs",
+    "requiredEnvironment": ["URAI_CAPTURE_BASE_URL","URAI_CAPTURE_EXACT_SHA"],
+    "optionalEnvironment": ["URAI_CAPTURE_OUTPUT_DIR","URAI_CAPTURE_WORLD"],
+    "defaultOutputDir": "artifacts/media-master/capture-plan",
+    "captureBinaryExecution": "separate-runtime-step",
+    "finalPromotionAuthorized": false
+  },
+  "promotionGates": [
+    "exact-sha-still-current",
+    "technical-qa-pass",
+    "visual-qa-pass",
+    "founder-visual-approval",
+    "rights-and-privacy-pass-where-applicable",
+    "no-debug-or-placeholder-ui",
+    "no-unsupported-public-claim"
+  ]
+}
