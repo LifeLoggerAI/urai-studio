@@ -4,8 +4,9 @@
   "status": "candidate-reuse-reconciled",
   "authority": {
     "spatialRepository": "LifeLoggerAI/urai-spatial",
-    "spatialExactSha": "fc1a63be2a10dad8d12d46ca5a1384bbcedda729",
+    "spatialExactSha": "5cb6086589c0ca0b59323d7d0bdd289afe787ad4",
     "cueManifest": "operations/assets/spatial-audio-cue-manifest-v1.json",
+    "cueManifestBlobSha": "e99cb27b122b7e4a179740b206b981ffd25fd8ec",
     "productionReceipt": "operations/assets/production-receipts/spatial-audio-production-v1.json"
   },
   "policy": {
@@ -43,5 +44,5 @@
     "authorized-cinematic-music"
   ],
   "gapRule": "A family listed as a gap is not generation authority. Before production, reconcile current runtime and Drive asset-lock state; only missing, failed, rejected or superseded nodes may enter generation.",
-  "provenance": "Existing eight candidates are deterministic URAI procedural production audio with repository-side hashes and no third-party sampled media per Spatial production receipt."
+  "provenance": "Existing eight candidates are deterministic URAI procedural production audio with repository-side hashes and no third-party sampled media per Spatial production receipt. The cue manifest blob is unchanged between superseded fc1a63be... and current 5cb60865... certification heads."
 }
