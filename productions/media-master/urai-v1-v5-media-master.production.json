@@ -1,0 +1,202 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "urai-v1-v5-media-master",
+  "title": "URAI V1–V5 Media Master Manifest",
+  "authority": {
+    "githubIssue": "LifeLoggerAI/urai-studio#70",
+    "driveFinalAssetLockId": "10l8UZ0mi_DrrhZU-fgAfiv2i4F0Vuqd3bvEKriudp1Y",
+    "driveMediaCalendarId": "1MbjBHLVzVM2ppnfiCArBXo-e3d-D-GZ0xd-D5HWAJJk",
+    "canonicalRuntimeRepository": "LifeLoggerAI/urai-spatial",
+    "assetFactoryRepository": "LifeLoggerAI/asset-factory",
+    "studioRepository": "LifeLoggerAI/urai-studio",
+    "storytimeRepository": "LifeLoggerAI/urai-storytime",
+    "marketingRepository": "LifeLoggerAI/urai-marketing",
+    "resolveCurrentHeadsBeforeExecution": true
+  },
+  "truthBoundary": {
+    "trackedSemanticDeliverables": 213,
+    "firstAssetId": "URA-001",
+    "lastAssetId": "URA-213",
+    "assetLockState": "evidence-gated",
+    "blanketRegenerationAuthorized": false,
+    "acceptedArtifactPolicy": "immutable-unless-current-evidence-proves-repair-or-supersession",
+    "filePresenceEqualsAcceptance": false,
+    "sourceCiEqualsProductionReadiness": false
+  },
+  "stateClasses": {
+    "A": "approved-immutable-reuse",
+    "B": "implemented-runtime-no-new-media-required",
+    "C": "present-needs-visual-qa-or-founder-lock",
+    "D": "present-needs-rights-consent-provenance",
+    "E": "present-needs-integration",
+    "F": "needs-final-production",
+    "G": "needs-provider-generation",
+    "H": "needs-product-capture",
+    "I": "needs-audio-voice-music",
+    "J": "needs-motion-camera-vfx",
+    "K": "needs-ui-glyph-brand-production",
+    "L": "needs-derivative-export",
+    "M": "needs-localization-accessibility",
+    "N": "blocked-human-approval",
+    "O": "blocked-legal-rights-claims",
+    "P": "superseded-remove-from-active-plan"
+  },
+  "dependencyFlow": [
+    "drive-canon-private-source",
+    "github-manifest-orchestration",
+    "storytime-narrative-graph-where-applicable",
+    "asset-factory-generation",
+    "spatial-exact-sha-product-capture",
+    "studio-edit-composite-audio-mastering",
+    "derivative-factory",
+    "marketing-localization-distribution",
+    "drive-github-approvals-receipts"
+  ],
+  "assetRegistry": {
+    "source": "drive-final-asset-lock",
+    "coverage": {
+      "count": 213,
+      "firstId": "URA-001",
+      "lastId": "URA-213"
+    },
+    "rules": [
+      "reconcile-runtime-before-generation",
+      "reuse-approved-source-before-new-generation",
+      "retain-content-hash-and-provenance",
+      "separate-generation-review-promotion-integration-lock",
+      "do-not-infer-missing-from-legacy-flat-file-path"
+    ],
+    "knownOpenFamilies": [
+      {
+        "range": "URA-176:URA-201",
+        "family": "audio-voice",
+        "requiredReconciliation": "preserve-existing-accepted-candidates-and-produce-only-proven-gaps"
+      },
+      {
+        "range": "URA-202:URA-213",
+        "family": "story-launch-exports",
+        "requiredReconciliation": "build-reusable-templates-before-binding-final-captures"
+      }
+    ]
+  },
+  "captureLibrary": {
+    "exactProductCaptureShaRequired": true,
+    "founderVisualApprovalRequired": true,
+    "genuineFootageAutomaticallyAccepted": false,
+    "masterProfile": {
+      "aspectRatio": "16:9",
+      "resolution": "4K-or-highest-practical",
+      "textlessWhenApplicable": true
+    },
+    "derivativeProfiles": ["16:9", "9:16", "1:1", "1080p", "still", "clean-plate", "sound-on", "sound-off", "textless"],
+    "receiptFields": ["repository", "exactSha", "route", "world", "cameraPath", "deviceClass", "viewport", "capturedAt", "qaState", "founderApproval", "sha256"],
+    "worlds": [
+      {"id":"home","routes":["/","/home"],"stateClasses":["H","N"]},
+      {"id":"orb","embeddedIn":"home","stateClasses":["H","N"]},
+      {"id":"ground","routes":["/ground"],"stateClasses":["H","N"]},
+      {"id":"life-map","routes":["/life-map"],"stateClasses":["H","N"]},
+      {"id":"focus","routes":["/focus"],"stateClasses":["H","N"]},
+      {"id":"replay","routes":["/replay"],"stateClasses":["H","N"]},
+      {"id":"council","routes":["/council"],"stateClasses":["H","N"]},
+      {"id":"mirror","routes":["/mirror"],"stateClasses":["H","N"]},
+      {"id":"shadow","routes":["/shadow"],"stateClasses":["H","N"]},
+      {"id":"legacy","routes":["/legacy"],"stateClasses":["H","N"]},
+      {"id":"passport","routes":["/passport"],"stateClasses":["H","N","O"]},
+      {"id":"ar","stateClasses":["H","M","N"]},
+      {"id":"vr","stateClasses":["H","M","N"]},
+      {"id":"xr","stateClasses":["H","M","N"]}
+    ]
+  },
+  "productions": [
+    {
+      "id": "before-the-rest-of-the-world",
+      "authority": "LifeLoggerAI/urai-studio#61",
+      "productionManifest": "../before-the-rest-of-the-world/full-master.production.json",
+      "distribution": "private-review-only",
+      "publicReleaseAuthorized": false,
+      "stateClasses": ["F","H","I","J","N","O"]
+    },
+    {
+      "id": "finite-time",
+      "authority": "LifeLoggerAI/urai-studio#57",
+      "resolveLinkedStorytimeAndAssetFactoryAuthoritiesLive": true,
+      "publicReleaseAuthorized": false,
+      "stateClasses": ["F","G","H","I","J","N","O"]
+    },
+    {
+      "id": "before-you-advise-me",
+      "authority": "LifeLoggerAI/urai-studio#66",
+      "classification": "private-memory-film",
+      "publicReleaseAuthorized": false,
+      "stateClasses": ["F","G","H","I","J","N","O"]
+    },
+    {
+      "id": "kickstarter-hero-film",
+      "driveAuthority": "URAI Kickstarter Hero Film — Production Packet",
+      "resolveDriveAuthorityLive": true,
+      "publicReleaseAuthorized": false,
+      "stateClasses": ["F","H","I","J","N","O"]
+    },
+    {
+      "id": "storytime-legacy-films",
+      "authorityRepository": "LifeLoggerAI/urai-storytime",
+      "privateRawSourceMustRemainInDrive": true,
+      "publicReleaseAuthorized": false,
+      "stateClasses": ["F","G","H","I","J","M","N","O"]
+    }
+  ],
+  "derivativeFactory": {
+    "videoDurationsSeconds": [6, 15, 30, 60, 90],
+    "aspectRatios": ["16:9", "9:16", "1:1"],
+    "staticOutputs": ["hero-still", "poster", "thumbnail", "social-card", "app-store-frame", "press-still"],
+    "accessibility": ["captions", "srt", "transcript", "audio-description-when-required", "reduced-motion-when-required"],
+    "localization": {
+      "textlessMaster": true,
+      "localizedCaptions": true,
+      "localizedMetadata": true,
+      "localizedVoiceover": "authorized-only"
+    },
+    "packages": ["kickstarter", "investor", "app-store", "press", "website", "tiktok", "instagram-reels", "youtube-shorts", "x", "linkedin", "storytime", "public-demo", "private-review"]
+  },
+  "paidGenerationPolicy": {
+    "authorized": false,
+    "requiresSeparateBoundedManifest": true,
+    "requiredFields": ["provider", "model", "allowedAssetOrShotIds", "maxCalls", "maxRetries", "maxSpendUsd", "privacyRetentionPolicy", "receiptPath"],
+    "unboundedRetriesAllowed": false,
+    "unboundedSpendAllowed": false
+  },
+  "humanApprovalGates": [
+    "adam-likeness",
+    "family-likeness",
+    "advisor-person-likeness",
+    "emotional-truth",
+    "autobiographical-truth",
+    "disputed-factual-material",
+    "legal-counsel-material",
+    "privacy",
+    "rights",
+    "music-licensing",
+    "trademark-use",
+    "archive-rights",
+    "product-visual-quality",
+    "public-claims",
+    "final-film-pacing",
+    "final-public-release"
+  ],
+  "mediaJobs": {
+    "source": "./90-day-media-jobs.json",
+    "expectedJobCount": 90,
+    "sourceStatusExpected": "Planned",
+    "publicReleaseAuthorizedByCalendarAlone": false
+  },
+  "releaseRules": [
+    "resolve-live-authority-before-execution",
+    "no-private-source-in-public-github",
+    "no-generated-ui-represented-as-real-product",
+    "no-demo-looking-product-capture-promoted-as-final",
+    "no-unsupported-claims",
+    "no-human-gate-bypass",
+    "no-provider-spend-without-bounded-authorization",
+    "no-release-without-current-approvals-and-receipts"
+  ]
+}
