@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const audio = JSON.parse(await readFile(new URL('../../../productions/media-master/audio-reconciliation.production.json', import.meta.url), 'utf8'));
 const launch = JSON.parse(await readFile(new URL('../../../productions/media-master/launch-output-templates.production.json', import.meta.url), 'utf8'));
+const beforeRest = JSON.parse(await readFile(new URL('../../../productions/before-the-rest-of-the-world/cinema-factory-bindings.production.json', import.meta.url), 'utf8'));
 
 test('audio reconciliation preserves accepted assets and spend gates', () => {
   assert.equal(audio.policy.regenerateAcceptedAssets, false);
@@ -30,4 +31,17 @@ test('launch templates are reusable and fail closed pending capture and human ap
   assert.ok(launch.receiptFields.includes('contentSha256'));
   assert.ok(launch.receiptFields.includes('founderApproval'));
   assert.ok(launch.receiptFields.includes('releaseAuthorization'));
+});
+
+test('Before the Rest binds real capture slots without weakening film gates', () => {
+  assert.equal(beforeRest.truthBoundary.exactSpatialShaRequired, true);
+  assert.equal(beforeRest.truthBoundary.matchingRuntimeUrlRequired, true);
+  assert.equal(beforeRest.truthBoundary.syntheticProductUiForbidden, true);
+  assert.equal(beforeRest.truthBoundary.founderVisualApprovalRequired, true);
+  assert.equal(beforeRest.truthBoundary.publicReleaseAuthorized, false);
+  assert.ok(beforeRest.sequenceBindings.some((item) => item.sequenceId === 'S04' && item.captureSlots.includes('home.default')));
+  assert.ok(beforeRest.sequenceBindings.some((item) => item.sequenceId === 'S05' && item.captureSlots.includes('life-map.memory-open')));
+  assert.ok(beforeRest.sequenceBindings.some((item) => item.sequenceId === 'S06' && item.runtimeAudioCandidateIds.includes('ground-ambient-v1')));
+  assert.ok(beforeRest.sequenceBindings.some((item) => item.sequenceId === 'S09' && item.state === 'REPO_EVIDENCE_CAPTURE_REQUIRED'));
+  assert.match(beforeRest.cinematicAudioBoundary, /do not satisfy score, narration, music-license, or cinematic sound-design/i);
 });
