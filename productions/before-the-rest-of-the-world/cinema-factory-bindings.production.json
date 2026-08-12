@@ -17,31 +17,31 @@
   "sequenceBindings": [
     {
       "sequenceId": "S04",
-      "captureSlots": ["home.default", "orb.idle"],
+      "captureSlots": ["home.arrival", "home.idle", "orb.presence", "orb.speak"],
       "runtimeAudioCandidateIds": ["home-ambient-v1", "orb-confirm-v1"],
       "state": "BLOCKED_EXACT_CAPTURE"
     },
     {
       "sequenceId": "S05",
-      "captureSlots": ["life-map.galaxy-overview", "life-map.star-selected", "life-map.memory-open", "focus.default", "focus.deep-focus", "replay.default", "replay.memory-playing"],
+      "captureSlots": ["life-map.wide", "life-map.navigation", "life-map.star-selected", "focus.arrival", "focus.memory-focus", "replay.entry", "replay.playback", "replay.return"],
       "runtimeAudioCandidateIds": ["life-map-ambient-v1", "focus-ambient-v1", "replay-ambient-v1", "portal-transition-v1"],
       "state": "BLOCKED_EXACT_CAPTURE"
     },
     {
       "sequenceId": "S06",
-      "captureSlots": ["ground.default", "ground.bloom-active"],
+      "captureSlots": ["ground.arrival", "ground.walkable-wide"],
       "runtimeAudioCandidateIds": ["ground-ambient-v1"],
       "state": "BLOCKED_EXACT_CAPTURE"
     },
     {
       "sequenceId": "S07",
-      "captureSlots": ["passport.vault-overview", "passport.permission-detail"],
+      "captureSlots": ["passport.entry", "passport.permissions"],
       "runtimeAudioCandidateIds": [],
       "state": "BLOCKED_EXACT_CAPTURE"
     },
     {
       "sequenceId": "S08",
-      "captureSlots": ["replay.reduced-motion", "focus.default"],
+      "captureSlots": ["replay.return", "focus.arrival"],
       "runtimeAudioCandidateIds": [],
       "state": "BLOCKED_EXACT_CAPTURE"
     },
