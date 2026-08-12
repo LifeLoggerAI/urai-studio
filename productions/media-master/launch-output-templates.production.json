@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "urai-v1-v5-launch-output-templates",
+  "status": "source-ready-capture-slots-pending",
+  "parentAuthority": "productions/media-master/urai-v1-v5-media-master.production.json",
+  "captureAuthority": "productions/media-master/product-capture.production.json",
+  "policy": {
+    "publicReleaseAuthorized": false,
+    "paidGenerationAuthorized": false,
+    "founderVisualApprovalRequired": true,
+    "replaceableCaptureSlotsUntilRuntimeLock": true,
+    "syntheticProductUiForbidden": true
+  },
+  "templates": [
+    {
+      "id": "launch-hero-still",
+      "type": "static",
+      "outputs": ["3840x2160","1920x1080","1080x1920","1080x1080"],
+      "requiredCaptureSlots": ["home.default","orb.idle","life-map.galaxy-overview"],
+      "approval": "founder-visual"
+    },
+    {
+      "id": "launch-walkthrough-30s",
+      "type": "video",
+      "runtimeSeconds": 30,
+      "outputs": ["16:9","9:16","1:1"],
+      "requiredCaptureSlots": ["home.default","ground.default","life-map.galaxy-overview","life-map.star-selected","replay.memory-playing","council.assembled","mirror.reflection-active","passport.vault-overview"],
+      "accessibility": ["captions","srt","textless-master"],
+      "approval": "founder-visual-and-pacing"
+    },
+    {
+      "id": "public-demo-scroll",
+      "type": "scroll-video",
+      "outputs": ["16:9","9:16"],
+      "requiredCaptureSlots": ["home.sky-expanded","life-map.memory-open","legacy.archive-overview"],
+      "accessibility": ["captions","reduced-motion-version"],
+      "approval": "founder-visual"
+    },
+    {
+      "id": "weekly-memory-scroll",
+      "type": "scroll-video",
+      "outputs": ["16:9","9:16","1:1"],
+      "requiredCaptureSlots": ["replay.memory-playing","life-map.memory-open"],
+      "accessibility": ["captions","srt","textless-master"],
+      "approval": "founder-visual"
+    },
+    {
+      "id": "app-store-frame-set",
+      "type": "static-set",
+      "outputs": ["portrait-phone","landscape-tablet","desktop"],
+      "requiredCaptureSlots": ["home.default","life-map.galaxy-overview","focus.deep-focus","council.advisor-focused","passport.permission-detail"],
+      "approval": "founder-visual-and-claims"
+    },
+    {
+      "id": "investor-showcase",
+      "type": "video",
+      "runtimeSeconds": 90,
+      "outputs": ["16:9"],
+      "requiredCaptureSlots": ["home.default","orb.speaking","ground.bloom-active","life-map.memory-open","focus.deep-focus","replay.memory-playing","council.assembled","mirror.reflection-active","shadow.threshold-active","legacy.memory-selected","passport.permission-detail"],
+      "accessibility": ["captions","srt","transcript"],
+      "approval": "founder-visual-pacing-and-claims"
+    }
+  ],
+  "receiptFields": [
+    "templateId",
+    "sourceCaptureReceiptIds",
+    "sourceExactSha",
+    "editCommitSha",
+    "contentSha256",
+    "technicalQa",
+    "visualQa",
+    "founderApproval",
+    "claimsApproval",
+    "accessibilityQa",
+    "releaseAuthorization"
+  ]
+}
