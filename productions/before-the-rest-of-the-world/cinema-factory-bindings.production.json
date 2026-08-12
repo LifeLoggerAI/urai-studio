@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "projectId": "before-the-rest-of-the-world",
+  "parentProduction": "productions/before-the-rest-of-the-world/full-master.production.json",
+  "mediaMaster": "productions/media-master/urai-v1-v5-media-master.production.json",
+  "captureContract": "productions/media-master/product-capture.production.json",
+  "audioReconciliation": "productions/media-master/audio-reconciliation.production.json",
+  "status": "source-bindings-ready-runtime-capture-pending",
+  "truthBoundary": {
+    "exactSpatialShaRequired": true,
+    "matchingRuntimeUrlRequired": true,
+    "syntheticProductUiForbidden": true,
+    "productCaptureTechnicalSuccessIsFinalApproval": false,
+    "founderVisualApprovalRequired": true,
+    "publicReleaseAuthorized": false
+  },
+  "sequenceBindings": [
+    {
+      "sequenceId": "S04",
+      "captureSlots": ["home.arrival", "home.idle", "orb.presence", "orb.speak"],
+      "runtimeAudioCandidateIds": ["home-ambient-v1", "orb-confirm-v1"],
+      "state": "BLOCKED_EXACT_CAPTURE"
+    },
+    {
+      "sequenceId": "S05",
+      "captureSlots": ["life-map.wide", "life-map.navigation", "life-map.star-selected", "focus.arrival", "focus.memory-focus", "replay.entry", "replay.playback", "replay.return"],
+      "runtimeAudioCandidateIds": ["life-map-ambient-v1", "focus-ambient-v1", "replay-ambient-v1", "portal-transition-v1"],
+      "state": "BLOCKED_EXACT_CAPTURE"
+    },
+    {
+      "sequenceId": "S06",
+      "captureSlots": ["ground.arrival", "ground.walkable-wide"],
+      "runtimeAudioCandidateIds": ["ground-ambient-v1"],
+      "state": "BLOCKED_EXACT_CAPTURE"
+    },
+    {
+      "sequenceId": "S07",
+      "captureSlots": ["passport.entry", "passport.permissions"],
+      "runtimeAudioCandidateIds": [],
+      "state": "BLOCKED_EXACT_CAPTURE"
+    },
+    {
+      "sequenceId": "S08",
+      "captureSlots": ["replay.return", "focus.arrival"],
+      "runtimeAudioCandidateIds": [],
+      "state": "BLOCKED_EXACT_CAPTURE"
+    },
+    {
+      "sequenceId": "S09",
+      "captureSlots": [],
+      "runtimeAudioCandidateIds": [],
+      "state": "REPO_EVIDENCE_CAPTURE_REQUIRED"
+    }
+  ],
+  "cinematicAudioBoundary": "Runtime ambience/cues may be reused where editorially appropriate, but they do not satisfy score, narration, music-license, or cinematic sound-design requirements by themselves.",
+  "promotionRule": "No BLOCKED_EXACT_CAPTURE sequence may move to approved-product-capture until every referenced capture has a receipt bound to the same current Spatial exact SHA and matching runtime URL and has technical QA plus founder visual approval."
+}

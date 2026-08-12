@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "projectId": "urai-v1-v5-product-capture-state-drivers",
+  "captureAuthority": "productions/media-master/product-capture.production.json",
+  "binding": {
+    "exactSha": null,
+    "baseUrl": null,
+    "previewEvidence": null
+  },
+  "policy": {
+    "allowSyntheticState": false,
+    "allowRouteSubstitution": false,
+    "allowDomMutation": false,
+    "allowJavaScriptEvaluation": false,
+    "partialExecutionMayBeEnabled": true,
+    "technicalCaptureIsFounderApproval": false,
+    "publicReleaseAuthorized": false
+  },
+  "drivers": {
+    "home.arrival":{"status":"UNBOUND","steps":[]},
+    "home.idle":{"status":"UNBOUND","steps":[]},
+    "orb.presence":{"status":"UNBOUND","steps":[]},
+    "orb.listen":{"status":"UNBOUND","steps":[]},
+    "orb.speak":{"status":"UNBOUND","steps":[]},
+    "ground.arrival":{"status":"UNBOUND","steps":[]},
+    "ground.walkable-wide":{"status":"UNBOUND","steps":[]},
+    "life-map.wide":{"status":"UNBOUND","steps":[]},
+    "life-map.navigation":{"status":"UNBOUND","steps":[]},
+    "life-map.star-selected":{"status":"UNBOUND","steps":[]},
+    "focus.arrival":{"status":"UNBOUND","steps":[]},
+    "focus.memory-focus":{"status":"UNBOUND","steps":[]},
+    "replay.entry":{"status":"UNBOUND","steps":[]},
+    "replay.playback":{"status":"UNBOUND","steps":[]},
+    "replay.return":{"status":"UNBOUND","steps":[]},
+    "council.entry":{"status":"UNBOUND","steps":[]},
+    "council.assembled":{"status":"UNBOUND","steps":[]},
+    "mirror.entry":{"status":"UNBOUND","steps":[]},
+    "mirror.hero":{"status":"UNBOUND","steps":[]},
+    "shadow.entry":{"status":"UNBOUND","steps":[]},
+    "shadow.hero":{"status":"UNBOUND","steps":[]},
+    "legacy.entry":{"status":"UNBOUND","steps":[]},
+    "legacy.hero":{"status":"UNBOUND","steps":[]},
+    "passport.entry":{"status":"UNBOUND","steps":[]},
+    "passport.permissions":{"status":"UNBOUND","steps":[]}
+  },
+  "allowedStepTypes": ["click","press","hover","waitForSelector","waitForTimeout"],
+  "bindingRule": "A driver may become BOUND only when its steps reproduce the named canonical runtime state without DOM mutation, synthetic state injection, JavaScript evaluation, route substitution, debug-only controls, or timing/threshold weakening. Binding exactSha, baseUrl and previewEvidence must match the capture plan authority."
+}
