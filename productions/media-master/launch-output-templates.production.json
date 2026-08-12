@@ -16,7 +16,7 @@
       "id": "launch-hero-still",
       "type": "static",
       "outputs": ["3840x2160","1920x1080","1080x1920","1080x1080"],
-      "requiredCaptureSlots": ["home.default","orb.idle","life-map.galaxy-overview"],
+      "requiredCaptureSlots": ["home.arrival","orb.presence","life-map.wide"],
       "approval": "founder-visual"
     },
     {
@@ -24,7 +24,7 @@
       "type": "video",
       "runtimeSeconds": 30,
       "outputs": ["16:9","9:16","1:1"],
-      "requiredCaptureSlots": ["home.default","ground.default","life-map.galaxy-overview","life-map.star-selected","replay.memory-playing","council.assembled","mirror.reflection-active","passport.vault-overview"],
+      "requiredCaptureSlots": ["home.idle","ground.walkable-wide","life-map.wide","life-map.star-selected","replay.playback","council.assembled","mirror.hero","passport.entry"],
       "accessibility": ["captions","srt","textless-master"],
       "approval": "founder-visual-and-pacing"
     },
@@ -32,7 +32,7 @@
       "id": "public-demo-scroll",
       "type": "scroll-video",
       "outputs": ["16:9","9:16"],
-      "requiredCaptureSlots": ["home.sky-expanded","life-map.memory-open","legacy.archive-overview"],
+      "requiredCaptureSlots": ["home.arrival","life-map.navigation","legacy.entry"],
       "accessibility": ["captions","reduced-motion-version"],
       "approval": "founder-visual"
     },
@@ -40,7 +40,7 @@
       "id": "weekly-memory-scroll",
       "type": "scroll-video",
       "outputs": ["16:9","9:16","1:1"],
-      "requiredCaptureSlots": ["replay.memory-playing","life-map.memory-open"],
+      "requiredCaptureSlots": ["replay.playback","life-map.star-selected"],
       "accessibility": ["captions","srt","textless-master"],
       "approval": "founder-visual"
     },
@@ -48,7 +48,7 @@
       "id": "app-store-frame-set",
       "type": "static-set",
       "outputs": ["portrait-phone","landscape-tablet","desktop"],
-      "requiredCaptureSlots": ["home.default","life-map.galaxy-overview","focus.deep-focus","council.advisor-focused","passport.permission-detail"],
+      "requiredCaptureSlots": ["home.idle","life-map.wide","focus.memory-focus","council.assembled","passport.permissions"],
       "approval": "founder-visual-and-claims"
     },
     {
@@ -56,7 +56,7 @@
       "type": "video",
       "runtimeSeconds": 90,
       "outputs": ["16:9"],
-      "requiredCaptureSlots": ["home.default","orb.speaking","ground.bloom-active","life-map.memory-open","focus.deep-focus","replay.memory-playing","council.assembled","mirror.reflection-active","shadow.threshold-active","legacy.memory-selected","passport.permission-detail"],
+      "requiredCaptureSlots": ["home.idle","orb.speak","ground.walkable-wide","life-map.navigation","focus.memory-focus","replay.playback","council.assembled","mirror.hero","shadow.hero","legacy.hero","passport.permissions"],
       "accessibility": ["captions","srt","transcript"],
       "approval": "founder-visual-pacing-and-claims"
     }
