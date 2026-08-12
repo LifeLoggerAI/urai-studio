@@ -5,9 +5,13 @@ import test from 'node:test';
 const audio = JSON.parse(await readFile(new URL('../../../productions/media-master/audio-reconciliation.production.json', import.meta.url), 'utf8'));
 const launch = JSON.parse(await readFile(new URL('../../../productions/media-master/launch-output-templates.production.json', import.meta.url), 'utf8'));
 const capture = JSON.parse(await readFile(new URL('../../../productions/media-master/product-capture.production.json', import.meta.url), 'utf8'));
+const drivers = JSON.parse(await readFile(new URL('../../../productions/media-master/capture-state-drivers.production.json', import.meta.url), 'utf8'));
 const beforeRest = JSON.parse(await readFile(new URL('../../../productions/before-the-rest-of-the-world/cinema-factory-bindings.production.json', import.meta.url), 'utf8'));
+const rootPackage = JSON.parse(await readFile(new URL('../../../package.json', import.meta.url), 'utf8'));
+const captureExecutor = await readFile(new URL('../../../scripts/media-master-capture-execute.mjs', import.meta.url), 'utf8');
 
 const canonicalSlots = new Set(capture.surfaces.flatMap((surface) => surface.captureStates.map((state) => `${surface.id}.${state}`)));
+const canonicalWebSlots = new Set(capture.surfaces.filter((surface) => surface.route).flatMap((surface) => surface.captureStates.map((state) => `${surface.id}.${state}`)));
 
 function assertCanonicalSlots(slots) {
   for (const slot of slots) assert.ok(canonicalSlots.has(slot), `unknown canonical capture slot: ${slot}`);
@@ -39,6 +43,37 @@ test('launch templates are reusable, canonical and fail closed', () => {
   assert.ok(launch.receiptFields.includes('contentSha256'));
   assert.ok(launch.receiptFields.includes('founderApproval'));
   assert.ok(launch.receiptFields.includes('releaseAuthorization'));
+});
+
+test('capture executor requires exact preview binding and deterministic canonical state drivers', () => {
+  assert.equal(drivers.binding.exactSha, null);
+  assert.equal(drivers.binding.baseUrl, null);
+  assert.equal(drivers.binding.previewEvidence, null);
+  assert.equal(drivers.policy.allowSyntheticState, false);
+  assert.equal(drivers.policy.allowDomMutation, false);
+  assert.equal(drivers.policy.allowJavaScriptEvaluation, false);
+  assert.equal(drivers.policy.allowRouteSubstitution, false);
+  assert.equal(drivers.policy.publicReleaseAuthorized, false);
+  assert.deepEqual(new Set(drivers.allowedStepTypes), new Set(['click', 'press', 'hover', 'waitForSelector', 'waitForTimeout']));
+  assert.equal(Object.keys(drivers.drivers).length, canonicalWebSlots.size);
+  for (const slot of canonicalWebSlots) {
+    assert.ok(drivers.drivers[slot], `missing state driver registry entry: ${slot}`);
+    assert.equal(drivers.drivers[slot].status, 'UNBOUND');
+    assert.deepEqual(drivers.drivers[slot].steps, []);
+  }
+  assert.equal(rootPackage.scripts['media-master:capture-execute'], 'node scripts/media-master-capture-execute.mjs');
+  for (const token of [
+    'URAI_CAPTURE_ALLOW_PARTIAL',
+    'state-driver exact SHA does not match plan',
+    'state-driver base URL does not match plan',
+    'previewEvidence',
+    "technicalQa: 'PASS'",
+    "visualQa: 'PENDING'",
+    "founderApproval: 'PENDING'",
+    'releaseAuthorization: false',
+  ]) assert.match(captureExecutor, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.doesNotMatch(captureExecutor, /page\.evaluate\s*\(/);
+  assert.doesNotMatch(captureExecutor, /addInitScript\s*\(/);
 });
 
 test('Before the Rest binds canonical capture slots without weakening film gates', () => {
