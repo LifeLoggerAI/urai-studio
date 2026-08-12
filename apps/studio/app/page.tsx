@@ -3,14 +3,12 @@ import Link from 'next/link';
 
 import { CinematicHero } from '@/components/site/CinematicHero';
 import { MagicalHomeExperience } from '@/components/site/MagicalHomeExperience';
-import { SystemOfSystemsMap } from '@/components/site/SystemOfSystemsMap';
 import { studioModules } from '@/lib/studio/modules';
-import { proofPoints } from '@/lib/studio/system-of-systems';
 
 export const metadata: Metadata = {
-  title: 'URAI Studio | AI campaigns built to stop the scroll',
+  title: 'URAI Studio — Cinematic creative systems',
   description:
-    'URAI Studio builds cinematic AI campaigns, launch films, music visuals, product visuals, social content systems, and brand worlds for creators, founders, and teams.',
+    'URAI Studio creates launch films, motion, music visuals, product imagery, social campaigns, and immersive brand worlds for creators, founders, and teams.',
   alternates: {
     canonical: '/',
   },
@@ -18,122 +16,108 @@ export const metadata: Metadata = {
 
 const pathways = [
   {
-    title: 'Campaign Sprint',
-    eyebrow: 'Brands and founders',
-    body: 'Turn a product, launch, artist story, or brand world into a cinematic AI campaign with scripts, assets, scenes, and platform-ready structure.',
+    title: 'Launch a campaign',
+    eyebrow: 'For brands and founders',
+    body: 'Shape one idea into a coherent campaign across film, motion, imagery, social, and launch-ready creative.',
     href: '/contact',
-    cta: 'Start a Project',
+    cta: 'Start a project',
   },
   {
-    title: 'Content System',
-    eyebrow: 'Creators and teams',
-    body: 'Build a repeatable content engine across motion, cinema, visuals, music, asset generation, storyboards, and launch operations.',
+    title: 'Build a content system',
+    eyebrow: 'For creators and teams',
+    body: 'Create a repeatable visual language and production rhythm that can move across channels without losing its identity.',
     href: '/studio',
-    cta: 'Explore Studio System',
+    cta: 'Explore the studio',
   },
   {
-    title: 'Custom Brand World',
-    eyebrow: 'Partners',
-    body: 'Scope a larger creative system for campaigns, characters, visual identity, production workflows, and private collaboration paths after review.',
+    title: 'Create a brand world',
+    eyebrow: 'For ambitious projects',
+    body: 'Develop a larger cinematic world spanning identity, characters, environments, campaigns, and interactive experiences.',
     href: '/contact',
-    cta: 'Contact URAI Studio',
+    cta: 'Talk with URAI Studio',
   },
 ];
 
-const exportFormats = [
-  'Scroll JSON',
-  'Storyboard markdown',
-  'SRT subtitles',
-  'Script text',
-  'Asset manifest',
-  'CapCut-ready scene list',
-];
+const capabilityCopy: Record<string, { title: string; body: string }> = {
+  motion: {
+    title: 'Motion',
+    body: 'Authored movement, title systems, transitions, and visual rhythm designed as one language.',
+  },
+  cinema: {
+    title: 'Cinema',
+    body: 'Launch films and narrative sequences built around pacing, atmosphere, sound, and a clear emotional arc.',
+  },
+  music: {
+    title: 'Music',
+    body: 'Visual systems for artists, releases, performances, and music-led campaigns.',
+  },
+  visuals: {
+    title: 'Visuals',
+    body: 'Product imagery, key art, environments, and campaign frames with a consistent art direction.',
+  },
+  content: {
+    title: 'Content',
+    body: 'Connected social and campaign assets designed to feel like one body of work instead of isolated posts.',
+  },
+  spatial: {
+    title: 'Spatial',
+    body: 'Immersive scenes and interactive worlds for experiences that need depth, presence, and movement.',
+  },
+  'asset-factory': {
+    title: 'Asset creation',
+    body: 'A controlled generation workflow for producing and organizing the visual pieces a campaign needs.',
+  },
+};
 
 export default function Home() {
   const featuredModules = studioModules
-    .filter((module) => module.enabled && module.surfaceCategory !== 'operations')
-    .slice(0, 8);
+    .filter((module) => module.enabled && capabilityCopy[module.id])
+    .map((module) => ({ ...module, ...capabilityCopy[module.id] }))
+    .slice(0, 7);
 
   return (
     <section data-urai-studio-page="home" className="landing-page">
       <CinematicHero />
 
-      <section className="proof-panel" aria-label="URAI Studio production proof">
-        {proofPoints.map((point) => (
-          <article className="card proof-card" key={point}>
-            <p className="eyebrow">Proof</p>
-            <h2>{point}</h2>
-          </article>
-        ))}
-      </section>
-
       <MagicalHomeExperience />
 
-      <SystemOfSystemsMap compact />
-
-      <section className="section-panel">
+      <section className="section-panel studio-capabilities" aria-labelledby="studio-capabilities-title">
         <div className="section-heading">
-          <p className="eyebrow">Studio modules</p>
-          <h2>One studio spine for cinematic AI production.</h2>
+          <p className="eyebrow">What we make</p>
+          <h2 id="studio-capabilities-title">One creative language, carried across every format.</h2>
           <p>
-            URAI Studio is the commercial creative layer for campaigns, launch films, motion, cinema,
-            music, visuals, social assets, brand worlds, and production-ready exports. Public modules
-            stay client-facing; private diagnostics and operator tools stay out of the sales surface.
+            Film, motion, imagery, music, social, and spatial work are art-directed together so the finished
+            campaign feels intentional from its first frame to its last touchpoint.
           </p>
         </div>
 
         <div className="grid feature-grid">
           {featuredModules.map((module) => (
             <article key={module.id} className="card module-card portal-card">
-              <div className="module-card-header">
-                <Link href={module.route}>{module.name}</Link>
-                <span className={`badge badge-${module.status}`}>{module.status}</span>
-              </div>
-              <p>{module.description}</p>
-              <div className="mini-meta">
-                <strong>Inputs</strong>
-                <span>{module.inputs.join(' · ')}</span>
-                <strong>Outputs</strong>
-                <span>{module.outputs.join(' · ')}</span>
-              </div>
-              <Link href={module.route} className="text-link">
-                Open {module.name}
+              <h3>{module.title}</h3>
+              <p>{module.body}</p>
+              <Link href={module.route} className="text-link" aria-label={`Explore ${module.title}`}>
+                Explore {module.title}
               </Link>
             </article>
           ))}
         </div>
       </section>
 
-      <section className="section-panel">
+      <section className="section-panel" aria-labelledby="studio-pathways-title">
         <div className="section-heading">
-          <p className="eyebrow">Export center</p>
-          <h2>From idea to shareable cinematic package.</h2>
+          <p className="eyebrow">Ways to work together</p>
+          <h2 id="studio-pathways-title">Start with the outcome, not the production stack.</h2>
           <p>
-            URAI Studio prepares campaign artifacts for editing, publishing, review, and handoff without
-            turning internal pipeline status into public launch claims.
+            Bring a launch, story, product, artist, or world. URAI Studio shapes the creative system around
+            what the work needs to become.
           </p>
-        </div>
-        <div className="grid three">
-          {exportFormats.map((format) => (
-            <article className="card" key={format}>
-              <p className="eyebrow">Export format</p>
-              <h3>{format}</h3>
-              <p>Included in the Studio export manifest when the project scope includes that deliverable.</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="section-panel">
-        <div className="section-heading">
-          <p className="eyebrow">Creator pathways</p>
-          <h2>Choose the creative layer you want URAI Studio to build.</h2>
         </div>
         <div className="grid three">
           {pathways.map((pathway) => (
             <article className="card elevated" key={pathway.title}>
               <p className="eyebrow">{pathway.eyebrow}</p>
-              <h2>{pathway.title}</h2>
+              <h3>{pathway.title}</h3>
               <p>{pathway.body}</p>
               <Link className="button button-secondary" href={pathway.href}>{pathway.cta}</Link>
             </article>
@@ -141,18 +125,18 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="launch-panel trust-band">
+      <section className="launch-panel trust-band" aria-labelledby="studio-trust-title">
         <div>
-          <p className="eyebrow">Privacy-aware creative infrastructure</p>
-          <h2>Polished public work. Protected private operations.</h2>
+          <p className="eyebrow">Private by design</p>
+          <h2 id="studio-trust-title">Your work stays yours while it is being made.</h2>
           <p>
-            URAI Studio keeps client-facing pages clear and confident while operator diagnostics,
-            internal payloads, credentials, and private project details stay inside protected surfaces.
+            Project material, collaboration details, and private creative work stay behind the appropriate
+            controls. Public pages show finished work and capabilities—not internal project data.
           </p>
         </div>
         <div className="cta-row">
-          <Link className="button button-secondary" href="/privacy">Read Privacy</Link>
-          <Link className="button button-primary" href="/contact">Start a Project</Link>
+          <Link className="button button-secondary" href="/privacy">Privacy</Link>
+          <Link className="button button-primary" href="/contact">Start a project</Link>
         </div>
       </section>
     </section>
