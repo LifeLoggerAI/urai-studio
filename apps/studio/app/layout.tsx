@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 
 import './globals.css';
 import './aaa-system-lock.css';
+import './production-polish.css';
 
 import { Footer } from '@/components/site/Footer';
 import { Header } from '@/components/site/Header';
@@ -45,7 +46,7 @@ export const metadata: Metadata = {
         url: siteMeta.ogImage ?? '/og',
         width: 1200,
         height: 630,
-        alt: 'URAI Studio cinematic AI systems for memory, media, and spatial intelligence',
+        alt: 'URAI Studio cinematic creative work across film, motion, music, visuals, and spatial experiences',
       },
     ],
   },
@@ -75,6 +76,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  viewportFit: 'cover',
   themeColor: '#05070d',
   colorScheme: 'dark',
 };
