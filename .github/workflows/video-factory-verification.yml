@@ -47,7 +47,7 @@ jobs:
 
       - name: Start Studio server
         run: |
-          pnpm --filter studio dev -- --hostname 0.0.0.0 --port 3000 > /tmp/urai-studio-dev.log 2>&1 &
+          pnpm --filter studio dev --hostname 0.0.0.0 --port 3000 > /tmp/urai-studio-dev.log 2>&1 &
           echo $! > /tmp/urai-studio-dev.pid
           for attempt in $(seq 1 90); do
             if curl -fsS http://127.0.0.1:3000/studio/video-factory >/dev/null; then
