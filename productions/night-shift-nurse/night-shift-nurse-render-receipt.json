@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "projectId": "night-shift-nurse-short",
+  "title": "Night Shift to Nurse",
+  "status": "READY_PRIVATE_DELIVERY",
+  "renderedAtUTC": "2026-08-13T08:27:00Z",
+  "runtimeSeconds": 25.1,
+  "identityAnchor": {
+    "file": "VID_20260813_020831.mp4",
+    "sha256": "4272f18f1e45f9bc91f022274b17386e7a3c299b663c63935ea020ef1a6b1f03",
+    "realVoiceOnly": true,
+    "syntheticVoiceUsed": false,
+    "syntheticLikenessUsed": false
+  },
+  "edit": {
+    "principle": "real-life trailer, not surveillance and not slideshow",
+    "licensePlateProtected": true,
+    "uncertainCollegeStartTimingRendered": false,
+    "publicReleaseAuthorized": false
+  },
+  "deliverables": {
+    "master": {
+      "file": "night-shift-to-nurse_MASTER_9x16.mp4",
+      "resolution": "1080x1920",
+      "bytes": 20405146,
+      "sha256": "63f489da0fab1ba92802471f261aa6c488b0b34e452178b32e083bbc9cb17913",
+      "driveFileId": "1C9DrT9D5u8Yvhqov4VfPYGBfKVIxIDkV"
+    },
+    "sendable": {
+      "file": "night-shift-to-nurse_SENDABLE_9x16.mp4",
+      "resolution": "720x1280",
+      "bytes": 5798554,
+      "sha256": "6d8f6d44daab7b4b4f45b5b076d4a40cb36c873b07ba961be24852fa97aee698",
+      "driveFileId": "18DrS9mfbfRKKaMZcPPTqdbbnpopU40mm"
+    },
+    "textless": {
+      "file": "night-shift-to-nurse_TEXTLESS_9x16.mp4",
+      "driveFileId": "1x8m99CWCEe64coSuasvo0YONURZqiT8w"
+    },
+    "srtDriveFileId": "1vtK8-uPeuziURQeXLxAHm9Yo6YuLeq17",
+    "posterDriveFileId": "1qHXs0rzrzwWWXDBQMAsxCVKuFkvTPLHi",
+    "thumbnailDriveFileId": "15odWo1mRNOgioIjBCUyR7ZRrOClNeIDp",
+    "manifestDriveFileId": "1QC5aZWgPccoa4T0fCjDyH71-_qATprbN",
+    "sourceToShotMapDriveFileId": "1SaIgiuRieKRTp-_uVy997wcBMfyPAfU6",
+    "technicalQaDriveFileId": "1P8UceeXLJY1556a-Wf1QSguUaXrZJCJA",
+    "driveFolderId": "1U08li-p6THhJ-4lq30Jg4BM4ybGPnv-T"
+  },
+  "qa": {
+    "status": "PASS_PRIVATE_DELIVERY",
+    "publicRelease": "BLOCKED_PENDING_SUBJECT_CONSENT"
+  }
+}
