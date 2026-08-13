@@ -1,12 +1,23 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "projectId": "night-shift-nurse-short",
   "title": "Night Shift to Nurse",
-  "status": "source-ingest-partial-video-attachment-blocked",
+  "status": "blocked-subject-video-binary-unreachable",
   "format": {
     "primary": "9:16",
     "runtimeTargetSeconds": 28,
-    "delivery": ["mp4", "srt", "poster-jpg", "share-link"],
+    "delivery": [
+      "master-mp4",
+      "sendable-mp4",
+      "textless-mp4",
+      "srt",
+      "poster-jpg",
+      "thumbnail",
+      "render-manifest",
+      "source-to-shot-map",
+      "technical-qa",
+      "share-link"
+    ],
     "quality": "AAA-polished-vertical-short"
   },
   "sourceContext": {
@@ -18,27 +29,67 @@
         "filename": "VID_20260813_020831.mp4",
         "mimeType": "video/mp4",
         "sizeBytes": 23724446,
-        "state": "connector-listed-binary-not-readable"
+        "state": "gmail-only-connector-listed-binary-unreadable",
+        "containsSubjectIdentityAnchor": true,
+        "containsPreferredNaturalVoice": true
       },
       {
         "filename": "image-1786604763807.jpg",
         "mimeType": "image/jpeg",
-        "state": "available"
+        "state": "materialized-from-chatgpt-library",
+        "verifiedContent": "Everyday Mart exterior at night",
+        "containsSubjectIdentityAnchor": false
       },
       {
         "filename": "image-1786604752054.jpg",
         "mimeType": "image/jpeg",
-        "state": "available"
+        "state": "materialized-from-chatgpt-library",
+        "verifiedContent": "subject vehicle in parking lot at night",
+        "containsSubjectIdentityAnchor": false,
+        "privacyAction": "blur or crop visible license plate"
       }
     ],
-    "expectedButNotFound": ["second-video-attachment"]
+    "expectedButNotFound": [
+      "second-video-attachment"
+    ],
+    "retrievalAudit": [
+      "Gmail source thread inspected: one 23,724,446-byte MP4 plus two JPEG stills; video/mp4 read_attachment_supported=false",
+      "Google Drive exact-filename and recent-video searches returned no copy of the subject MP4",
+      "ChatGPT conversation and persistent Library exact-name and video-size searches returned no subject MP4; the two JPEG stills were recovered",
+      "LifeLoggerAI GitHub organization exact filename and Gmail message-id searches returned no media copy; PR branch contains only this production manifest",
+      "URAI V1-V5 Cinema Factory Capture Library and Film Registry contain no Night Shift to Nurse source pointer",
+      "Both supplied Google Photos share URLs were attempted through browser and direct-download paths; the execution environment could not retrieve their media bytes"
+    ]
+  },
+  "verifiedStoryAnchors": {
+    "background": "Lebanese",
+    "livingSituation": "lives with family",
+    "currentWork": "works at the convenience store shown in supplied media",
+    "education": "preparing to attend college",
+    "careerPath": "nursing",
+    "personalityBeat": "major K-pop fan who wants K-pop concert tickets"
+  },
+  "unverifiedForRenderedText": {
+    "school": "Kilgore College",
+    "campus": null,
+    "program": null,
+    "startTiming": null,
+    "rule": "Do not render exact school, campus, program, or start timing until independently verified from source material."
   },
   "story": {
-    "subject": "young Lebanese woman working at a convenience store while preparing to attend Kilgore College for nursing",
-    "personalBeat": "big K-pop fan who wants concert tickets",
-    "tone": ["cinematic", "confident", "warm", "badass", "not-pity-driven"],
-    "hook": "You have no idea who is behind the counter.",
-    "ending": "Night shift now. Nurse next.",
+    "subject": "young Lebanese woman working at a convenience store while preparing for college on a nursing path",
+    "personalBeat": "major K-pop fan who wants concert tickets",
+    "tone": [
+      "cinematic",
+      "confident",
+      "warm",
+      "funny-human",
+      "ambitious",
+      "not-pity-driven",
+      "non-romantic-pressure"
+    ],
+    "hook": "You have no idea who's behind the counter.",
+    "ending": "NIGHT SHIFT NOW. NURSE NEXT.",
     "supportingLine": "Everybody you meet is becoming something."
   },
   "shotPlan": [
@@ -47,15 +98,15 @@
       "start": 0,
       "end": 2.2,
       "source": "image-1786604763807.jpg",
-      "direction": "slow digital push into the night storefront; preserve real ambient-night texture",
-      "caption": "You have no idea who is behind the counter."
+      "direction": "subtle dimensional push into the real night storefront; preserve available texture and mixed practical light",
+      "caption": "You have no idea who's behind the counter."
     },
     {
       "id": "car-night-shift",
       "start": 2.2,
       "end": 4.2,
       "source": "image-1786604752054.jpg",
-      "direction": "tight crop on car and sodium-vapor night lighting; blur license plate",
+      "direction": "motivated crop and parallax on the real parking-lot still; blur or crop the visible plate",
       "caption": "Night shift."
     },
     {
@@ -63,73 +114,91 @@
       "start": 4.2,
       "end": 10,
       "source": "VID_20260813_020831.mp4",
-      "direction": "use the strongest natural expression, laugh, glance, or working beat; retain her actual mannerisms",
-      "caption": "Lebanon -> family -> work -> school"
+      "direction": "select the strongest actual laugh, eyebrow, joke, glance, reaction, confident movement, or talking-with-hands beat only after the source binary is readable; preserve cadence and mannerisms",
+      "caption": null
     },
     {
       "id": "nursing-future",
       "start": 10,
       "end": 17,
-      "source": "VID_20260813_020831.mp4 plus future campus footage if supplied",
-      "direction": "accelerate editorial rhythm into college/nursing reveal; match movement cuts to beat",
-      "caption": "Kilgore College. Nursing. Two weeks."
+      "source": "VID_20260813_020831.mp4 plus verified documentary source if one exists",
+      "direction": "build momentum from real work footage into symbolic future imagery; do not fake campus attendance or completed milestones",
+      "caption": "College. Nursing. Next chapter."
     },
     {
       "id": "kpop-switch",
       "start": 17,
       "end": 22.5,
-      "source": "subject footage",
-      "direction": "brief personality switch with brighter rhythm and genuine reaction; no copyrighted K-pop master recording unless licensed",
-      "caption": "And yes... K-pop tickets are absolutely part of the plan."
+      "source": "subject footage plus original non-infringing graphic/audio treatment",
+      "direction": "purposeful brighter beat switch centered on a genuine subject reaction; original premium pop energy with no protected K-pop master, melody, logo, choreography, artist identity, or proprietary visual world",
+      "caption": "And yes... the K-pop tickets are part of the plan."
     },
     {
       "id": "hero-close",
       "start": 22.5,
       "end": 28,
-      "source": "best subject close-up/avatar-assisted transition",
-      "direction": "resolve on real face first; avatar may echo, never replace or falsify her identity",
-      "caption": "Night shift now. Nurse next."
+      "source": "best real subject close-up; optional 1-2 second stylized echo only after likeness lock",
+      "direction": "end on her real face and hold long enough for the emotional beat; synthetic likeness may echo but never replace the identity anchor",
+      "caption": "NIGHT SHIFT NOW. NURSE NEXT."
     }
   ],
   "avatar": {
     "state": "blocked-until-readable-subject-likeness-source",
-    "goal": "stylized cinematic likeness derived only from user-supplied subject media",
+    "goal": "optional stylized cinematic echo derived only from user-supplied subject media",
     "rules": [
-      "preserve recognizable facial proportions and mannerisms",
+      "real footage is the identity anchor",
+      "preserve observable facial proportions, hair, expression, posture, gesture rhythm, attitude, and energy",
+      "do not beautify into a different person",
       "do not infer private traits or medical facts",
-      "do not fabricate campus attendance footage as documentary evidence",
-      "use real footage as identity anchor",
+      "do not fabricate campus attendance, concert attendance, graduation, or nursing milestones",
+      "do not synthesize or clone her voice without clear consent",
       "require subject permission before public release"
     ]
   },
   "audio": {
-    "musicDirection": "original K-pop-inspired pop energy without copying a protected song, melody, master, choreography, or artist identity",
-    "soundDesign": ["store-door-chime", "night-traffic-bed", "register-click", "subtle-riser", "beat-switch", "final-heartbeat-hit"],
-    "dialoguePriority": "subject-natural-audio-first"
+    "musicDirection": "original premium modern pop/K-pop-adjacent energy without copying a protected song, melody, master, choreography, artist identity, or proprietary sound",
+    "soundDesign": [
+      "parking-lot-night-bed",
+      "store-door-chime-if-source-appropriate",
+      "register-texture-if-source-appropriate",
+      "low-sub-pulse",
+      "controlled-rhythmic-build",
+      "beat-switch",
+      "melodic-sparkle",
+      "final-sonic-signature"
+    ],
+    "dialoguePriority": "subject-natural-audio-first",
+    "voiceCloneAuthorized": false
   },
   "privacy": {
+    "privateGiftOnly": true,
     "blurLicensePlate": true,
     "avoidHomeLocation": true,
     "avoidFamilyIdentificationUnlessConsented": true,
+    "avoidSchedulesAndAddresses": true,
     "publicReleaseRequiresSubjectConsent": true,
-    "schoolNamingRequiresFactCheckBeforePublish": true
+    "schoolNamingRequiresFactCheckBeforeRender": true,
+    "releaseAuthorized": false
   },
   "pipeline": [
     "source-ingest",
     "subject-selects",
-    "avatar-reference-lock",
+    "likeness-reference-lock",
     "edit-assembly",
     "sound-design",
     "caption-master",
+    "color-vfx-finish",
     "technical-qa",
-    "subject-consent-gate",
-    "founder-pacing-approval",
-    "share-link"
+    "private-delivery",
+    "separate-public-consent-gate"
   ],
   "blockingItems": [
-    "Gmail connector lists VID_20260813_020831.mp4 but does not expose its binary through the available attachment reader",
-    "only one MP4 attachment is present in the located Gmail message; a second expected video was not found",
-    "no readable close-up still of the subject is currently available to the render/avatar step"
+    "The only located subject video, VID_20260813_020831.mp4, is attached to Gmail message 19ff9f7918ca61b1, but the connected Gmail attachment reader explicitly does not support video/mp4 binary retrieval.",
+    "No alternate subject-video copy exists in connected Google Drive, ChatGPT Library/conversation files, LifeLoggerAI GitHub repositories, the Cinema Factory registry, or other located URAI source storage.",
+    "The supplied Google Photos share links are not retrievable by the available browser/direct-download execution paths.",
+    "The recovered JPEGs show only the store exterior and vehicle, not the woman's face; therefore no truthful likeness lock, strongest-human-moment selection, real-voice edit, or final hero close can be completed."
   ],
-  "releaseAuthorized": false
+  "minimumExternalUnblock": "Place the existing subject MP4 itself in connected Google Drive or upload it directly into the conversation/file library. No new filming is required.",
+  "renderAuthorized": false,
+  "publicReleaseAuthorized": false
 }
