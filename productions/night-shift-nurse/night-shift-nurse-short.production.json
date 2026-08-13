@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "projectId": "night-shift-nurse-short",
   "title": "Night Shift to Nurse",
-  "status": "blocked-subject-video-binary-unreachable",
+  "status": "source-ingest-ready-for-private-edit",
   "format": {
     "primary": "9:16",
     "runtimeTargetSeconds": 28,
@@ -34,31 +34,41 @@
         "containsPreferredNaturalVoice": true
       },
       {
+        "filename": "VID_20260813_020747.mp4",
+        "mimeType": "video/mp4",
+        "sizeBytes": 93552335,
+        "state": "readable-conversation-upload-and-private-drive-source",
+        "driveFileId": "1lJBU2Ty0Qh06KGLkXEoKCqMhtmsEx4gD",
+        "durationSeconds": 37.055478,
+        "videoCodec": "h264",
+        "audioCodec": "aac",
+        "encodedFrame": "1920x1080",
+        "displayRotationDegrees": -90,
+        "containsSubjectIdentityAnchor": true,
+        "containsNaturalVoice": true,
+        "verifiedUsableCloseupWindow": "approximately 00:29-00:36"
+      },
+      {
         "filename": "image-1786604763807.jpg",
         "mimeType": "image/jpeg",
-        "state": "materialized-from-chatgpt-library",
+        "state": "private-drive-source",
         "verifiedContent": "Everyday Mart exterior at night",
         "containsSubjectIdentityAnchor": false
       },
       {
         "filename": "image-1786604752054.jpg",
         "mimeType": "image/jpeg",
-        "state": "materialized-from-chatgpt-library",
+        "state": "private-drive-source",
         "verifiedContent": "subject vehicle in parking lot at night",
         "containsSubjectIdentityAnchor": false,
         "privacyAction": "blur or crop visible license plate"
       }
     ],
-    "expectedButNotFound": [
-      "second-video-attachment"
-    ],
     "retrievalAudit": [
-      "Gmail source thread inspected: one 23,724,446-byte MP4 plus two JPEG stills; video/mp4 read_attachment_supported=false",
-      "Google Drive exact-filename and recent-video searches returned no copy of the subject MP4",
-      "ChatGPT conversation and persistent Library exact-name and video-size searches returned no subject MP4; the two JPEG stills were recovered",
-      "LifeLoggerAI GitHub organization exact filename and Gmail message-id searches returned no media copy; PR branch contains only this production manifest",
-      "URAI V1-V5 Cinema Factory Capture Library and Film Registry contain no Night Shift to Nurse source pointer",
-      "Both supplied Google Photos share URLs were attempted through browser and direct-download paths; the execution environment could not retrieve their media bytes"
+      "Original Gmail MP4 remains binary-unreadable through Gmail connector.",
+      "A second directly uploaded subject MP4, VID_20260813_020747.mp4, is now fully readable in the execution workspace.",
+      "The readable subject MP4 was copied into the dedicated private Google Drive production folder.",
+      "Frame inspection confirms a clear real-subject close-up and natural expressive material near the end of the clip."
     ]
   },
   "verifiedStoryAnchors": {
@@ -113,15 +123,15 @@
       "id": "real-her-reveal",
       "start": 4.2,
       "end": 10,
-      "source": "VID_20260813_020831.mp4",
-      "direction": "select the strongest actual laugh, eyebrow, joke, glance, reaction, confident movement, or talking-with-hands beat only after the source binary is readable; preserve cadence and mannerisms",
+      "source": "VID_20260813_020747.mp4",
+      "direction": "use the strongest genuine expression or spoken beat from the readable clip; preserve her actual cadence, eye movement, smile, laugh, and talking-with-hands energy",
       "caption": null
     },
     {
       "id": "nursing-future",
       "start": 10,
       "end": 17,
-      "source": "VID_20260813_020831.mp4 plus verified documentary source if one exists",
+      "source": "VID_20260813_020747.mp4 plus symbolic future treatment",
       "direction": "build momentum from real work footage into symbolic future imagery; do not fake campus attendance or completed milestones",
       "caption": "College. Nursing. Next chapter."
     },
@@ -129,7 +139,7 @@
       "id": "kpop-switch",
       "start": 17,
       "end": 22.5,
-      "source": "subject footage plus original non-infringing graphic/audio treatment",
+      "source": "VID_20260813_020747.mp4 plus original non-infringing graphic/audio treatment",
       "direction": "purposeful brighter beat switch centered on a genuine subject reaction; original premium pop energy with no protected K-pop master, melody, logo, choreography, artist identity, or proprietary visual world",
       "caption": "And yes... the K-pop tickets are part of the plan."
     },
@@ -137,13 +147,13 @@
       "id": "hero-close",
       "start": 22.5,
       "end": 28,
-      "source": "best real subject close-up; optional 1-2 second stylized echo only after likeness lock",
+      "source": "VID_20260813_020747.mp4 closeup window around 00:29-00:36",
       "direction": "end on her real face and hold long enough for the emotional beat; synthetic likeness may echo but never replace the identity anchor",
       "caption": "NIGHT SHIFT NOW. NURSE NEXT."
     }
   ],
   "avatar": {
-    "state": "blocked-until-readable-subject-likeness-source",
+    "state": "likeness-reference-readable",
     "goal": "optional stylized cinematic echo derived only from user-supplied subject media",
     "rules": [
       "real footage is the identity anchor",
@@ -193,12 +203,11 @@
     "separate-public-consent-gate"
   ],
   "blockingItems": [
-    "The only located subject video, VID_20260813_020831.mp4, is attached to Gmail message 19ff9f7918ca61b1, but the connected Gmail attachment reader explicitly does not support video/mp4 binary retrieval.",
-    "No alternate subject-video copy exists in connected Google Drive, ChatGPT Library/conversation files, LifeLoggerAI GitHub repositories, the Cinema Factory registry, or other located URAI source storage.",
-    "The supplied Google Photos share links are not retrievable by the available browser/direct-download execution paths.",
-    "The recovered JPEGs show only the store exterior and vehicle, not the woman's face; therefore no truthful likeness lock, strongest-human-moment selection, real-voice edit, or final hero close can be completed."
+    "The earlier Gmail-only subject clip VID_20260813_020831.mp4 remains unavailable, but it is no longer required to begin or finish a truthful private cut because VID_20260813_020747.mp4 now provides a readable identity and natural-audio anchor.",
+    "Exact school/campus/program/start-timing text remains gated until verified; use generic college/nursing wording in the private cut unless verified before render."
   ],
-  "minimumExternalUnblock": "Place the existing subject MP4 itself in connected Google Drive or upload it directly into the conversation/file library. No new filming is required.",
-  "renderAuthorized": false,
+  "minimumExternalUnblock": null,
+  "renderAuthorized": true,
+  "privateDeliveryAuthorized": true,
   "publicReleaseAuthorized": false
 }
