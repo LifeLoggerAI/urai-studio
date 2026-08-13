@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "projectId": "night-shift-nurse-urai-motion-v2",
+  "title": "Night Shift to Nurse — URAI Motion Remake V2",
+  "status": "private-render-complete",
+  "pipeline": [
+    "private-source-ingest",
+    "likeness-reference-lock",
+    "URAI-style keyframe generation",
+    "motion treatment",
+    "original-score generation",
+    "real-conversation stem extraction",
+    "4K vertical assembly",
+    "technical QA",
+    "private Drive delivery"
+  ],
+  "creativeDirection": {
+    "visualLanguage": [
+      "URAI constellation particles",
+      "emotional aura fields",
+      "soul-thread light ribbons",
+      "night-store realism",
+      "symbolic nursing future",
+      "generic future concert anticipation"
+    ],
+    "storyArc": [
+      "working while talking at the counter",
+      "two-ticket surprise for subject and friend",
+      "night exterior / car transition",
+      "symbolic nursing-school future",
+      "future concert-night payoff"
+    ],
+    "motionMethod": "continuous cinematic motion treatment across generated reference frames with animated camera movement, parallax-style reframing, URAI particle-field overlays, transitions, and timed optical motion; not a static slideshow",
+    "music": "original K-pop-adjacent instrumental created for this private cut; no commercial master or specific artist imitation",
+    "dialogue": "real recorded conversation audio from user-supplied footage; no voice cloning and no fabricated dialogue"
+  },
+  "truthfulness": {
+    "concertSequence": "stylized future visualization / anticipation, not documentary proof of attendance",
+    "ticketVisual": "cinematic visualization of the intended gift; not a claim that a live purchase has been completed unless separately verified",
+    "schoolNamingRendered": false
+  },
+  "privacy": {
+    "privateGiftOnly": true,
+    "publicReleaseAuthorized": false,
+    "rawPersonalMediaCommittedToGitHub": false,
+    "subjectConsentRequiredBeforePublicRelease": true
+  },
+  "delivery": {
+    "driveFolder": "https://drive.google.com/drive/folders/1rDvJfxsLhVZgt_1-uX3Hij_bdGTQdtfH",
+    "master4k": "https://drive.google.com/file/d/1n3HWAOfB6Ztkavg5E4KvWmYNEz-dDm9A/view?usp=drivesdk",
+    "sendable1080": "https://drive.google.com/file/d/1j6FbJMy9httGSXcDeW-hgyH0z6BkI3NP/view?usp=drivesdk",
+    "textless1080": "https://drive.google.com/file/d/1nCZgBrGykB3fkumlSck0BvpieWgOZPjS/view?usp=drivesdk",
+    "poster": "https://drive.google.com/file/d/1qp5qrrWaRiNp14w18vbzygbFWO43iVlO/view?usp=drivesdk",
+    "thumbnail": "https://drive.google.com/file/d/1bykT7_AMRLGeSEI6y5G0UsXChyQjB0E6/view?usp=drivesdk",
+    "scoreStem": "https://drive.google.com/file/d/12yF-JXWpTF3KmMuvh4fEMqRMdPOJBFQp/view?usp=drivesdk",
+    "conversationStem": "https://drive.google.com/file/d/1X50-NDZD8nA7VZukezNtHc83QLQ2UPSQ/view?usp=drivesdk",
+    "renderManifest": "https://drive.google.com/file/d/1Nn6M3DmuPEY9sAQwotD_QJP8IqiYiIVX/view?usp=drivesdk",
+    "technicalQa": "https://drive.google.com/file/d/13R_FQURHYhy_XnXlcJRjkMbkLyBEn29Z/view?usp=drivesdk",
+    "sourceToShot": "https://drive.google.com/file/d/1dvT2W_K6T2kgR92Y9pDG3H4yO2xSx_GX/view?usp=drivesdk",
+    "srt": "https://drive.google.com/file/d/1OC1YW1CmzxrseYn8_gHJnSrjbbxw223p/view?usp=drivesdk"
+  },
+  "qa": {
+    "masterResolution": "2160x3840",
+    "frameRate": 24,
+    "runtimeSeconds": 33.0,
+    "videoCodec": "H.264",
+    "audioCodec": "AAC",
+    "audioSampleRateHz": 48000,
+    "status": "PASS"
+  }
+}

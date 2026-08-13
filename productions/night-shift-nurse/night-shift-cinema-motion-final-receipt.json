@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 2,
+  "projectId": "night-shift-nurse-cinema-motion-final",
+  "title": "Night Shift to Nurse — Final Cinema Motion Cut",
+  "status": "READY_PRIVATE_DELIVERY",
+  "runtimeSeconds": 30.958333,
+  "frameRate": 24,
+  "recovery": {
+    "type": "derived-from-verified-v2-master",
+    "reason": "The originally referenced 30.958333-second local final binary was not present in Drive or retained as a CI artifact. A replacement final was derived from the verified 33.002-second V2 4K master by preserving the approved picture/audio through the 30.958333-second final boundary.",
+    "originalMissingBinarySubstituted": false
+  },
+  "master": {
+    "file": "night-shift-to-nurse_FINAL_CINEMA_4K_2160x3840_FULL.mp4",
+    "resolution": "2160x3840",
+    "codec": "H.264",
+    "audio": "AAC",
+    "frames": 743,
+    "bytes": 58051377,
+    "sha256": "9b05fa170dde67d8ab0e7e6732c6734ca8df9c419acb61cb7bda2004d4a47029",
+    "driveFileId": "1dLU8iN4bYQvS_DLLdCIOBtDps-Vry9RU"
+  },
+  "sendable": {
+    "file": "night-shift-to-nurse_FINAL_CINEMA_1080x1920.mp4",
+    "resolution": "1080x1920",
+    "codec": "H.264",
+    "audio": "AAC",
+    "frames": 743,
+    "bytes": 11969671,
+    "sha256": "f2529e7d9f31055776fcb06337030565abfbab56b09e689e173e5a36fa34fb85",
+    "driveFileId": "1v8lglTvqFwpChqDQ_kjyPlWhA8R6EaHC"
+  },
+  "verification": {
+    "driveReadBack": true,
+    "fullDecodeErrorCheck": "PASS",
+    "endFrameChecked": true,
+    "folderPrivateAtVerification": true
+  },
+  "method": "Recovered private-delivery final derived from the verified V2 4K master, preserving 24 fps and the approved final boundary at 30.958333 seconds; 1080 sendable derived from the same recovered master.",
+  "notUsed": [
+    "No public release",
+    "No voice cloning",
+    "No raw personal media committed to GitHub",
+    "No commercial BTS master/audio/logos/band members in final video"
+  ],
+  "releaseBoundary": "Private gift only; subject consent required before any public social distribution."
+}
