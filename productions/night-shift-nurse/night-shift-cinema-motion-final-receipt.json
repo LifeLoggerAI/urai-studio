@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "projectId": "night-shift-nurse-cinema-motion-final",
+  "title": "Night Shift to Nurse — Final Cinema Motion Cut",
+  "status": "READY_PRIVATE_DELIVERY",
+  "runtimeSeconds": 30.958333,
+  "frameRate": 24,
+  "master": {
+    "file": "night-shift-to-nurse_FINAL_CINEMA_4K_2160x3840_FULL.mp4",
+    "resolution": "2160x3840",
+    "codec": "H.264",
+    "audio": "AAC"
+  },
+  "sendable": {
+    "file": "night-shift-to-nurse_FINAL_CINEMA_1080x1920.mp4",
+    "resolution": "1080x1920",
+    "codec": "H.264",
+    "audio": "AAC"
+  },
+  "method": "Cinematic motion assembly from approved generated/keyframe references with animated camera movement, xfade/bloom-style transitions, restrained typography, original synthesized score, and mobile-first vertical delivery.",
+  "notUsed": [
+    "No public release",
+    "No voice cloning",
+    "No raw personal media committed to GitHub",
+    "No commercial BTS master/audio/logos/band members in final video"
+  ],
+  "releaseBoundary": "Private gift only; subject consent required before any public social distribution."
+}
