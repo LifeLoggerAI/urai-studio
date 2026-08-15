@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "projectId": "night-shift-nurse-short",
+  "title": "Night Shift to Nurse — URAI Cinema Motion Binding",
+  "status": "awaiting-asset-factory-video-lane-merge",
+  "assetFactory": {
+    "repository": "LifeLoggerAI/asset-factory",
+    "pullRequest": 249,
+    "branch": "agent/video-animation-execution-lane",
+    "requiredCapability": "canonical video / video-renderer",
+    "role": "shot execution provider broker, provenance authority, budget gate, candidate QA, retry lineage"
+  },
+  "studioRole": "director, continuity supervisor, editorial compiler, finishing authority",
+  "driveProductionFolder": "https://drive.google.com/drive/folders/17Zvmrzy-tsExt11yVrWYaSUH75B14G6l",
+  "driveMotionExecutionFolder": "https://drive.google.com/drive/folders/1yEYgKrYaKDTG5w84Gl8ug0EU3qR__NqI",
+  "releaseBoundary": {
+    "privateGiftOnly": true,
+    "publicReleaseAuthorized": false,
+    "voiceCloneAuthorized": false,
+    "rawPrivateMediaToGitHub": false
+  },
+  "identityPolicy": {
+    "realSubjectFootageIsAnchor": true,
+    "syntheticShotsAreReconstructionOrFutureVisualization": true,
+    "rejectGenericFaceReplacement": true,
+    "finalHeroBeatPrefersRealSubject": true
+  },
+  "shotGraph": [
+    {
+      "shotId": "NSN-001",
+      "type": "video",
+      "durationSeconds": 3.0,
+      "purpose": "rainy Everyday Mart exterior arrival",
+      "motion": ["rain", "wet-reflection movement", "distant traffic", "camera dolly"],
+      "transitionOut": "neon reflection match cut"
+    },
+    {
+      "shotId": "NSN-002",
+      "type": "video",
+      "durationSeconds": 3.0,
+      "purpose": "black sedan arrival",
+      "motion": ["vehicle roll", "headlight sweep", "wipers", "suspension settle"],
+      "privacy": ["plate unreadable"],
+      "transitionOut": "headlight wipe"
+    },
+    {
+      "shotId": "NSN-003",
+      "type": "video",
+      "durationSeconds": 3.0,
+      "purpose": "natural in-store character movement",
+      "motion": ["walking", "hair", "breathing", "hands", "foreground parallax"],
+      "transitionOut": "foreground occlusion cut"
+    },
+    {
+      "shotId": "NSN-004",
+      "type": "real-source-insert",
+      "durationSeconds": 2.5,
+      "purpose": "strongest authentic smile/laugh/personality beat",
+      "rule": "use real subject footage; no synthetic dialogue"
+    },
+    {
+      "shotId": "NSN-005",
+      "type": "video",
+      "durationSeconds": 4.0,
+      "purpose": "cooler stocking action",
+      "motion": ["reach", "grasp", "place drink", "glass door close", "light sweep on glasses"],
+      "transitionOut": "glass reflection dissolve"
+    },
+    {
+      "shotId": "NSN-006",
+      "type": "video",
+      "durationSeconds": 3.0,
+      "purpose": "through-glass turning point",
+      "motion": ["reflection parallax", "camera push", "light bloom"],
+      "transitionOut": "daylight bloom"
+    },
+    {
+      "shotId": "NSN-007",
+      "type": "video",
+      "durationSeconds": 4.0,
+      "purpose": "symbolic college future walk",
+      "motion": ["walking", "backpack", "hair breeze", "background students", "crane-up"],
+      "truthBoundary": "future visualization; not documentary proof of attendance"
+    },
+    {
+      "shotId": "NSN-008",
+      "type": "video",
+      "durationSeconds": 4.0,
+      "purpose": "nursing study preparation",
+      "motion": ["writing", "page turn", "book check", "breath", "determined smile"],
+      "truthBoundary": "preparation only; no graduation/licensure claim"
+    },
+    {
+      "shotId": "NSN-009",
+      "type": "video",
+      "durationSeconds": 4.5,
+      "purpose": "generic premium pop-concert dream beat",
+      "motion": ["crowd", "moving lights", "confetti", "raised lightstick", "hair/clothing response"],
+      "rightsBoundary": "no BTS members, logos, protected choreography, melody, master, or proprietary visual world",
+      "transitionOut": "stage light bloom"
+    },
+    {
+      "shotId": "NSN-010",
+      "type": "real-source-insert",
+      "durationSeconds": 3.0,
+      "purpose": "real subject hero close",
+      "title": "NIGHT SHIFT NOW. NURSE NEXT."
+    }
+  ],
+  "mandatoryQa": [
+    "identity continuity",
+    "natural body motion",
+    "hands/fingers/teeth/eyes",
+    "temporal flicker",
+    "lighting continuity",
+    "camera motivation",
+    "rights and truth boundary",
+    "mobile framing",
+    "audio transition quality"
+  ],
+  "promotionRule": "No candidate enters editorial assembly until every mandatory QA gate passes."
+}
