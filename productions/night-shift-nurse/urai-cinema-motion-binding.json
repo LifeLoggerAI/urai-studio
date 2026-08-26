@@ -2,11 +2,12 @@
   "schemaVersion": 1,
   "projectId": "night-shift-nurse-short",
   "title": "Night Shift to Nurse — URAI Cinema Motion Binding",
-  "status": "awaiting-asset-factory-video-lane-merge",
+  "status": "asset-factory-video-lane-merged-private-production-ready",
   "assetFactory": {
     "repository": "LifeLoggerAI/asset-factory",
     "pullRequest": 249,
-    "branch": "agent/video-animation-execution-lane",
+    "branch": "main",
+    "mergeCommit": "2edc6ae2b9c99e601c34adce6d6a714cf5ed5973",
     "requiredCapability": "canonical video / video-renderer",
     "role": "shot execution provider broker, provenance authority, budget gate, candidate QA, retry lineage"
   },
