@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "projectId": "urai-life-film-001-built-from-survival",
+  "title": "Built From Survival",
+  "status": "private-production-active",
+  "format": {
+    "primary": "16:9",
+    "runtimeTargetSeconds": 525,
+    "delivery": ["master-mp4", "review-mp4", "textless-mp4", "srt", "poster-jpg", "thumbnail", "render-manifest", "source-to-shot-map", "technical-qa"],
+    "quality": "cinematic-life-film"
+  },
+  "studioRole": "director, continuity supervisor, editorial compiler, finishing authority",
+  "assetFactoryRole": "shot execution provider broker, provenance authority, budget gate, candidate QA, retry lineage",
+  "privateSourceAuthority": "URAI Private Life Reference Canon — Master Archive",
+  "privacyRule": "No private Drive IDs, Gmail source links, exact private addresses, restricted records, or personal account identifiers are committed to this public repository.",
+  "sourceKeys": [
+    "ADAM-CURRENT-ADULT-LIKENESS-CANON",
+    "ADAM-AGE-19-CANON",
+    "ADAM-JACOB-MOTION-001",
+    "JACOB-GARAGE-WORK-PROVENANCE",
+    "TERRY-FAMILY-VISUAL-CANON",
+    "TYSON-VISUAL-CANON",
+    "URAI-HOME-RUNTIME-CAPTURE",
+    "URAI-GROUND-RUNTIME-CAPTURE",
+    "URAI-ORB-RUNTIME-CAPTURE",
+    "URAI-LIFE-MAP-RUNTIME-CAPTURE",
+    "URAI-REPLAY-RUNTIME-CAPTURE",
+    "URAI-PASSPORT-RUNTIME-CAPTURE",
+    "URAI-STUDIO-RUNTIME-CAPTURE",
+    "URAI-ASSET-FACTORY-RUNTIME-CAPTURE"
+  ],
+  "story": {
+    "logline": "A life shaped by pressure, rebuilding and relentless creation becomes the source material for UrAi, then UrAi turns that life back into a cinematic world.",
+    "tone": ["intimate", "truthful", "cinematic", "restrained", "human-first", "not-pity-driven", "not-salesy"],
+    "coreThesis": "A human life can become memory, memory can become structure, structure can become a world, and that world can become cinema."
+  },
+  "sequences": [
+    {"id":"SURVIVAL","start":0,"end":105,"purpose":"human cost and origin"},
+    {"id":"THE_BUILD","start":105,"end":180,"purpose":"repos, systems and spatial world emerge"},
+    {"id":"THE_WORLD","start":180,"end":245,"purpose":"memory becomes spatial and emotionally legible"},
+    {"id":"LIFE_TO_CINEMA","start":245,"end":265,"purpose":"prove memory-to-film transformation"},
+    {"id":"THE_LAST_MILE","start":265,"end":360,"purpose":"working versus finished; visual iteration as credibility"},
+    {"id":"WHY","start":360,"end":440,"purpose":"return technology to human purpose"},
+    {"id":"THE_THRESHOLD","start":440,"end":525,"purpose":"show the real system and close on life becoming film"}
+  ],
+  "generatedHeroShots": [
+    {"id":"GEN-01","name":"Memory Fragmentation","durationSeconds":15},
+    {"id":"GEN-02","name":"Photograph To Place","durationSeconds":12},
+    {"id":"GEN-03","name":"Emotional Weather","durationSeconds":10},
+    {"id":"GEN-04","name":"Life To Cinema","durationSeconds":15,"priority":1},
+    {"id":"GEN-05","name":"The Life Line","durationSeconds":18,"priority":2}
+  ],
+  "identityPolicy": {
+    "canonicalAdultLikenessSourceRequired": true,
+    "realSourceMediaIsAnchor": true,
+    "generatedRecreationsMustRemainRecreations": true,
+    "noFacialRecognitionForIdentityMapping": true,
+    "rejectGenericFaceReplacement": true,
+    "doNotInventTattooDetail": true,
+    "currentAdultHistoricalCaptureDateCaveat": true
+  },
+  "audioPolicy": {
+    "preferredNarration":"first-person Adam voice when an authorized usable source or approved synthetic voice profile is available",
+    "doNotClaimVoiceCloneUnlessExplicitlyAuthorized": true,
+    "musicDirection":"single evolving human theme expanding into cinematic scale",
+    "dialoguePriority":"truth and intelligibility over score"
+  },
+  "truthBoundaries": [
+    "Generated imagery is cinematic recreation, not archival evidence.",
+    "Unresolved Army/Iraq, childhood, Puerto Rico/Caribbean and other source gaps remain unresolved rather than being falsely promoted as archive.",
+    "Sensitive legal, medical, government-ID and exact-address material is chronology evidence only unless separately authorized for production.",
+    "No pictured person is identified by facial resemblance."
+  ],
+  "renderPipeline": [
+    "private-source-resolution",
+    "production-safe-selects",
+    "narration-assembly",
+    "urai-runtime-capture",
+    "generated-cinema-render",
+    "edit-assembly",
+    "identity-continuity-qa",
+    "anatomy-motion-temporal-qa",
+    "truth-rights-privacy-qa",
+    "sound-design-and-score",
+    "color-and-finish",
+    "picture-lock",
+    "private-master"
+  ],
+  "mandatoryQa": [
+    "identity continuity",
+    "natural body motion",
+    "hands/fingers/teeth/eyes",
+    "temporal flicker",
+    "lighting continuity",
+    "camera motivation",
+    "archive versus recreation labeling",
+    "rights and truth boundary",
+    "privacy sanitation",
+    "audio intelligibility",
+    "real UrAi runtime proof",
+    "life-to-cinema concept legibility"
+  ],
+  "promotionRule": "No generated shot enters final editorial assembly until mandatory QA passes; no private master is called final until the complete film plays end-to-end without requiring verbal explanation of UrAi.",
+  "publicReleaseAuthorized": false,
+  "privateProductionAuthorized": true
+}
