@@ -8,11 +8,16 @@ const productionText = fs.readFileSync(productionPath, 'utf8');
 const contractText = fs.readFileSync(contractPath, 'utf8');
 const production = JSON.parse(productionText);
 
+// Detect concrete private source pointers, not harmless prose that names a provider.
+// Public production policy is allowed to say that Gmail/Drive pointers are forbidden.
 const forbidden = [
   /drive\.google\.com/i,
   /docs\.google\.com/i,
-  /gmail/i,
+  /mail\.google\.com/i,
+  /gmailMessageId/i,
   /driveFileId/i,
+  /driveFolderId/i,
+  /driveContactSheetId/i,
   /13OiHavP9MSFgObm9GRANza9eCHAiWo0e/,
   /1luj263eAfUo4wzAhQDakBzRdaUJm6AMn/,
   /1D-ISJKQkSa9__ASzRUvUyOnXAVnAc77Y/,
