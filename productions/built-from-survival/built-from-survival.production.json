@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "projectId": "urai-life-film-001-built-from-survival",
   "title": "Built From Survival",
   "status": "private-production-active",
@@ -12,14 +12,23 @@
   "studioRole": "director, continuity supervisor, editorial compiler, finishing authority",
   "assetFactoryRole": "shot execution provider broker, provenance authority, budget gate, candidate QA, retry lineage",
   "privateSourceAuthority": "URAI Private Life Reference Canon — Master Archive",
+  "sourceResolution": {
+    "mode": "private-canon-broker",
+    "automatic": true,
+    "manualUserUploadRequired": false,
+    "rawDrivePointersAllowedInPublicManifest": false,
+    "unresolvedSourcesFailClosed": true,
+    "restrictedFactSourcesFailClosed": true,
+    "generatedMediaMayReplaceMissingArchive": false
+  },
   "privacyRule": "No private Drive IDs, Gmail source links, exact private addresses, restricted records, or personal account identifiers are committed to this public repository.",
   "sourceKeys": [
-    "ADAM-CURRENT-ADULT-LIKENESS-CANON",
-    "ADAM-AGE-19-CANON",
+    "ADAM-CURRENT-LIKENESS-001",
+    "ADAM-AGE19-001",
     "ADAM-JACOB-MOTION-001",
-    "JACOB-GARAGE-WORK-PROVENANCE",
-    "TERRY-FAMILY-VISUAL-CANON",
-    "TYSON-VISUAL-CANON",
+    "JACOB-GARAGE-001",
+    "TERRY-MAILDROP-VIDSET-001",
+    "TYSON-CANON-001",
     "URAI-HOME-RUNTIME-CAPTURE",
     "URAI-GROUND-RUNTIME-CAPTURE",
     "URAI-ORB-RUNTIME-CAPTURE",
@@ -60,7 +69,7 @@
     "currentAdultHistoricalCaptureDateCaveat": true
   },
   "audioPolicy": {
-    "preferredNarration":"first-person Adam voice when an authorized usable source or approved synthetic voice profile is available",
+    "preferredNarration":"first-person Adam voice only when a separately authorized usable voice source or approved synthetic voice profile is available",
     "doNotClaimVoiceCloneUnlessExplicitlyAuthorized": true,
     "musicDirection":"single evolving human theme expanding into cinematic scale",
     "dialoguePriority":"truth and intelligibility over score"
@@ -72,7 +81,8 @@
     "No pictured person is identified by facial resemblance."
   ],
   "renderPipeline": [
-    "private-source-resolution",
+    "private-canon-key-resolution",
+    "authorized-private-source-materialization",
     "production-safe-selects",
     "narration-assembly",
     "urai-runtime-capture",
