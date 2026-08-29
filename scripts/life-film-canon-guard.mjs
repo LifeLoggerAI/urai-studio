@@ -54,4 +54,21 @@ for (const key of requiredKeys) {
   }
 }
 
+const requiredRuntimeCaptureKeys = [
+  'URAI-HOME-RUNTIME-CAPTURE',
+  'URAI-GROUND-RUNTIME-CAPTURE',
+  'URAI-ORB-RUNTIME-CAPTURE',
+  'URAI-LIFE-MAP-RUNTIME-CAPTURE',
+  'URAI-FOCUS-RUNTIME-CAPTURE',
+  'URAI-REPLAY-RUNTIME-CAPTURE',
+  'URAI-PASSPORT-RUNTIME-CAPTURE',
+  'URAI-STUDIO-RUNTIME-CAPTURE',
+  'URAI-ASSET-FACTORY-RUNTIME-CAPTURE',
+];
+for (const key of requiredRuntimeCaptureKeys) {
+  if (!production.sourceKeys.includes(key)) {
+    throw new Error(`missing_life_film_runtime_capture_key:${key}`);
+  }
+}
+
 console.log('Life Film canon guard: PASS');
