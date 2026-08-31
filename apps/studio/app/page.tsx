@@ -38,6 +38,8 @@ const pathways = [
   },
 ];
 
+const publicCreativeWorldIds = new Set(['motion', 'cinema', 'music', 'visuals']);
+
 const capabilityCopy: Record<string, { title: string; body: string }> = {
   motion: {
     title: 'Motion',
@@ -55,25 +57,12 @@ const capabilityCopy: Record<string, { title: string; body: string }> = {
     title: 'Visuals',
     body: 'Product imagery, key art, environments, and campaign frames with a consistent art direction.',
   },
-  content: {
-    title: 'Content',
-    body: 'Connected social and campaign assets designed to feel like one body of work instead of isolated posts.',
-  },
-  spatial: {
-    title: 'Spatial',
-    body: 'Immersive scenes and interactive worlds for experiences that need depth, presence, and movement.',
-  },
-  'asset-factory': {
-    title: 'Asset creation',
-    body: 'A controlled generation workflow for producing and organizing the visual pieces a campaign needs.',
-  },
 };
 
 export default function Home() {
   const featuredModules = studioModules
-    .filter((module) => module.enabled && capabilityCopy[module.id])
-    .map((module) => ({ ...module, ...capabilityCopy[module.id] }))
-    .slice(0, 7);
+    .filter((module) => module.enabled && publicCreativeWorldIds.has(module.id) && capabilityCopy[module.id])
+    .map((module) => ({ ...module, ...capabilityCopy[module.id] }));
 
   return (
     <section data-urai-studio-page="home" className="landing-page">
@@ -86,8 +75,8 @@ export default function Home() {
           <p className="eyebrow">What we make</p>
           <h2 id="studio-capabilities-title">One creative language, carried across every format.</h2>
           <p>
-            Film, motion, imagery, music, social, and spatial work are art-directed together so the finished
-            campaign feels intentional from its first frame to its last touchpoint.
+            Cinema, motion, music, and visuals are art-directed together so the finished campaign feels
+            intentional from its first frame to its last touchpoint.
           </p>
         </div>
 
