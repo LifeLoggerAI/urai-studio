@@ -71,7 +71,7 @@ async function runFirestoreMatrix() {
 
   expectAllowed(await clientRead('studios/studio_a/members/viewer_a', 'admin_a'), 'admin reads tenant membership');
   expectDenied(await clientRead('studios/studio_a/members/editor_a', 'viewer_a'), 'viewer cannot enumerate tenant memberships');
-  expectAllowed(await clientWrite('jobs/editor_job', 'editor_a', {studioId: 'studio_a', kind: 'render', status: 'queued'}), 'editor creates own-tenant job');
+  expectDenied(await clientWrite('jobs/editor_job', 'editor_a', {studioId: 'studio_a', kind: 'render', status: 'queued'}), 'editor cannot bypass the trusted job callable');
   expectDenied(await clientWrite('jobs/viewer_job', 'viewer_a', {studioId: 'studio_a', kind: 'render', status: 'queued'}), 'viewer cannot create job');
   expectDenied(await clientWrite('jobs/cross_job', 'editor_a', {studioId: 'studio_b', kind: 'render', status: 'queued'}), 'editor cannot create cross-tenant job');
   expectDenied(await clientWrite('jobs/job_a', 'editor_a', {studioId: 'studio_b', kind: 'render', status: 'queued'}), 'Studio id is immutable on update');
