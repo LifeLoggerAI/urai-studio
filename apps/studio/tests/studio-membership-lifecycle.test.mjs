@@ -21,7 +21,9 @@ test('canonical authority never trusts legacy concatenated membership ids', () =
 });
 
 test('membership management is idempotent, audited, and privilege bounded', () => {
-  for (const token of ['export const manageStudioMembership', 'Self-service role, status, and membership changes are not allowed.', 'Owner grants require the audited ownership-transfer operation.', 'Admins cannot grant, alter, or remove admin membership.', 'studioOperationRequests', 'requestId', 'transaction.create(auditRef']) assert.ok(lifecycle.includes(token), `studio-memberships.ts missing ${token}`);
+  for (const token of ['export const manageStudioMembership', 'Self-service role, status, and membership changes are not allowed.', 'Owner grants require the audited ownership-transfer operation.', 'Admins cannot grant, alter, or remove admin membership.', 'studioOperationRequests', 'requestId', 'requestFingerprint', 'requestId was already used for a different operation payload.', 'transaction.create(auditRef']) assert.ok(lifecycle.includes(token), `studio-memberships.ts missing ${token}`);
+  assert.ok(lifecycle.includes('studioId, targetUid, action, requestedRole ?? "", requestedStatus ?? ""'), 'membership idempotency must bind every operation-defining input');
+  assert.ok(lifecycle.includes('"transfer_studio_ownership", actorUid, studioId, targetUid'), 'ownership-transfer idempotency must bind the target owner');
 });
 
 test('ownership transfer is explicit and atomic', () => {
