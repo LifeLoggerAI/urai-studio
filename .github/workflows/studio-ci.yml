@@ -2,11 +2,9 @@ name: Studio CI
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
   push:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: read
@@ -20,18 +18,22 @@ jobs:
     name: Typecheck, lint, test, build, and smoke studio
     runs-on: ubuntu-latest
     timeout-minutes: 30
-
     env:
       NEXT_PUBLIC_SITE_URL: https://www.uraistudio.com
       NEXT_PUBLIC_FIREBASE_PROJECT_ID: ci-placeholder
       NEXT_PUBLIC_FIREBASE_APP_ID: ci-placeholder
       FIREBASE_PROJECT_ID: ci-placeholder
-      FIREBASE_CLIENT_EMAIL: ci@example.com
-      FIREBASE_PRIVATE_KEY: ci-placeholder
-
     steps:
-      - name: Checkout
+      - name: Checkout exact reviewed head
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Prove exact clean head
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          test -z "$(git status --porcelain)"
 
       - name: Enable Corepack
         run: corepack enable
@@ -42,11 +44,23 @@ jobs:
           node-version: 20
           cache: pnpm
 
+      - name: Setup Java for Firebase emulators
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Release check
+      - name: Release check with canonical membership emulator matrix
         run: pnpm release:check
+
+      - name: Prove verification preserved exact source
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          test -z "$(git status --porcelain)"
 
       - name: Static smoke declaration
         run: pnpm --filter studio smoke:static
@@ -56,9 +70,7 @@ jobs:
           pnpm --filter studio start > /tmp/urai-studio.log 2>&1 &
           echo $! > /tmp/urai-studio.pid
           for i in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:3000/healthz >/dev/null; then
-              exit 0
-            fi
+            if curl -fsS http://127.0.0.1:3000/healthz >/dev/null; then exit 0; fi
             sleep 2
           done
           cat /tmp/urai-studio.log
@@ -73,6 +85,4 @@ jobs:
       - name: Stop Studio server
         if: always()
         run: |
-          if [ -f /tmp/urai-studio.pid ]; then
-            kill $(cat /tmp/urai-studio.pid) || true
-          fi
+          if [ -f /tmp/urai-studio.pid ]; then kill $(cat /tmp/urai-studio.pid) || true; fi
