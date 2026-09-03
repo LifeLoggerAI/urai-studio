@@ -9,11 +9,12 @@ const ledger = fs.readFileSync('docs/URAI_STUDIO_RELEASE_EVIDENCE.md', 'utf8');
 const providerReadiness = fs.readFileSync('scripts/provider-readiness.mjs', 'utf8');
 const artifactWriter = fs.readFileSync('scripts/studio-video-render-artifacts.mjs', 'utf8');
 
+const contractOnly = process.argv.includes('--contract-only');
 const scripts = packageJson.scripts ?? {};
 const sourceReleaseCheck = String(scripts['release:check'] ?? '');
 const providerReleaseCheck = String(scripts['release:check:provider'] ?? '');
 
-assert.ok(sourceReleaseCheck.includes('release:evidence:guard'), 'release:check must execute the evidence boundary guard');
+assert.ok(sourceReleaseCheck.includes('release:evidence:contract'), 'release:check must execute the credential-free evidence contract guard');
 assert.equal(sourceReleaseCheck.includes('provider:check:strict'), false, 'source release check must remain credential-free');
 assert.ok(providerReleaseCheck.includes('provider:check:strict'), 'provider release check must fail closed on missing providers');
 assert.ok(providerReleaseCheck.includes('release:check'), 'provider release check must include the complete source release check');
@@ -65,9 +66,12 @@ export function validateArtifactSourceCommits(receipt) {
   }
 }
 
-if (process.env.RELEASE_EVIDENCE_FILE) {
-  const receipt = JSON.parse(fs.readFileSync(process.env.RELEASE_EVIDENCE_FILE, 'utf8'));
+if (!contractOnly) {
+  const evidenceFile = process.env.RELEASE_EVIDENCE_FILE;
+  assert.ok(evidenceFile, 'RELEASE_EVIDENCE_FILE is required when validating a release receipt');
+  assert.ok(fs.existsSync(evidenceFile), `release evidence file does not exist: ${evidenceFile}`);
+  const receipt = JSON.parse(fs.readFileSync(evidenceFile, 'utf8'));
   validateArtifactSourceCommits(receipt);
 }
 
-console.log('release evidence boundary guard passed');
+console.log(contractOnly ? 'release evidence contract guard passed' : 'release evidence receipt guard passed');
