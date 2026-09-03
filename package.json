@@ -27,7 +27,7 @@
     "provider:check": "node scripts/provider-readiness.mjs",
     "provider:check:strict": "URAI_PROVIDER_STRICT=true node scripts/provider-readiness.mjs",
     "audit": "pnpm life-film:canon:guard && pnpm done-done:guard && pnpm evidence:guard && pnpm release:evidence:guard && pnpm health:guard && pnpm provider:check && pnpm lint && pnpm typecheck && pnpm test && pnpm test:membership-migration && pnpm test:rules && pnpm studio:smoke",
-    "release:check": "pnpm run audit && pnpm build && pnpm --dir functions build",
+    "release:check": "pnpm run audit && pnpm release:evidence:guard && pnpm build && pnpm --dir functions build",
     "emulators": "firebase emulators:start",
     "seed:demo": "pnpm exec ts-node scripts/seed_demo_job.ts",
     "studio:clean": "rm -rf node_modules apps/studio/node_modules packages/*/node_modules apps/studio/.next .next",
