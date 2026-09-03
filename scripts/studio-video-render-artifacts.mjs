@@ -3,10 +3,21 @@ import path from 'node:path';
 
 const baseUrl = process.env.STUDIO_BASE_URL || 'http://127.0.0.1:3000';
 const outDir = process.env.VIDEO_FACTORY_OUT_DIR || '_audit/20260623_urai_studio_video_factory/render-artifacts';
+const bearerToken = process.env.STUDIO_API_BEARER_TOKEN?.trim();
+const studioId = process.env.STUDIO_ID?.trim();
 
 async function main() {
   const url = new URL('/api/studio/video-factory/render', baseUrl);
-  const response = await fetch(url);
+  const productionTarget = url.hostname !== '127.0.0.1' && url.hostname !== 'localhost';
+  if (productionTarget && !bearerToken) {
+    throw new Error('STUDIO_API_BEARER_TOKEN is required for a deployed render package request');
+  }
+  const response = await fetch(url, {
+    headers: {
+      ...(bearerToken ? {Authorization: `Bearer ${bearerToken}`} : {}),
+      ...(studioId ? {'x-urai-studio-id': studioId} : {}),
+    },
+  });
   if (!response.ok) {
     throw new Error(`render_package_fetch_failed:${response.status}`);
   }
