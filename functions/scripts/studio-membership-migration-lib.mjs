@@ -37,13 +37,15 @@ export function normalizeFirestoreValue(value) {
   }
   if (Array.isArray(value)) return value.map(normalizeFirestoreValue);
   if (typeof value?.toDate === 'function') return {__uraiFirestoreValue: {type: 'timestamp', value: value.toDate().toISOString()}};
-  if (typeof value?.path === 'string') return {__uraiFirestoreValue: {type: 'reference', value: value.path}};
+  if (value?.constructor?.name === 'DocumentReference' && typeof value?.path === 'string') {
+    return {__uraiFirestoreValue: {type: 'reference', value: value.path}};
+  }
   if (typeof value?.latitude === 'number' && typeof value?.longitude === 'number' && value?.constructor?.name === 'GeoPoint') {
     return {__uraiFirestoreValue: {type: 'geoPoint', value: {latitude: value.latitude, longitude: value.longitude}}};
   }
   if (Buffer.isBuffer(value)) return {__uraiFirestoreValue: {type: 'bytes', value: value.toString('base64')}};
   if (value?.constructor?.name === 'VectorValue' && typeof value?.toArray === 'function') {
-    return {__uraiFirestoreValue: {type: 'vector', value: value.toArray()}};
+    return {__uraiFirestoreValue: {type: 'vector', value: value.toArray().map(normalizeFirestoreValue)}};
   }
   if (plainObject(value)) {
     return {__uraiFirestoreValue: {
@@ -52,6 +54,11 @@ export function normalizeFirestoreValue(value) {
     }};
   }
   return String(value);
+}
+
+export function normalizeFirestoreDocument(value) {
+  if (!plainObject(value)) throw new Error('Firestore document root must be a plain object');
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, normalizeFirestoreValue(item)]));
 }
 
 export function validDocumentSegment(value, maxBytes = 256) {

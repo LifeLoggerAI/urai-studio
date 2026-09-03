@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import test from 'node:test';
 import {
   buildMigrationPlan,
+  normalizeFirestoreDocument,
   normalizeFirestoreValue,
   sha256,
   validateAuthorityManifest,
@@ -126,9 +127,24 @@ test('non-finite Firestore numbers remain explicit and hashable in receipts', ()
   assert.notEqual(sha256(normalizedMap), sha256(normalizeFirestoreValue(Number.NaN)));
 
   class VectorValue {
-    toArray() { return [1, 2.5, -3]; }
+    toArray() { return [1, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]; }
   }
-  assert.deepEqual(normalizeFirestoreValue(new VectorValue()), {__uraiFirestoreValue: {type: 'vector', value: [1, 2.5, -3]}});
+  assert.deepEqual(normalizeFirestoreValue(new VectorValue()), {__uraiFirestoreValue: {type: 'vector', value: [
+    1,
+    {__uraiFirestoreValue: {type: 'number', value: 'NaN'}},
+    {__uraiFirestoreValue: {type: 'number', value: 'Infinity'}},
+    {__uraiFirestoreValue: {type: 'number', value: '-Infinity'}},
+  ]}});
+
+  const root = normalizeFirestoreDocument({name: 'Studio', metadata: {path: 'assets/item', label: 'cover'}});
+  assert.equal(root.name, 'Studio');
+  assert.equal(root.__uraiFirestoreValue, undefined);
+  assert.equal(root.metadata.__uraiFirestoreValue.type, 'map');
+
+  const pathMap = normalizeFirestoreValue({path: 'assets/item', label: 'cover'});
+  assert.equal(pathMap.__uraiFirestoreValue.type, 'map');
+  class DocumentReference { constructor(path) { this.path = path; } }
+  assert.deepEqual(normalizeFirestoreValue(new DocumentReference('assets/item')), {__uraiFirestoreValue: {type: 'reference', value: 'assets/item'}});
 });
 
 test('receipt hashes bind before and after states and reject tampering', () => {
@@ -142,7 +158,7 @@ test('receipt hashes bind before and after states and reject tampering', () => {
 
 test('CLI remains dry-run by default and requires exact project confirmations', () => {
   const source = fs.readFileSync(new URL('./studio-membership-migration.mjs', import.meta.url), 'utf8');
-  for (const token of ["const handlers = {plan, apply, verify, rollback}", "requireProject(options, 'confirm-project')", 'refusing to overwrite an existing receipt', 'rollback blocked by post-migration change', 'loadInventoryInTransaction', 'loadCanonicalMemberships', "collectionGroup('members')", '__uraiFirestoreValue', "envelope?.type === 'vector'", 'inventory changed after planning', 'transaction.set(refs[index], denormalize(after, db))', 'fs.fchmodSync(handle, 0o600)']) {
+  for (const token of ["const handlers = {plan, apply, verify, rollback}", "requireProject(options, 'confirm-project')", 'refusing to overwrite an existing receipt', 'rollback blocked by post-migration change', 'loadInventoryInTransaction', 'loadCanonicalMemberships', "collectionGroup('members')", '__uraiFirestoreValue', 'normalizeFirestoreDocument', "envelope?.type === 'vector'", 'inventory changed after planning', 'transaction.set(refs[index], denormalize(after, db))', 'fs.fchmodSync(handle, 0o600)']) {
     assert.ok(source.includes(token), `migration CLI missing safety token: ${token}`);
   }
   assert.doesNotMatch(source, /serviceAccount|private_key|client_email/i);

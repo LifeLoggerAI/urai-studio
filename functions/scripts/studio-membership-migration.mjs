@@ -5,6 +5,7 @@ import process from 'node:process';
 import admin from 'firebase-admin';
 import {
   buildMigrationPlan,
+  normalizeFirestoreDocument,
   normalizeFirestoreValue,
   sha256,
   validateAuthorityManifest,
@@ -75,7 +76,7 @@ async function loadCollection(collection, maxDocuments) {
     let query = collection.orderBy(admin.firestore.FieldPath.documentId()).limit(Math.min(500, maxDocuments + 1 - records.length));
     if (cursor) query = query.startAfter(cursor);
     const snapshot = await query.get();
-    for (const document of snapshot.docs) records.push({id: document.id, data: normalizeFirestoreValue(document.data())});
+    for (const document of snapshot.docs) records.push({id: document.id, data: normalizeFirestoreDocument(document.data())});
     if (snapshot.size === 0 || snapshot.size < 500) break;
     cursor = snapshot.docs.at(-1);
   }
@@ -90,7 +91,7 @@ async function loadCanonicalMemberships(collection, maxDocuments) {
     let query = collection.orderBy(admin.firestore.FieldPath.documentId()).limit(Math.min(500, maxDocuments + 1 - records.length));
     if (cursor) query = query.startAfter(cursor);
     const snapshot = await query.get();
-    for (const document of snapshot.docs) records.push({path: document.ref.path, data: normalizeFirestoreValue(document.data())});
+    for (const document of snapshot.docs) records.push({path: document.ref.path, data: normalizeFirestoreDocument(document.data())});
     if (snapshot.size === 0 || snapshot.size < 500) break;
     cursor = snapshot.docs.at(-1);
   }
@@ -110,11 +111,11 @@ async function loadInventoryInTransaction(transaction, db, projectId, maxDocumen
   }
   return {
     projectId,
-    studios: studiosSnapshot.docs.map((document) => ({id: document.id, data: normalizeFirestoreValue(document.data())})),
-    legacyMemberships: membershipsSnapshot.docs.map((document) => ({id: document.id, data: normalizeFirestoreValue(document.data())})),
+    studios: studiosSnapshot.docs.map((document) => ({id: document.id, data: normalizeFirestoreDocument(document.data())})),
+    legacyMemberships: membershipsSnapshot.docs.map((document) => ({id: document.id, data: normalizeFirestoreDocument(document.data())})),
     canonicalMemberships: canonicalSnapshot.docs
       .filter((document) => /^studios\/[^/]+\/members\/[^/]+$/.test(document.ref.path))
-      .map((document) => ({path: document.ref.path, data: normalizeFirestoreValue(document.data())})),
+      .map((document) => ({path: document.ref.path, data: normalizeFirestoreDocument(document.data())})),
   };
 }
 
@@ -133,8 +134,9 @@ function denormalize(value, db) {
       return new admin.firestore.GeoPoint(envelope.value.latitude, envelope.value.longitude);
     }
     if (envelope?.type === 'bytes' && typeof envelope.value === 'string') return Buffer.from(envelope.value, 'base64');
-    if (envelope?.type === 'vector' && Array.isArray(envelope.value) && envelope.value.every((item) => typeof item === 'number' && Number.isFinite(item))) {
-      return new admin.firestore.VectorValue(envelope.value);
+    if (envelope?.type === 'vector' && Array.isArray(envelope.value)) {
+      const components = envelope.value.map((item) => denormalize(item, db));
+      if (components.every((item) => typeof item === 'number')) return new admin.firestore.VectorValue(components);
     }
     if (envelope?.type === 'map' && envelope.value && typeof envelope.value === 'object' && !Array.isArray(envelope.value)) {
       return Object.fromEntries(Object.entries(envelope.value).map(([key, item]) => [key, denormalize(item, db)]));
@@ -210,7 +212,7 @@ async function apply(options) {
       fail('Studio or legacy-membership inventory changed after planning; create and approve a new plan');
     }
     for (let index = 0; index < receipt.operations.length; index += 1) {
-      const current = snapshots[index].exists ? normalizeFirestoreValue(snapshots[index].data()) : null;
+      const current = snapshots[index].exists ? normalizeFirestoreDocument(snapshots[index].data()) : null;
       if (sha256(current) !== receipt.operations[index].beforeHash) fail(`canonical membership changed after planning: ${receipt.operations[index].path}`);
     }
     for (let index = 0; index < receipt.operations.length; index += 1) {
@@ -244,7 +246,7 @@ async function verify(options) {
   const refs = receipt.operations.map((operation) => db.doc(operation.path));
   const snapshots = await db.getAll(...refs);
   for (let index = 0; index < receipt.operations.length; index += 1) {
-    const current = snapshots[index].exists ? normalizeFirestoreValue(snapshots[index].data()) : null;
+    const current = snapshots[index].exists ? normalizeFirestoreDocument(snapshots[index].data()) : null;
     if (sha256(current) !== receipt.operations[index].afterHash) fail(`verification mismatch: ${receipt.operations[index].path}`);
   }
   const verified = {...receipt, status: 'verified', verifiedAt: new Date().toISOString()};
@@ -267,7 +269,7 @@ async function rollback(options) {
     ]);
     if (!migrationSnapshot.exists || migrationSnapshot.data()?.planDigest !== receipt.planDigest) fail('matching applied migration record is missing');
     for (let index = 0; index < receipt.operations.length; index += 1) {
-      const current = snapshots[index].exists ? normalizeFirestoreValue(snapshots[index].data()) : null;
+      const current = snapshots[index].exists ? normalizeFirestoreDocument(snapshots[index].data()) : null;
       if (sha256(current) !== receipt.operations[index].afterHash) fail(`rollback blocked by post-migration change: ${receipt.operations[index].path}`);
     }
     for (let index = 0; index < receipt.operations.length; index += 1) {
