@@ -19,3 +19,4 @@ assert.doesNotMatch(authSource, /decoded\.tenantId/);
 assert.doesNotMatch(authSource, /tenantId:\s*requestedStudio[,\n]/, 'caller-selected Studio must not be returned without membership verification');
 assert.match(authSource, /missing_studio_scope/);
 assert.match(authSource, /studio_membership_required/);
+assert.match(authSource, /uid !== decoded\.uid/, 'verified Firebase UIDs must be preserved exactly, never trimmed into another principal');
