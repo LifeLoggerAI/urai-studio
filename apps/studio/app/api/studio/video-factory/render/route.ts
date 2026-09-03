@@ -14,7 +14,7 @@ function authErrorResponse(auth: Awaited<ReturnType<typeof requireStudioAuth>>) 
 export async function GET(request: Request) {
   const auth = await requireStudioAuth(request);
   if (!auth.ok) return authErrorResponse(auth);
-  return json(buildVideoFactoryRenderPackage({mode: 'contract-only'}) as unknown as Record<string, unknown>);
+  return json(buildVideoFactoryRenderPackage({studioId: auth.tenantId, mode: 'contract-only'}) as unknown as Record<string, unknown>);
 }
 
 export async function POST(request: Request) {
@@ -22,6 +22,7 @@ export async function POST(request: Request) {
   if (!auth.ok) return authErrorResponse(auth);
   const body = await request.json().catch(() => ({}));
   const renderPackage = buildVideoFactoryRenderPackage({
+    studioId: auth.tenantId,
     templateId: typeof body.templateId === 'string' ? body.templateId : undefined,
     prompt: typeof body.prompt === 'string' ? body.prompt : undefined,
     mode: body.mode === 'playwright-ffmpeg' ? 'playwright-ffmpeg' : 'contract-only',
