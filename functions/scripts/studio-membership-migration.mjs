@@ -286,6 +286,13 @@ async function verify(options) {
       loadInventoryInTransaction(transaction, db, projectId, maxDocuments),
       ...refs.map((ref) => transaction.get(ref)),
     ]);
+    const liveInventoryIdentityHash = sha256({
+      studioIds: liveInventory.studios.map((item) => item.id).sort(),
+      legacyMembershipIds: liveInventory.legacyMemberships.map((item) => item.id).sort(),
+    });
+    if (liveInventoryIdentityHash !== receipt.inventoryIdentityHash) {
+      fail('verification blocked because the complete Studio or legacy-membership identity inventory changed after apply');
+    }
     const inventoryValidation = validateRollbackCanonicalInventory(receipt, liveInventory.canonicalMemberships, 'verification');
     if (!inventoryValidation.ok) fail(inventoryValidation.error);
     for (let index = 0; index < receipt.operations.length; index += 1) {
