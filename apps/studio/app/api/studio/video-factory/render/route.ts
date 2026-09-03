@@ -8,7 +8,7 @@ function json(body: Record<string, unknown>, status = 200) {
 }
 
 function authErrorResponse(auth: Awaited<ReturnType<typeof requireStudioAuth>>) {
-  return json({ok: false, status: auth.error?.code ?? 'unauthorized', error: auth.error, authMode: auth.authMode}, auth.error?.code === 'studio_edit_role_required' ? 403 : 401);
+  return json({ok: false, status: auth.error?.code ?? 'unauthorized', error: auth.error, authMode: auth.authMode}, auth.error?.code === 'studio_membership_lookup_failed' ? 503 : auth.error?.code === 'studio_edit_role_required' ? 403 : 401);
 }
 
 export async function GET(request: Request) {

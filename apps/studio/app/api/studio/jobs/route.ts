@@ -44,7 +44,7 @@ function authErrorResponse(auth: Awaited<ReturnType<typeof requireStudioAuth>>) 
       error: auth.error ?? { code: 'unauthorized', message: 'Studio API authentication failed.' },
       authMode: auth.authMode,
     },
-    auth.error?.code === 'studio_edit_role_required' ? 403 : 401,
+    auth.error?.code === 'studio_membership_lookup_failed' ? 503 : auth.error?.code === 'studio_edit_role_required' ? 403 : 401,
   );
 }
 

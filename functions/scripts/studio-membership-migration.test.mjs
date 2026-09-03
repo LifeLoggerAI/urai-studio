@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import test from 'node:test';
 import {
   buildMigrationPlan,
+  normalizeFirestoreValue,
   sha256,
   validateAuthorityManifest,
   validateReceipt,
@@ -112,6 +113,15 @@ test('manifest rejects unaccounted legacy records, identity mismatch, and missin
   assert.match(validateAuthorityManifest(noOwner, inventory, 'urai-studio-prod').errors.join('\n'), /exactly one active owner/);
 });
 
+test('non-finite Firestore numbers remain explicit and hashable in receipts', () => {
+  assert.deepEqual(normalizeFirestoreValue(Number.NaN), {__firestoreNumber: 'NaN'});
+  assert.deepEqual(normalizeFirestoreValue(Number.POSITIVE_INFINITY), {__firestoreNumber: 'Infinity'});
+  assert.deepEqual(normalizeFirestoreValue(Number.NEGATIVE_INFINITY), {__firestoreNumber: '-Infinity'});
+  assert.notEqual(sha256(normalizeFirestoreValue(Number.NaN)), sha256(null));
+  assert.notEqual(sha256(normalizeFirestoreValue(Number.POSITIVE_INFINITY)), sha256(null));
+  assert.notEqual(sha256(normalizeFirestoreValue(Number.NEGATIVE_INFINITY)), sha256(null));
+});
+
 test('receipt hashes bind before and after states and reject tampering', () => {
   const receipt = buildMigrationPlan({manifest, inventory, canonicalBefore: [], generatedAt: '2026-09-01T01:00:00.000Z'});
   assert.equal(validateReceipt(receipt).ok, true, validateReceipt(receipt).errors.join('\n'));
@@ -123,7 +133,7 @@ test('receipt hashes bind before and after states and reject tampering', () => {
 
 test('CLI remains dry-run by default and requires exact project confirmations', () => {
   const source = fs.readFileSync(new URL('./studio-membership-migration.mjs', import.meta.url), 'utf8');
-  for (const token of ["const handlers = {plan, apply, verify, rollback}", "requireProject(options, 'confirm-project')", 'refusing to overwrite an existing receipt', 'rollback blocked by post-migration change', 'loadInventoryInTransaction', 'loadCanonicalMemberships', "collectionGroup('members')", '__firestoreGeoPoint', 'inventory changed after planning', 'transaction.set(refs[index], denormalize(after, db))', 'fs.fchmodSync(handle, 0o600)']) {
+  for (const token of ["const handlers = {plan, apply, verify, rollback}", "requireProject(options, 'confirm-project')", 'refusing to overwrite an existing receipt', 'rollback blocked by post-migration change', 'loadInventoryInTransaction', 'loadCanonicalMemberships', "collectionGroup('members')", '__firestoreGeoPoint', '__firestoreNumber', 'inventory changed after planning', 'transaction.set(refs[index], denormalize(after, db))', 'fs.fchmodSync(handle, 0o600)']) {
     assert.ok(source.includes(token), `migration CLI missing safety token: ${token}`);
   }
   assert.doesNotMatch(source, /serviceAccount|private_key|client_email/i);

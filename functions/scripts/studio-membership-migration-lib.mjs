@@ -28,7 +28,13 @@ export function sha256(value) {
 
 export function normalizeFirestoreValue(value) {
   if (value === undefined) return null;
-  if (value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value;
+  if (value === null || typeof value === 'string' || typeof value === 'boolean') return value;
+  if (typeof value === 'number') {
+    if (Number.isNaN(value)) return {__firestoreNumber: 'NaN'};
+    if (value === Number.POSITIVE_INFINITY) return {__firestoreNumber: 'Infinity'};
+    if (value === Number.NEGATIVE_INFINITY) return {__firestoreNumber: '-Infinity'};
+    return value;
+  }
   if (Array.isArray(value)) return value.map(normalizeFirestoreValue);
   if (typeof value?.toDate === 'function') return {__firestoreTimestamp: value.toDate().toISOString()};
   if (typeof value?.path === 'string') return {__firestoreReference: value.path};

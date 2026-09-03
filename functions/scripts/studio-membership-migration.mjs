@@ -121,6 +121,9 @@ async function loadInventoryInTransaction(transaction, db, projectId, maxDocumen
 function denormalize(value, db) {
   if (Array.isArray(value)) return value.map((item) => denormalize(item, db));
   if (value && typeof value === 'object') {
+    if (value.__firestoreNumber === 'NaN') return Number.NaN;
+    if (value.__firestoreNumber === 'Infinity') return Number.POSITIVE_INFINITY;
+    if (value.__firestoreNumber === '-Infinity') return Number.NEGATIVE_INFINITY;
     if (typeof value.__firestoreTimestamp === 'string') return admin.firestore.Timestamp.fromDate(new Date(value.__firestoreTimestamp));
     if (typeof value.__firestoreReference === 'string') return db.doc(value.__firestoreReference);
     if (value.__firestoreGeoPoint && typeof value.__firestoreGeoPoint.latitude === 'number' && typeof value.__firestoreGeoPoint.longitude === 'number') {

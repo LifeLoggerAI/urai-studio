@@ -10,6 +10,7 @@ for (const [name, source] of [['jobs route', jobsRoute], ['exports route', expor
   assert.ok(source.includes('requireStudioAuth(req)'), `${name} must require Studio auth`);
   assert.ok(source.includes('authErrorResponse(auth)'), `${name} must return the shared auth error response`);
   assert.ok(source.includes('Cache-Control'), `${name} responses must avoid cached private data`);
+  assert.ok(source.includes("studio_membership_lookup_failed' ? 503"), `${name} must distinguish membership-service failure from authentication failure`);
   assert.ok(source.includes("studio_edit_role_required' ? 403 : 401"), `${name} must distinguish authenticated role denial from missing authentication`);
 }
 
