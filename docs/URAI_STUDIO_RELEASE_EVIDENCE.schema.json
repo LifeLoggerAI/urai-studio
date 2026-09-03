@@ -240,6 +240,9 @@
         "sha256",
         "sizeBytes",
         "usable",
+        "sourceCommitSha",
+        "sourceJobId",
+        "artifactRef",
         "probe"
       ],
       "properties": {
@@ -261,8 +264,18 @@
         },
         "usable": { "const": true },
         "playable": { "type": "boolean" },
-        "sourceJobId": { "type": "string", "minLength": 1 },
-        "artifactRef": { "type": "string", "minLength": 1 },
+        "sourceCommitSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "sourceJobId": {
+          "type": "string",
+          "pattern": "^(?:github-actions|cloud-build|firebase|studio-job)://[^\\s]+$"
+        },
+        "artifactRef": {
+          "type": "string",
+          "pattern": "^(?:https|gs|artifact)://[^\\s]+$"
+        },
         "probe": {
           "type": "object",
           "additionalProperties": false,
