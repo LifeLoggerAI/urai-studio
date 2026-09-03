@@ -21,13 +21,32 @@ for (const gate of [
   'functionsBuild',
   'doneDoneGuard',
   'releaseCheck',
-  'providerReadiness',
-  'binaryArtifacts',
   'smoke',
 ]) {
   assert.ok(requiredGates.includes(gate), `missing release gate: ${gate}`);
   assert.deepEqual(schema.properties.gates.properties[gate], {$ref: '#/$defs/gate'});
 }
+
+assert.deepEqual(schema.properties.gates.properties.providerReadiness, {$ref: '#/$defs/providerReadinessGate'});
+assert.deepEqual(schema.properties.gates.properties.binaryArtifacts, {$ref: '#/$defs/binaryArtifactsGate'});
+assert.equal(schema.$defs.providerReadinessGate.allOf[0].then.properties.evidence.$ref, '#/$defs/providerReadinessEvidence');
+assert.deepEqual(schema.$defs.providerReadinessEvidence.properties.checks.required, [
+  'tokenAcquired',
+  'firebaseAdmin',
+  'firestoreRead',
+  'firestoreWrite',
+  'storageRead',
+  'storageWrite',
+  'functionsHealth',
+]);
+for (const check of schema.$defs.providerReadinessEvidence.properties.checks.required) {
+  assert.equal(schema.$defs.providerReadinessEvidence.properties.checks.properties[check].const, true);
+}
+assert.equal(schema.$defs.binaryArtifactsGate.allOf[0].then.properties.evidence.$ref, '#/$defs/binaryArtifactsEvidence');
+assert.equal(schema.$defs.binaryArtifact.required.includes('sha256'), true);
+assert.equal(schema.$defs.binaryArtifact.required.includes('probe'), true);
+assert.equal(schema.$defs.binaryArtifact.properties.sha256.pattern, '^[0-9a-f]{64}$');
+assert.equal(schema.$defs.binaryArtifact.allOf[0].then.properties.playable.const, true);
 
 assert.deepEqual(schema.$defs.gate.properties.status.enum, ['pass', 'fail', 'blocked', 'not_run']);
 assert.equal(schema.$defs.gate.required.includes('status'), true);
