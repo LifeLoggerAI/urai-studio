@@ -126,6 +126,7 @@ test('non-finite Firestore numbers remain explicit and hashable in receipts', ()
   assert.notEqual(sha256(normalizeFirestoreValue(Number.NaN)), sha256(null));
   assert.notEqual(sha256(normalizeFirestoreValue(Number.POSITIVE_INFINITY)), sha256(null));
   assert.notEqual(sha256(normalizeFirestoreValue(Number.NEGATIVE_INFINITY)), sha256(null));
+  assert.deepEqual(normalizeFirestoreValue(9_223_372_036_854_775_807n), {__uraiFirestoreValue: {type: 'integer', value: '9223372036854775807'}});
   const markerShapedMap = {__uraiFirestoreValue: {type: 'number', value: 'NaN'}};
   const normalizedMap = normalizeFirestoreValue(markerShapedMap);
   assert.equal(normalizedMap.__uraiFirestoreValue.type, 'map');
@@ -185,7 +186,7 @@ test('rollback rejects canonical grants created after the migration', () => {
 
 test('CLI remains dry-run by default and requires exact project confirmations', () => {
   const source = fs.readFileSync(new URL('./studio-membership-migration.mjs', import.meta.url), 'utf8');
-  for (const token of ["const handlers = {plan, apply, verify, rollback}", "requireProject(options, 'confirm-project')", 'refusing to overwrite an existing receipt', 'rollback blocked by post-migration change', "validateRollbackCanonicalInventory(receipt, liveInventory.canonicalMemberships, 'verification')", 'loadInventoryInTransaction', 'loadCanonicalMemberships', "collectionGroup('members')", '__uraiFirestoreValue', 'normalizeFirestoreDocument', "envelope?.type === 'timestamp' && typeof envelope.value === 'string'", 'containsLegacyTimestampEnvelope', 'legacyTimestampRepresentation', 'stateHashMatches', "envelope?.type === 'vector'", 'inventory changed after planning', 'complete Studio or legacy-membership identity inventory changed after apply', 'inventoryIdentityHash', 'receipt.receiptSchemaVersion >= 2', 'transaction.set(refs[index], denormalize(after, db))', 'operation.after === null', 'fs.fchmodSync(handle, 0o600)']) {
+  for (const token of ["const handlers = {plan, apply, verify, rollback}", "requireProject(options, 'confirm-project')", 'refusing to overwrite an existing receipt', 'rollback blocked by post-migration change', "validateRollbackCanonicalInventory(receipt, liveInventory.canonicalMemberships, 'verification')", 'loadInventoryInTransaction', 'loadCanonicalMemberships', "collectionGroup('members')", '__uraiFirestoreValue', 'normalizeFirestoreDocument', "envelope?.type === 'timestamp' && typeof envelope.value === 'string'", 'containsLegacyTimestampEnvelope', 'legacyTimestampRepresentation', 'stateHashMatches', "envelope?.type === 'vector'", 'inventory changed after planning', 'complete Studio or legacy-membership identity inventory changed after apply', 'inventoryIdentityHash', 'receipt.receiptSchemaVersion >= 2', 'transaction.set(refs[index], denormalize(after, db))', 'operation.after === null', 'fs.fchmodSync(handle, 0o600)', 'fs.fsyncSync(handle)', 'fs.renameSync(temporary, resolved)', 'db.settings({useBigInt: true})', "envelope?.type === 'integer'"]) {
     assert.ok(source.includes(token), `migration CLI missing safety token: ${token}`);
   }
   assert.ok(
