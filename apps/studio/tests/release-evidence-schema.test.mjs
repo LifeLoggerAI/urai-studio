@@ -45,6 +45,9 @@ for (const check of schema.$defs.providerReadinessEvidence.properties.checks.req
 assert.equal(schema.$defs.binaryArtifactsGate.allOf[0].then.properties.evidence.$ref, '#/$defs/binaryArtifactsEvidence');
 assert.equal(schema.$defs.binaryArtifact.required.includes('sha256'), true);
 assert.equal(schema.$defs.binaryArtifact.required.includes('probe'), true);
+assert.equal(schema.$defs.binaryArtifact.required.includes('sourceCommitSha'), true);
+assert.equal(schema.$defs.binaryArtifact.required.includes('sourceJobId'), true);
+assert.equal(schema.$defs.binaryArtifact.required.includes('artifactRef'), true);
 assert.equal(schema.$defs.binaryArtifact.properties.sha256.pattern, '^[0-9a-f]{64}$');
 assert.equal(schema.$defs.binaryArtifact.allOf[0].then.properties.playable.const, true);
 
