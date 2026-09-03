@@ -192,8 +192,6 @@ test('CLI remains dry-run by default and requires exact project confirmations', 
 
 
 test('schema-1 receipts remain valid for recovery while schema-2 requires identity binding', () => {
-  const inventory = sampleInventory();
-  const manifest = sampleManifest();
   const current = buildMigrationPlan({manifest, inventory, canonicalBefore: inventory.canonicalMemberships, generatedAt: '2026-09-03T00:00:00.000Z'});
   const legacyBase = {...current, receiptSchemaVersion: 1};
   delete legacyBase.inventoryIdentityHash;
