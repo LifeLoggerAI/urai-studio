@@ -80,7 +80,7 @@ export async function requireStudioAuth(req: Request): Promise<StudioAuthContext
 
   try {
     const uid = documentSegment(decoded.uid);
-    if (!uid) return denied(production, 'unsupported_uid', 'The authenticated identity cannot be represented by the Studio membership model.', 'firebase_id_token');
+    if (!uid || uid !== decoded.uid) return denied(production, 'unsupported_uid', 'The authenticated identity cannot be represented exactly by the Studio membership model.', 'firebase_id_token');
 
     const claimedStudio = documentSegment(typeof decoded.studioId === 'string' ? decoded.studioId : null);
     const studioId = requestedStudio ?? claimedStudio;
