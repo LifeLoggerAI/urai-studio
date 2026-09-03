@@ -4,6 +4,7 @@ import admin from 'firebase-admin';
 import test from 'node:test';
 
 const migrationLibrarySource = fs.readFileSync(new URL('./studio-membership-migration-lib.mjs', import.meta.url), 'utf8');
+const membershipCallableSource = fs.readFileSync(new URL('../src/studio-memberships.ts', import.meta.url), 'utf8');
 import {
   buildMigrationPlan,
   normalizeFirestoreDocument,
@@ -184,9 +185,13 @@ test('rollback rejects canonical grants created after the migration', () => {
 
 test('CLI remains dry-run by default and requires exact project confirmations', () => {
   const source = fs.readFileSync(new URL('./studio-membership-migration.mjs', import.meta.url), 'utf8');
-  for (const token of ["const handlers = {plan, apply, verify, rollback}", "requireProject(options, 'confirm-project')", 'refusing to overwrite an existing receipt', 'rollback blocked by post-migration change', "validateRollbackCanonicalInventory(receipt, liveInventory.canonicalMemberships, 'verification')", 'loadInventoryInTransaction', 'loadCanonicalMemberships', "collectionGroup('members')", '__uraiFirestoreValue', 'normalizeFirestoreDocument', "envelope?.type === 'timestamp' && typeof envelope.value === 'string'", 'containsLegacyTimestampEnvelope', 'legacyTimestampRepresentation', 'stateHashMatches', "envelope?.type === 'vector'", 'inventory changed after planning', 'complete Studio or legacy-membership identity inventory changed after apply', 'inventoryIdentityHash', 'receipt.receiptSchemaVersion >= 2', 'URAI_STUDIO_MEMBERSHIP_MUTATIONS_FROZEN', 'transaction.set(refs[index], denormalize(after, db))', 'operation.after === null', 'fs.fchmodSync(handle, 0o600)']) {
+  for (const token of ["const handlers = {plan, apply, verify, rollback}", "requireProject(options, 'confirm-project')", 'refusing to overwrite an existing receipt', 'rollback blocked by post-migration change', "validateRollbackCanonicalInventory(receipt, liveInventory.canonicalMemberships, 'verification')", 'loadInventoryInTransaction', 'loadCanonicalMemberships', "collectionGroup('members')", '__uraiFirestoreValue', 'normalizeFirestoreDocument', "envelope?.type === 'timestamp' && typeof envelope.value === 'string'", 'containsLegacyTimestampEnvelope', 'legacyTimestampRepresentation', 'stateHashMatches', "envelope?.type === 'vector'", 'inventory changed after planning', 'complete Studio or legacy-membership identity inventory changed after apply', 'inventoryIdentityHash', 'receipt.receiptSchemaVersion >= 2', 'transaction.set(refs[index], denormalize(after, db))', 'operation.after === null', 'fs.fchmodSync(handle, 0o600)']) {
     assert.ok(source.includes(token), `migration CLI missing safety token: ${token}`);
   }
+  assert.ok(
+    membershipCallableSource.includes('URAI_STUDIO_MEMBERSHIP_MUTATIONS_FROZEN'),
+    'membership callables must preserve the protected mutation-freeze boundary',
+  );
   assert.doesNotMatch(source, /serviceAccount|private_key|client_email/i);
 });
 
