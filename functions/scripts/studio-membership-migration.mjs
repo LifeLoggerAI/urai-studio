@@ -75,7 +75,7 @@ async function loadCollection(collection, maxDocuments) {
     let query = collection.orderBy(admin.firestore.FieldPath.documentId()).limit(Math.min(500, maxDocuments + 1 - records.length));
     if (cursor) query = query.startAfter(cursor);
     const snapshot = await query.get();
-    for (const document of snapshot.docs) records.push({id: document.id, data: normalizeFirestoreValue(document.data())});
+    for (const document of snapshot.docs) records.push({id: document.id, path: document.ref.path, data: normalizeFirestoreValue(document.data())});
     if (snapshot.size === 0 || snapshot.size < 500) break;
     cursor = snapshot.docs.at(-1);
   }
@@ -85,17 +85,21 @@ async function loadCollection(collection, maxDocuments) {
 
 async function loadInventoryInTransaction(transaction, db, projectId, maxDocuments) {
   const limit = maxDocuments + 1;
-  const [studiosSnapshot, membershipsSnapshot] = await Promise.all([
+  const [studiosSnapshot, membershipsSnapshot, canonicalSnapshot] = await Promise.all([
     transaction.get(db.collection('studios').orderBy(admin.firestore.FieldPath.documentId()).limit(limit)),
     transaction.get(db.collection('memberships').orderBy(admin.firestore.FieldPath.documentId()).limit(limit)),
+    transaction.get(db.collectionGroup('members').orderBy(admin.firestore.FieldPath.documentId()).limit(limit)),
   ]);
-  if (studiosSnapshot.size > maxDocuments || membershipsSnapshot.size > maxDocuments) {
+  if (studiosSnapshot.size > maxDocuments || membershipsSnapshot.size > maxDocuments || canonicalSnapshot.size > maxDocuments) {
     fail(`live migration inventory exceeds --max-documents=${maxDocuments}; raise the reviewed bound explicitly`);
   }
   return {
     projectId,
     studios: studiosSnapshot.docs.map((document) => ({id: document.id, data: normalizeFirestoreValue(document.data())})),
     legacyMemberships: membershipsSnapshot.docs.map((document) => ({id: document.id, data: normalizeFirestoreValue(document.data())})),
+    canonicalMemberships: canonicalSnapshot.docs
+      .filter((document) => /^studios\/[^/]+\/members\/[^/]+$/.test(document.ref.path))
+      .map((document) => ({path: document.ref.path, data: normalizeFirestoreValue(document.data())})),
   };
 }
 
@@ -125,16 +129,22 @@ async function plan(options) {
   if (fs.existsSync(path.resolve(receiptPath))) fail('refusing to overwrite an existing receipt');
   const maxDocuments = requireMaxDocuments(options);
   const db = initialize(projectId);
-  const [studios, legacyMemberships] = await Promise.all([
+  const [studios, legacyMemberships, canonicalMemberships] = await Promise.all([
     loadCollection(db.collection('studios'), maxDocuments),
     loadCollection(db.collection('memberships'), maxDocuments),
+    loadCollection(db.collectionGroup('members'), maxDocuments),
   ]);
-  const inventory = {projectId, studios, legacyMemberships};
+  const inventory = {
+    projectId,
+    studios,
+    legacyMemberships,
+    canonicalMemberships: canonicalMemberships
+      .filter((item) => /^studios\/[^/]+\/members\/[^/]+$/.test(item.path))
+      .map((item) => ({path: item.path, data: item.data})),
+  };
   const validation = validateAuthorityManifest(manifest, inventory, projectId);
   if (!validation.ok) fail(`authority manifest does not close the inventory:\n- ${validation.errors.join('\n- ')}`);
-  const refs = manifest.entries.map((entry) => db.collection('studios').doc(entry.studioId).collection('members').doc(entry.uid));
-  const snapshots = refs.length ? await db.getAll(...refs) : [];
-  const canonicalBefore = snapshots.map((snapshot) => ({path: snapshot.ref.path, data: snapshot.exists ? normalizeFirestoreValue(snapshot.data()) : null}));
+  const canonicalBefore = inventory.canonicalMemberships;
   const receipt = buildMigrationPlan({manifest, inventory, canonicalBefore, generatedAt: new Date().toISOString()});
   writePrivateJson(receiptPath, receipt);
   return {ok: true, command: 'plan', status: receipt.status, projectId, planDigest: receipt.planDigest, acceptedMembershipCount: receipt.acceptedMembershipCount, rejectedLegacyMembershipCount: receipt.rejectedLegacyMembershipCount, rejectedStudioCount: receipt.rejectedStudioCount, receipt: path.resolve(receiptPath)};
@@ -175,7 +185,11 @@ async function apply(options) {
       const current = snapshots[index].exists ? normalizeFirestoreValue(snapshots[index].data()) : null;
       if (sha256(current) !== receipt.operations[index].beforeHash) fail(`canonical membership changed after planning: ${receipt.operations[index].path}`);
     }
-    for (let index = 0; index < receipt.operations.length; index += 1) transaction.set(refs[index], receipt.operations[index].after);
+    for (let index = 0; index < receipt.operations.length; index += 1) {
+      const after = receipt.operations[index].after;
+      if (after === null) transaction.delete(refs[index]);
+      else transaction.set(refs[index], denormalize(after, db));
+    }
     transaction.create(migrationRef, {
       status: 'applied',
       projectId,

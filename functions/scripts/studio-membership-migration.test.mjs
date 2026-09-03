@@ -21,6 +21,7 @@ const inventory = {
     {id: 'legacy_owner_b', data: {uid: 'owner_b', studioId: 'studio_b', role: 'owner'}},
     {id: 'forged_membership', data: {uid: 'attacker', studioId: 'studio_a', role: 'owner'}},
   ],
+  canonicalMemberships: [],
 };
 
 const manifest = {
@@ -37,6 +38,7 @@ const manifest = {
   rejectedLegacyMemberships: [
     {documentId: 'forged_membership', reason: 'No trusted ownership evidence exists.', authorityEvidenceRef: 'rejection-record-001'},
   ],
+  rejectedCanonicalMemberships: [],
   rejectedStudios: [
     {studioId: 'forged_studio', reason: 'No trusted Studio authority exists.', authorityEvidenceRef: 'rejection-record-002'},
   ],
@@ -54,6 +56,7 @@ test('canonical nested paths cannot collide when uid and Studio ids contain unde
     projectId: 'urai-studio-prod',
     studios: [{id: 'c', data: {}}, {id: 'b_c', data: {}}],
     legacyMemberships: [],
+    canonicalMemberships: [],
   };
   const customManifest = {
     ...manifest,
@@ -62,12 +65,37 @@ test('canonical nested paths cannot collide when uid and Studio ids contain unde
       {uid: 'a', studioId: 'b_c', role: 'owner', status: 'active', authorityEvidenceRef: 'authority-record-two', legacyDocumentIds: []},
     ],
     rejectedLegacyMemberships: [],
+    rejectedCanonicalMemberships: [],
     rejectedStudios: [],
   };
   const validation = validateAuthorityManifest(customManifest, customInventory, 'urai-studio-prod');
   assert.equal(validation.ok, true, validation.errors.join('\n'));
   const receipt = buildMigrationPlan({manifest: customManifest, inventory: customInventory, canonicalBefore: [], generatedAt: '2026-09-01T01:00:00.000Z'});
-  assert.deepEqual(receipt.operations.map((item) => item.path), ['studios/b_c/members/a', 'studios/c/members/a_b']);
+  assert.deepEqual(receipt.operations.filter((item) => item.path.includes('/members/')).map((item) => item.path), ['studios/b_c/members/a', 'studios/c/members/a_b']);
+});
+
+test('manifest must account for every existing canonical membership and rejected grants are deleted', () => {
+  const withCanonical = structuredClone(inventory);
+  withCanonical.canonicalMemberships = [
+    {path: 'studios/studio_a/members/owner_a', data: {uid: 'owner_a', studioId: 'studio_a', role: 'owner', status: 'active', schemaVersion: 2}},
+    {path: 'studios/studio_a/members/attacker', data: {uid: 'attacker', studioId: 'studio_a', role: 'owner', status: 'active', schemaVersion: 2}},
+  ];
+  const missing = validateAuthorityManifest(manifest, withCanonical, 'urai-studio-prod');
+  assert.match(missing.errors.join('\n'), /canonical membership .*attacker.* not explicitly accepted or rejected/);
+
+  const closed = structuredClone(manifest);
+  closed.rejectedCanonicalMemberships = [{uid: 'attacker', studioId: 'studio_a', reason: 'No trusted grant evidence exists.', authorityEvidenceRef: 'canonical-rejection-001'}];
+  const validation = validateAuthorityManifest(closed, withCanonical, 'urai-studio-prod');
+  assert.equal(validation.ok, true, validation.errors.join('\n'));
+  const receipt = buildMigrationPlan({manifest: closed, inventory: withCanonical, canonicalBefore: withCanonical.canonicalMemberships, generatedAt: '2026-09-01T01:00:00.000Z'});
+  assert.equal(receipt.operations.find((item) => item.path.endsWith('/members/attacker')).after, null);
+});
+
+test('accepted Studios are normalized before final rules require authority fields', () => {
+  const receipt = buildMigrationPlan({manifest, inventory, canonicalBefore: [], generatedAt: '2026-09-01T01:00:00.000Z'});
+  const studio = receipt.operations.find((item) => item.path === 'studios/studio_a');
+  assert.equal(studio.after.studioId, 'studio_a');
+  assert.equal(studio.after.createdBy, 'owner_a');
 });
 
 test('manifest rejects unaccounted legacy records, identity mismatch, and missing sole owner', () => {
@@ -87,15 +115,15 @@ test('manifest rejects unaccounted legacy records, identity mismatch, and missin
 test('receipt hashes bind before and after states and reject tampering', () => {
   const receipt = buildMigrationPlan({manifest, inventory, canonicalBefore: [], generatedAt: '2026-09-01T01:00:00.000Z'});
   assert.equal(validateReceipt(receipt).ok, true, validateReceipt(receipt).errors.join('\n'));
-  assert.equal(receipt.operations[0].beforeHash, sha256(null));
+  assert.ok(receipt.operations.some((operation) => operation.beforeHash === sha256(null)));
   const tampered = structuredClone(receipt);
-  tampered.operations[0].after.role = 'owner';
+  tampered.operations.find((operation) => operation.path.includes('/members/')).after.role = 'owner';
   assert.equal(validateReceipt(tampered).ok, false);
 });
 
 test('CLI remains dry-run by default and requires exact project confirmations', () => {
   const source = fs.readFileSync(new URL('./studio-membership-migration.mjs', import.meta.url), 'utf8');
-  for (const token of ["const handlers = {plan, apply, verify, rollback}", "requireProject(options, 'confirm-project')", 'refusing to overwrite an existing receipt', 'rollback blocked by post-migration change', 'loadInventoryInTransaction', 'inventory changed after planning', 'fs.fchmodSync(handle, 0o600)']) {
+  for (const token of ["const handlers = {plan, apply, verify, rollback}", "requireProject(options, 'confirm-project')", 'refusing to overwrite an existing receipt', 'rollback blocked by post-migration change', 'loadInventoryInTransaction', "collectionGroup('members')", 'inventory changed after planning', 'transaction.set(refs[index], denormalize(after, db))', 'fs.fchmodSync(handle, 0o600)']) {
     assert.ok(source.includes(token), `migration CLI missing safety token: ${token}`);
   }
   assert.doesNotMatch(source, /serviceAccount|private_key|client_email/i);

@@ -37,6 +37,7 @@ Any failure, unexplained record, owner ambiguity, project mismatch, post-plan da
       "legacyDocumentIds": ["exact-legacy-document-id"]
     }
   ],
+  "rejectedCanonicalMemberships": [],
   "rejectedLegacyMemberships": [
     {
       "documentId": "untrusted-legacy-id",
@@ -48,7 +49,7 @@ Any failure, unexplained record, owner ambiguity, project mismatch, post-plan da
 }
 ```
 
-Each accepted Studio must have exactly one active owner. Every legacy membership and Studio in the live inventory must be explicitly accepted or rejected.
+Each accepted Studio must have exactly one active owner. Every legacy membership, canonical membership, and Studio in the live inventory must be explicitly accepted or rejected. Rejected canonical memberships are deleted atomically, and accepted Studio documents are normalized with immutable `studioId` and `createdBy` fields before the final rules are deployed.
 
 ## Commands
 

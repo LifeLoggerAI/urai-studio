@@ -68,9 +68,11 @@ export function validateAuthorityManifest(manifest, inventory, expectedProjectId
 
   const entries = Array.isArray(manifest.entries) ? manifest.entries : [];
   const rejectedLegacy = Array.isArray(manifest.rejectedLegacyMemberships) ? manifest.rejectedLegacyMemberships : [];
+  const rejectedCanonical = Array.isArray(manifest.rejectedCanonicalMemberships) ? manifest.rejectedCanonicalMemberships : [];
   const rejectedStudios = Array.isArray(manifest.rejectedStudios) ? manifest.rejectedStudios : [];
   if (!Array.isArray(manifest.entries) || entries.length === 0) errors.push('entries must contain at least one verified membership');
   if (!Array.isArray(manifest.rejectedLegacyMemberships)) errors.push('rejectedLegacyMemberships must be an array');
+  if (!Array.isArray(manifest.rejectedCanonicalMemberships)) errors.push('rejectedCanonicalMemberships must be an array');
   if (!Array.isArray(manifest.rejectedStudios)) errors.push('rejectedStudios must be an array');
   if (entries.length > MAX_ATOMIC_MEMBERSHIPS) errors.push(`entries exceed the atomic limit of ${MAX_ATOMIC_MEMBERSHIPS}`);
 
@@ -78,6 +80,7 @@ export function validateAuthorityManifest(manifest, inventory, expectedProjectId
   const legacy = new Map((inventory.legacyMemberships ?? []).map((item) => [item.id, item]));
   const accountedLegacy = new Set();
   const canonicalKeys = new Set();
+  const accountedCanonicalPaths = new Set();
   const acceptedStudioIds = new Set();
   const rejectedStudioIds = new Set();
   const ownerCounts = new Map();
@@ -94,6 +97,7 @@ export function validateAuthorityManifest(manifest, inventory, expectedProjectId
     const canonicalKey = key(String(entry.uid), String(entry.studioId));
     if (canonicalKeys.has(canonicalKey)) errors.push(`${label} duplicates a canonical uid/studioId pair`);
     canonicalKeys.add(canonicalKey);
+    accountedCanonicalPaths.add(`studios/${entry.studioId}/members/${entry.uid}`);
     acceptedStudioIds.add(entry.studioId);
     if (!studios.has(entry.studioId)) errors.push(`${label} references a missing Studio document`);
     if (entry.role === 'owner' && entry.status === 'active') ownerCounts.set(entry.studioId, (ownerCounts.get(entry.studioId) ?? 0) + 1);
@@ -106,6 +110,22 @@ export function validateAuthorityManifest(manifest, inventory, expectedProjectId
       if (!source) errors.push(`${label} references missing legacy membership ${legacyId}`);
       else if (source.data?.uid !== entry.uid || source.data?.studioId !== entry.studioId) errors.push(`${label} legacy membership ${legacyId} identity/Studio fields do not match; client role/status fields are intentionally not trusted`);
     }
+  }
+
+  const canonical = new Map((inventory.canonicalMemberships ?? []).map((item) => [item.path, item]));
+  for (const [index, rejection] of rejectedCanonical.entries()) {
+    const label = `rejectedCanonicalMemberships[${index}]`;
+    if (!plainObject(rejection) || !validDocumentSegment(rejection.uid) || !validDocumentSegment(rejection.studioId)) {
+      errors.push(`${label} must identify a valid uid and studioId`);
+      continue;
+    }
+    if (!evidenceRef(rejection.authorityEvidenceRef) || typeof rejection.reason !== 'string' || rejection.reason.trim().length < 8) {
+      errors.push(`${label} requires a meaningful reason and authorityEvidenceRef`);
+    }
+    const canonicalPath = `studios/${rejection.studioId}/members/${rejection.uid}`;
+    if (!canonical.has(canonicalPath)) errors.push(`${label} references a missing canonical membership`);
+    if (accountedCanonicalPaths.has(canonicalPath)) errors.push(`canonical membership ${canonicalPath} is accounted more than once`);
+    accountedCanonicalPaths.add(canonicalPath);
   }
 
   for (const [index, rejection] of rejectedLegacy.entries()) {
@@ -127,6 +147,7 @@ export function validateAuthorityManifest(manifest, inventory, expectedProjectId
   }
 
   for (const legacyId of legacy.keys()) if (!accountedLegacy.has(legacyId)) errors.push(`legacy membership ${legacyId} is not explicitly accepted or rejected`);
+  for (const canonicalPath of canonical.keys()) if (!accountedCanonicalPaths.has(canonicalPath)) errors.push(`canonical membership ${canonicalPath} is not explicitly accepted or rejected`);
   for (const studioId of studios.keys()) {
     if (!acceptedStudioIds.has(studioId) && !rejectedStudioIds.has(studioId)) errors.push(`Studio ${studioId} is not explicitly accepted or rejected`);
     if (acceptedStudioIds.has(studioId) && rejectedStudioIds.has(studioId)) errors.push(`Studio ${studioId} cannot be both accepted and rejected`);
@@ -142,7 +163,7 @@ export function buildMigrationPlan({manifest, inventory, canonicalBefore, genera
   const validation = validateAuthorityManifest(manifest, inventory, manifest.projectId);
   if (!validation.ok) throw new Error(`invalid authority manifest:\n- ${validation.errors.join('\n- ')}`);
   const before = new Map((canonicalBefore ?? []).map((item) => [item.path, item.data ?? null]));
-  const operations = manifest.entries.map((entry) => {
+  const membershipOperations = manifest.entries.map((entry) => {
     const path = `studios/${entry.studioId}/members/${entry.uid}`;
     const previous = before.get(path) ?? null;
     const after = {
@@ -159,7 +180,23 @@ export function buildMigrationPlan({manifest, inventory, canonicalBefore, genera
       updatedAt: generatedAt,
     };
     return {path, before: previous, beforeHash: sha256(previous), after, afterHash: sha256(after)};
-  }).sort((a, b) => a.path.localeCompare(b.path));
+  });
+  const rejectedCanonicalOperations = manifest.rejectedCanonicalMemberships.map((entry) => {
+    const path = `studios/${entry.studioId}/members/${entry.uid}`;
+    const previous = before.get(path) ?? null;
+    return {path, before: previous, beforeHash: sha256(previous), after: null, afterHash: sha256(null)};
+  });
+  const studioOperations = [...new Set(manifest.entries.map((entry) => entry.studioId))].map((studioId) => {
+    const studio = (inventory.studios ?? []).find((item) => item.id === studioId);
+    const previous = studio?.data ?? null;
+    if (!previous) throw new Error(`accepted Studio ${studioId} disappeared from the migration inventory`);
+    const owner = manifest.entries.find((entry) => entry.studioId === studioId && entry.role === 'owner' && entry.status === 'active');
+    const after = {...previous, studioId, createdBy: previous.createdBy ?? owner.uid};
+    return {path: `studios/${studioId}`, before: previous, beforeHash: sha256(previous), after, afterHash: sha256(after)};
+  });
+  const operations = [...studioOperations, ...membershipOperations, ...rejectedCanonicalOperations]
+    .sort((a, b) => a.path.localeCompare(b.path));
+  if (operations.length > MAX_ATOMIC_MEMBERSHIPS) throw new Error(`migration operations exceed the atomic limit of ${MAX_ATOMIC_MEMBERSHIPS}`);
 
   const base = {
     receiptSchemaVersion: 1,
@@ -171,7 +208,9 @@ export function buildMigrationPlan({manifest, inventory, canonicalBefore, genera
     approvalEvidenceRef: manifest.approvalEvidenceRef,
     manifestHash: sha256(manifest),
     inventoryHash: sha256(inventory),
-    acceptedMembershipCount: operations.length,
+    acceptedMembershipCount: membershipOperations.length,
+    acceptedStudioCount: studioOperations.length,
+    rejectedCanonicalMembershipCount: rejectedCanonicalOperations.length,
     rejectedLegacyMembershipCount: manifest.rejectedLegacyMemberships.length,
     rejectedStudioCount: manifest.rejectedStudios.length,
     operations,
