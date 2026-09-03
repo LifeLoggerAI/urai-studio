@@ -12,8 +12,21 @@ assert.ok(schema.required.includes('recordedAt'));
 assert.ok(schema.required.includes('gates'));
 
 const requiredGates = schema.properties.gates.required;
-for (const gate of ['install', 'lint', 'typecheck', 'tests', 'appBuild', 'functionsBuild', 'doneDoneGuard', 'releaseCheck', 'smoke']) {
+for (const gate of [
+  'install',
+  'lint',
+  'typecheck',
+  'tests',
+  'appBuild',
+  'functionsBuild',
+  'doneDoneGuard',
+  'releaseCheck',
+  'providerReadiness',
+  'binaryArtifacts',
+  'smoke',
+]) {
   assert.ok(requiredGates.includes(gate), `missing release gate: ${gate}`);
+  assert.deepEqual(schema.properties.gates.properties[gate], {$ref: '#/$defs/gate'});
 }
 
 assert.deepEqual(schema.$defs.gate.properties.status.enum, ['pass', 'fail', 'blocked', 'not_run']);
