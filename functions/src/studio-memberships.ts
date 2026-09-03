@@ -16,6 +16,12 @@ function requireAuth(context: functions.https.CallableContext) {
   return context.auth;
 }
 
+function requireMembershipMutationsOpen() {
+  if (process.env.URAI_STUDIO_MEMBERSHIP_MUTATIONS_FROZEN === "true") {
+    throw new functions.https.HttpsError("unavailable", "Studio membership mutations are temporarily frozen for an approved authority migration.");
+  }
+}
+
 function requireDocumentSegment(value: unknown, field: string, maxBytes = 256): string {
   if (typeof value !== "string") throw new functions.https.HttpsError("invalid-argument", `${field} is required.`);
   const normalized = value;
@@ -68,6 +74,7 @@ function requireCanonicalMembership(data: admin.firestore.DocumentData | undefin
 }
 
 export const createStudioTenant = functions.https.onCall(async (data, context) => {
+  requireMembershipMutationsOpen();
   const auth = requireAuth(context);
   const actorUid = requireDocumentSegment(auth.uid, "authenticated uid");
   const requestId = requireDocumentSegment(data?.requestId, "requestId", 128);
@@ -104,6 +111,7 @@ export const createStudioTenant = functions.https.onCall(async (data, context) =
 });
 
 export const manageStudioMembership = functions.https.onCall(async (data, context) => {
+  requireMembershipMutationsOpen();
   const auth = requireAuth(context);
   const actorUid = requireDocumentSegment(auth.uid, "authenticated uid");
   const studioId = requireDocumentSegment(data?.studioId, "studioId");
@@ -164,6 +172,7 @@ export const manageStudioMembership = functions.https.onCall(async (data, contex
 });
 
 export const transferStudioOwnership = functions.https.onCall(async (data, context) => {
+  requireMembershipMutationsOpen();
   const auth = requireAuth(context);
   const actorUid = requireDocumentSegment(auth.uid, "authenticated uid");
   const studioId = requireDocumentSegment(data?.studioId, "studioId");
