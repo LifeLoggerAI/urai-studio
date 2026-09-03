@@ -6,6 +6,8 @@ const panel = fs.readFileSync(
   new URL('../app/studio/video-factory/RenderArtifactPanel.tsx', import.meta.url),
   'utf8',
 );
+const route = fs.readFileSync(new URL('../app/api/studio/video-factory/render/route.ts', import.meta.url), 'utf8');
+const renderer = fs.readFileSync(new URL('../lib/studio-video-renderer.ts', import.meta.url), 'utf8');
 const button = fs.readFileSync(
   new URL('../app/studio/video-factory/RenderPackageButton.tsx', import.meta.url),
   'utf8',
@@ -36,6 +38,8 @@ for (const required of [
 
 assert.ok(panel.includes('RenderPackageButton'), 'render package must use the authenticated client action');
 assert.ok(button.includes("'x-urai-studio-id'"), 'authenticated render package must send selected Studio scope');
+assert.ok(route.includes('studioId: auth.tenantId'), 'protected render route must pass verified Studio scope');
+assert.ok(renderer.includes('studios/${slug(studioId)}/video-factory'), 'render outputs must be tenant namespaced');
 assert.ok(script.includes('STUDIO_API_BEARER_TOKEN'), 'deployed artifact command must require a bearer token');
 assert.ok(script.includes("'x-urai-studio-id'"), 'artifact command must support explicit Studio scope');
 
