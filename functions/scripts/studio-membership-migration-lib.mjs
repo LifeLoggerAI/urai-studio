@@ -235,6 +235,10 @@ export function buildMigrationPlan({manifest, inventory, canonicalBefore, genera
     approvalEvidenceRef: manifest.approvalEvidenceRef,
     manifestHash: sha256(manifest),
     inventoryHash: sha256(inventory),
+    inventoryIdentityHash: sha256({
+      studioIds: (inventory.studios ?? []).map((item) => item.id).sort(),
+      legacyMembershipIds: (inventory.legacyMemberships ?? []).map((item) => item.id).sort(),
+    }),
     acceptedMembershipCount: membershipOperations.length,
     acceptedStudioCount: studioOperations.length,
     rejectedCanonicalMembershipCount: rejectedCanonicalOperations.length,
@@ -270,6 +274,7 @@ export function validateReceipt(receipt) {
   if (!plainObject(receipt) || receipt.receiptSchemaVersion !== 1) errors.push('unsupported receipt schema');
   if (!['planned', 'applied', 'verified', 'rolled_back'].includes(receipt?.status)) errors.push('unsupported receipt status');
   if (!Array.isArray(receipt?.operations) || receipt.operations.length === 0 || receipt.operations.length > MAX_ATOMIC_MEMBERSHIPS) errors.push('receipt operations are missing or exceed the atomic limit');
+  if (typeof receipt?.inventoryIdentityHash !== 'string' || !/^[0-9a-f]{64}$/.test(receipt.inventoryIdentityHash)) errors.push('receipt inventoryIdentityHash is missing or invalid');
   const base = {...receipt};
   delete base.planDigest;
   delete base.appliedAt;
