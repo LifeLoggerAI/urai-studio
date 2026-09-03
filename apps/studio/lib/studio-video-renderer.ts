@@ -37,6 +37,7 @@ export type VideoFactoryRenderPackage = {
   ok: true;
   mode: VideoFactoryRenderMode;
   contractOnly: boolean;
+  studioId: UraiId;
   templateId: string;
   manifestId: string;
   title: string;
@@ -64,6 +65,7 @@ export type VideoFactoryRenderPackage = {
 };
 
 export type BuildVideoFactoryRenderPackageInput = {
+  studioId?: UraiId;
   templateId?: string;
   projectId?: UraiId;
   mode?: VideoFactoryRenderMode;
@@ -143,7 +145,8 @@ export function buildVideoFactoryRenderPackage(input: BuildVideoFactoryRenderPac
   }
 
   const durationSeconds = sumShotDurationsSeconds(manifest);
-  const outputBasePath = `studio/video-factory/${manifest.templateId}`;
+  const studioId = input.studioId?.trim() || 'local-unscoped';
+  const outputBasePath = `studios/${slug(studioId)}/video-factory/${manifest.templateId}`;
   const timeline = buildTimeline(manifest);
   const subtitleText = buildSubtitleText(timeline);
   const mode = input.mode ?? 'contract-only';
@@ -173,6 +176,7 @@ export function buildVideoFactoryRenderPackage(input: BuildVideoFactoryRenderPac
     ok: true,
     mode,
     contractOnly: mode === 'contract-only',
+    studioId,
     templateId: manifest.templateId,
     manifestId: manifest.id,
     title: manifest.title,
@@ -184,6 +188,7 @@ export function buildVideoFactoryRenderPackage(input: BuildVideoFactoryRenderPac
     subtitleText,
     exportManifest: {
       version: 1,
+      studioId,
       templateId: manifest.templateId,
       manifestId: manifest.id,
       title: manifest.title,
