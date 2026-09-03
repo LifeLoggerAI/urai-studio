@@ -31,6 +31,7 @@ export function sha256(value) {
 export function normalizeFirestoreValue(value) {
   if (value === undefined) return null;
   if (value === null || typeof value === 'string' || typeof value === 'boolean') return value;
+  if (typeof value === 'bigint') return {__uraiFirestoreValue: {type: 'integer', value: value.toString(10)}};
   if (typeof value === 'number') {
     if (Number.isNaN(value)) return {__uraiFirestoreValue: {type: 'number', value: 'NaN'}};
     if (value === Number.POSITIVE_INFINITY) return {__uraiFirestoreValue: {type: 'number', value: 'Infinity'}};
