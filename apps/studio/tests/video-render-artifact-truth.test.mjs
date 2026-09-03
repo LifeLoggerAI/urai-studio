@@ -39,7 +39,10 @@ for (const required of [
 assert.ok(panel.includes('RenderPackageButton'), 'render package must use the authenticated client action');
 assert.ok(button.includes("'x-urai-studio-id'"), 'authenticated render package must send selected Studio scope');
 assert.ok(route.includes('studioId: auth.tenantId'), 'protected render route must pass verified Studio scope');
-assert.ok(renderer.includes('studios/${slug(studioId)}/video-factory'), 'render outputs must be tenant namespaced');
+assert.ok(
+  renderer.includes('studios/${exactStudioStorageSegment(studioId)}/outputs/video-factory'),
+  'render outputs must preserve the exact Studio ID beneath the member-readable output prefix',
+);
 assert.ok(script.includes('STUDIO_API_BEARER_TOKEN'), 'deployed artifact command must require a bearer token');
 assert.ok(script.includes("'x-urai-studio-id'"), 'artifact command must support explicit Studio scope');
 
