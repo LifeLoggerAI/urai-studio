@@ -128,6 +128,10 @@ function denormalize(value, db) {
     if (envelope?.type === 'number' && envelope.value === 'NaN') return Number.NaN;
     if (envelope?.type === 'number' && envelope.value === 'Infinity') return Number.POSITIVE_INFINITY;
     if (envelope?.type === 'number' && envelope.value === '-Infinity') return Number.NEGATIVE_INFINITY;
+    if (envelope?.type === 'timestamp' && typeof envelope.value === 'string') {
+      const legacyDate = new Date(envelope.value);
+      if (!Number.isNaN(legacyDate.getTime())) return admin.firestore.Timestamp.fromDate(legacyDate);
+    }
     if (envelope?.type === 'timestamp' && Number.isInteger(envelope.value?.seconds) && Number.isInteger(envelope.value?.nanoseconds)) {
       return new admin.firestore.Timestamp(envelope.value.seconds, envelope.value.nanoseconds);
     }
