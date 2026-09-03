@@ -10,6 +10,7 @@ import {
   sha256,
   validateAuthorityManifest,
   validateReceipt,
+  validateRollbackCanonicalInventory,
 } from './studio-membership-migration-lib.mjs';
 
 function fail(message) {
@@ -294,15 +295,19 @@ async function rollback(options) {
   const receipt = receiptOrFail(options);
   if (receipt.projectId !== projectId || !['applied', 'verified'].includes(receipt.status)) fail('rollback requires an applied or verified receipt for the confirmed project');
   if (!options['approved-by']?.trim() || !options['approval-evidence-ref']?.trim()) fail('rollback requires --approved-by and --approval-evidence-ref from the real rollback authority');
+  const maxDocuments = requireMaxDocuments(options);
   const db = initialize(projectId);
   const migrationRef = db.collection('studioMembershipMigrations').doc(receipt.planDigest);
   const refs = receipt.operations.map((operation) => db.doc(operation.path));
   await db.runTransaction(async (transaction) => {
-    const [migrationSnapshot, ...snapshots] = await Promise.all([
+    const [migrationSnapshot, liveInventory, ...snapshots] = await Promise.all([
       transaction.get(migrationRef),
+      loadInventoryInTransaction(transaction, db, projectId, maxDocuments),
       ...refs.map((ref) => transaction.get(ref)),
     ]);
     if (!migrationSnapshot.exists || migrationSnapshot.data()?.planDigest !== receipt.planDigest) fail('matching applied migration record is missing');
+    const rollbackInventory = validateRollbackCanonicalInventory(receipt, liveInventory.canonicalMemberships);
+    if (!rollbackInventory.ok) fail(rollbackInventory.error);
     for (let index = 0; index < receipt.operations.length; index += 1) {
       const current = snapshots[index].exists ? normalizeFirestoreDocument(snapshots[index].data()) : null;
       if (!stateHashMatches(current, receipt.operations[index].afterHash, receipt)) fail(`rollback blocked by post-migration change: ${receipt.operations[index].path}`);
