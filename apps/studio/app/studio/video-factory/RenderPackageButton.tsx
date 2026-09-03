@@ -6,15 +6,21 @@ import { getStudioAuth } from '@/lib/studio/firebase-client';
 
 export function RenderPackageButton() {
   const [status, setStatus] = useState('');
+  const [studioId, setStudioId] = useState('');
 
   async function openRenderPackage() {
     setStatus('Authenticating…');
     try {
       const user = getStudioAuth()?.currentUser;
       if (!user) throw new Error('Sign in to Studio before opening the protected render package.');
+      const selectedStudioId = studioId.trim();
+      if (!selectedStudioId || selectedStudioId.includes('/')) throw new Error('Select a valid Studio ID.');
       const token = await user.getIdToken();
       const response = await fetch('/api/studio/video-factory/render', {
-        headers: {Authorization: `Bearer ${token}`},
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'x-urai-studio-id': selectedStudioId,
+        },
       });
       const body = await response.text();
       if (!response.ok) throw new Error(`Render package request failed (${response.status}): ${body}`);
@@ -32,6 +38,10 @@ export function RenderPackageButton() {
 
   return (
     <span>
+      <label>
+        <span className="sr-only">Studio ID</span>
+        <input value={studioId} onChange={(event) => setStudioId(event.target.value)} placeholder="Studio ID" autoComplete="off" />
+      </label>
       <button className="button button-secondary" type="button" onClick={openRenderPackage}>
         Render Package API
       </button>
