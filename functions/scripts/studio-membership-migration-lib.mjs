@@ -245,7 +245,7 @@ export function buildMigrationPlan({manifest, inventory, canonicalBefore, genera
   return {...base, planDigest: sha256(base)};
 }
 
-export function validateRollbackCanonicalInventory(receipt, canonicalMemberships) {
+export function validateRollbackCanonicalInventory(receipt, canonicalMemberships, operation = 'rollback') {
   const expectedPaths = (receipt?.operations ?? [])
     .filter((operation) => /^studios\/[^/]+\/members\/[^/]+$/.test(operation.path) && operation.after !== null)
     .map((operation) => operation.path)
@@ -257,7 +257,7 @@ export function validateRollbackCanonicalInventory(receipt, canonicalMemberships
   if (stableJson(livePaths) !== stableJson(expectedPaths)) {
     return {
       ok: false,
-      error: 'rollback blocked because the canonical membership path set changed after migration',
+      error: `${operation} blocked because the canonical membership path set changed after migration`,
       expectedPaths,
       livePaths,
     };
