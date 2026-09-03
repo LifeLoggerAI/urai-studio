@@ -30,4 +30,8 @@ for (const required of [
   assert.ok(panel.includes(required), `render panel missing user-facing truth boundary: ${required}`);
 }
 
+assert.ok(panel.includes('RenderPackageButton'), 'render package must use the authenticated client action');
+assert.ok(script.includes('STUDIO_API_BEARER_TOKEN'), 'deployed artifact command must require a bearer token');
+assert.ok(script.includes("'x-urai-studio-id'"), 'artifact command must support explicit Studio scope');
+
 console.log('video render artifact truth coverage passed');
