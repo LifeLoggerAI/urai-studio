@@ -128,7 +128,9 @@ function denormalize(value, db) {
     if (envelope?.type === 'number' && envelope.value === 'NaN') return Number.NaN;
     if (envelope?.type === 'number' && envelope.value === 'Infinity') return Number.POSITIVE_INFINITY;
     if (envelope?.type === 'number' && envelope.value === '-Infinity') return Number.NEGATIVE_INFINITY;
-    if (envelope?.type === 'timestamp' && typeof envelope.value === 'string') return admin.firestore.Timestamp.fromDate(new Date(envelope.value));
+    if (envelope?.type === 'timestamp' && Number.isInteger(envelope.value?.seconds) && Number.isInteger(envelope.value?.nanoseconds)) {
+      return new admin.firestore.Timestamp(envelope.value.seconds, envelope.value.nanoseconds);
+    }
     if (envelope?.type === 'reference' && typeof envelope.value === 'string') return db.doc(envelope.value);
     if (envelope?.type === 'geoPoint' && typeof envelope.value?.latitude === 'number' && typeof envelope.value?.longitude === 'number') {
       return new admin.firestore.GeoPoint(envelope.value.latitude, envelope.value.longitude);

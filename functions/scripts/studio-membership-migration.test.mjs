@@ -148,7 +148,8 @@ test('non-finite Firestore numbers remain explicit and hashable in receipts', ()
   const spoofedGeoPoint = normalizeFirestoreValue({constructor: {name: 'GeoPoint'}, latitude: 1, longitude: 2, label: 'cover'});
   assert.equal(spoofedGeoPoint.__uraiFirestoreValue.type, 'map');
   assert.deepEqual(normalizeFirestoreValue(new admin.firestore.GeoPoint(1, 2)), {__uraiFirestoreValue: {type: 'geoPoint', value: {latitude: 1, longitude: 2}}});
-  assert.deepEqual(normalizeFirestoreValue(admin.firestore.Timestamp.fromDate(new Date('2026-09-03T00:00:00.000Z'))), {__uraiFirestoreValue: {type: 'timestamp', value: '2026-09-03T00:00:00.000Z'}});
+  const timestamp = new admin.firestore.Timestamp(1_788_393_600, 456_789_123);
+  assert.deepEqual(normalizeFirestoreValue(timestamp), {__uraiFirestoreValue: {type: 'timestamp', value: {seconds: 1_788_393_600, nanoseconds: 456_789_123}}});
   for (const identity of ['DocumentReference', 'GeoPoint', 'Timestamp', 'VectorValue']) {
     assert.match(migrationLibrarySource, new RegExp(`value instanceof admin\\.firestore\\.${identity}`));
   }

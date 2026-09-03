@@ -37,7 +37,9 @@ export function normalizeFirestoreValue(value) {
     return value;
   }
   if (Array.isArray(value)) return value.map(normalizeFirestoreValue);
-  if (value instanceof admin.firestore.Timestamp) return {__uraiFirestoreValue: {type: 'timestamp', value: value.toDate().toISOString()}};
+  if (value instanceof admin.firestore.Timestamp) {
+    return {__uraiFirestoreValue: {type: 'timestamp', value: {seconds: value.seconds, nanoseconds: value.nanoseconds}}};
+  }
   if (value instanceof admin.firestore.DocumentReference) {
     return {__uraiFirestoreValue: {type: 'reference', value: value.path}};
   }
