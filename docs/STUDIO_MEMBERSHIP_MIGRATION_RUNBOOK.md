@@ -12,11 +12,13 @@ The migration never infers ownership from a legacy role. A real release owner mu
 4. Prepare a private manifest that accounts for every legacy membership and every Studio as accepted or rejected.
 5. Run `plan`; independently review the counts, manifest hash, inventory hash, and private receipt.
 6. Run `apply` only with the exact production project repeated as `--confirm-project`.
-7. Run `verify`, then execute authenticated two-tenant positive and negative staging tests.
-8. Deploy Firestore and Storage rules from the same reviewed SHA.
-9. Repeat authenticated production isolation smoke, record ruleset/deployment IDs, and retain the receipt privately.
+7. Immediately set `URAI_STUDIO_MEMBERSHIP_MUTATIONS_FROZEN=true` on the reviewed Functions revision and verify all three membership callables return `unavailable`. Any mutation before the freeze makes the next verification fail closed.
+8. Run `verify`, then execute authenticated two-tenant positive and negative staging tests while mutations remain frozen.
+9. Deploy Firestore and Storage rules from the same reviewed SHA.
+10. Repeat authenticated production isolation smoke, record ruleset/deployment IDs, and retain the receipt privately.
+11. Only after the ruleset and isolation proof are recorded, remove the freeze on the same reviewed Functions SHA and verify authorized mutations plus cross-tenant denials again.
 
-Any failure, unexplained record, owner ambiguity, project mismatch, post-plan data change, or missing approval stops the release.
+Any failure, unexplained record, owner ambiguity, project mismatch, post-plan data change, missing approval, or membership mutation while the release freeze is active stops the release. Never run final verification or activate rules while membership mutations are open.
 
 ## Manifest shape
 
