@@ -40,7 +40,12 @@ export function RenderPackageButton() {
     <span>
       <label>
         <span className="sr-only">Studio ID</span>
-        <input value={studioId} onChange={(event) => setStudioId(event.target.value)} placeholder="Studio ID" autoComplete="off" />
+        <input
+          value={studioId}
+          onChange={(event) => setStudioId(event.target.value)}
+          aria-label="Studio ID"
+          autoComplete="off"
+        />
       </label>
       <button className="button button-secondary" type="button" onClick={openRenderPackage}>
         Render Package API
