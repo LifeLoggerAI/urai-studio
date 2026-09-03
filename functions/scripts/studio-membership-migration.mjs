@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import * as admin from 'firebase-admin';
+import admin from 'firebase-admin';
 import {
   buildMigrationPlan,
   normalizeFirestoreValue,
@@ -75,12 +75,27 @@ async function loadCollection(collection, maxDocuments) {
     let query = collection.orderBy(admin.firestore.FieldPath.documentId()).limit(Math.min(500, maxDocuments + 1 - records.length));
     if (cursor) query = query.startAfter(cursor);
     const snapshot = await query.get();
-    for (const document of snapshot.docs) records.push({id: document.id, path: document.ref.path, data: normalizeFirestoreValue(document.data())});
+    for (const document of snapshot.docs) records.push({id: document.id, data: normalizeFirestoreValue(document.data())});
     if (snapshot.size === 0 || snapshot.size < 500) break;
     cursor = snapshot.docs.at(-1);
   }
   if (records.length > maxDocuments) fail(`collection ${collection.path} exceeds --max-documents=${maxDocuments}; raise the reviewed bound explicitly`);
   return records;
+}
+
+async function loadCanonicalMemberships(collection, maxDocuments) {
+  const records = [];
+  let cursor = null;
+  while (records.length <= maxDocuments) {
+    let query = collection.orderBy(admin.firestore.FieldPath.documentId()).limit(Math.min(500, maxDocuments + 1 - records.length));
+    if (cursor) query = query.startAfter(cursor);
+    const snapshot = await query.get();
+    for (const document of snapshot.docs) records.push({path: document.ref.path, data: normalizeFirestoreValue(document.data())});
+    if (snapshot.size === 0 || snapshot.size < 500) break;
+    cursor = snapshot.docs.at(-1);
+  }
+  if (records.length > maxDocuments) fail(`canonical membership inventory exceeds --max-documents=${maxDocuments}`);
+  return records.filter((item) => /^studios\/[^/]+\/members\/[^/]+$/.test(item.path));
 }
 
 async function loadInventoryInTransaction(transaction, db, projectId, maxDocuments) {
@@ -108,6 +123,9 @@ function denormalize(value, db) {
   if (value && typeof value === 'object') {
     if (typeof value.__firestoreTimestamp === 'string') return admin.firestore.Timestamp.fromDate(new Date(value.__firestoreTimestamp));
     if (typeof value.__firestoreReference === 'string') return db.doc(value.__firestoreReference);
+    if (value.__firestoreGeoPoint && typeof value.__firestoreGeoPoint.latitude === 'number' && typeof value.__firestoreGeoPoint.longitude === 'number') {
+      return new admin.firestore.GeoPoint(value.__firestoreGeoPoint.latitude, value.__firestoreGeoPoint.longitude);
+    }
     if (typeof value.__bytesBase64 === 'string') return Buffer.from(value.__bytesBase64, 'base64');
     return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, denormalize(item, db)]));
   }
@@ -132,15 +150,13 @@ async function plan(options) {
   const [studios, legacyMemberships, canonicalMemberships] = await Promise.all([
     loadCollection(db.collection('studios'), maxDocuments),
     loadCollection(db.collection('memberships'), maxDocuments),
-    loadCollection(db.collectionGroup('members'), maxDocuments),
+    loadCanonicalMemberships(db.collectionGroup('members'), maxDocuments),
   ]);
   const inventory = {
     projectId,
     studios,
     legacyMemberships,
-    canonicalMemberships: canonicalMemberships
-      .filter((item) => /^studios\/[^/]+\/members\/[^/]+$/.test(item.path))
-      .map((item) => ({path: item.path, data: item.data})),
+    canonicalMemberships,
   };
   const validation = validateAuthorityManifest(manifest, inventory, projectId);
   if (!validation.ok) fail(`authority manifest does not close the inventory:\n- ${validation.errors.join('\n- ')}`);

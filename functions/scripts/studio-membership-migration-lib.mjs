@@ -32,6 +32,9 @@ export function normalizeFirestoreValue(value) {
   if (Array.isArray(value)) return value.map(normalizeFirestoreValue);
   if (typeof value?.toDate === 'function') return {__firestoreTimestamp: value.toDate().toISOString()};
   if (typeof value?.path === 'string') return {__firestoreReference: value.path};
+  if (typeof value?.latitude === 'number' && typeof value?.longitude === 'number' && value?.constructor?.name === 'GeoPoint') {
+    return {__firestoreGeoPoint: {latitude: value.latitude, longitude: value.longitude}};
+  }
   if (Buffer.isBuffer(value)) return {__bytesBase64: value.toString('base64')};
   if (plainObject(value)) return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, normalizeFirestoreValue(item)]));
   return String(value);
