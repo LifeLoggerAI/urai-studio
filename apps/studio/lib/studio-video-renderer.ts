@@ -81,6 +81,13 @@ function slug(value: string) {
     .slice(0, 80);
 }
 
+function exactStudioStorageSegment(value: string) {
+  if (!value || value.trim() !== value || value === '.' || value === '..' || value.includes('/') || new TextEncoder().encode(value).length > 256) {
+    throw new Error('invalid_studio_id');
+  }
+  return value;
+}
+
 function timestamp(seconds: number) {
   const wholeSeconds = Math.floor(seconds);
   const hours = Math.floor(wholeSeconds / 3600);
@@ -147,7 +154,7 @@ export function buildVideoFactoryRenderPackage(input: BuildVideoFactoryRenderPac
 
   const durationSeconds = sumShotDurationsSeconds(manifest);
   const studioId = input.studioId?.trim() || 'local-unscoped';
-  const outputBasePath = `studios/${slug(studioId)}/video-factory/${manifest.templateId}`;
+  const outputBasePath = `studios/${exactStudioStorageSegment(studioId)}/video-factory/${manifest.templateId}`;
   const timeline = buildTimeline(manifest);
   const subtitleText = buildSubtitleText(timeline);
   const mode = input.mode ?? 'contract-only';
