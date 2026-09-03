@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import admin from 'firebase-admin';
 
 export const MIGRATION_MANIFEST_SCHEMA = 1;
+export const MIGRATION_RECEIPT_SCHEMA = 2;
 export const CANONICAL_MEMBERSHIP_SCHEMA = 2;
 export const MAX_ATOMIC_MEMBERSHIPS = 400;
 export const ROLES = Object.freeze(['owner', 'admin', 'editor', 'reviewer', 'viewer']);
@@ -226,7 +227,7 @@ export function buildMigrationPlan({manifest, inventory, canonicalBefore, genera
   if (operations.length > MAX_ATOMIC_MEMBERSHIPS) throw new Error(`migration operations exceed the atomic limit of ${MAX_ATOMIC_MEMBERSHIPS}`);
 
   const base = {
-    receiptSchemaVersion: 1,
+    receiptSchemaVersion: MIGRATION_RECEIPT_SCHEMA,
     status: 'planned',
     projectId: manifest.projectId,
     generatedAt,
@@ -271,10 +272,10 @@ export function validateRollbackCanonicalInventory(receipt, canonicalMemberships
 
 export function validateReceipt(receipt) {
   const errors = [];
-  if (!plainObject(receipt) || receipt.receiptSchemaVersion !== 1) errors.push('unsupported receipt schema');
+  if (!plainObject(receipt) || ![1, MIGRATION_RECEIPT_SCHEMA].includes(receipt.receiptSchemaVersion)) errors.push('unsupported receipt schema');
   if (!['planned', 'applied', 'verified', 'rolled_back'].includes(receipt?.status)) errors.push('unsupported receipt status');
   if (!Array.isArray(receipt?.operations) || receipt.operations.length === 0 || receipt.operations.length > MAX_ATOMIC_MEMBERSHIPS) errors.push('receipt operations are missing or exceed the atomic limit');
-  if (typeof receipt?.inventoryIdentityHash !== 'string' || !/^[0-9a-f]{64}$/.test(receipt.inventoryIdentityHash)) errors.push('receipt inventoryIdentityHash is missing or invalid');
+  if (receipt?.receiptSchemaVersion === MIGRATION_RECEIPT_SCHEMA && (typeof receipt.inventoryIdentityHash !== 'string' || !/^[0-9a-f]{64}$/.test(receipt.inventoryIdentityHash))) errors.push('schema-2 receipt inventoryIdentityHash is missing or invalid');
   const base = {...receipt};
   delete base.planDigest;
   delete base.appliedAt;
