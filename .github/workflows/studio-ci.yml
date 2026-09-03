@@ -51,9 +51,11 @@ jobs:
           java-version: '21'
 
       - name: Install dependencies
+        id: install
         run: pnpm install --frozen-lockfile
 
       - name: Release check with canonical membership emulator matrix
+        id: release_check
         run: pnpm release:check
 
       - name: Prove verification preserved exact source
@@ -63,6 +65,7 @@ jobs:
           test -z "$(git status --porcelain)"
 
       - name: Static smoke declaration
+        id: static_smoke
         run: pnpm --filter studio smoke:static
 
       - name: Start Studio server
@@ -77,10 +80,29 @@ jobs:
           exit 1
 
       - name: Runtime HTTP smoke
+        id: runtime_smoke
         env:
           HOST: http://127.0.0.1:3000
           EXPECT_READY: "false"
         run: bash scripts/smoke.sh
+
+      - name: Write exact-head source evidence
+        env:
+          TARGET_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          EVIDENCE_OUTPUT: release-evidence/studio-source-${{ github.event.pull_request.head.sha || github.sha }}.json
+          INSTALL_GATE_RESULT: ${{ steps.install.outcome }}
+          RELEASE_CHECK_GATE_RESULT: ${{ steps.release_check.outcome }}
+          STATIC_SMOKE_GATE_RESULT: ${{ steps.static_smoke.outcome }}
+          RUNTIME_SMOKE_GATE_RESULT: ${{ steps.runtime_smoke.outcome }}
+        run: pnpm release:evidence:source
+
+      - name: Upload exact-head source evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-source-evidence-${{ github.event.pull_request.head.sha || github.sha }}
+          path: release-evidence/studio-source-${{ github.event.pull_request.head.sha || github.sha }}.json
+          if-no-files-found: error
+          retention-days: 365
 
       - name: Stop Studio server
         if: always()
