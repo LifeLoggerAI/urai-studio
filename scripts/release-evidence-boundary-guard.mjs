@@ -145,6 +145,7 @@ if (!contractOnly) {
   assert.ok(evidenceFile, 'RELEASE_EVIDENCE_FILE is required when validating a release receipt');
   assert.ok(fs.existsSync(evidenceFile), `release evidence file does not exist: ${evidenceFile}`);
   const receipt = JSON.parse(fs.readFileSync(evidenceFile, 'utf8'));
+  validateReleaseReceiptSchema(receipt);
   validateArtifactSourceCommits(receipt);
 }
 
