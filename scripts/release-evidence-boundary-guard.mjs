@@ -57,6 +57,99 @@ for (const forbidden of ['.mp4.placeholder', 'MP4 placeholder', 'mp4PlaceholderP
   assert.equal(artifactWriter.includes(forbidden), false, `artifact writer contains forbidden fake-binary token ${forbidden}`);
 }
 
+function compileJsonSchema(rootSchema) {
+  function resolve(ref) {
+    assert.ok(ref.startsWith('#/'), `unsupported schema reference: ${ref}`);
+    return ref.slice(2).split('/').reduce((value, part) => value?.[part.replace(/~1/g, '/').replace(/~0/g, '~')], rootSchema);
+  }
+
+  function matchesType(value, type) {
+    if (type === 'object') return value !== null && typeof value === 'object' && !Array.isArray(value);
+    if (type === 'array') return Array.isArray(value);
+    if (type === 'integer') return Number.isInteger(value);
+    if (type === 'null') return value === null;
+    return typeof value === type;
+  }
+
+  function visit(schemaNode, value, path, errors) {
+    if (!schemaNode || typeof schemaNode !== 'object') return;
+    if (schemaNode.$ref) {
+      visit(resolve(schemaNode.$ref), value, path, errors);
+      return;
+    }
+    if (schemaNode.const !== undefined && !Object.is(value, schemaNode.const)) errors.push(`${path} must equal the schema constant`);
+    if (schemaNode.enum && !schemaNode.enum.some((item) => Object.is(item, value))) errors.push(`${path} is not an allowed value`);
+    if (schemaNode.type && !matchesType(value, schemaNode.type)) {
+      errors.push(`${path} must be ${schemaNode.type}`);
+      return;
+    }
+    if (typeof value === 'string') {
+      if (schemaNode.minLength !== undefined && value.length < schemaNode.minLength) errors.push(`${path} is too short`);
+      if (schemaNode.pattern && !new RegExp(schemaNode.pattern).test(value)) errors.push(`${path} does not match the required pattern`);
+      if (schemaNode.format === 'date-time' && (!Number.isFinite(Date.parse(value)) || new Date(Date.parse(value)).toISOString() !== value)) {
+        errors.push(`${path} must be an exact ISO-8601 date-time`);
+      }
+    }
+    if (typeof value === 'number' && schemaNode.minimum !== undefined && value < schemaNode.minimum) errors.push(`${path} is below the minimum`);
+    if (Array.isArray(value)) {
+      if (schemaNode.minItems !== undefined && value.length < schemaNode.minItems) errors.push(`${path} has too few items`);
+      if (schemaNode.uniqueItems && new Set(value.map((item) => JSON.stringify(item))).size !== value.length) errors.push(`${path} items must be unique`);
+      if (schemaNode.items) value.forEach((item, index) => visit(schemaNode.items, item, `${path}[${index}]`, errors));
+    }
+    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+      for (const key of schemaNode.required ?? []) {
+        if (!Object.hasOwn(value, key)) errors.push(`${path}.${key} is required`);
+      }
+      if (schemaNode.additionalProperties === false && schemaNode.properties) {
+        for (const key of Object.keys(value)) {
+          if (!Object.hasOwn(schemaNode.properties, key)) errors.push(`${path}.${key} is not allowed`);
+        }
+      }
+      for (const [key, childSchema] of Object.entries(schemaNode.properties ?? {})) {
+        if (Object.hasOwn(value, key)) visit(childSchema, value[key], `${path}.${key}`, errors);
+      }
+    }
+    for (const child of schemaNode.allOf ?? []) visit(child, value, path, errors);
+    if (schemaNode.if) {
+      const conditionErrors = [];
+      visit(schemaNode.if, value, path, conditionErrors);
+      visit(conditionErrors.length === 0 ? schemaNode.then : schemaNode.else, value, path, errors);
+    }
+  }
+
+  return (value) => {
+    const errors = [];
+    visit(rootSchema, value, '
+  if (receipt?.gates?.binaryArtifacts?.status !== 'pass') return;
+  const artifacts = receipt.gates.binaryArtifacts.evidence?.artifacts;
+  assert.ok(Array.isArray(artifacts) && artifacts.length > 0, 'passing binaryArtifacts evidence must contain artifacts');
+  for (const artifact of artifacts) {
+    assert.equal(artifact.sourceCommitSha, receipt.commitSha, `binary artifact source job SHA must equal receipt SHA for ${artifact.artifactRef ?? artifact.sourceJobId ?? 'unknown artifact'}`);
+  }
+}
+
+if (!contractOnly) {
+  const evidenceFile = process.env.RELEASE_EVIDENCE_FILE;
+  assert.ok(evidenceFile, 'RELEASE_EVIDENCE_FILE is required when validating a release receipt');
+  assert.ok(fs.existsSync(evidenceFile), `release evidence file does not exist: ${evidenceFile}`);
+  const receipt = JSON.parse(fs.readFileSync(evidenceFile, 'utf8'));
+  validateReleaseReceiptSchema(receipt);
+  validateArtifactSourceCommits(receipt);
+}
+
+console.log(contractOnly ? 'release evidence contract guard passed' : 'release evidence receipt guard passed');
+, errors);
+    return errors;
+  };
+}
+
+const validateReceiptSchema = compileJsonSchema(schema);
+
+export function validateReleaseReceiptSchema(receipt) {
+  const errors = validateReceiptSchema(receipt);
+  assert.equal(errors.length, 0, `release evidence receipt failed JSON Schema validation:\n- ${errors.join('\n- ')}`);
+}
+
 export function validateArtifactSourceCommits(receipt) {
   if (receipt?.gates?.binaryArtifacts?.status !== 'pass') return;
   const artifacts = receipt.gates.binaryArtifacts.evidence?.artifacts;
