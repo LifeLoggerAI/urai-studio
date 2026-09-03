@@ -37,15 +37,15 @@ export function normalizeFirestoreValue(value) {
     return value;
   }
   if (Array.isArray(value)) return value.map(normalizeFirestoreValue);
-  if (typeof value?.toDate === 'function') return {__uraiFirestoreValue: {type: 'timestamp', value: value.toDate().toISOString()}};
+  if (value instanceof admin.firestore.Timestamp) return {__uraiFirestoreValue: {type: 'timestamp', value: value.toDate().toISOString()}};
   if (value instanceof admin.firestore.DocumentReference) {
     return {__uraiFirestoreValue: {type: 'reference', value: value.path}};
   }
-  if (typeof value?.latitude === 'number' && typeof value?.longitude === 'number' && value?.constructor?.name === 'GeoPoint') {
+  if (value instanceof admin.firestore.GeoPoint) {
     return {__uraiFirestoreValue: {type: 'geoPoint', value: {latitude: value.latitude, longitude: value.longitude}}};
   }
   if (Buffer.isBuffer(value)) return {__uraiFirestoreValue: {type: 'bytes', value: value.toString('base64')}};
-  if (value?.constructor?.name === 'VectorValue' && typeof value?.toArray === 'function') {
+  if (value instanceof admin.firestore.VectorValue) {
     return {__uraiFirestoreValue: {type: 'vector', value: value.toArray().map(normalizeFirestoreValue)}};
   }
   if (plainObject(value)) {

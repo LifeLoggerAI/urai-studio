@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import admin from 'firebase-admin';
 import test from 'node:test';
 
 const migrationLibrarySource = fs.readFileSync(new URL('./studio-membership-migration-lib.mjs', import.meta.url), 'utf8');
@@ -128,10 +129,7 @@ test('non-finite Firestore numbers remain explicit and hashable in receipts', ()
   assert.equal(normalizedMap.__uraiFirestoreValue.type, 'map');
   assert.notEqual(sha256(normalizedMap), sha256(normalizeFirestoreValue(Number.NaN)));
 
-  class VectorValue {
-    toArray() { return [1, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]; }
-  }
-  assert.deepEqual(normalizeFirestoreValue(new VectorValue()), {__uraiFirestoreValue: {type: 'vector', value: [
+  assert.deepEqual(normalizeFirestoreValue(new admin.firestore.VectorValue([1, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])), {__uraiFirestoreValue: {type: 'vector', value: [
     1,
     {__uraiFirestoreValue: {type: 'number', value: 'NaN'}},
     {__uraiFirestoreValue: {type: 'number', value: 'Infinity'}},
@@ -147,7 +145,13 @@ test('non-finite Firestore numbers remain explicit and hashable in receipts', ()
   assert.equal(pathMap.__uraiFirestoreValue.type, 'map');
   const spoofedReference = normalizeFirestoreValue({constructor: {name: 'DocumentReference'}, path: 'assets/item', label: 'cover'});
   assert.equal(spoofedReference.__uraiFirestoreValue.type, 'map');
-  assert.match(migrationLibrarySource, /value instanceof admin\.firestore\.DocumentReference/);
+  const spoofedGeoPoint = normalizeFirestoreValue({constructor: {name: 'GeoPoint'}, latitude: 1, longitude: 2, label: 'cover'});
+  assert.equal(spoofedGeoPoint.__uraiFirestoreValue.type, 'map');
+  assert.deepEqual(normalizeFirestoreValue(new admin.firestore.GeoPoint(1, 2)), {__uraiFirestoreValue: {type: 'geoPoint', value: {latitude: 1, longitude: 2}}});
+  assert.deepEqual(normalizeFirestoreValue(admin.firestore.Timestamp.fromDate(new Date('2026-09-03T00:00:00.000Z'))), {__uraiFirestoreValue: {type: 'timestamp', value: '2026-09-03T00:00:00.000Z'}});
+  for (const identity of ['DocumentReference', 'GeoPoint', 'Timestamp', 'VectorValue']) {
+    assert.match(migrationLibrarySource, new RegExp(`value instanceof admin\\.firestore\\.${identity}`));
+  }
 });
 
 test('receipt hashes bind before and after states and reject tampering', () => {
