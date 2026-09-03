@@ -241,6 +241,7 @@
         "sizeBytes",
         "usable",
         "sourceJobId",
+        "sourceCommitSha",
         "artifactRef",
         "probe"
       ],
@@ -266,6 +267,11 @@
         "sourceJobId": {
           "type": "string",
           "pattern": "^(?:github-actions|cloud-build|firebase|studio-job)://[^\\s]+$"
+        },
+        "sourceCommitSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "description": "Commit SHA reported by the source job; the release validator requires equality with the enclosing receipt commitSha."
         },
         "artifactRef": {
           "type": "string",
