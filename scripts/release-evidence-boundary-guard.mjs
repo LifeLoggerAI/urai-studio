@@ -56,4 +56,18 @@ for (const forbidden of ['.mp4.placeholder', 'MP4 placeholder', 'mp4PlaceholderP
   assert.equal(artifactWriter.includes(forbidden), false, `artifact writer contains forbidden fake-binary token ${forbidden}`);
 }
 
+export function validateArtifactSourceCommits(receipt) {
+  if (receipt?.gates?.binaryArtifacts?.status !== 'pass') return;
+  const artifacts = receipt.gates.binaryArtifacts.evidence?.artifacts;
+  assert.ok(Array.isArray(artifacts) && artifacts.length > 0, 'passing binaryArtifacts evidence must contain artifacts');
+  for (const artifact of artifacts) {
+    assert.equal(artifact.sourceCommitSha, receipt.commitSha, `binary artifact source job SHA must equal receipt SHA for ${artifact.artifactRef ?? artifact.sourceJobId ?? 'unknown artifact'}`);
+  }
+}
+
+if (process.env.RELEASE_EVIDENCE_FILE) {
+  const receipt = JSON.parse(fs.readFileSync(process.env.RELEASE_EVIDENCE_FILE, 'utf8'));
+  validateArtifactSourceCommits(receipt);
+}
+
 console.log('release evidence boundary guard passed');
