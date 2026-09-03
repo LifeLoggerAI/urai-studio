@@ -328,8 +328,9 @@ async function rollback(options) {
       if (!stateHashMatches(current, receipt.operations[index].afterHash, receipt)) fail(`rollback blocked by post-migration change: ${receipt.operations[index].path}`);
     }
     for (let index = 0; index < receipt.operations.length; index += 1) {
-      const before = receipt.operations[index].before;
-      if (before === null) transaction.delete(refs[index]);
+      const operation = receipt.operations[index];
+      const before = operation.before;
+      if (before === null || operation.after === null) transaction.delete(refs[index]);
       else transaction.set(refs[index], denormalize(before, db));
     }
     transaction.update(migrationRef, {
