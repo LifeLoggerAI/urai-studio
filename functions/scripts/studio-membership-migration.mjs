@@ -152,6 +152,35 @@ function denormalize(value, db) {
   return value;
 }
 
+function containsLegacyTimestampEnvelope(value) {
+  if (Array.isArray(value)) return value.some(containsLegacyTimestampEnvelope);
+  if (!value || typeof value !== 'object') return false;
+  const envelope = Object.keys(value).length === 1 && value.__uraiFirestoreValue && typeof value.__uraiFirestoreValue === 'object'
+    ? value.__uraiFirestoreValue
+    : null;
+  if (envelope?.type === 'timestamp' && typeof envelope.value === 'string') return true;
+  return Object.values(value).some(containsLegacyTimestampEnvelope);
+}
+
+function legacyTimestampRepresentation(value) {
+  if (Array.isArray(value)) return value.map(legacyTimestampRepresentation);
+  if (!value || typeof value !== 'object') return value;
+  const envelope = Object.keys(value).length === 1 && value.__uraiFirestoreValue && typeof value.__uraiFirestoreValue === 'object'
+    ? value.__uraiFirestoreValue
+    : null;
+  if (envelope?.type === 'timestamp' && Number.isInteger(envelope.value?.seconds) && Number.isInteger(envelope.value?.nanoseconds)) {
+    const timestamp = new admin.firestore.Timestamp(envelope.value.seconds, envelope.value.nanoseconds);
+    return {__uraiFirestoreValue: {type: 'timestamp', value: timestamp.toDate().toISOString()}};
+  }
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, legacyTimestampRepresentation(item)]));
+}
+
+function stateHashMatches(value, expectedHash, receipt) {
+  if (sha256(value) === expectedHash) return true;
+  return containsLegacyTimestampEnvelope(receipt)
+    && sha256(legacyTimestampRepresentation(value)) === expectedHash;
+}
+
 function receiptOrFail(options) {
   const receipt = readJson(options.receipt, 'receipt');
   const result = validateReceipt(receipt);
@@ -214,12 +243,12 @@ async function apply(options) {
       ...refs.map((ref) => transaction.get(ref)),
     ]);
     if (migrationSnapshot.exists) fail('migration record appeared during apply');
-    if (sha256(liveInventory) !== receipt.inventoryHash) {
+    if (!stateHashMatches(liveInventory, receipt.inventoryHash, receipt)) {
       fail('Studio or legacy-membership inventory changed after planning; create and approve a new plan');
     }
     for (let index = 0; index < receipt.operations.length; index += 1) {
       const current = snapshots[index].exists ? normalizeFirestoreDocument(snapshots[index].data()) : null;
-      if (sha256(current) !== receipt.operations[index].beforeHash) fail(`canonical membership changed after planning: ${receipt.operations[index].path}`);
+      if (!stateHashMatches(current, receipt.operations[index].beforeHash, receipt)) fail(`canonical membership changed after planning: ${receipt.operations[index].path}`);
     }
     for (let index = 0; index < receipt.operations.length; index += 1) {
       const after = receipt.operations[index].after;
@@ -253,7 +282,7 @@ async function verify(options) {
   const snapshots = await db.getAll(...refs);
   for (let index = 0; index < receipt.operations.length; index += 1) {
     const current = snapshots[index].exists ? normalizeFirestoreDocument(snapshots[index].data()) : null;
-    if (sha256(current) !== receipt.operations[index].afterHash) fail(`verification mismatch: ${receipt.operations[index].path}`);
+    if (!stateHashMatches(current, receipt.operations[index].afterHash, receipt)) fail(`verification mismatch: ${receipt.operations[index].path}`);
   }
   const verified = {...receipt, status: 'verified', verifiedAt: new Date().toISOString()};
   writePrivateJson(options.receipt, verified);
@@ -276,7 +305,7 @@ async function rollback(options) {
     if (!migrationSnapshot.exists || migrationSnapshot.data()?.planDigest !== receipt.planDigest) fail('matching applied migration record is missing');
     for (let index = 0; index < receipt.operations.length; index += 1) {
       const current = snapshots[index].exists ? normalizeFirestoreDocument(snapshots[index].data()) : null;
-      if (sha256(current) !== receipt.operations[index].afterHash) fail(`rollback blocked by post-migration change: ${receipt.operations[index].path}`);
+      if (!stateHashMatches(current, receipt.operations[index].afterHash, receipt)) fail(`rollback blocked by post-migration change: ${receipt.operations[index].path}`);
     }
     for (let index = 0; index < receipt.operations.length; index += 1) {
       const before = receipt.operations[index].before;
