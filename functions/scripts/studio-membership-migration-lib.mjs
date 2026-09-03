@@ -245,6 +245,26 @@ export function buildMigrationPlan({manifest, inventory, canonicalBefore, genera
   return {...base, planDigest: sha256(base)};
 }
 
+export function validateRollbackCanonicalInventory(receipt, canonicalMemberships) {
+  const expectedPaths = (receipt?.operations ?? [])
+    .filter((operation) => /^studios\/[^/]+\/members\/[^/]+$/.test(operation.path) && operation.after !== null)
+    .map((operation) => operation.path)
+    .sort();
+  const livePaths = (canonicalMemberships ?? [])
+    .map((membership) => membership.path)
+    .filter((membershipPath) => /^studios\/[^/]+\/members\/[^/]+$/.test(membershipPath))
+    .sort();
+  if (stableJson(livePaths) !== stableJson(expectedPaths)) {
+    return {
+      ok: false,
+      error: 'rollback blocked because the canonical membership path set changed after migration',
+      expectedPaths,
+      livePaths,
+    };
+  }
+  return {ok: true, expectedPaths, livePaths};
+}
+
 export function validateReceipt(receipt) {
   const errors = [];
   if (!plainObject(receipt) || receipt.receiptSchemaVersion !== 1) errors.push('unsupported receipt schema');
