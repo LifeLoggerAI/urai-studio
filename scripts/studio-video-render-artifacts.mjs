@@ -16,23 +16,43 @@ async function main() {
 
   const manifestPath = path.join(outDir, 'urai-replay-teaser.render-manifest.json');
   const srtPath = path.join(outDir, 'urai-replay-teaser.captions.srt');
-  const mp4PlaceholderPath = path.join(outDir, 'urai-replay-teaser.mp4.placeholder.txt');
+  const binaryRenderReceiptPath = path.join(outDir, 'urai-replay-teaser.binary-render-receipt.json');
+  const plannedMp4 = renderPackage.artifacts?.find((artifact) => artifact.kind === 'mp4')?.storagePath || null;
 
   await fs.writeFile(manifestPath, JSON.stringify(renderPackage.exportManifest, null, 2) + '\n');
   await fs.writeFile(srtPath, renderPackage.subtitleText + '\n');
   await fs.writeFile(
-    mp4PlaceholderPath,
-    [
-      'URAI Replay Teaser MP4 placeholder',
-      '',
-      'The deterministic manifest and SRT artifacts were produced.',
-      'A binary MP4 requires the Playwright plus FFmpeg composer path.',
-      `Render package source: ${url.toString()}`,
-      `Planned MP4: ${renderPackage.artifacts?.find((artifact) => artifact.kind === 'mp4')?.storagePath || 'not-planned'}`,
-    ].join('\n') + '\n',
+    binaryRenderReceiptPath,
+    JSON.stringify(
+      {
+        schemaVersion: 'urai-studio-binary-render-receipt-1',
+        recordedAt: new Date().toISOString(),
+        status: 'not-rendered',
+        playable: false,
+        reason: 'Playwright plus FFmpeg composition did not run in this contract-only artifact command.',
+        requiredComposer: 'playwright-ffmpeg',
+        renderPackageSource: url.toString(),
+        plannedMp4,
+        filesWritten: [manifestPath, srtPath],
+      },
+      null,
+      2,
+    ) + '\n',
   );
 
-  console.log(JSON.stringify({ ok: true, manifestPath, srtPath, mp4PlaceholderPath }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        ok: true,
+        manifestPath,
+        srtPath,
+        binaryRenderReceiptPath,
+        playableMp4Written: false,
+      },
+      null,
+      2,
+    ),
+  );
 }
 
 main().catch((error) => {
