@@ -290,7 +290,7 @@ async function verify(options) {
       studioIds: liveInventory.studios.map((item) => item.id).sort(),
       legacyMembershipIds: liveInventory.legacyMemberships.map((item) => item.id).sort(),
     });
-    if (liveInventoryIdentityHash !== receipt.inventoryIdentityHash) {
+    if (receipt.receiptSchemaVersion >= 2 && liveInventoryIdentityHash !== receipt.inventoryIdentityHash) {
       fail('verification blocked because the complete Studio or legacy-membership identity inventory changed after apply');
     }
     const inventoryValidation = validateRollbackCanonicalInventory(receipt, liveInventory.canonicalMemberships, 'verification');
