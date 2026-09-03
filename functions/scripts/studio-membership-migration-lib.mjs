@@ -30,19 +30,27 @@ export function normalizeFirestoreValue(value) {
   if (value === undefined) return null;
   if (value === null || typeof value === 'string' || typeof value === 'boolean') return value;
   if (typeof value === 'number') {
-    if (Number.isNaN(value)) return {__firestoreNumber: 'NaN'};
-    if (value === Number.POSITIVE_INFINITY) return {__firestoreNumber: 'Infinity'};
-    if (value === Number.NEGATIVE_INFINITY) return {__firestoreNumber: '-Infinity'};
+    if (Number.isNaN(value)) return {__uraiFirestoreValue: {type: 'number', value: 'NaN'}};
+    if (value === Number.POSITIVE_INFINITY) return {__uraiFirestoreValue: {type: 'number', value: 'Infinity'}};
+    if (value === Number.NEGATIVE_INFINITY) return {__uraiFirestoreValue: {type: 'number', value: '-Infinity'}};
     return value;
   }
   if (Array.isArray(value)) return value.map(normalizeFirestoreValue);
-  if (typeof value?.toDate === 'function') return {__firestoreTimestamp: value.toDate().toISOString()};
-  if (typeof value?.path === 'string') return {__firestoreReference: value.path};
+  if (typeof value?.toDate === 'function') return {__uraiFirestoreValue: {type: 'timestamp', value: value.toDate().toISOString()}};
+  if (typeof value?.path === 'string') return {__uraiFirestoreValue: {type: 'reference', value: value.path}};
   if (typeof value?.latitude === 'number' && typeof value?.longitude === 'number' && value?.constructor?.name === 'GeoPoint') {
-    return {__firestoreGeoPoint: {latitude: value.latitude, longitude: value.longitude}};
+    return {__uraiFirestoreValue: {type: 'geoPoint', value: {latitude: value.latitude, longitude: value.longitude}}};
   }
-  if (Buffer.isBuffer(value)) return {__bytesBase64: value.toString('base64')};
-  if (plainObject(value)) return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, normalizeFirestoreValue(item)]));
+  if (Buffer.isBuffer(value)) return {__uraiFirestoreValue: {type: 'bytes', value: value.toString('base64')}};
+  if (value?.constructor?.name === 'VectorValue' && typeof value?.toArray === 'function') {
+    return {__uraiFirestoreValue: {type: 'vector', value: value.toArray()}};
+  }
+  if (plainObject(value)) {
+    return {__uraiFirestoreValue: {
+      type: 'map',
+      value: Object.fromEntries(Object.entries(value).map(([key, item]) => [key, normalizeFirestoreValue(item)])),
+    }};
+  }
   return String(value);
 }
 

@@ -121,15 +121,24 @@ async function loadInventoryInTransaction(transaction, db, projectId, maxDocumen
 function denormalize(value, db) {
   if (Array.isArray(value)) return value.map((item) => denormalize(item, db));
   if (value && typeof value === 'object') {
-    if (value.__firestoreNumber === 'NaN') return Number.NaN;
-    if (value.__firestoreNumber === 'Infinity') return Number.POSITIVE_INFINITY;
-    if (value.__firestoreNumber === '-Infinity') return Number.NEGATIVE_INFINITY;
-    if (typeof value.__firestoreTimestamp === 'string') return admin.firestore.Timestamp.fromDate(new Date(value.__firestoreTimestamp));
-    if (typeof value.__firestoreReference === 'string') return db.doc(value.__firestoreReference);
-    if (value.__firestoreGeoPoint && typeof value.__firestoreGeoPoint.latitude === 'number' && typeof value.__firestoreGeoPoint.longitude === 'number') {
-      return new admin.firestore.GeoPoint(value.__firestoreGeoPoint.latitude, value.__firestoreGeoPoint.longitude);
+    const envelope = Object.keys(value).length === 1 && value.__uraiFirestoreValue && typeof value.__uraiFirestoreValue === 'object'
+      ? value.__uraiFirestoreValue
+      : null;
+    if (envelope?.type === 'number' && envelope.value === 'NaN') return Number.NaN;
+    if (envelope?.type === 'number' && envelope.value === 'Infinity') return Number.POSITIVE_INFINITY;
+    if (envelope?.type === 'number' && envelope.value === '-Infinity') return Number.NEGATIVE_INFINITY;
+    if (envelope?.type === 'timestamp' && typeof envelope.value === 'string') return admin.firestore.Timestamp.fromDate(new Date(envelope.value));
+    if (envelope?.type === 'reference' && typeof envelope.value === 'string') return db.doc(envelope.value);
+    if (envelope?.type === 'geoPoint' && typeof envelope.value?.latitude === 'number' && typeof envelope.value?.longitude === 'number') {
+      return new admin.firestore.GeoPoint(envelope.value.latitude, envelope.value.longitude);
     }
-    if (typeof value.__bytesBase64 === 'string') return Buffer.from(value.__bytesBase64, 'base64');
+    if (envelope?.type === 'bytes' && typeof envelope.value === 'string') return Buffer.from(envelope.value, 'base64');
+    if (envelope?.type === 'vector' && Array.isArray(envelope.value) && envelope.value.every((item) => typeof item === 'number' && Number.isFinite(item))) {
+      return new admin.firestore.VectorValue(envelope.value);
+    }
+    if (envelope?.type === 'map' && envelope.value && typeof envelope.value === 'object' && !Array.isArray(envelope.value)) {
+      return Object.fromEntries(Object.entries(envelope.value).map(([key, item]) => [key, denormalize(item, db)]));
+    }
     return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, denormalize(item, db)]));
   }
   return value;
