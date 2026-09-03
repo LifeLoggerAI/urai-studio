@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
+
+const migrationLibrarySource = fs.readFileSync(new URL('./studio-membership-migration-lib.mjs', import.meta.url), 'utf8');
 import {
   buildMigrationPlan,
   normalizeFirestoreDocument,
@@ -143,8 +145,9 @@ test('non-finite Firestore numbers remain explicit and hashable in receipts', ()
 
   const pathMap = normalizeFirestoreValue({path: 'assets/item', label: 'cover'});
   assert.equal(pathMap.__uraiFirestoreValue.type, 'map');
-  class DocumentReference { constructor(path) { this.path = path; } }
-  assert.deepEqual(normalizeFirestoreValue(new DocumentReference('assets/item')), {__uraiFirestoreValue: {type: 'reference', value: 'assets/item'}});
+  const spoofedReference = normalizeFirestoreValue({constructor: {name: 'DocumentReference'}, path: 'assets/item', label: 'cover'});
+  assert.equal(spoofedReference.__uraiFirestoreValue.type, 'map');
+  assert.match(migrationLibrarySource, /value instanceof admin\.firestore\.DocumentReference/);
 });
 
 test('receipt hashes bind before and after states and reject tampering', () => {

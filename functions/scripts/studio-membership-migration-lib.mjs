@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import admin from 'firebase-admin';
 
 export const MIGRATION_MANIFEST_SCHEMA = 1;
 export const CANONICAL_MEMBERSHIP_SCHEMA = 2;
@@ -37,7 +38,7 @@ export function normalizeFirestoreValue(value) {
   }
   if (Array.isArray(value)) return value.map(normalizeFirestoreValue);
   if (typeof value?.toDate === 'function') return {__uraiFirestoreValue: {type: 'timestamp', value: value.toDate().toISOString()}};
-  if (value?.constructor?.name === 'DocumentReference' && typeof value?.path === 'string') {
+  if (value instanceof admin.firestore.DocumentReference) {
     return {__uraiFirestoreValue: {type: 'reference', value: value.path}};
   }
   if (typeof value?.latitude === 'number' && typeof value?.longitude === 'number' && value?.constructor?.name === 'GeoPoint') {
