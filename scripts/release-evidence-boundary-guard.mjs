@@ -119,26 +119,7 @@ function compileJsonSchema(rootSchema) {
 
   return (value) => {
     const errors = [];
-    visit(rootSchema, value, '
-  if (receipt?.gates?.binaryArtifacts?.status !== 'pass') return;
-  const artifacts = receipt.gates.binaryArtifacts.evidence?.artifacts;
-  assert.ok(Array.isArray(artifacts) && artifacts.length > 0, 'passing binaryArtifacts evidence must contain artifacts');
-  for (const artifact of artifacts) {
-    assert.equal(artifact.sourceCommitSha, receipt.commitSha, `binary artifact source job SHA must equal receipt SHA for ${artifact.artifactRef ?? artifact.sourceJobId ?? 'unknown artifact'}`);
-  }
-}
-
-if (!contractOnly) {
-  const evidenceFile = process.env.RELEASE_EVIDENCE_FILE;
-  assert.ok(evidenceFile, 'RELEASE_EVIDENCE_FILE is required when validating a release receipt');
-  assert.ok(fs.existsSync(evidenceFile), `release evidence file does not exist: ${evidenceFile}`);
-  const receipt = JSON.parse(fs.readFileSync(evidenceFile, 'utf8'));
-  validateReleaseReceiptSchema(receipt);
-  validateArtifactSourceCommits(receipt);
-}
-
-console.log(contractOnly ? 'release evidence contract guard passed' : 'release evidence receipt guard passed');
-, errors);
+    visit(rootSchema, value, '$', errors);
     return errors;
   };
 }
