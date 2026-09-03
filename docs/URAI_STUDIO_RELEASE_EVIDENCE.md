@@ -54,7 +54,8 @@ The contract-only artifact command writes the deterministic JSON manifest, SRT c
 | App build | `pnpm build` | Not run at current exact head | Exact-head CI or terminal receipt required |
 | Functions build | `pnpm --dir functions build` | Not run at current exact head | Exact-head CI or terminal receipt required |
 | Done-done guard | `pnpm done-done:guard` | Not run at current exact head | Exact-head CI or terminal receipt required |
-| Release evidence guard | `pnpm release:evidence:guard` | Not run at current exact head | Exact-head CI or terminal receipt required |
+| Evidence contract guard | `pnpm release:evidence:contract` | Not run at current exact head | Exact-head CI or terminal receipt required |
+| Release receipt guard | `RELEASE_EVIDENCE_FILE=<receipt.json> pnpm release:evidence:guard` | Not run at current exact head | A concrete exact-head receipt is mandatory; omission fails closed |
 | Source-only release check | `pnpm release:check` | Not run at current exact head | Exact-head CI or terminal receipt required |
 | Provider-backed release check | `pnpm release:check:provider` | Protected / credential-gated | Provider configuration and execution receipts required |
 | Binary artifacts | Playwright plus FFmpeg composer and playable-media validation | Protected / not proven | Binary hash, codec/probe, duration, frame, audio, and playback receipts required |
@@ -89,12 +90,12 @@ pnpm typecheck
 pnpm test
 pnpm done-done:guard
 pnpm evidence:guard
-pnpm release:evidence:guard
+pnpm release:evidence:contract
 pnpm release:check
 HOST=http://127.0.0.1:3000 pnpm studio:smoke
 ```
 
-Run `pnpm release:check:provider` only in an approved protected environment. Do not paste or retain secret values in evidence.
+After generating any source, provider, artifact, deployment, or live receipt, validate that concrete file with `RELEASE_EVIDENCE_FILE=<receipt.json> pnpm release:evidence:guard`; the receipt guard fails closed when the file is omitted. Run `pnpm release:check:provider` only in an approved protected environment. Do not paste or retain secret values in evidence.
 
 ## Current conclusion
 
