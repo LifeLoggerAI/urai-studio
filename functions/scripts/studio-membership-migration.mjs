@@ -38,14 +38,28 @@ function readJson(filePath, label) {
 
 function writePrivateJson(filePath, value) {
   const resolved = path.resolve(filePath);
-  fs.mkdirSync(path.dirname(resolved), {recursive: true, mode: 0o700});
+  const directory = path.dirname(resolved);
+  fs.mkdirSync(directory, {recursive: true, mode: 0o700});
   if (fs.existsSync(resolved) && fs.lstatSync(resolved).isSymbolicLink()) fail('refusing to write a receipt through a symbolic link');
-  const handle = fs.openSync(resolved, 'w', 0o600);
+  const temporary = `${resolved}.${process.pid}.${Date.now()}.tmp`;
+  let handle;
   try {
+    handle = fs.openSync(temporary, 'wx', 0o600);
     fs.writeFileSync(handle, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
     fs.fchmodSync(handle, 0o600);
-  } finally {
+    fs.fsyncSync(handle);
     fs.closeSync(handle);
+    handle = undefined;
+    fs.renameSync(temporary, resolved);
+    const directoryHandle = fs.openSync(directory, 'r');
+    try {
+      fs.fsyncSync(directoryHandle);
+    } finally {
+      fs.closeSync(directoryHandle);
+    }
+  } finally {
+    if (handle !== undefined) fs.closeSync(handle);
+    if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
   }
 }
 
@@ -67,7 +81,9 @@ function initialize(projectId) {
   if (!admin.apps.length) admin.initializeApp({credential: admin.credential.applicationDefault(), projectId});
   const configured = admin.app().options.projectId;
   if (configured !== projectId) fail(`initialized Firebase project ${configured ?? '(unknown)'} does not match ${projectId}`);
-  return admin.firestore();
+  const db = admin.firestore();
+  db.settings({useBigInt: true});
+  return db;
 }
 
 async function loadCollection(collection, maxDocuments) {
@@ -129,6 +145,7 @@ function denormalize(value, db) {
     if (envelope?.type === 'number' && envelope.value === 'NaN') return Number.NaN;
     if (envelope?.type === 'number' && envelope.value === 'Infinity') return Number.POSITIVE_INFINITY;
     if (envelope?.type === 'number' && envelope.value === '-Infinity') return Number.NEGATIVE_INFINITY;
+    if (envelope?.type === 'integer' && typeof envelope.value === 'string' && /^-?\\d+$/.test(envelope.value)) return BigInt(envelope.value);
     if (envelope?.type === 'timestamp' && typeof envelope.value === 'string') {
       const legacyDate = new Date(envelope.value);
       if (!Number.isNaN(legacyDate.getTime())) return admin.firestore.Timestamp.fromDate(legacyDate);
