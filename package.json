@@ -2,7 +2,10 @@
   "name": "urai-studio-monorepo",
   "private": true,
   "packageManager": "pnpm@9.7.0",
-  "engines": {"node": ">=20 <21", "pnpm": "9.7.0"},
+  "engines": {
+    "node": ">=20 <21",
+    "pnpm": "9.7.0"
+  },
   "scripts": {
     "build": "pnpm --filter studio build",
     "dev": "pnpm --filter studio dev",
@@ -23,7 +26,7 @@
     "health:guard": "node scripts/health-summary-guard.mjs",
     "provider:check": "node scripts/provider-readiness.mjs",
     "provider:check:strict": "URAI_PROVIDER_STRICT=true node scripts/provider-readiness.mjs",
-    "audit": "pnpm life-film:canon:guard && pnpm done-done:guard && pnpm evidence:guard && pnpm health:guard && pnpm provider:check && pnpm lint && pnpm typecheck && pnpm test && pnpm test:membership-migration && pnpm test:rules && pnpm studio:smoke",
+    "audit": "pnpm life-film:canon:guard && pnpm done-done:guard && pnpm evidence:guard && pnpm release:evidence:guard && pnpm health:guard && pnpm provider:check && pnpm lint && pnpm typecheck && pnpm test && pnpm test:membership-migration && pnpm test:rules && pnpm studio:smoke",
     "release:check": "pnpm run audit && pnpm build && pnpm --dir functions build",
     "emulators": "firebase emulators:start",
     "seed:demo": "pnpm exec ts-node scripts/seed_demo_job.ts",
@@ -33,8 +36,21 @@
     "studio:repair": "bash scripts/firebase-studio-repair.sh",
     "studio:preview": "pnpm -C apps/studio dev -- --hostname 0.0.0.0 --port ${PORT:-3000}",
     "firebase:preview": "pnpm run studio:preview",
-    "firebase:emulators": "npx firebase emulators:start --only auth,firestore,storage,functions,hosting"
+    "firebase:emulators": "npx firebase emulators:start --only auth,firestore,storage,functions,hosting",
+    "release:evidence:guard": "node scripts/release-evidence-boundary-guard.mjs",
+    "release:evidence:source": "node scripts/write-source-release-evidence.mjs",
+    "release:check:provider": "pnpm provider:check:strict && pnpm release:check"
   },
-  "devDependencies": {"@types/node": "^20.12.12", "prettier": "^3.2.5", "typescript": "^5.4.5", "ts-node": "^10.9.2"},
-  "pnpm": {"overrides": {"react": "^19.0.0", "react-dom": "^19.0.0"}}
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5",
+    "ts-node": "^10.9.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "^19.0.0",
+      "react-dom": "^19.0.0"
+    }
+  }
 }
