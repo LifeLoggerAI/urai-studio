@@ -278,13 +278,21 @@ async function verify(options) {
   const projectId = requireProject(options, 'confirm-project');
   const receipt = receiptOrFail(options);
   if (receipt.projectId !== projectId || !['applied', 'verified'].includes(receipt.status)) fail('verify requires an applied receipt for the confirmed project');
+  const maxDocuments = requireMaxDocuments(options);
   const db = initialize(projectId);
   const refs = receipt.operations.map((operation) => db.doc(operation.path));
-  const snapshots = await db.getAll(...refs);
-  for (let index = 0; index < receipt.operations.length; index += 1) {
-    const current = snapshots[index].exists ? normalizeFirestoreDocument(snapshots[index].data()) : null;
-    if (!stateHashMatches(current, receipt.operations[index].afterHash, receipt)) fail(`verification mismatch: ${receipt.operations[index].path}`);
-  }
+  await db.runTransaction(async (transaction) => {
+    const [liveInventory, ...snapshots] = await Promise.all([
+      loadInventoryInTransaction(transaction, db, projectId, maxDocuments),
+      ...refs.map((ref) => transaction.get(ref)),
+    ]);
+    const inventoryValidation = validateRollbackCanonicalInventory(receipt, liveInventory.canonicalMemberships, 'verification');
+    if (!inventoryValidation.ok) fail(inventoryValidation.error);
+    for (let index = 0; index < receipt.operations.length; index += 1) {
+      const current = snapshots[index].exists ? normalizeFirestoreDocument(snapshots[index].data()) : null;
+      if (!stateHashMatches(current, receipt.operations[index].afterHash, receipt)) fail(`verification mismatch: ${receipt.operations[index].path}`);
+    }
+  });
   const verified = {...receipt, status: 'verified', verifiedAt: new Date().toISOString()};
   writePrivateJson(options.receipt, verified);
   return {ok: true, command: 'verify', status: 'verified', projectId, planDigest: receipt.planDigest, verifiedMembershipCount: receipt.operations.length};
