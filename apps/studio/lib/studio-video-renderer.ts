@@ -49,6 +49,7 @@ export type VideoFactoryRenderPackage = {
   subtitleText: string;
   exportManifest: {
     version: 1;
+    studioId: UraiId;
     templateId: string;
     manifestId: string;
     title: string;
