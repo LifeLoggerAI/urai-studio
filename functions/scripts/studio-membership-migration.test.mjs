@@ -184,8 +184,26 @@ test('rollback rejects canonical grants created after the migration', () => {
 
 test('CLI remains dry-run by default and requires exact project confirmations', () => {
   const source = fs.readFileSync(new URL('./studio-membership-migration.mjs', import.meta.url), 'utf8');
-  for (const token of ["const handlers = {plan, apply, verify, rollback}", "requireProject(options, 'confirm-project')", 'refusing to overwrite an existing receipt', 'rollback blocked by post-migration change', "validateRollbackCanonicalInventory(receipt, liveInventory.canonicalMemberships, 'verification')", 'loadInventoryInTransaction', 'loadCanonicalMemberships', "collectionGroup('members')", '__uraiFirestoreValue', 'normalizeFirestoreDocument', "envelope?.type === 'timestamp' && typeof envelope.value === 'string'", 'containsLegacyTimestampEnvelope', 'legacyTimestampRepresentation', 'stateHashMatches', "envelope?.type === 'vector'", 'inventory changed after planning', 'complete Studio or legacy-membership identity inventory changed after apply', 'inventoryIdentityHash', 'transaction.set(refs[index], denormalize(after, db))', 'fs.fchmodSync(handle, 0o600)']) {
+  for (const token of ["const handlers = {plan, apply, verify, rollback}", "requireProject(options, 'confirm-project')", 'refusing to overwrite an existing receipt', 'rollback blocked by post-migration change', "validateRollbackCanonicalInventory(receipt, liveInventory.canonicalMemberships, 'verification')", 'loadInventoryInTransaction', 'loadCanonicalMemberships', "collectionGroup('members')", '__uraiFirestoreValue', 'normalizeFirestoreDocument', "envelope?.type === 'timestamp' && typeof envelope.value === 'string'", 'containsLegacyTimestampEnvelope', 'legacyTimestampRepresentation', 'stateHashMatches', "envelope?.type === 'vector'", 'inventory changed after planning', 'complete Studio or legacy-membership identity inventory changed after apply', 'inventoryIdentityHash', 'receipt.receiptSchemaVersion >= 2', 'URAI_STUDIO_MEMBERSHIP_MUTATIONS_FROZEN', 'transaction.set(refs[index], denormalize(after, db))', 'fs.fchmodSync(handle, 0o600)']) {
     assert.ok(source.includes(token), `migration CLI missing safety token: ${token}`);
   }
   assert.doesNotMatch(source, /serviceAccount|private_key|client_email/i);
+});
+
+
+test('schema-1 receipts remain valid for recovery while schema-2 requires identity binding', () => {
+  const inventory = sampleInventory();
+  const manifest = sampleManifest();
+  const current = buildMigrationPlan({manifest, inventory, canonicalBefore: inventory.canonicalMemberships, generatedAt: '2026-09-03T00:00:00.000Z'});
+  const legacyBase = {...current, receiptSchemaVersion: 1};
+  delete legacyBase.inventoryIdentityHash;
+  delete legacyBase.planDigest;
+  const legacy = {...legacyBase, planDigest: sha256(legacyBase)};
+  assert.equal(validateReceipt(legacy).ok, true);
+  const brokenCurrent = {...current};
+  delete brokenCurrent.inventoryIdentityHash;
+  const brokenBase = {...brokenCurrent};
+  delete brokenBase.planDigest;
+  brokenCurrent.planDigest = sha256(brokenBase);
+  assert.equal(validateReceipt(brokenCurrent).ok, false);
 });
