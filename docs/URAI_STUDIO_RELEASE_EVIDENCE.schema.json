@@ -240,7 +240,6 @@
         "sha256",
         "sizeBytes",
         "usable",
-        "sourceCommitSha",
         "sourceJobId",
         "artifactRef",
         "probe"
@@ -264,10 +263,6 @@
         },
         "usable": { "const": true },
         "playable": { "type": "boolean" },
-        "sourceCommitSha": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{40}$"
-        },
         "sourceJobId": {
           "type": "string",
           "pattern": "^(?:github-actions|cloud-build|firebase|studio-job)://[^\\s]+$"
