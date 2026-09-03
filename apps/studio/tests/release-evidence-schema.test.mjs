@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
+const guardSource = fs.readFileSync(new URL('../../../scripts/release-evidence-boundary-guard.mjs', import.meta.url), 'utf8');
+
 const schema = JSON.parse(
   fs.readFileSync(new URL('../../../docs/URAI_STUDIO_RELEASE_EVIDENCE.schema.json', import.meta.url), 'utf8'),
 );
@@ -54,5 +56,8 @@ assert.equal(schema.$defs.binaryArtifact.allOf[0].then.properties.playable.const
 assert.deepEqual(schema.$defs.gate.properties.status.enum, ['pass', 'fail', 'blocked', 'not_run']);
 assert.equal(schema.$defs.gate.required.includes('status'), true);
 assert.equal(schema.$defs.gate.required.includes('evidence'), true);
+
+assert.match(guardSource, /compileJsonSchema\(schema\)/);
+assert.match(guardSource, /validateReleaseReceiptSchema\(receipt\)/, 'receipt mode must apply the complete JSON Schema before cross-field checks');
 
 console.log('release evidence schema coverage passed');
