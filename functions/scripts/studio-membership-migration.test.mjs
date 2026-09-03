@@ -11,6 +11,7 @@ import {
   sha256,
   validateAuthorityManifest,
   validateReceipt,
+  validateRollbackCanonicalInventory,
 } from './studio-membership-migration-lib.mjs';
 
 const inventory = {
@@ -164,9 +165,25 @@ test('receipt hashes bind before and after states and reject tampering', () => {
   assert.equal(validateReceipt(tampered).ok, false);
 });
 
+test('rollback rejects canonical grants created after the migration', () => {
+  const receipt = buildMigrationPlan({manifest, inventory, canonicalBefore: [], generatedAt: '2026-09-01T01:00:00.000Z'});
+  const expected = receipt.operations
+    .filter((operation) => operation.path.includes('/members/') && operation.after !== null)
+    .map((operation) => ({path: operation.path, data: operation.after}));
+  assert.equal(validateRollbackCanonicalInventory(receipt, expected).ok, true);
+
+  const postMigrationGrant = [
+    ...expected,
+    {path: 'studios/studio_a/members/post_migration_editor', data: {role: 'editor'}},
+  ];
+  const blocked = validateRollbackCanonicalInventory(receipt, postMigrationGrant);
+  assert.equal(blocked.ok, false);
+  assert.match(blocked.error, /path set changed after migration/);
+});
+
 test('CLI remains dry-run by default and requires exact project confirmations', () => {
   const source = fs.readFileSync(new URL('./studio-membership-migration.mjs', import.meta.url), 'utf8');
-  for (const token of ["const handlers = {plan, apply, verify, rollback}", "requireProject(options, 'confirm-project')", 'refusing to overwrite an existing receipt', 'rollback blocked by post-migration change', 'loadInventoryInTransaction', 'loadCanonicalMemberships', "collectionGroup('members')", '__uraiFirestoreValue', 'normalizeFirestoreDocument', "envelope?.type === 'timestamp' && typeof envelope.value === 'string'", 'containsLegacyTimestampEnvelope', 'legacyTimestampRepresentation', 'stateHashMatches', "envelope?.type === 'vector'", 'inventory changed after planning', 'transaction.set(refs[index], denormalize(after, db))', 'fs.fchmodSync(handle, 0o600)']) {
+  for (const token of ["const handlers = {plan, apply, verify, rollback}", "requireProject(options, 'confirm-project')", 'refusing to overwrite an existing receipt', 'rollback blocked by post-migration change', 'validateRollbackCanonicalInventory', 'loadInventoryInTransaction', 'loadCanonicalMemberships', "collectionGroup('members')", '__uraiFirestoreValue', 'normalizeFirestoreDocument', "envelope?.type === 'timestamp' && typeof envelope.value === 'string'", 'containsLegacyTimestampEnvelope', 'legacyTimestampRepresentation', 'stateHashMatches', "envelope?.type === 'vector'", 'inventory changed after planning', 'transaction.set(refs[index], denormalize(after, db))', 'fs.fchmodSync(handle, 0o600)']) {
     assert.ok(source.includes(token), `migration CLI missing safety token: ${token}`);
   }
   assert.doesNotMatch(source, /serviceAccount|private_key|client_email/i);
