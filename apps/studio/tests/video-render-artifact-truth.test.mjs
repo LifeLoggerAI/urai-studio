@@ -6,6 +6,10 @@ const panel = fs.readFileSync(
   new URL('../app/studio/video-factory/RenderArtifactPanel.tsx', import.meta.url),
   'utf8',
 );
+const button = fs.readFileSync(
+  new URL('../app/studio/video-factory/RenderPackageButton.tsx', import.meta.url),
+  'utf8',
+);
 
 for (const forbidden of ['.mp4.placeholder', 'MP4 placeholder', 'mp4PlaceholderPath']) {
   assert.equal(script.includes(forbidden), false, `artifact writer must not contain fake binary marker: ${forbidden}`);
@@ -31,6 +35,7 @@ for (const required of [
 }
 
 assert.ok(panel.includes('RenderPackageButton'), 'render package must use the authenticated client action');
+assert.ok(button.includes("'x-urai-studio-id'"), 'authenticated render package must send selected Studio scope');
 assert.ok(script.includes('STUDIO_API_BEARER_TOKEN'), 'deployed artifact command must require a bearer token');
 assert.ok(script.includes("'x-urai-studio-id'"), 'artifact command must support explicit Studio scope');
 
