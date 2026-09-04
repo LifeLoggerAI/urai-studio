@@ -8,6 +8,7 @@
     "repository",
     "commitSha",
     "recordedAt",
+    "environment",
     "gates"
   ],
   "properties": {
@@ -16,7 +17,7 @@
     },
     "commitSha": {
       "type": "string",
-      "minLength": 7
+      "pattern": "^[0-9a-f]{40}$"
     },
     "recordedAt": {
       "type": "string",
@@ -43,6 +44,8 @@
         "functionsBuild",
         "doneDoneGuard",
         "releaseCheck",
+        "providerReadiness",
+        "binaryArtifacts",
         "smoke"
       ],
       "properties": {
@@ -69,6 +72,12 @@
         },
         "releaseCheck": {
           "$ref": "#/$defs/gate"
+        },
+        "providerReadiness": {
+          "$ref": "#/$defs/providerReadinessGate"
+        },
+        "binaryArtifacts": {
+          "$ref": "#/$defs/binaryArtifactsGate"
         },
         "smoke": {
           "$ref": "#/$defs/gate"
@@ -107,14 +116,233 @@
           ]
         },
         "evidence": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "recordedAt": {
           "type": "string",
           "format": "date-time"
         }
       }
+    },
+    "nonPassEvidence": {
+      "type": "string",
+      "minLength": 1
+    },
+    "providerReadinessEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identityMode",
+        "projectId",
+        "principal",
+        "observedAt",
+        "checks",
+        "evidenceRefs"
+      ],
+      "properties": {
+        "identityMode": {
+          "type": "string",
+          "enum": [
+            "workload_identity_federation",
+            "google_managed_runtime_identity"
+          ]
+        },
+        "projectId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{4,28}[a-z0-9]$"
+        },
+        "principal": {
+          "type": "string",
+          "minLength": 3
+        },
+        "observedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "checks": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tokenAcquired",
+            "firebaseAdmin",
+            "firestoreRead",
+            "firestoreWrite",
+            "storageRead",
+            "storageWrite",
+            "functionsHealth"
+          ],
+          "properties": {
+            "tokenAcquired": { "const": true },
+            "firebaseAdmin": { "const": true },
+            "firestoreRead": { "const": true },
+            "firestoreWrite": { "const": true },
+            "storageRead": { "const": true },
+            "storageWrite": { "const": true },
+            "functionsHealth": { "const": true }
+          }
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 8
+          }
+        }
+      }
+    },
+    "providerReadinessGate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "evidence"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail",
+            "blocked",
+            "not_run"
+          ]
+        },
+        "evidence": {},
+        "recordedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "pass" } },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": { "evidence": { "$ref": "#/$defs/providerReadinessEvidence" } }
+          },
+          "else": {
+            "properties": { "evidence": { "$ref": "#/$defs/nonPassEvidence" } }
+          }
+        }
+      ]
+    },
+    "binaryArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "mimeType",
+        "sha256",
+        "sizeBytes",
+        "usable",
+        "sourceJobId",
+        "sourceCommitSha",
+        "artifactRef",
+        "probe"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["image", "audio", "video", "model", "archive", "other"]
+        },
+        "mimeType": {
+          "type": "string",
+          "pattern": "^[a-z0-9!#$&^_.+-]+/[a-z0-9!#$&^_.+-]+$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "usable": { "const": true },
+        "playable": { "type": "boolean" },
+        "sourceJobId": {
+          "type": "string",
+          "pattern": "^(?:github-actions|cloud-build|firebase|studio-job)://[^\\s]+$"
+        },
+        "sourceCommitSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "description": "Commit SHA reported by the source job; the release validator requires equality with the enclosing receipt commitSha."
+        },
+        "artifactRef": {
+          "type": "string",
+          "pattern": "^(?:https|gs|artifact)://[^\\s]+$"
+        },
+        "probe": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["tool", "result", "observedAt"],
+          "properties": {
+            "tool": { "type": "string", "minLength": 1 },
+            "result": { "const": "pass" },
+            "observedAt": { "type": "string", "format": "date-time" }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "kind": { "enum": ["audio", "video"] } },
+            "required": ["kind"]
+          },
+          "then": {
+            "required": ["playable"],
+            "properties": { "playable": { "const": true } }
+          }
+        }
+      ]
+    },
+    "binaryArtifactsEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifacts"],
+      "properties": {
+        "artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/binaryArtifact" }
+        }
+      }
+    },
+    "binaryArtifactsGate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["pass", "fail", "blocked", "not_run"]
+        },
+        "evidence": {},
+        "recordedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "pass" } },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": { "evidence": { "$ref": "#/$defs/binaryArtifactsEvidence" } }
+          },
+          "else": {
+            "properties": { "evidence": { "$ref": "#/$defs/nonPassEvidence" } }
+          }
+        }
+      ]
     }
   },
-  "description": "URAI Studio release evidence record. Schema for recording URAI Studio release evidence across install, lint, typecheck, tests, app build, functions build, done-done guard, release check, and smoke gates."
+  "description": "URAI Studio release evidence record for one exact head and environment. Source checks, provider readiness, binary artifact truth, deployment, and live verification are separate gates and must never be inferred from one another."
 }

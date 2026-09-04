@@ -1,83 +1,107 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
     function isSignedIn() { return request.auth != null; }
     function ownsExisting() { return isSignedIn() && resource.data.uid == request.auth.uid; }
     function ownsIncoming() { return isSignedIn() && request.resource.data.uid == request.auth.uid; }
 
-    function isStudioMember(studioId) {
+    function membershipPath(studioId) {
+      return /databases/$(database)/documents/studios/$(studioId)/members/$(request.auth.uid);
+    }
+
+    function membershipIsActive(studioId) {
       return isSignedIn()
-        && exists(/databases/$(database)/documents/memberships/$(request.auth.uid + "_" + studioId));
+        && exists(membershipPath(studioId))
+        && get(membershipPath(studioId)).data.uid == request.auth.uid
+        && get(membershipPath(studioId)).data.studioId == studioId
+        && get(membershipPath(studioId)).data.schemaVersion == 2
+        && get(membershipPath(studioId)).data.status == "active";
     }
 
-    function membershipDoc(studioId) {
-      return get(/databases/$(database)/documents/memberships/$(request.auth.uid + "_" + studioId));
+    function roleIsOneOf(studioId, roles) {
+      return membershipIsActive(studioId)
+        && get(membershipPath(studioId)).data.role in roles;
     }
 
-    function roleIs(studioId, role) {
-      return isStudioMember(studioId)
-        && membershipDoc(studioId).data.role == role;
+    function canView(studioId) { return membershipIsActive(studioId); }
+    function canEdit(studioId) { return roleIsOneOf(studioId, ["owner", "admin", "editor"]); }
+    function canAdminister(studioId) { return roleIsOneOf(studioId, ["owner", "admin"]); }
+    function incomingStudioId() { return request.resource.data.studioId; }
+    function hasIncomingStudioId() { return request.resource.data.studioId is string; }
+    function studioIdIsImmutable() {
+      return hasIncomingStudioId()
+        && resource.data.studioId is string
+        && request.resource.data.studioId == resource.data.studioId;
     }
 
     match /studios/{studioId} {
-      allow read: if isStudioMember(studioId);
-      allow create: if isSignedIn();
-      allow update, delete: if roleIs(studioId, "owner");
+      allow read: if canView(studioId);
+      allow create, delete: if false;
+      allow update: if canAdminister(studioId)
+        && resource.data.studioId == studioId
+        && request.resource.data.studioId == studioId
+        && request.resource.data.createdBy == resource.data.createdBy;
     }
 
-    match /memberships/{membershipId} {
-      allow read: if isSignedIn() && membershipId.startsWith(request.auth.uid + "_");
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && membershipId.startsWith(request.auth.uid + "_");
+    match /studios/{studioId}/members/{uid} {
+      allow read: if isSignedIn()
+        && (uid == request.auth.uid || canAdminister(studioId));
+      allow create, update, delete: if false;
     }
 
-    function studioScoped() {
-      return request.resource.data.studioId is string;
+    // Historical flat records were browser-writable and are never authorization
+    // evidence. They stay unreadable for rollback forensics until retention review.
+    match /memberships/{legacyMembershipId} {
+      allow read, create, update, delete: if false;
     }
 
     match /clipRequests/{id} {
-      allow read: if isStudioMember(resource.data.studioId);
-      allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
-      allow update: if isStudioMember(resource.data.studioId);
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      allow read: if canView(resource.data.studioId);
+      allow create: if hasIncomingStudioId() && canEdit(incomingStudioId());
+      allow update: if studioIdIsImmutable() && canEdit(resource.data.studioId);
+      allow delete: if canAdminister(resource.data.studioId);
     }
 
     match /jobs/{id} {
-      allow read: if isStudioMember(resource.data.studioId);
-      allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
-      allow update: if isStudioMember(resource.data.studioId);
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      allow read: if canView(resource.data.studioId);
+      // Jobs are worker authority. Browser writes would bypass project ownership,
+      // queued-state initialization, transition validation, and output integrity.
+      allow create, update, delete: if false;
     }
 
     match /jobRuns/{id} {
-      allow read: if isStudioMember(resource.data.studioId);
-      allow create, update: if isStudioMember(request.resource.data.studioId);
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      allow read: if canView(resource.data.studioId);
+      allow create, update, delete: if false;
     }
 
     match /assets/{id} {
-      allow read: if isStudioMember(resource.data.studioId);
-      allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
-      allow update, delete: if isStudioMember(resource.data.studioId);
+      allow read: if canView(resource.data.studioId);
+      allow create: if hasIncomingStudioId() && canEdit(incomingStudioId());
+      allow update: if studioIdIsImmutable() && canEdit(resource.data.studioId);
+      allow delete: if canAdminister(resource.data.studioId);
     }
 
     match /outputs/{id} {
-      allow read: if isStudioMember(resource.data.studioId);
-      allow create, update: if isStudioMember(request.resource.data.studioId);
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      allow read: if canView(resource.data.studioId);
+      allow create, update, delete: if false;
     }
 
     match /deadLetters/{id} {
-      allow read: if isStudioMember(resource.data.studioId);
-      allow create, update: if isStudioMember(request.resource.data.studioId);
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      allow read: if canAdminister(resource.data.studioId);
+      allow create, update, delete: if false;
     }
 
     match /auditLogs/{id} {
-      allow read: if isStudioMember(resource.data.studioId);
-      allow create: if isStudioMember(request.resource.data.studioId);
-      allow update, delete: if false;
+      allow read: if canAdminister(resource.data.studioId);
+      allow create, update, delete: if false;
+    }
+
+    match /studioOperationRequests/{id} {
+      allow read, write: if false;
+    }
+
+    match /studioMembershipMigrations/{id} {
+      allow read, write: if false;
     }
 
     match /users/{uid} {
@@ -85,120 +109,73 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Legacy client-owned Studio documents. These remain uid-scoped for old clients.
+    // Legacy uid-owned collections remain isolated until their own migration.
     match /studioProjects/{id} {
       allow read, update, delete: if ownsExisting();
       allow create: if ownsIncoming();
     }
-
     match /studioScenes/{id} {
       allow read, update, delete: if ownsExisting();
       allow create: if ownsIncoming();
     }
-
     match /studioAssets/{id} {
       allow read: if (resource.data.isPublic == true) || ownsExisting();
       allow create: if ownsIncoming();
       allow update, delete: if ownsExisting();
     }
-
     match /assetJobs/{id} {
       allow read, update, delete: if ownsExisting();
       allow create: if ownsIncoming();
     }
-
     match /assetCollections/{id} {
       allow read: if (resource.data.isPublic == true) || ownsExisting();
       allow create: if ownsIncoming();
       allow update, delete: if ownsExisting();
     }
-
     match /studioScrolls/{id} {
       allow read, update, delete: if ownsExisting();
       allow create: if ownsIncoming();
     }
-
     match /narratorScripts/{id} {
       allow read, update, delete: if ownsExisting();
       allow create: if ownsIncoming();
     }
-
     match /subtitles/{id} {
       allow read, update, delete: if ownsExisting();
       allow create: if ownsIncoming();
     }
-
     match /voiceoverJobs/{id} {
       allow read, update, delete: if ownsExisting();
       allow create: if ownsIncoming();
     }
-
     match /exportJobs/{id} {
       allow read, update, delete: if ownsExisting();
       allow create: if ownsIncoming();
     }
-
     match /studioEvents/{id} {
       allow read: if ownsExisting();
       allow create: if ownsIncoming();
       allow update, delete: if false;
     }
-
-    match /catalogs/{id} {
-      allow read: if true;
-      allow write: if false;
-    }
-
-    match /remoteConfigMirror/{id} {
-      allow read: if true;
-      allow write: if false;
-    }
-
+    match /catalogs/{id} { allow read: if true; allow write: if false; }
+    match /remoteConfigMirror/{id} { allow read: if true; allow write: if false; }
     match /xrSessions/{id} {
       allow read, update, delete: if ownsExisting();
       allow create: if ownsIncoming();
     }
-
     match /vrSessions/{id} {
       allow read, update, delete: if ownsExisting();
       allow create: if ownsIncoming();
     }
 
-    // Runtime system-contract collections are written only by trusted server/API routes
-    // through Firebase Admin. Client SDK access is denied until tenant membership claims
-    // and end-user private dashboards are fully wired and audited.
-    match /studioBriefs/{id} {
-      allow read, write: if false;
-    }
-
-    match /studioJobs/{id} {
-      allow read, write: if false;
-    }
-
-    match /studioExports/{id} {
-      allow read, write: if false;
-    }
-
-    // Public forms are written only through trusted server routes using Firebase Admin.
-    // Client SDK access is denied to prevent scraping, enumeration, or direct writes.
-    match /waitlist/{id} {
-      allow read, write: if false;
-    }
-
-    match /contactMessages/{id} {
-      allow read, write: if false;
-    }
-
-    match /contactRequests/{id} {
-      allow read, write: if false;
-    }
-
-    match /projectRequests/{id} {
-      allow read, write: if false;
-    }
-
-    match /integrationRequests/{id} {
-      allow read, write: if false;
-    }
+    // Runtime and public-intake collections are server-owned.
+    match /studioBriefs/{id} { allow read, write: if false; }
+    match /studioJobs/{id} { allow read, write: if false; }
+    match /studioExports/{id} { allow read, write: if false; }
+    match /waitlist/{id} { allow read, write: if false; }
+    match /contactMessages/{id} { allow read, write: if false; }
+    match /contactRequests/{id} { allow read, write: if false; }
+    match /projectRequests/{id} { allow read, write: if false; }
+    match /integrationRequests/{id} { allow read, write: if false; }
   }
 }

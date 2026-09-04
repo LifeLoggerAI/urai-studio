@@ -37,6 +37,7 @@ export type VideoFactoryRenderPackage = {
   ok: true;
   mode: VideoFactoryRenderMode;
   contractOnly: boolean;
+  studioId: UraiId;
   templateId: string;
   manifestId: string;
   title: string;
@@ -48,6 +49,7 @@ export type VideoFactoryRenderPackage = {
   subtitleText: string;
   exportManifest: {
     version: 1;
+    studioId: UraiId;
     templateId: string;
     manifestId: string;
     title: string;
@@ -64,6 +66,7 @@ export type VideoFactoryRenderPackage = {
 };
 
 export type BuildVideoFactoryRenderPackageInput = {
+  studioId?: UraiId;
   templateId?: string;
   projectId?: UraiId;
   mode?: VideoFactoryRenderMode;
@@ -76,6 +79,13 @@ function slug(value: string) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 80);
+}
+
+function exactStudioStorageSegment(value: string) {
+  if (!value || value.trim() !== value || value === '.' || value === '..' || value.includes('/') || new TextEncoder().encode(value).length > 256) {
+    throw new Error('invalid_studio_id');
+  }
+  return value;
 }
 
 function timestamp(seconds: number) {
@@ -143,7 +153,8 @@ export function buildVideoFactoryRenderPackage(input: BuildVideoFactoryRenderPac
   }
 
   const durationSeconds = sumShotDurationsSeconds(manifest);
-  const outputBasePath = `studio/video-factory/${manifest.templateId}`;
+  const studioId = input.studioId?.trim() || 'local-unscoped';
+  const outputBasePath = `studios/${exactStudioStorageSegment(studioId)}/outputs/video-factory/${manifest.templateId}`;
   const timeline = buildTimeline(manifest);
   const subtitleText = buildSubtitleText(timeline);
   const mode = input.mode ?? 'contract-only';
@@ -173,6 +184,7 @@ export function buildVideoFactoryRenderPackage(input: BuildVideoFactoryRenderPac
     ok: true,
     mode,
     contractOnly: mode === 'contract-only',
+    studioId,
     templateId: manifest.templateId,
     manifestId: manifest.id,
     title: manifest.title,
@@ -184,6 +196,7 @@ export function buildVideoFactoryRenderPackage(input: BuildVideoFactoryRenderPac
     subtitleText,
     exportManifest: {
       version: 1,
+      studioId,
       templateId: manifest.templateId,
       manifestId: manifest.id,
       title: manifest.title,

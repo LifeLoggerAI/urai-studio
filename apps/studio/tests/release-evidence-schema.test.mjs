@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
+const guardSource = fs.readFileSync(new URL('../../../scripts/release-evidence-boundary-guard.mjs', import.meta.url), 'utf8');
+
 const schema = JSON.parse(
   fs.readFileSync(new URL('../../../docs/URAI_STUDIO_RELEASE_EVIDENCE.schema.json', import.meta.url), 'utf8'),
 );
@@ -12,12 +14,50 @@ assert.ok(schema.required.includes('recordedAt'));
 assert.ok(schema.required.includes('gates'));
 
 const requiredGates = schema.properties.gates.required;
-for (const gate of ['install', 'lint', 'typecheck', 'tests', 'appBuild', 'functionsBuild', 'doneDoneGuard', 'releaseCheck', 'smoke']) {
+for (const gate of [
+  'install',
+  'lint',
+  'typecheck',
+  'tests',
+  'appBuild',
+  'functionsBuild',
+  'doneDoneGuard',
+  'releaseCheck',
+  'smoke',
+]) {
   assert.ok(requiredGates.includes(gate), `missing release gate: ${gate}`);
+  assert.deepEqual(schema.properties.gates.properties[gate], {$ref: '#/$defs/gate'});
 }
+
+assert.deepEqual(schema.properties.gates.properties.providerReadiness, {$ref: '#/$defs/providerReadinessGate'});
+assert.deepEqual(schema.properties.gates.properties.binaryArtifacts, {$ref: '#/$defs/binaryArtifactsGate'});
+assert.equal(schema.$defs.providerReadinessGate.allOf[0].then.properties.evidence.$ref, '#/$defs/providerReadinessEvidence');
+assert.deepEqual(schema.$defs.providerReadinessEvidence.properties.checks.required, [
+  'tokenAcquired',
+  'firebaseAdmin',
+  'firestoreRead',
+  'firestoreWrite',
+  'storageRead',
+  'storageWrite',
+  'functionsHealth',
+]);
+for (const check of schema.$defs.providerReadinessEvidence.properties.checks.required) {
+  assert.equal(schema.$defs.providerReadinessEvidence.properties.checks.properties[check].const, true);
+}
+assert.equal(schema.$defs.binaryArtifactsGate.allOf[0].then.properties.evidence.$ref, '#/$defs/binaryArtifactsEvidence');
+assert.equal(schema.$defs.binaryArtifact.required.includes('sha256'), true);
+assert.equal(schema.$defs.binaryArtifact.required.includes('probe'), true);
+assert.equal(schema.$defs.binaryArtifact.required.includes('sourceCommitSha'), true, 'source job metadata must report the built commit SHA');
+assert.equal(schema.$defs.binaryArtifact.required.includes('sourceJobId'), true);
+assert.equal(schema.$defs.binaryArtifact.required.includes('artifactRef'), true);
+assert.equal(schema.$defs.binaryArtifact.properties.sha256.pattern, '^[0-9a-f]{64}$');
+assert.equal(schema.$defs.binaryArtifact.allOf[0].then.properties.playable.const, true);
 
 assert.deepEqual(schema.$defs.gate.properties.status.enum, ['pass', 'fail', 'blocked', 'not_run']);
 assert.equal(schema.$defs.gate.required.includes('status'), true);
 assert.equal(schema.$defs.gate.required.includes('evidence'), true);
+
+assert.match(guardSource, /compileJsonSchema\(schema\)/);
+assert.match(guardSource, /validateReleaseReceiptSchema\(receipt\)/, 'receipt mode must apply the complete JSON Schema before cross-field checks');
 
 console.log('release evidence schema coverage passed');

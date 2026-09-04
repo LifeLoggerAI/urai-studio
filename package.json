@@ -12,6 +12,8 @@
     "lint": "pnpm --filter studio lint",
     "typecheck": "pnpm --filter studio typecheck",
     "test": "pnpm --filter studio test",
+    "test:rules": "npx --yes firebase-tools@15.18.0 emulators:exec --config firebase.rules-emulator.json --project urai-studio-ci --only firestore,storage \"node scripts/studio-membership-emulator-matrix.mjs\"",
+    "test:membership-migration": "node --test functions/scripts/studio-membership-migration.test.mjs",
     "smoke": "HOST=${HOST:-http://127.0.0.1:3000} bash scripts/smoke.sh",
     "studio:smoke": "node scripts/studio-smoke-v1.js",
     "video-factory:capture": "node scripts/studio-video-route-capture.mjs",
@@ -24,8 +26,8 @@
     "health:guard": "node scripts/health-summary-guard.mjs",
     "provider:check": "node scripts/provider-readiness.mjs",
     "provider:check:strict": "URAI_PROVIDER_STRICT=true node scripts/provider-readiness.mjs",
-    "audit": "pnpm life-film:canon:guard && pnpm done-done:guard && pnpm evidence:guard && pnpm health:guard && pnpm provider:check && pnpm lint && pnpm typecheck && pnpm test && pnpm studio:smoke",
-    "release:check": "pnpm run audit && pnpm build && pnpm --dir functions build",
+    "audit": "pnpm life-film:canon:guard && pnpm done-done:guard && pnpm evidence:guard && pnpm release:evidence:contract && pnpm health:guard && pnpm provider:check && pnpm lint && pnpm typecheck && pnpm test && pnpm test:membership-migration && pnpm test:rules && pnpm studio:smoke",
+    "release:check": "pnpm run audit && pnpm release:evidence:contract && pnpm build && pnpm --dir functions build",
     "emulators": "firebase emulators:start",
     "seed:demo": "pnpm exec ts-node scripts/seed_demo_job.ts",
     "studio:clean": "rm -rf node_modules apps/studio/node_modules packages/*/node_modules apps/studio/.next .next",
@@ -34,7 +36,11 @@
     "studio:repair": "bash scripts/firebase-studio-repair.sh",
     "studio:preview": "pnpm -C apps/studio dev -- --hostname 0.0.0.0 --port ${PORT:-3000}",
     "firebase:preview": "pnpm run studio:preview",
-    "firebase:emulators": "npx firebase emulators:start --only auth,firestore,storage,functions,hosting"
+    "firebase:emulators": "npx firebase emulators:start --only auth,firestore,storage,functions,hosting",
+    "release:evidence:contract": "node scripts/release-evidence-boundary-guard.mjs --contract-only",
+    "release:evidence:guard": "node scripts/release-evidence-boundary-guard.mjs",
+    "release:evidence:source": "node scripts/write-source-release-evidence.mjs",
+    "release:check:provider": "pnpm provider:check:strict && pnpm release:check"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
