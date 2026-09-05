@@ -49,7 +49,16 @@ const trustedAuthority = {
     tenantId: fixture.tenantId,
     verifiedAt: '2026-09-03T00:01:00.000Z',
     receiptDigest: `sha256:${'f'.repeat(64)}`,
-    assetRecords: fixture.assetManifest.map(({assetId, uri, checksum, scope}) => ({assetId, uri, checksum, scope})),
+    assetRecords: fixture.assetManifest.map(({assetId, kind, uri, fallbackUri, mimeType, checksum, scope}) => ({
+      assetId, kind, uri, fallbackUri, mimeType, checksum, scope,
+    })),
+  },
+  safetyAuthority: {
+    source: 'protected-safety-policy-registry',
+    policyId: 'studio-spatial-safety-v1',
+    verifiedAt: '2026-09-03T00:01:00.000Z',
+    receiptDigest: `sha256:${'a'.repeat(64)}`,
+    boundaries: fixture.safetyBoundaries,
   },
 };
 
@@ -178,6 +187,31 @@ test('binds consent and asset ownership to protected authority evidence', () => 
   const malformedAssetAuthority = copy(trustedAuthority);
   malformedAssetAuthority.assetAuthority.assetRecords.push(null);
   assert.equal(contract.emitStudioSpatialExport(fixture, malformedAssetAuthority).ok, false);
+
+  for (const mutate of [
+    (value) => { value.assetManifest[0].fallbackUri = 'gs://urai-assets/another-tenant/fallback.glb'; },
+    (value) => { value.assetManifest[0].kind = 'scene-json'; value.assetManifest[0].mimeType = 'application/json'; },
+    (value) => { value.assetManifest[0].mimeType = 'model/gltf+json'; },
+  ]) {
+    const alteredLoaderMetadata = copy(fixture);
+    mutate(alteredLoaderMetadata);
+    assert.equal(contract.emitStudioSpatialExport(alteredLoaderMetadata, trustedAuthority).ok, false);
+  }
+});
+
+test('binds the complete safety boundary set to protected policy evidence', () => {
+  const weakened = copy(fixture);
+  weakened.safetyBoundaries[0].requiredLanguage = 'none';
+  weakened.safetyBoundaries[0].humanReviewRequired = false;
+  assert.equal(contract.emitStudioSpatialExport(weakened, trustedAuthority).ok, false);
+
+  const incompleteAuthority = copy(trustedAuthority);
+  incompleteAuthority.safetyAuthority.boundaries = [];
+  assert.equal(contract.emitStudioSpatialExport(fixture, incompleteAuthority).ok, false);
+
+  const malformedAuthority = copy(trustedAuthority);
+  malformedAuthority.safetyAuthority.receiptDigest = 'sha256:not-a-digest';
+  assert.equal(contract.emitStudioSpatialExport(fixture, malformedAuthority).ok, false);
 });
 
 test('rejects self-attested or mismatched release authority', () => {
