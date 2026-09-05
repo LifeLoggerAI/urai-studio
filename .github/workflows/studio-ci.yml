@@ -2,7 +2,7 @@ name: Studio CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, security/current-membership-authority-20260830, fix/studio-spatial-wire-compat-20260903]
   push:
     branches: [main]
 
@@ -10,14 +10,17 @@ permissions:
   contents: read
 
 concurrency:
-  group: studio-ci-${{ github.ref }}
+  group: studio-ci-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
+
+env:
+  TARGET_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
   verify-studio:
-    name: Typecheck, lint, test, build, and smoke studio
+    name: Exact-head source, membership, build, smoke, and evidence
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       NEXT_PUBLIC_SITE_URL: https://www.uraistudio.com
       NEXT_PUBLIC_FIREBASE_PROJECT_ID: ci-placeholder
@@ -27,13 +30,14 @@ jobs:
       - name: Checkout exact reviewed head
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ env.TARGET_SHA }}
+          persist-credentials: false
 
       - name: Prove exact clean head
         shell: bash
         run: |
-          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
-          test -z "$(git status --porcelain)"
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Enable Corepack
         run: corepack enable
@@ -50,22 +54,19 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Install dependencies
-        id: install
+      - name: Install frozen dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Release check with canonical membership emulator matrix
-        id: release_check
         run: pnpm release:check
 
       - name: Prove verification preserved exact source
         shell: bash
         run: |
-          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
-          test -z "$(git status --porcelain)"
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Static smoke declaration
-        id: static_smoke
         run: pnpm --filter studio smoke:static
 
       - name: Start Studio server
@@ -80,32 +81,34 @@ jobs:
           exit 1
 
       - name: Runtime HTTP smoke
-        id: runtime_smoke
         env:
           HOST: http://127.0.0.1:3000
           EXPECT_READY: "false"
         run: bash scripts/smoke.sh
 
-      - name: Write exact-head source evidence
+      - name: Write self-verified exact-head source evidence
         env:
-          TARGET_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-          EVIDENCE_OUTPUT: release-evidence/studio-source-${{ github.event.pull_request.head.sha || github.sha }}.json
-          INSTALL_GATE_RESULT: ${{ steps.install.outcome }}
-          RELEASE_CHECK_GATE_RESULT: ${{ steps.release_check.outcome }}
-          STATIC_SMOKE_GATE_RESULT: ${{ steps.static_smoke.outcome }}
-          RUNTIME_SMOKE_GATE_RESULT: ${{ steps.runtime_smoke.outcome }}
+          EVIDENCE_OUTPUT: release-evidence/studio-source-${{ env.TARGET_SHA }}.json
+          HOST: http://127.0.0.1:3000
+          EXPECT_READY: "false"
         run: pnpm release:evidence:source
 
       - name: Validate exact-head source evidence receipt
         env:
-          RELEASE_EVIDENCE_FILE: release-evidence/studio-source-${{ github.event.pull_request.head.sha || github.sha }}.json
+          RELEASE_EVIDENCE_FILE: release-evidence/studio-source-${{ env.TARGET_SHA }}.json
         run: pnpm release:evidence:guard
+
+      - name: Re-prove exact clean head after evidence generation
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test -z "$(git status --porcelain --untracked-files=all -- . ':(exclude)release-evidence')"
 
       - name: Upload exact-head source evidence
         uses: actions/upload-artifact@v4
         with:
-          name: studio-source-evidence-${{ github.event.pull_request.head.sha || github.sha }}
-          path: release-evidence/studio-source-${{ github.event.pull_request.head.sha || github.sha }}.json
+          name: studio-source-evidence-${{ env.TARGET_SHA }}
+          path: release-evidence/studio-source-${{ env.TARGET_SHA }}.json
           if-no-files-found: error
           retention-days: 365
 
