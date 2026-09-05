@@ -12,8 +12,14 @@ const recordedAt = new Date().toISOString();
 if (repository !== 'LifeLoggerAI/urai-studio') throw new Error(`unexpected_repository:${repository}`);
 if (!/^[0-9a-f]{40}$/.test(commitSha)) throw new Error('TARGET_SHA must be the exact 40-character reviewed commit SHA.');
 
-const checkedOutSha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-if (checkedOutSha !== commitSha) throw new Error(`checked_out_sha_mismatch:${checkedOutSha}:${commitSha}`);
+function assertExactCleanSource(stage) {
+  const checkedOutSha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+  if (checkedOutSha !== commitSha) throw new Error(`checked_out_sha_mismatch:${stage}:${checkedOutSha}:${commitSha}`);
+  const dirty = execFileSync('git', ['status', '--porcelain', '--untracked-files=all'], { encoding: 'utf8' }).trim();
+  if (dirty) throw new Error(`source_tree_not_clean:${stage}:${dirty.split('\n').slice(0, 20).join('|')}`);
+}
+
+assertExactCleanSource('before_gates');
 
 const verifiedCommands = [
   ['install', 'pnpm', ['install', '--frozen-lockfile'], undefined],
@@ -32,11 +38,14 @@ for (const [name, command, args, extraEnv] of verifiedCommands) {
   if (result.status !== 0) throw new Error(`self_verified_gate_failed:${name}:${result.status ?? 'unknown'}`);
 }
 
+assertExactCleanSource('after_gates');
+
 const workflowRunId = /^\d+$/.test(process.env.GITHUB_RUN_ID || '') ? process.env.GITHUB_RUN_ID : null;
 const workflowRunAttempt = /^\d+$/.test(process.env.GITHUB_RUN_ATTEMPT || '') ? process.env.GITHUB_RUN_ATTEMPT : null;
+const environment = workflowRunId ? 'ci' : 'local';
 const workflowEvidence = workflowRunId
   ? `Executed inside GitHub Actions run ${workflowRunId}, attempt ${workflowRunAttempt}; gate conclusions come from commands re-executed by this writer on the exact checked-out SHA.`
-  : 'Gate conclusions come from commands re-executed by this writer on the exact checked-out SHA; no GitHub Actions provenance is claimed.';
+  : 'Gate conclusions come from commands re-executed by this writer on an exact clean local checkout; no GitHub Actions provenance is claimed.';
 
 function gate(status, evidence) {
   if (!['pass', 'fail', 'blocked', 'not_run'].includes(status)) throw new Error(`invalid_gate_status:${status}`);
@@ -48,7 +57,7 @@ const receipt = {
   repository,
   commitSha,
   recordedAt,
-  environment: 'ci',
+  environment,
   gates: {
     install: gate('pass', `pnpm install --frozen-lockfile completed. ${workflowEvidence}`),
     lint: gate('pass', `Covered by the self-verified pnpm release:check. ${workflowEvidence}`),
@@ -70,4 +79,4 @@ const receipt = {
 
 fs.mkdirSync(path.dirname(output), { recursive: true });
 fs.writeFileSync(output, `${JSON.stringify(receipt, null, 2)}\n`);
-console.log(JSON.stringify({ ok: true, output, commitSha }, null, 2));
+console.log(JSON.stringify({ ok: true, output, commitSha, environment }, null, 2));
