@@ -52,8 +52,41 @@ jobs:
       - name: Install frozen workspace
         run: pnpm install --frozen-lockfile
 
-      - name: Run current source audit contract
-        run: pnpm audit
+      - name: Life Film canon guard
+        run: pnpm life-film:canon:guard
+
+      - name: Done-done guard
+        run: pnpm done-done:guard
+
+      - name: Evidence schema guard
+        run: pnpm evidence:guard
+
+      - name: Release evidence contract
+        run: pnpm release:evidence:contract
+
+      - name: Health summary guard
+        run: pnpm health:guard
+
+      - name: Provider readiness posture
+        run: pnpm provider:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Studio tests
+        run: pnpm test
+
+      - name: Membership migration tests
+        run: pnpm test:membership-migration
+
+      - name: Firestore and Storage rules emulator matrix
+        run: pnpm test:rules
+
+      - name: Studio source smoke
+        run: pnpm studio:smoke
 
       - name: App build
         run: pnpm build
