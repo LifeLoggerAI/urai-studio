@@ -4,11 +4,13 @@ import fs from 'node:fs';
 const src = fs.readFileSync(new URL('../app/api/studio/exports/route.ts', import.meta.url), 'utf8');
 
 const requiredTokens = [
-  'createFallbackStudioSpatialManifest',
+  'createBlockedStudioSpatialHandoff',
   'createExportHandoff',
   'spatialHandoff',
-  "defaultStatus: 'fallback_only'",
+  "defaultStatus: 'blocked'",
   "validator: '/api/system/spatial-handoff'",
+  'completeEvidenceRequiredForEmission: true',
+  'liveIntegrationClaimed: false',
   'contractExportId',
   'tenantScoped: true',
   'exportData.id',
@@ -26,4 +28,6 @@ assert.ok(
   'export handoff helper must be defined before success response',
 );
 
-console.log('export spatial handoff response coverage passed');
+assert.ok(!src.includes('createFallbackStudioSpatialManifest'), 'exports must not fabricate fallback wire manifests');
+
+console.log('fail-closed export spatial handoff response coverage passed');

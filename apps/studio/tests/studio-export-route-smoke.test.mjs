@@ -5,7 +5,8 @@ const src = fs.readFileSync(new URL('../app/api/studio/exports/route.ts', import
 
 assert.ok(src.includes('requireStudioAuth(req)'), 'exports route must require auth');
 assert.ok(src.includes('createStudioExport'), 'exports route must use runtime export creation');
-assert.ok(src.includes('createFallbackStudioSpatialManifest'), 'exports route must include spatial handoff manifest');
+assert.ok(src.includes('createBlockedStudioSpatialHandoff'), 'exports route must return a blocked handoff descriptor');
+assert.ok(!src.includes('createFallbackStudioSpatialManifest'), 'exports route must not fabricate a fallback wire manifest');
 assert.ok(src.includes('Cache-Control'), 'exports route must set cache control');
 assert.ok(src.includes('persisted: false'), 'exports route must report unpersisted fallback responses');
 assert.ok(src.includes('persisted: true'), 'exports route must report persisted responses only after store success');
