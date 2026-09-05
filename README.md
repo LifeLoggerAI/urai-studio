@@ -1,5 +1,7 @@
 # URAI Studio
 
+> **Public authority:** URAI Studio is a first-party LifeLoggerAI product area in the URAI ecosystem. It is **not affiliated with `urai.studio`**, the unrelated media-production company in Casablanca, Morocco. Do not use that third party's domain, clients, staff, portfolio, metrics, location, services, or social profiles as evidence for this repository. Canonical ecosystem authority: `https://www.urailabs.com/ecosystem`. Current maturity: **PREVIEW / product area in development**; source existence is not production deployment proof.
+
 Creator and admin studio for URAI: public site, cinematic AI studio surfaces, Firebase-backed contact and waitlist flows, system diagnostics, and launch-safe module pages.
 
 ## Current release status
@@ -8,7 +10,7 @@ URAI Studio has a real app/backend foundation, but it must not be called product
 
 Canonical status documents:
 
-- `docs/URAI_STUDIO_DOCS_INDEX_2026-06-16.md` - current navigation index for audit docs, contracts, guards, and proof templates.
+- `docs/URAI_STUDIO_DOCS_INDEX_2026-06-16.md` - current navigation index for audit docs, contracts, and proof templates.
 - `docs/URAI_STUDIO_FULL_AUDIT.md` - full repo/system audit, blocker list, and safe release language.
 - `docs/URAI_STUDIO_SYSTEM_PIPELINES_AUDIT_2026-06-16.md` - system-of-systems pipeline audit across Jobs, Content, Asset Factory, Spatial, Analytics, Marketing, Admin, Privacy, Investors, and B2B Portal.
 - `docs/URAI_STUDIO_REMAINING_BLOCKERS_2026-06-16.md` - current proof blockers that must be cleared before final lock.
