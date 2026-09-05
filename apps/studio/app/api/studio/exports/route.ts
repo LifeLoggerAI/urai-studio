@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { requireStudioAuth } from '@/lib/studio-auth';
 import { createStudioExport, runtimeStoreStatus } from '@/lib/studio-runtime-store';
-import { createFallbackStudioSpatialManifest } from '@/lib/studio-spatial-handoff';
+import { createBlockedStudioSpatialHandoff } from '@/lib/studio-spatial-handoff';
 import type { StudioExportKind } from '@/lib/urai-system-contract';
 
 export const dynamic = 'force-dynamic';
@@ -48,19 +48,14 @@ function authErrorResponse(auth: Awaited<ReturnType<typeof requireStudioAuth>>) 
 function createExportHandoff(input: {
   exportId: string;
   projectId: string;
-  jobId?: string;
   tenantId: string;
   userId: string;
-  kind: StudioExportKind;
 }) {
-  return createFallbackStudioSpatialManifest({
+  return createBlockedStudioSpatialHandoff({
     exportId: input.exportId,
     projectId: input.projectId,
-    jobId: input.jobId,
     tenantId: input.tenantId,
     userId: input.userId,
-    title: `URAI Studio ${input.kind} export`,
-    description: 'Fallback-safe Studio export manifest for URAI Spatial validation.',
   });
 }
 
@@ -79,9 +74,12 @@ export async function GET(req: Request) {
     requiredFields: ['projectId', 'kind'],
     tenantScoped: true,
     spatialHandoff: {
-      includedInPostResponses: true,
-      defaultStatus: 'fallback_only',
+      blockedDescriptorIncludedInPostResponses: true,
+      defaultStatus: 'blocked',
       validator: '/api/system/spatial-handoff',
+      completeEvidenceRequiredForEmission: true,
+      trustedReleaseAuthorityRequired: true,
+      liveIntegrationClaimed: false,
     },
   });
 }
@@ -119,10 +117,8 @@ export async function POST(req: Request) {
     const handoffManifest = createExportHandoff({
       exportId: contractExportId,
       projectId,
-      jobId: jobId || undefined,
       tenantId: auth.tenantId,
       userId: auth.uid,
-      kind,
     });
 
     return json(
@@ -175,10 +171,8 @@ export async function POST(req: Request) {
   const handoffManifest = createExportHandoff({
     exportId: exportData.id,
     projectId: exportData.projectId,
-    jobId: exportData.jobId,
     tenantId: exportData.tenantId,
     userId: exportData.userId,
-    kind: exportData.kind,
   });
 
   return json({
