@@ -149,11 +149,21 @@ export interface StudioSpatialTrustedReleaseAuthority {
     receiptDigest: string;
     assetRecords: Array<{
       assetId: string;
+      kind: UraiSpatialAssetKind;
       uri: string;
+      fallbackUri?: string;
+      mimeType: string;
       checksum: string;
       scope: UraiSpatialAssetScope;
       userId?: string;
     }>;
+  };
+  safetyAuthority: {
+    source: 'protected-safety-policy-registry';
+    policyId: string;
+    verifiedAt: string;
+    receiptDigest: string;
+    boundaries: UraiSpatialSafetyBoundary[];
   };
 }
 
@@ -378,13 +388,48 @@ function validateTrustedReleaseAuthority(
     const trustedAssets = new Map(assetRecords.map((asset) => [asset.assetId, asset]));
     for (const asset of wire.assetManifest) {
       const trusted = trustedAssets.get(asset.assetId);
-      if (!trusted || trusted.uri !== asset.uri || trusted.checksum !== asset.checksum || trusted.scope !== asset.scope) {
-        errors.push(`trusted asset ownership does not match ${asset.assetId}`);
+      if (
+        !trusted
+        || trusted.uri !== asset.uri
+        || trusted.fallbackUri !== asset.fallbackUri
+        || trusted.kind !== asset.kind
+        || trusted.mimeType !== asset.mimeType
+        || trusted.checksum !== asset.checksum
+        || trusted.scope !== asset.scope
+      ) {
+        errors.push(`trusted asset ownership and loader metadata do not match ${asset.assetId}`);
       } else if (asset.scope === 'user-scoped' && trusted.userId !== wire.consentReceipt.userId) {
         errors.push(`trusted user ownership does not match ${asset.assetId}`);
       }
     }
     if (trustedAssets.size !== wire.assetManifest.length) errors.push('trusted asset authority must match the complete wire asset set');
+  }
+
+  const safetyAuthority = authority.safetyAuthority;
+  if (!safetyAuthority || safetyAuthority.source !== 'protected-safety-policy-registry') {
+    errors.push('protected safety policy authority is required');
+  } else {
+    if (!isNonEmptyString(safetyAuthority.policyId)
+      || !isIsoDate(safetyAuthority.verifiedAt)
+      || !isSha256Checksum(safetyAuthority.receiptDigest)) {
+      errors.push('trusted safety policy verification evidence is incomplete');
+    }
+    const trustedBoundaries = Array.isArray(safetyAuthority.boundaries) ? safetyAuthority.boundaries : [];
+    const normalizeBoundary = (boundary: UraiSpatialSafetyBoundary) => ({
+      layer: boundary.layer,
+      requiredLanguage: boundary.requiredLanguage,
+      humanReviewRequired: boundary.humanReviewRequired ?? false,
+    });
+    const trustedByLayer = new Map(trustedBoundaries.map((boundary) => [boundary.layer, normalizeBoundary(boundary)]));
+    for (const boundary of wire.safetyBoundaries) {
+      const trusted = trustedByLayer.get(boundary.layer);
+      if (!trusted || JSON.stringify(trusted) !== JSON.stringify(normalizeBoundary(boundary))) {
+        errors.push(`trusted safety boundary does not match ${boundary.layer}`);
+      }
+    }
+    if (trustedByLayer.size !== wire.safetyBoundaries.length) {
+      errors.push('trusted safety authority must match the complete wire boundary set');
+    }
   }
 }
 
