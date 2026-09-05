@@ -23,7 +23,7 @@ const requiredTokens = new Map([
   ['apps/studio/tests/all-runner.test.mjs', ['all.test.mjs', "file.endsWith('.test.mjs')", 'await import', 'auto-discovers every .test.mjs file']],
   ['apps/studio/tests/legacy-roots.test.mjs', ['forbiddenWorkspaceRoots', 'apps/*', 'packages/*']],
   ['scripts/release-evidence-boundary-guard.mjs', ['release:check:provider', 'provider:check:strict', 'binaryArtifacts', 'validateArtifactSourceCommits', 'release evidence contract guard passed', 'release evidence receipt guard passed']],
-  ['scripts/write-source-release-evidence.mjs', ['TARGET_SHA', "environment: 'ci'", 'providerReadiness', 'binaryArtifacts', 'playable MP4']],
+  ['scripts/write-source-release-evidence.mjs', ['TARGET_SHA', "workflowRunId ? 'ci' : 'local'", 'environment,', 'providerReadiness', 'binaryArtifacts', 'playable MP4']],
 ]);
 
 let failed = false;
