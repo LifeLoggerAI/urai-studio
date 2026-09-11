@@ -97,6 +97,8 @@ HOST=http://127.0.0.1:3000 pnpm studio:smoke
 
 After an independently authorized protected deployment, the live smoke may target the governed Studio production URL. Record exact deployed SHA/revision and provider target in the release evidence ledger before claiming production freeze.
 
+Record the output in `docs/URAI_STUDIO_RELEASE_EVIDENCE.md` and `docs/URAI_STUDIO_DEPLOY_EVIDENCE_TEMPLATE.md` before claiming production freeze.
+
 ## Environment variables
 
 Copy `.env.example` for application configuration only. Public frontend values use `NEXT_PUBLIC_*`. Provider identity is supplied separately through Google Application Default Credentials / managed runtime identity, or through protected GitHub OIDC + Workload Identity Federation.
