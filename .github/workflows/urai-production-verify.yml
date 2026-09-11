@@ -4,47 +4,65 @@ on:
   workflow_dispatch:
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: urai-production-verify-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+env:
+  TARGET_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
 jobs:
   verify:
-    name: Build, test, and QA
+    name: Exact-head source build, test, and QA
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout exact reviewed SHA
         uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_SHA }}
+          persist-credentials: false
+
+      - name: Verify exact clean checkout
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.7.0
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: pnpm
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: |
-          if [ -f pnpm-lock.yaml ]; then
-            corepack prepare pnpm@9.7.0 --activate
-            pnpm install --frozen-lockfile
-          else
-            npm install
-          fi
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Run typecheck
-        run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm run typecheck; else npm run typecheck --if-present; fi
+        run: pnpm typecheck
 
       - name: Run tests
-        run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm test; else npm test --if-present; fi
+        run: pnpm test
 
       - name: Build
-        run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm run build; else npm run build --if-present; fi
+        run: pnpm build
 
-      - name: Run URAI QA
+      - name: Run optional URAI QA
+        shell: bash
         run: |
-          if [ -f pnpm-lock.yaml ]; then
-            if pnpm run | grep -q 'urai:qa'; then pnpm run urai:qa; fi
+          if node -e "const p=require('./package.json'); process.exit(p.scripts?.['urai:qa'] ? 0 : 1)"; then
+            pnpm urai:qa
           else
-            npm run urai:qa --if-present
+            echo 'No urai:qa script is defined; mandatory release guards run in Studio CI.'
           fi
+
+      - name: Preserve source-only classification
+        run: |
+          echo 'This workflow performs no deployment, provider execution, credential validation, DNS action, or live-production verification.'
