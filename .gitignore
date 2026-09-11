@@ -8,6 +8,8 @@ node_modules
 **/*.log
 **/.firebase/
 .bak/
+.backups/
+/--typescript/
 firebase.json.bak.*
 /tmp/
 *.log
