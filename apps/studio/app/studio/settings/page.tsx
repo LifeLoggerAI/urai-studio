@@ -10,11 +10,11 @@ export const metadata: Metadata = {
 const settings = [
   {
     title: 'Firebase client config',
-    body: 'Set NEXT_PUBLIC_FIREBASE_* values to enable browser callables, anonymous auth, and dashboard reads.',
+    body: 'Set NEXT_PUBLIC_FIREBASE_* values to enable browser callables, anonymous auth, and dashboard reads where the release contract permits them.',
   },
   {
-    title: 'Server credentials',
-    body: 'Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY only in secure server or CI settings.',
+    title: 'Server identity',
+    body: 'Use Google Application Default Credentials or protected GitHub OIDC + Workload Identity Federation. Long-lived Firebase private keys and service-account JSON are not Studio runtime or deployment authority.',
   },
   {
     title: 'Feature flags',
@@ -22,7 +22,7 @@ const settings = [
   },
   {
     title: 'Release lock',
-    body: 'Do not create LOCK.md until install, lint, typecheck, tests, app build, functions build, and smoke checks pass.',
+    body: 'Exact-head CI, required independent review, provider identity, migration evidence, deployment readback, monitoring/recovery, and distinct rollback evidence must all close before production completion is claimed.',
   },
 ];
 
