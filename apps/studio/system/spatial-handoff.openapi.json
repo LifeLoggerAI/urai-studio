@@ -9,7 +9,7 @@
       "get": {
         "responses": {
           "200": {
-            "description": "ok"
+            "description": "Source contract discovery only; no live integration is claimed"
           }
         }
       }
@@ -19,8 +19,207 @@
     "schemas": {
       "spatialHandoff": {
         "type": "object",
-        "description": "Studio-to-Spatial export handoff manifest returned by URAI Studio export APIs. Default handoff status is fallback_only.",
-        "additionalProperties": true
+        "description": "Fail-closed Studio emitter contract matching the current URAI Spatial 0.1.0 wire shape plus required release evidence.",
+        "required": ["contractVersion", "producer", "consumer", "exportId", "projectId", "tenantId", "createdAt", "runtimeTargets", "sceneManifest", "assetManifest", "consentReceipt", "safetyBoundaries", "releaseEvidence"],
+        "properties": {
+          "contractVersion": {"type": "string", "enum": ["0.1.0"]},
+          "producer": {"type": "string", "enum": ["urai-studio"]},
+          "consumer": {"type": "string", "enum": ["urai-spatial"]},
+          "exportId": {"type": "string", "minLength": 1},
+          "projectId": {"type": "string", "minLength": 1},
+          "tenantId": {"type": "string", "minLength": 1},
+          "createdAt": {"type": "string", "format": "date-time"},
+          "runtimeTargets": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "not": {"items": {"not": {"enum": ["web-spatial"]}}},
+            "items": {
+              "type": "string",
+              "enum": ["web-spatial", "webxr-disabled", "quest-vr-disabled", "visionos-disabled", "ar-handheld-disabled"]
+            }
+          },
+          "sceneManifest": {"$ref": "#/components/schemas/spatialSceneManifest"},
+          "assetManifest": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"$ref": "#/components/schemas/spatialAsset"}
+          },
+          "consentReceipt": {"$ref": "#/components/schemas/spatialConsentReceipt"},
+          "safetyBoundaries": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"$ref": "#/components/schemas/spatialSafetyBoundary"}
+          },
+          "releaseEvidence": {"$ref": "#/components/schemas/spatialReleaseEvidence"}
+        },
+        "additionalProperties": false
+      },
+      "spatialSceneManifest": {
+        "type": "object",
+        "required": ["sceneId", "title", "worldType", "cameraRig", "lightingProfile", "groundLayer", "skyLayer", "orbLayer", "weatherLayer", "memoryStarLayers", "fallbackState"],
+        "properties": {
+          "sceneId": {"type": "string", "minLength": 1},
+          "title": {"type": "string", "minLength": 1},
+          "worldType": {"type": "string", "minLength": 1},
+          "cameraRig": {"$ref": "#/components/schemas/spatialCameraRig"},
+          "lightingProfile": {"$ref": "#/components/schemas/spatialNamedProfile"},
+          "groundLayer": {"$ref": "#/components/schemas/spatialAssetLayer"},
+          "skyLayer": {"$ref": "#/components/schemas/spatialNamedProfile"},
+          "orbLayer": {"$ref": "#/components/schemas/spatialNamedProfile"},
+          "weatherLayer": {"$ref": "#/components/schemas/spatialNamedProfile"},
+          "memoryStarLayers": {"type": "array", "items": {"$ref": "#/components/schemas/spatialAssetLayer"}},
+          "fallbackState": {"$ref": "#/components/schemas/spatialFallbackState"}
+        },
+        "additionalProperties": false
+      },
+      "spatialCameraRig": {
+        "type": "object",
+        "required": ["mode"],
+        "properties": {
+          "mode": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      },
+      "spatialNamedProfile": {
+        "type": "object",
+        "required": ["profile"],
+        "properties": {
+          "profile": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      },
+      "spatialAssetLayer": {
+        "type": "object",
+        "required": ["assetId"],
+        "properties": {
+          "assetId": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      },
+      "spatialFallbackState": {
+        "type": "object",
+        "required": ["renderer"],
+        "properties": {
+          "renderer": {"type": "string", "enum": ["fallback_cards"]}
+        },
+        "additionalProperties": false
+      },
+      "spatialAsset": {
+        "oneOf": [
+          {"$ref": "#/components/schemas/spatialTextureAsset"},
+          {"$ref": "#/components/schemas/spatialMeshAsset"},
+          {"$ref": "#/components/schemas/spatialAudioAsset"},
+          {"$ref": "#/components/schemas/spatialSubtitleAsset"},
+          {"$ref": "#/components/schemas/spatialSceneJsonAsset"},
+          {"$ref": "#/components/schemas/spatialShaderAsset"},
+          {"$ref": "#/components/schemas/spatialSpriteAsset"},
+          {"$ref": "#/components/schemas/spatialParticleConfigAsset"}
+        ]
+      },
+      "spatialAssetBase": {
+        "type": "object",
+        "required": ["assetId", "kind", "uri", "mimeType", "checksum", "scope"],
+        "properties": {
+          "assetId": {"type": "string", "minLength": 1},
+          "kind": {"type": "string"},
+          "uri": {"type": "string", "pattern": "^(https://|ipfs:|gs://)"},
+          "mimeType": {"type": "string", "minLength": 1},
+          "checksum": {"type": "string", "pattern": "^sha256:[a-fA-F0-9]{64}$"},
+          "scope": {"type": "string", "enum": ["public-demo", "tenant-scoped", "user-scoped"]},
+          "fallbackUri": {"type": "string", "pattern": "^(https://|ipfs:|gs://)"}
+        },
+        "additionalProperties": false
+      },
+      "spatialTextureAsset": {
+        "allOf": [
+          {"$ref": "#/components/schemas/spatialAssetBase"},
+          {"type": "object", "properties": {"kind": {"enum": ["texture"]}, "mimeType": {"type": "string", "pattern": "^image/[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]*$"}}}
+        ]
+      },
+      "spatialMeshAsset": {
+        "allOf": [
+          {"$ref": "#/components/schemas/spatialAssetBase"},
+          {"type": "object", "properties": {"kind": {"enum": ["mesh"]}, "mimeType": {"enum": ["model/gltf-binary", "model/gltf+json"]}}}
+        ]
+      },
+      "spatialAudioAsset": {
+        "allOf": [
+          {"$ref": "#/components/schemas/spatialAssetBase"},
+          {"type": "object", "properties": {"kind": {"enum": ["audio"]}, "mimeType": {"type": "string", "pattern": "^audio/[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]*$"}}}
+        ]
+      },
+      "spatialSubtitleAsset": {
+        "allOf": [
+          {"$ref": "#/components/schemas/spatialAssetBase"},
+          {"type": "object", "properties": {"kind": {"enum": ["subtitle"]}, "mimeType": {"enum": ["text/vtt", "application/x-subrip", "text/plain"]}}}
+        ]
+      },
+      "spatialSceneJsonAsset": {
+        "allOf": [
+          {"$ref": "#/components/schemas/spatialAssetBase"},
+          {"type": "object", "properties": {"kind": {"enum": ["scene-json"]}, "mimeType": {"enum": ["application/json"]}}}
+        ]
+      },
+      "spatialShaderAsset": {
+        "allOf": [
+          {"$ref": "#/components/schemas/spatialAssetBase"},
+          {"type": "object", "properties": {"kind": {"enum": ["shader"]}, "mimeType": {"enum": ["text/plain", "text/x-glsl", "application/x-glsl"]}}}
+        ]
+      },
+      "spatialSpriteAsset": {
+        "allOf": [
+          {"$ref": "#/components/schemas/spatialAssetBase"},
+          {"type": "object", "properties": {"kind": {"enum": ["sprite"]}, "mimeType": {"type": "string", "pattern": "^image/[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]*$"}}}
+        ]
+      },
+      "spatialParticleConfigAsset": {
+        "allOf": [
+          {"$ref": "#/components/schemas/spatialAssetBase"},
+          {"type": "object", "properties": {"kind": {"enum": ["particle-config"]}, "mimeType": {"enum": ["application/json"]}}}
+        ]
+      },
+      "spatialConsentReceipt": {
+        "type": "object",
+        "required": ["receiptId", "tenantId", "userId", "purpose", "grantedCategories", "createdAt", "retentionPolicyId"],
+        "properties": {
+          "receiptId": {"type": "string", "minLength": 1},
+          "tenantId": {"type": "string", "minLength": 1},
+          "userId": {"type": "string", "minLength": 1},
+          "purpose": {"type": "string", "minLength": 1},
+          "grantedCategories": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "createdAt": {"type": "string", "format": "date-time"},
+          "retentionPolicyId": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      },
+      "spatialSafetyBoundary": {
+        "type": "object",
+        "required": ["layer", "requiredLanguage"],
+        "properties": {
+          "layer": {"type": "string", "minLength": 1},
+          "requiredLanguage": {"type": "string", "enum": ["none", "uncertainty", "pattern_support_not_diagnosis"]},
+          "humanReviewRequired": {"type": "boolean"}
+        },
+        "additionalProperties": false
+      },
+      "spatialReleaseEvidence": {
+        "type": "object",
+        "description": "Wire evidence claims. Emission also requires a separately sourced protected deployment and Spatial acceptance authority receipt.",
+        "required": ["studioBuildSha", "spatialBuildSha", "validatorName", "validatorVersion", "validatedAt", "liveSmokeUrl"],
+        "properties": {
+          "studioBuildSha": {"type": "string", "pattern": "^(?:[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$"},
+          "spatialBuildSha": {"type": "string", "pattern": "^(?:[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$"},
+          "validatorName": {"type": "string", "minLength": 1},
+          "validatorVersion": {"type": "string", "minLength": 1},
+          "validatedAt": {"type": "string", "format": "date-time"},
+          "liveSmokeUrl": {"type": "string", "pattern": "^https://"}
+        },
+        "additionalProperties": false
       }
     }
   }

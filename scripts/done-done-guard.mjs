@@ -73,9 +73,9 @@ const requiredContractTerms = [
 const requiredPipelineTerms = new Map([
   ['docs/URAI_STUDIO_SYSTEM_PIPELINES_AUDIT_2026-06-16.md', ['Jobs Pipeline', 'Content Pipeline', 'Asset Factory Pipeline', 'Spatial Pipeline', 'Analytics Pipeline', 'Marketing Pipeline', 'B2B Portal']],
   ['docs/URAI_STUDIO_ECOSYSTEM_URL_KEYS.md', ['NEXT_PUBLIC_ASSET_FACTORY_URL', 'NEXT_PUBLIC_URAI_SPATIAL_URL', 'NEXT_PUBLIC_URAI_JOBS_URL', 'NEXT_PUBLIC_URAI_CONTENT_URL', 'NEXT_PUBLIC_URAI_ANALYTICS_URL', 'NEXT_PUBLIC_B2B_PORTAL_URL']],
-  ['apps/studio/lib/studio-spatial-handoff.ts', ['validateStudioSpatialManifest', 'listBlockedStudioSpatialClaims', 'DEFAULT_STUDIO_SPATIAL_RUNTIME_MATRIX', 'fallback_cards']],
+  ['apps/studio/lib/studio-spatial-handoff.ts', ['validateStudioSpatialExport', 'emitStudioSpatialExport', 'createBlockedStudioSpatialHandoff', 'DEFAULT_STUDIO_SPATIAL_RUNTIME_MATRIX', 'model/gltf-binary', 'model/gltf+json']],
   ['apps/studio/lib/studio/integrations.ts', ['asset-factory', 'spatial', 'jobs', 'content', 'analytics', 'marketing', 'admin', 'privacy', 'investors', 'b2b-portal']],
-  ['apps/studio/app/api/system/spatial-handoff/route.ts', ['STUDIO_SPATIAL_HANDOFF_VERSION', 'DEFAULT_STUDIO_SPATIAL_RUNTIME_MATRIX', 'fallback_cards']],
+  ['apps/studio/app/api/system/spatial-handoff/route.ts', ['STUDIO_SPATIAL_HANDOFF_VERSION', 'DEFAULT_STUDIO_SPATIAL_RUNTIME_MATRIX', 'completeEvidenceRequiredForEmission', 'liveIntegrationClaimed: false']],
   ['functions/src/create-job.ts', ['normalizeCreateJobPayload', 'allowedKinds', 'projectId', 'kind', 'priority']],
   ['functions/src/job-runner.ts', ['fallbackOutput', 'fallbackOnly: true', 'readyForExternalUse: false', 'job_succeeded_fallback']],
 ]);
