@@ -4,6 +4,12 @@ import { readinessSummary } from '@/lib/studio/status';
 
 export const dynamic = 'force-dynamic';
 
+type PublicReadinessCheck = {
+  id: string;
+  required: boolean;
+  ok: boolean;
+};
+
 type ReadinessResponse = {
   ok: boolean;
   service: 'urai-studio';
@@ -11,7 +17,7 @@ type ReadinessResponse = {
   status: ReturnType<typeof readinessSummary>['status'];
   blockers: string[];
   warnings: string[];
-  checks: ReturnType<typeof readinessSummary>['checks'];
+  checks: PublicReadinessCheck[];
   timestamp: string;
 };
 
@@ -24,7 +30,7 @@ export async function GET() {
     status: readiness.status,
     blockers: readiness.blockers,
     warnings: readiness.warnings,
-    checks: readiness.checks,
+    checks: readiness.checks.map(({ id, required, ok }) => ({ id, required, ok })),
     timestamp: new Date().toISOString(),
   };
 
