@@ -1,63 +1,57 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { CinematicHero } from '@/components/site/CinematicHero';
 import { MagicalHomeExperience } from '@/components/site/MagicalHomeExperience';
 import { studioModules } from '@/lib/studio/modules';
 
 export const metadata: Metadata = {
-  title: 'URAI Studio — Cinematic creative systems',
+  title: 'URAI Studio — Compose experiences across the URAI system',
   description:
-    'URAI Studio creates launch films, motion, music visuals, product imagery, social campaigns, and immersive brand worlds for creators, founders, and teams.',
-  alternates: {
-    canonical: '/',
-  },
+    'Bring content, assets, spatial worlds, durable jobs, analytics, and review into one creative command environment.',
+  alternates: { canonical: '/' },
 };
-
-const pathways = [
-  {
-    title: 'Launch a campaign',
-    eyebrow: 'For brands and founders',
-    body: 'Shape one idea into a coherent campaign across film, motion, imagery, social, and launch-ready creative.',
-    href: '/contact',
-    cta: 'Start a project',
-  },
-  {
-    title: 'Build a content system',
-    eyebrow: 'For creators and teams',
-    body: 'Create a repeatable visual language and production rhythm that can move across channels without losing its identity.',
-    href: '/studio',
-    cta: 'Explore the studio',
-  },
-  {
-    title: 'Create a brand world',
-    eyebrow: 'For ambitious projects',
-    body: 'Develop a larger cinematic world spanning identity, characters, environments, campaigns, and interactive experiences.',
-    href: '/contact',
-    cta: 'Talk with URAI Studio',
-  },
-];
 
 const publicCreativeWorldIds = new Set(['motion', 'cinema', 'music', 'visuals']);
 
 const capabilityCopy: Record<string, { title: string; body: string }> = {
-  motion: {
-    title: 'Motion',
-    body: 'Authored movement, title systems, transitions, and visual rhythm designed as one language.',
-  },
-  cinema: {
-    title: 'Cinema',
-    body: 'Launch films and narrative sequences built around pacing, atmosphere, sound, and a clear emotional arc.',
-  },
-  music: {
-    title: 'Music',
-    body: 'Visual systems for artists, releases, performances, and music-led campaigns.',
-  },
-  visuals: {
-    title: 'Visuals',
-    body: 'Product imagery, key art, environments, and campaign frames with a consistent art direction.',
-  },
+  motion: { title: 'Motion', body: 'Authored movement, title systems, transitions, and visual rhythm designed as one language.' },
+  cinema: { title: 'Cinema', body: 'Narrative sequences built around pacing, atmosphere, sound, and a clear emotional arc.' },
+  music: { title: 'Music', body: 'Visual systems for artists, releases, performances, and music-led experiences.' },
+  visuals: { title: 'Visuals', body: 'Product imagery, key art, environments, and campaign frames with a consistent art direction.' },
 };
+
+const compositionSteps = [
+  ['INTENT', 'Studio', 'Define the outcome, creative direction, constraints, review path, and project structure.'],
+  ['CANON', 'Content', 'Pull approved language and structured content instead of copying truth into another silo.'],
+  ['MATERIAL', 'Asset Factory', 'Request governed images, 3D, audio, or bundles with provenance when the work needs them.'],
+  ['EXECUTION', 'Jobs Runtime', 'Move long-running generation and rendering into durable, inspectable work.'],
+  ['WORLD', 'Spatial', 'Preview or place approved material inside a spatial experience when that form adds meaning.'],
+  ['EVIDENCE', 'Analytics', 'Review authorized outcome evidence without turning creative work into fake performance theater.'],
+] as const;
+
+const pathways = [
+  {
+    title: 'Compose a launch',
+    eyebrow: 'Objective',
+    body: 'Bring product truth, imagery, motion, sound, spatial material, approvals, and release evidence into one coherent creative path.',
+    href: '/contact',
+    cta: 'Start a project',
+  },
+  {
+    title: 'Build a reusable world',
+    eyebrow: 'Objective',
+    body: 'Create a visual and narrative system that can move across film, motion, imagery, web, and spatial experiences without losing identity.',
+    href: '/studio',
+    cta: 'Open the studio',
+  },
+  {
+    title: 'Review before release',
+    eyebrow: 'Objective',
+    body: 'Keep versions, provenance, approvals, private material, and final exports attached to the project that produced them.',
+    href: '/privacy',
+    cta: 'Review privacy boundary',
+  },
+];
 
 export default function Home() {
   const featuredModules = studioModules
@@ -66,20 +60,49 @@ export default function Home() {
 
   return (
     <section data-urai-studio-page="home" className="landing-page">
-      <CinematicHero />
+      <section className="section-panel" aria-labelledby="studio-home-title">
+        <div className="section-heading">
+          <p className="eyebrow">URAI Studio · Compose</p>
+          <h1 id="studio-home-title">Compose experiences from the systems already inside URAI.</h1>
+          <p>
+            Bring content, assets, spatial worlds, durable jobs, analytics, and review into one creative command environment.
+          </p>
+          <div className="cta-row">
+            <Link className="button button-primary" href="/studio">Open the studio</Link>
+            <Link className="button button-secondary" href="/contact">Start a project</Link>
+          </div>
+        </div>
+      </section>
 
       <MagicalHomeExperience />
 
-      <section className="section-panel studio-capabilities" aria-labelledby="studio-capabilities-title">
+      <section className="section-panel" aria-labelledby="composition-title">
         <div className="section-heading">
-          <p className="eyebrow">What we make</p>
-          <h2 id="studio-capabilities-title">One creative language, carried across every format.</h2>
+          <p className="eyebrow">System composition</p>
+          <h2 id="composition-title">The creative interface hides the plumbing without hiding the authority.</h2>
           <p>
-            Cinema, motion, music, and visuals are art-directed together so the finished campaign feels
-            intentional from its first frame to its last touchpoint.
+            Studio invokes bounded capabilities when a project needs them. The person stays inside the creative workflow; the system keeps content authority, asset provenance, durable execution, spatial previews, and evidence attached to their real owners.
           </p>
         </div>
+        <div className="grid three">
+          {compositionSteps.map(([verb, system, body]) => (
+            <article className="card elevated" key={verb}>
+              <p className="eyebrow">{verb}</p>
+              <h3>{system}</h3>
+              <p>{body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
 
+      <section className="section-panel studio-capabilities" aria-labelledby="studio-capabilities-title">
+        <div className="section-heading">
+          <p className="eyebrow">Creative worlds</p>
+          <h2 id="studio-capabilities-title">One creative language, expressed through different media.</h2>
+          <p>
+            Cinema, motion, music, and visuals stay distinct enough to do their jobs and connected enough to belong to one project.
+          </p>
+        </div>
         <div className="grid feature-grid">
           {featuredModules.map((module) => (
             <article key={module.id} className="card module-card portal-card">
@@ -95,12 +118,9 @@ export default function Home() {
 
       <section className="section-panel" aria-labelledby="studio-pathways-title">
         <div className="section-heading">
-          <p className="eyebrow">Ways to work together</p>
-          <h2 id="studio-pathways-title">Start with the outcome, not the production stack.</h2>
-          <p>
-            Bring a launch, story, product, artist, or world. URAI Studio shapes the creative system around
-            what the work needs to become.
-          </p>
+          <p className="eyebrow">Objective first</p>
+          <h2 id="studio-pathways-title">Start with what the work needs to become.</h2>
+          <p>The project determines which URAI capabilities become active; there is no fixed microservice-shaped workflow exposed to the creator.</p>
         </div>
         <div className="grid three">
           {pathways.map((pathway) => (
@@ -117,10 +137,9 @@ export default function Home() {
       <section className="launch-panel trust-band" aria-labelledby="studio-trust-title">
         <div>
           <p className="eyebrow">Private by design</p>
-          <h2 id="studio-trust-title">Your work stays yours while it is being made.</h2>
+          <h2 id="studio-trust-title">Private work stays behind the appropriate boundary.</h2>
           <p>
-            Project material, collaboration details, and private creative work stay behind the appropriate
-            controls. Public pages show finished work and capabilities—not internal project data.
+            Project material, private media, collaboration details, generation inputs, review notes, and unreleased exports remain gated. Public Studio surfaces explain capability and show approved work—not internal project data.
           </p>
         </div>
         <div className="cta-row">
