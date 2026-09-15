@@ -114,7 +114,7 @@ jobs:
             }
           })().catch(error => { console.error(error); process.exit(1); });
           EOF
-          (cd apps/studio && EVIDENCE_DIR="$EVIDENCE_DIR" GITHUB_SHA="${{ github.event.pull_request.head.sha }}" node "$EVIDENCE_DIR/capture.cjs")
+          (cd apps/studio && EVIDENCE_DIR="$EVIDENCE_DIR" GITHUB_SHA="${{ github.event.pull_request.head.sha }}" NODE_PATH="$PWD/node_modules" node "$EVIDENCE_DIR/capture.cjs")
           test "$(find "$EVIDENCE_DIR" -name '*.png' -size +0c | wc -l)" -eq 12
           sha256sum "$EVIDENCE_DIR"/*.png > "$EVIDENCE_DIR/screenshot-sha256.txt"
           test -z "$(git status --porcelain)"
