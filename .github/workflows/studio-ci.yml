@@ -2,7 +2,6 @@ name: Studio CI
 
 on:
   pull_request:
-    branches: [main, security/current-membership-authority-20260830, fix/studio-spatial-wire-compat-20260903]
   push:
     branches: [main]
 
@@ -28,7 +27,7 @@ jobs:
       FIREBASE_PROJECT_ID: ci-placeholder
     steps:
       - name: Checkout exact reviewed head
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: ${{ env.TARGET_SHA }}
           persist-credentials: false
@@ -43,13 +42,13 @@ jobs:
         run: corepack enable
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - name: Setup Java for Firebase emulators
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: temurin
           java-version: '21'
@@ -105,12 +104,12 @@ jobs:
           test -z "$(git status --porcelain --untracked-files=all -- . ':(exclude)release-evidence')"
 
       - name: Upload exact-head source evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: studio-source-evidence-${{ env.TARGET_SHA }}
           path: release-evidence/studio-source-${{ env.TARGET_SHA }}.json
           if-no-files-found: error
-          retention-days: 365
+          retention-days: 90
 
       - name: Stop Studio server
         if: always()

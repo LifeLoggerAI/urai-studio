@@ -561,8 +561,18 @@ button:disabled {
     display: block;
   }
 
+  .shell,
+  .main,
+  .nav,
+  .header,
+  .footer,
+  .container {
+    max-width: 100%;
+  }
+
   .nav {
-    width: auto;
+    width: 100%;
+    flex: 0 1 auto;
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }
@@ -600,6 +610,17 @@ button:disabled {
 
   .proof-strip {
     flex-direction: column;
+  }
+
+  .nav,
+  .header,
+  .footer,
+  .container,
+  .card,
+  .section-panel,
+  .launch-panel,
+  .cta-band {
+    overflow-wrap: anywhere;
   }
 }
 
