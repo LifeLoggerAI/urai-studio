@@ -690,6 +690,16 @@ button:disabled {
     justify-self: start;
   }
 
+  .studio-rail-v2 .rail-group-v2 {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    scrollbar-width: none;
+  }
+
+  .studio-rail-v2 .rail-group-v2 p {
+    flex-basis: 100%;
+  }
+
   .section-panel {
     border-radius: 24px;
   }
