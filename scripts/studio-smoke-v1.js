@@ -120,7 +120,8 @@ has('apphosting.yaml', ['runtime: nodejs20', 'NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLE
 has('apps/studio/app/api/contact/route.ts', ["collection('contactRequests')", "collection('projectRequests')", "collection('integrationRequests')", 'bot_rejected', 'invalid_json']);
 has('apps/studio/app/api/waitlist/route.ts', ["collection('waitlist')", 'bot_rejected', 'invalid_json']);
 has('apps/studio/lib/urai-system-contract.ts', ['URAI_SYSTEM_CONTRACT', 'StudioJob', 'StudioAsset', 'StudioExport', 'UraiPassport', 'V1_GENESIS_HOME', 'V2_COGNITIVE_MIRROR', 'V3_PATTERN_REFLECTION', 'V4_WEBXR_HANDOFF', 'V5_MIRROR_OF_BECOMING']);
-has('apps/studio/lib/studio-runtime-store.ts', ['createStudioJob', 'createStudioExport', 'listTenantJobs', 'tenantScoped', 'studioJobs', 'studioExports']);
+has('apps/studio/lib/studio/data-model.ts', ['STUDIO_CANONICAL_COLLECTIONS', 'studioJobs', 'studioExports', 'STUDIO_DATA_MODEL_VERSION']);
+has('apps/studio/lib/studio-runtime-store.ts', ['createStudioJob', 'createStudioExport', 'listTenantJobs', 'tenantScoped', 'STUDIO_CANONICAL_COLLECTIONS', 'STUDIO_DATA_MODEL_VERSION']);
 has('apps/studio/lib/studio-spatial-handoff.ts', ['STUDIO_SPATIAL_HANDOFF_VERSION', 'DEFAULT_STUDIO_SPATIAL_RUNTIME_MATRIX', 'validateStudioSpatialExport', 'emitStudioSpatialExport', 'createBlockedStudioSpatialHandoff', 'model/gltf-binary', 'model/gltf+json']);
 has('apps/studio/system/spatial-handoff.discovery.json', ['"route": "/api/system/spatial-handoff"', '"exportRoute": "/api/studio/exports"', '"requiredExportField": "spatialHandoff"', '"defaultStatus": "blocked"', '"wireContract": "urai-spatial/0.1.0"']);
 has('apps/studio/system/spatial-handoff.openapi.json', ['"/api/system/spatial-handoff"', 'spatialHandoff', 'releaseEvidence', 'model/gltf-binary', 'model/gltf+json']);
