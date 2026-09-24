@@ -96,6 +96,8 @@ export async function createStudioProject(input: Partial<StudioProject> = {}): P
     userId: cleanString(input.userId, DEFAULT_USER_ID),
     name: cleanString(input.name, 'URAI Studio Project'),
     description: input.description,
+    projectType: input.projectType,
+    metadata: input.metadata,
     ownerSystem: 'urai-studio',
     linkedSystems: input.linkedSystems ?? ['urai-studio'],
     capabilityKeys: input.capabilityKeys ?? ['V1_GENESIS_HOME'],
@@ -201,6 +203,67 @@ export async function createStudioExport(input: CreateStudioExportInput): Promis
 
   await adminDb.collection(COLLECTIONS.exports).doc(studioExport.id).set(studioExport, { merge: true });
   return { ok: true, mode: 'firebase', data: studioExport };
+}
+
+export async function getStudioJob(input: { jobId: UraiId; tenantId: UraiId; userId: UraiId }): Promise<RuntimeStoreResponse<StudioJob>> {
+  if (!adminDb) return { ok: false, mode: 'unconfigured', error: 'firebase_admin_unconfigured' };
+  const snapshot = await adminDb.collection(COLLECTIONS.jobs).doc(input.jobId).get();
+  if (!snapshot.exists) return { ok: false, mode: 'firebase', error: 'studio_job_not_found' };
+  const record = snapshot.data();
+  requireCanonicalStudioRecord(record);
+  const job = record as StudioJob;
+  if (job.tenantId !== input.tenantId || job.userId !== input.userId) {
+    return { ok: false, mode: 'firebase', error: 'studio_job_scope_mismatch' };
+  }
+  return { ok: true, mode: 'firebase', data: job };
+}
+
+export async function updateStudioJobExecution(input: {
+  jobId: UraiId;
+  tenantId: UraiId;
+  userId: UraiId;
+  status: StudioJobStatus;
+  externalJobId?: UraiId;
+  externalStatus?: string;
+  errorCode?: string;
+  errorMessage?: string;
+}): Promise<RuntimeStoreResponse<StudioJob>> {
+  if (!adminDb) return { ok: false, mode: 'unconfigured', error: 'firebase_admin_unconfigured' };
+  const ref = adminDb.collection(COLLECTIONS.jobs).doc(input.jobId);
+  const result = await adminDb.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists) throw new Error('studio_job_not_found');
+    const current = snapshot.data();
+    if (!current) throw new Error('studio_job_not_found');
+    requireCanonicalStudioRecord(current);
+    if (current.tenantId !== input.tenantId || current.userId !== input.userId) throw new Error('studio_job_scope_mismatch');
+    const updatedAt = nowIso();
+    const patch: Record<string, unknown> = {
+      status: input.status,
+      updatedAt,
+      errorCode: input.errorCode ?? null,
+      errorMessage: input.errorMessage ?? null,
+    };
+    if (input.externalJobId) {
+      patch.externalExecution = {
+        system: 'urai-jobs',
+        jobId: input.externalJobId,
+        status: input.externalStatus ?? input.status,
+        updatedAt,
+      };
+    } else if (current.externalExecution && input.externalStatus) {
+      patch.externalExecution = {
+        ...current.externalExecution,
+        status: input.externalStatus,
+        updatedAt,
+      };
+    }
+    transaction.set(ref, patch, { merge: true });
+    return { ...current, ...patch } as StudioJob;
+  }).catch((error) => ({ __error: error instanceof Error ? error.message : 'studio_job_update_failed' } as const));
+
+  if ('__error' in result) return { ok: false, mode: 'firebase', error: result.__error };
+  return { ok: true, mode: 'firebase', data: result };
 }
 
 export async function listTenantJobs(tenantId = DEFAULT_TENANT_ID): Promise<RuntimeStoreResponse<StudioJob[]>> {
