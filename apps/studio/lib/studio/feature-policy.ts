@@ -24,7 +24,8 @@ export type StudioFeatureId =
   | 'external-delivery'
   | 'brain-map-private'
   | 'collaboration-review'
-  | 'future-marketplace';
+  | 'future-marketplace'
+  | 'life-movies-render';
 
 export type StudioFeaturePolicy = {
   id: StudioFeatureId;
@@ -73,6 +74,7 @@ const HARD_OFF_FEATURES = new Set<StudioFeatureId>([
   'brain-map-private',
   'collaboration-review',
   'future-marketplace',
+  'life-movies-render',
 ]);
 
 export const STUDIO_FEATURE_IDS: readonly StudioFeatureId[] = [
@@ -90,6 +92,7 @@ export const STUDIO_FEATURE_IDS: readonly StudioFeatureId[] = [
   'brain-map-private',
   'collaboration-review',
   'future-marketplace',
+  'life-movies-render',
 ] as const;
 
 function envKey(id: StudioFeatureId) {
