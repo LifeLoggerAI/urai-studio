@@ -102,7 +102,7 @@ test('fails closed on incomplete asset, scene, consent, safety, or release evide
     ['consentReceipt', (value) => { value.consentReceipt.grantedCategories = []; }],
     ['safetyBoundaries', (value) => { value.safetyBoundaries = []; }],
     ['releaseEvidence', (value) => { delete value.releaseEvidence; }],
-    ['release SHA', (value) => { value.releaseEvidence.spatialBuildSha = 'unknown'; }],
+    ['release SHA', (value) => { value.releaseEvidence.spatialBuildSha = 'unknown'; }],\r\n    ['validator version', (value) => { value.releaseEvidence.validatorVersion = '0.1.0'; }],
     ['live smoke URL', (value) => { value.releaseEvidence.liveSmokeUrl = 'http://urai.app/status'; }],
   ];
 

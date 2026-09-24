@@ -311,7 +311,7 @@ function validateReleaseEvidence(value: unknown, errors: string[]) {
   if (!isCommitSha(value.studioBuildSha)) errors.push('releaseEvidence.studioBuildSha must be an exact commit SHA');
   if (!isCommitSha(value.spatialBuildSha)) errors.push('releaseEvidence.spatialBuildSha must be an exact commit SHA');
   if (!isNonEmptyString(value.validatorName)) errors.push('releaseEvidence.validatorName is required');
-  if (!isNonEmptyString(value.validatorVersion)) errors.push('releaseEvidence.validatorVersion is required');
+  if (value.validatorVersion !== STUDIO_SPATIAL_HANDOFF_CONTRACT_VERSION) {\r\n    errors.push('releaseEvidence.validatorVersion must match contractVersion');\r\n  }
   if (!isIsoDate(value.validatedAt)) errors.push('releaseEvidence.validatedAt must be an ISO timestamp');
   if (!uriIsSafe(value.liveSmokeUrl) || !String(value.liveSmokeUrl).startsWith('https://')) {
     errors.push('releaseEvidence.liveSmokeUrl must use https');
