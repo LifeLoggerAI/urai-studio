@@ -84,7 +84,7 @@ export function BrainMapEvidenceList({ nodes, edges }: { nodes: BrainMapNode[]; 
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Repository, system, layer or health"
+            aria-label="Search repository, system, layer or health"
           />
         </label>
         <label>
@@ -112,7 +112,7 @@ export function BrainMapEvidenceList({ nodes, edges }: { nodes: BrainMapNode[]; 
           <title id="brain-map-graph-title">URAI system evidence graph</title>
           <desc id="brain-map-graph-desc">
             Evidence-backed repositories, workflows, services and environments connected by documented dependencies.
-            Use the accessible node list below for the complete non-visual equivalent.
+            Use the accessible list below for the complete non-visual equivalent.
           </desc>
           {visibleEdges.map((edge, index) => {
             const from = positions.get(edge.from);
@@ -186,7 +186,7 @@ export function BrainMapEvidenceList({ nodes, edges }: { nodes: BrainMapNode[]; 
         </aside>
       ) : null}
 
-      <h3>Accessible evidence node list</h3>
+      <h3>Accessible list of evidence nodes</h3>
       <table>
         <caption>Filtered system evidence nodes</caption>
         <thead>
