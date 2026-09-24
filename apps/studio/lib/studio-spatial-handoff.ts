@@ -1,4 +1,4 @@
-export const STUDIO_SPATIAL_HANDOFF_VERSION = '0.1.0' as const;
+export const STUDIO_SPATIAL_HANDOFF_VERSION = '0.2.0' as const;
 export const STUDIO_SPATIAL_HANDOFF_CONTRACT_VERSION = STUDIO_SPATIAL_HANDOFF_VERSION;
 
 export const STUDIO_SPATIAL_HANDOFF_REQUIRED_GATES = [
@@ -167,8 +167,8 @@ export interface StudioSpatialTrustedReleaseAuthority {
   };
 }
 
-// The core fields match the current urai-spatial 0.1.0 consumer contract.
-// Studio requires the releaseEvidence extension before emitting a wire payload.
+// Version 0.2.0 makes releaseEvidence part of the shared Studio/Spatial wire contract.
+// Emission still requires separately sourced trusted release authority.
 export interface StudioSpatialExport {
   contractVersion: typeof STUDIO_SPATIAL_HANDOFF_CONTRACT_VERSION;
   producer: 'urai-studio';
@@ -202,7 +202,7 @@ export const STUDIO_SPATIAL_HANDOFF_GUARDRAILS = {
   tenantScoped: true,
   adFreeCoreExperience: true,
   externalMarketingLayerEnabled: false,
-  wireContract: 'urai-spatial/0.1.0',
+  wireContract: 'urai-spatial/0.2.0',
   emissionPolicy: 'trusted-release-authority-only',
   fallbackRenderer: 'fallback_cards',
 } as const;
