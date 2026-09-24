@@ -24,7 +24,7 @@ type SystemManifestResponse = {
   integrations: StudioIntegrationDiagnostic[];
   spatialHandoff: {
     contractVersion: typeof STUDIO_SPATIAL_HANDOFF_VERSION;
-    wireContract: 'urai-spatial/0.1.0';
+    wireContract: 'urai-spatial/0.2.0';
     discovery: '/api/system/spatial-handoff';
     exportField: 'spatialHandoff';
     exportRoute: '/api/studio/exports';
@@ -63,7 +63,7 @@ export async function GET() {
     integrations: studioIntegrations,
     spatialHandoff: {
       contractVersion: STUDIO_SPATIAL_HANDOFF_VERSION,
-      wireContract: 'urai-spatial/0.1.0',
+      wireContract: 'urai-spatial/0.2.0',
       discovery: '/api/system/spatial-handoff',
       exportField: 'spatialHandoff',
       exportRoute: '/api/studio/exports',
