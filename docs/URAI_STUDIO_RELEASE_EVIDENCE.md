@@ -87,20 +87,45 @@ These receipts prove source/workflow state only. They do not transfer to success
 
 ## Current successor execution matrix — 2026-09-24 UTC
 
-The machine-green PR #98 checkpoint remains historical source proof only. Current source completion work is split into bounded successor lanes, each of which must earn fresh exact-head proof:
+The machine-green #98 checkpoint remains historical source proof only. Current work is split into bounded successors; exact heads are re-fetched before acceptance and no predecessor proof transfers.
 
-| PR | Purpose | Exact head at this ledger update | Proof state | Review / release state |
-| --- | --- | --- | --- | --- |
-| #99 | canonical Studio data model V3 | `5d3dd68967aa9a170d2a29624db0c4dbef0f4d6a` | six workflows queued; no successor proof transferred | draft / no submitted approval / unmerged / undeployed |
-| #100 | observed readiness and truthful status | `b9389713020bf0b52d1059ef4a88e4b91586f29c` | six workflows queued; no successor proof transferred | draft / no submitted approval / unmerged / undeployed |
-| #101 | hard-off provider/job/export/review/accessibility/control rails | `35bd809b5a7a09324aa60d06b7d01f16e8e15574` | six workflows queued; no successor proof transferred | draft / no submitted approval / provider spend and public delivery hard-off |
-| #103 | Studio ↔ Spatial 0.2.0 handoff contract | `f384d3c8bbeed0fd8d130b1f8cc8a64cb3b453e2` | six workflows queued; no successor proof transferred | draft / no submitted approval / XR remains disabled |
-| #104 | this evidence reconciliation lane | `807ab82a938a8b99c4c0d43038f4b09e4597acf4` before this documentation commit | workflows queued; this documentation change requires a new exact head | draft / no submitted approval / unmerged / undeployed |
-| #105 | non-canonical source-root hygiene | `d23a8d1d409e52da33f7831286dd79b40ff1595a` | six workflows queued; no successor proof transferred | draft / no submitted approval / unmerged / undeployed |
+| PR | Purpose | Current known exact head | Current classification |
+| --- | --- | --- | --- |
+| #99 | canonical Studio data model V3 | `6227470e6c4a62583e1f4b8e23c0c22e015d4df6` | **SOURCE-PROVEN — 6/6 exact-head workflows success** |
+| #100 | observed readiness / truthful status | `dba0ff65d66595d0c7010843f2253794e37ff64c` | successor proof draining after stale-copy guard repair |
+| #103 | Studio producer half of Studio-Spatial 0.2.0 | `8b642fc67229dde62612c5f4d0ad25672b4957ea` | **SOURCE-PROVEN — 6/6 exact-head workflows success** |
+| #104 | evidence/governance reconciliation | current branch head changes with this ledger | documentation-only successor must re-earn exact-head proof |
+| #105 | canonical-root hygiene | `d23a8d1d409e52da33f7831286dd79b40ff1595a` | **SOURCE-PROVEN — 6/6 exact-head workflows success** |
+| #107 | clean hard-off provider/job/export/review/accessibility/control rails | `f39e2658f20425b128543f5f262bd79f93702f96` | proof draining; rebuilt atomically on green #99 |
+| #108 | provenance-bound Life Movies launch foundation | re-fetch live head before use | proof draining; hard-off before write/Jobs dispatch |
+| Spatial #1301 | Studio-Spatial 0.2.0 consumer | re-fetch live head before use | proof draining on current Spatial #1296 base |
+| Jobs #103 | provider-free `studio.render.video` Life Movies worker | re-fetch live head before use | proof draining after frozen-lockfile repair |
 
-Separate paired consumer authority exists in `LifeLoggerAI/urai-spatial` PR #1300 for the Studio-Spatial `0.2.0` wire contract. Its consumer validator already requires `releaseEvidence.validatorVersion` to equal the contract version. Studio #103 now enforces the same requirement; paired exact-head proof remains required on both repositories.
+Superseded and closed: Studio #96, #101, #106 and Spatial #1300.
 
-No row above is a deployment, provider execution, live-runtime, human-approval, merge, or release claim. Queued checks are nonterminal evidence.
+### Activation classification
+
+The following remain **HARD-OFF / NOT AUTHORIZED**, regardless of source completeness:
+
+- paid provider execution;
+- provider generation;
+- public publishing;
+- external delivery;
+- live XR;
+- product-capture self-promotion;
+- Film Foundry execution;
+- Brain Map private operational activation;
+- Life Movies render dispatch;
+- production V3 migration.
+
+The following remain **UNPROVEN EXTERNAL/HUMAN GATES**:
+
+- protected deployment;
+- live-domain exact-SHA equivalence;
+- independent review on the applicable unchanged release head;
+- repository main branch protection/ruleset enforcement.
+
+No row above is a deployment, provider, live-runtime, merge, human-approval, or public-release claim.
 
 ## Non-negotiable release rules
 
