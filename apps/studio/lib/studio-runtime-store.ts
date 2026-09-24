@@ -233,8 +233,7 @@ export async function updateStudioJobExecution(input: {
   const result = await adminDb.runTransaction(async (transaction) => {
     const snapshot = await transaction.get(ref);
     if (!snapshot.exists) throw new Error('studio_job_not_found');
-    const current = snapshot.data();
-    requireCanonicalStudioRecord(current);
+    const current = requireCanonicalStudioRecord(snapshot.data()) as StudioJob;
     if (current.tenantId !== input.tenantId || current.userId !== input.userId) throw new Error('studio_job_scope_mismatch');
     const updatedAt = nowIso();
     const patch: Record<string, unknown> = {
