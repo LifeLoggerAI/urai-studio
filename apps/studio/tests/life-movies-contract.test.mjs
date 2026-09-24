@@ -3,6 +3,8 @@ import fs from 'node:fs';
 
 const life = fs.readFileSync(new URL('../lib/studio/life-movies.ts', import.meta.url), 'utf8');
 const route = fs.readFileSync(new URL('../app/api/studio/life-movies/route.ts', import.meta.url), 'utf8');
+const bridge = fs.readFileSync(new URL('../lib/studio/life-movie-jobs-bridge.ts', import.meta.url), 'utf8');
+const store = fs.readFileSync(new URL('../lib/studio-runtime-store.ts', import.meta.url), 'utf8');
 const page = fs.readFileSync(new URL('../app/studio/life-movies/page.tsx', import.meta.url), 'utf8');
 
 for (const token of [
@@ -28,7 +30,18 @@ for (const token of [
 
 assert.ok(route.includes('requireStudioAuth'), 'Life Movies API must use canonical Studio auth');
 assert.ok(route.includes("kind: 'video_generation'"), 'Life Movies must queue through canonical Studio video jobs');
-assert.ok(route.includes('createStudioJob'), 'Life Movies must use canonical Studio persistence');
+assert.ok(route.includes('createStudioProject'), 'Life Movies projects must persist in the canonical Studio project model');
+assert.ok(route.includes('createStudioJob'), 'Life Movies must use canonical Studio job persistence');
+assert.ok(route.includes('dispatchLifeMovieRender'), 'Life Movies must dispatch heavy rendering to URAI Jobs');
+assert.ok(route.includes('getLifeMovieRenderStatus'), 'Life Movies must expose render status');
+assert.ok(route.includes('cancelLifeMovieRender'), 'Life Movies must expose render cancellation');
+assert.ok(route.includes('dispatched: true'), 'Life Movies may claim queued only after Jobs accepts the render');
+assert.ok(bridge.includes('URAI_JOBS_LIFE_MOVIE_BRIDGE_TOKEN'), 'Studio-to-Jobs execution must use a server-only bridge token');
+assert.ok(bridge.includes('URAI_STUDIO_STORAGE_BUCKET'), 'relative Studio media paths must bind to an explicit source bucket');
+assert.ok(bridge.includes('life_movie_source_not_staged_for_render'), 'un-staged web/private sources must fail closed before render dispatch');
+assert.ok(bridge.includes("schemaVersion: 'urai-life-movie-render-v1'"), 'Studio must emit the canonical Jobs render contract');
+assert.ok(store.includes("projectType: input.projectType"), 'Studio project persistence must retain the Life Movie project type');
+assert.ok(store.includes('externalExecution'), 'Studio job records must retain Jobs execution linkage');
 assert.ok(route.includes('providerGenerationAuthorized: false'), 'provider generation must remain fail-closed');
 assert.ok(page.includes('does not depend on Spatial'), 'public Studio copy must state the non-Spatial video path');
 assert.ok(page.includes('MP4 · SRT · JSON'), 'Life Movies page must expose ordinary video/caption/manifest outputs');
