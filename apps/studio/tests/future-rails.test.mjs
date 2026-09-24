@@ -66,6 +66,7 @@ assert.ok(exportPkg.includes('exportPackageCanDeliver(_pkg: StudioExportPackage)
 assert.ok(exportPkg.includes('contentHash'));
 assert.ok(exportPkg.includes('mimeType'));
 assert.ok(exportPkg.includes('retention'));
+assert.ok(exportPkg.includes('localizationAuthorityRef'));
 assert.ok(exportPkg.includes('localization'));
 
 console.log('Studio hard-off future rails source guard passed');
