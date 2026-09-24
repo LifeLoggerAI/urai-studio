@@ -30,3 +30,35 @@ for (const component of ['FilmFoundryControlPanel', 'BrainMapEvidenceList', 'Cut
 }
 
 console.log('Studio dormant control-plane UI guard passed');
+
+const filmFoundryPanel = fs.readFileSync(new URL('../components/studio/future/FilmFoundryControlPanel.tsx', import.meta.url), 'utf8');
+const cutOnePanel = fs.readFileSync(new URL('../components/studio/future/CutOneControlPanel.tsx', import.meta.url), 'utf8');
+
+for (const marker of [
+  'canonState',
+  'consentState',
+  'continuityState',
+  'factualConfidenceState',
+  'filmFoundryAdvanceBlockers',
+  'filmFoundryCanAdvance',
+  'data-provider-spend-authorized="false"',
+  'data-public-release-authorized="false"',
+]) {
+  assert.ok(filmFoundryPanel.includes(marker), `Film Foundry UI missing gate marker: ${marker}`);
+}
+
+for (const marker of [
+  'CutOneProductionBoard',
+  'evaluateCutOneBoardReadiness',
+  'Cut One canonical scene production board',
+  'scriptTrackerRefs',
+  'assetTrackerRefs',
+  'approvalTrackerRefs',
+  'exportTrackerRefs',
+  'stagingChecklistRefs',
+  'releaseChecklistRefs',
+  'data-provider-execution-authorized="false"',
+  'data-public-release-authorized="false"',
+]) {
+  assert.ok(cutOnePanel.includes(marker), `Cut One UI missing command-board marker: ${marker}`);
+}
