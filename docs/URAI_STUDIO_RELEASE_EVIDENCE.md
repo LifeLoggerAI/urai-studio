@@ -45,63 +45,57 @@ The contract-only artifact command writes the deterministic JSON manifest, SRT c
 
 ## Source and protected evidence ledger
 
-Current source-control checkpoint: Studio PR #98 exact head `e1821b64f44911a94d618d1419f96e504488646c`.
+Current terminal source-control authority: Studio PR #114 exact head `de24d0fe38735d761d1a36e9971f03ea8d6cc108`.
 
-All six pull-request workflows completed successfully at that exact head on 2026-09-24 UTC:
+This exact head supersedes the predecessor Studio stack as the single current review target. No predecessor review, deployment, live-runtime, provider, or release evidence transfers automatically.
 
-- Studio Visual Proof — run `35947630810`
-- Studio Audit — run `35947630853`
-- Studio CI — run `35947630841`
-- Studio Health Guard — run `35947630844`
-- URAI Production Verify — run `35947630822`
-- URAI Studio Video Factory Verification — run `35947630883`
+Current exact-head pull-request workflows completed successfully:
+
+- Studio CI — run `36035410442`
+- Studio Visual Proof — run `36035410581`
+- Studio Audit — run `36035410633`
+- Studio Health Guard — run `36035410443`
+- URAI Production Verify — run `36035410530`
+- URAI Studio Video Factory Verification — run `36035410453`
 
 Retained exact-head artifacts:
 
-- `urai-studio-visual-e1821b64f44911a94d618d1419f96e504488646c` — artifact `10789095312` — `sha256:b0ac3daaa4cd8005e31145e2e00be945e9154a8fd174113eaf5c3bcf5019dc0c`
-- `studio-source-evidence-e1821b64f44911a94d618d1419f96e504488646c` — artifact `10787924356` — `sha256:452205f6ef8819754b5a4e72ef82652815a489eea596df054aca7a570a17e0dd`
-- `urai-studio-video-factory-evidence` — artifact `10788159957` — `sha256:bab922cffe85e964b54156a16ea25c2d00a51e84869056fd2ab710201fafc8f5`
+- `studio-source-evidence-de24d0fe38735d761d1a36e9971f03ea8d6cc108` — artifact `10825385628` — `sha256:7051325c1739ee30df276c4d049c57471aa5696635df7205a324ea49156d1055`
+- `urai-studio-visual-de24d0fe38735d761d1a36e9971f03ea8d6cc108` — artifact `10824241635` — `sha256:952963250a1ce55fe4a3a9478e50fe36cfe2159b8e5757175f0dc9f11c6d0a1c`
+- `urai-studio-video-factory-evidence` — artifact `10824356010` — `sha256:c9647d5b32eaf25cbc917238c771f0b90e72f484fb900eab6215c85db37c2512`
 
-These receipts prove source/workflow state only. They do not transfer to successor heads and do not prove provider execution, protected deployment, live-domain equivalence, independent review, or public release.
+These receipts prove source/workflow state only. They do not prove protected deployment, live-domain exact-SHA equivalence, independent human approval, provider execution, paid spend, public release, or live XR.
 
 | Gate | Required command or proof | Current classification | Evidence location |
 | --- | --- | --- | --- |
-| Install | frozen workspace install | SOURCE-PROVEN at #98 exact head | Studio CI / Production Verify |
-| Lint | `pnpm lint` | SOURCE-PROVEN at #98 exact head | Studio Audit / exact-head source receipt |
-| Typecheck | `pnpm typecheck` | SOURCE-PROVEN at #98 exact head | Studio Audit / Production Verify |
-| Unit/tests | `pnpm test` | SOURCE-PROVEN at #98 exact head | Studio CI / Production Verify |
-| App build | `pnpm build` | SOURCE-PROVEN at #98 exact head | Studio CI / Visual Proof |
-| Functions build | `pnpm --dir functions build` | SOURCE-PROVEN at #98 exact head | Studio Audit / Production Verify |
-| Done-done guard | `pnpm done-done:guard` | SOURCE-PROVEN at #98 exact head | Studio Audit |
-| Evidence contract guard | `pnpm release:evidence:contract` | SOURCE-PROVEN at #98 exact head | Studio Audit |
-| Health guard | exact-head health guard workflow | SOURCE-PROVEN at #98 exact head | run `35947630844` |
-| Source-only release check | `pnpm release:check` | SOURCE-PROVEN at #98 exact head | Studio CI |
-| Visual proof | exact-head retained pixel workflow | SOURCE-PROVEN at #98 exact head | artifact `10789095312` |
-| Video factory source proof | exact-head video factory workflow | SOURCE-PROVEN at #98 exact head | artifact `10788159957` |
-| Provider-backed execution | protected execution receipt | UNPROVEN / HARD-OFF | No provider execution receipt |
+| Install | frozen workspace install | SOURCE-PROVEN at PR #114 predecessor exact head | Studio CI / Production Verify |
+| Lint | `pnpm lint` | SOURCE-PROVEN at PR #114 predecessor exact head | Studio Audit |
+| Typecheck | `pnpm typecheck` | SOURCE-PROVEN at PR #114 predecessor exact head | Studio Audit / Production Verify |
+| Unit/tests | `pnpm test` | SOURCE-PROVEN at PR #114 predecessor exact head | Studio CI / Production Verify |
+| App build | `pnpm build` | SOURCE-PROVEN at PR #114 predecessor exact head | Studio CI / Visual Proof |
+| Functions build | `pnpm --dir functions build` | SOURCE-PROVEN at PR #114 predecessor exact head | Studio Audit / Production Verify |
+| Done-done guard | `pnpm done-done:guard` | SOURCE-PROVEN at PR #114 predecessor exact head | Studio Audit |
+| Evidence contract guard | `pnpm release:evidence:contract` | SOURCE-PROVEN at PR #114 predecessor exact head | Studio Audit |
+| Health guard | exact-head health guard workflow | SOURCE-PROVEN at PR #114 predecessor exact head | run `36035410443` |
+| Source-only release check | `pnpm release:check` | SOURCE-PROVEN at PR #114 predecessor exact head | Studio CI |
+| Visual proof | exact-head retained pixel workflow | SOURCE-PROVEN at PR #114 predecessor exact head | artifact `10824241635` |
+| Video factory source proof | exact-head video factory workflow | SOURCE-PROVEN at PR #114 predecessor exact head | artifact `10824356010` |
+| Provider-backed execution | protected execution receipt | UNPROVEN / HARD-OFF | No paid provider execution receipt |
 | Paid provider spend | explicit spend authority + provider receipt | NOT AUTHORIZED | Source state cannot authorize spend |
-| Firebase deployment | protected Firebase deploy output tied to exact SHA | UNPROVEN | No current protected deployment receipt |
-| Live-domain equivalence | provider/runtime SHA readback + route smoke | UNPROVEN | No current exact-head live readback |
-| Independent review | genuine exact-head APPROVED review | UNPROVEN | No review on #98 |
+| Firebase deployment | protected Firebase deploy output tied to merged exact SHA | UNPROVEN | No current protected deployment receipt |
+| Live-domain equivalence | runtime/deployment SHA readback + route smoke | UNPROVEN | No current exact-head live readback |
+| Independent review | genuine exact-head APPROVED review | UNPROVEN | No APPROVED review on PR #114 current line |
 | Public release | approved release action + deployment/live/review proof | NOT AUTHORIZED | Source proof alone is insufficient |
 
-## Current successor execution matrix — 2026-09-24 UTC
+## Current terminal execution matrix
 
-The machine-green #98 checkpoint remains historical source proof only. Current work is split into bounded successors; exact heads are re-fetched before acceptance and no predecessor proof transfers.
-
-| PR | Purpose | Current known exact head | Current classification |
+| Authority | Purpose | Exact head | Current classification |
 | --- | --- | --- | --- |
-| #99 | canonical Studio data model V3 | `6227470e6c4a62583e1f4b8e23c0c22e015d4df6` | **SOURCE-PROVEN — 6/6 exact-head workflows success** |
-| #100 | observed readiness / truthful status | `dba0ff65d66595d0c7010843f2253794e37ff64c` | successor proof draining after stale-copy guard repair |
-| #103 | Studio producer half of Studio-Spatial 0.2.0 | `8b642fc67229dde62612c5f4d0ad25672b4957ea` | **SOURCE-PROVEN — 6/6 exact-head workflows success** |
-| #104 | evidence/governance reconciliation | current branch head changes with this ledger | documentation-only successor must re-earn exact-head proof |
-| #105 | canonical-root hygiene | `d23a8d1d409e52da33f7831286dd79b40ff1595a` | **SOURCE-PROVEN — 6/6 exact-head workflows success** |
-| #107 | clean hard-off provider/job/export/review/accessibility/control rails | `f39e2658f20425b128543f5f262bd79f93702f96` | proof draining; rebuilt atomically on green #99 |
-| #108 | provenance-bound Life Movies launch foundation | re-fetch live head before use | proof draining; hard-off before write/Jobs dispatch |
-| Spatial #1301 | Studio-Spatial 0.2.0 consumer | re-fetch live head before use | proof draining on current Spatial #1296 base |
-| Jobs #103 | provider-free `studio.render.video` Life Movies worker | re-fetch live head before use | proof draining after frozen-lockfile repair |
+| Studio PR #114 | terminal Studio release candidate | `de24d0fe38735d761d1a36e9971f03ea8d6cc108` | **SOURCE-PROVEN predecessor head; this ledger correction creates a successor SHA that must re-earn proof** |
+| Jobs PR #105 | terminal URAI Jobs authority | `82826ab4170d67d4c9df25f29696223cc7097f05` | **13/13 exact-head workflows SUCCESS / unmerged / independent review absent** |
+| Spatial PR #1301 | Studio-Spatial 0.2.0 consumer | `d12c3280104d50447c1d2fdb7781c9eaafa8cd92` | core exact-head workflows SUCCESS; Reference Estate Exact-Head Capture re-run queued; independent review absent |
 
-Superseded and closed: Studio #96, #101, #106 and Spatial #1300.
+Superseded Studio predecessor PRs are historical provenance only. Their approval or deployment evidence must not transfer to PR #114 or any successor SHA.
 
 ### Activation classification
 
@@ -115,15 +109,18 @@ The following remain **HARD-OFF / NOT AUTHORIZED**, regardless of source complet
 - product-capture self-promotion;
 - Film Foundry execution;
 - Brain Map private operational activation;
-- Life Movies render dispatch;
-- production V3 migration.
+- Life Movies production render dispatch;
+- production V3 migration;
+- future marketplace.
 
 The following remain **UNPROVEN EXTERNAL/HUMAN GATES**:
 
-- protected deployment;
+- independent exact-head human approval on the unchanged terminal Studio head;
+- protected merge into `main`;
+- exact-main verification;
+- protected Firebase deployment;
 - live-domain exact-SHA equivalence;
-- independent review on the applicable unchanged release head;
-- repository main branch protection/ruleset enforcement.
+- repository branch-protection administration readback/enforcement.
 
 No row above is a deployment, provider, live-runtime, merge, human-approval, or public-release claim.
 
@@ -163,8 +160,6 @@ After generating any source, provider, artifact, deployment, or live receipt, va
 
 ## Current conclusion
 
-Studio PR #98 is exact-head machine-green with retained source, visual, and video-factory evidence at `e1821b64f44911a94d618d1419f96e504488646c`.
+PR #114 is the single terminal Studio release authority. The previously proven exact head `de24d0fe38735d761d1a36e9971f03ea8d6cc108` was six-of-six machine-green with retained source, visual, and video-factory artifacts. This ledger correction intentionally creates a successor SHA, so that predecessor machine proof becomes historical immediately after this commit and the successor must re-earn exact-head proof.
 
-That source proof is complete for the #98 checkpoint only.
-
-Provider execution, paid spend, protected deployment, live-domain equivalence, independent review, production freeze, and public release remain separately unproven or unauthorized. Successor branches must re-earn their own exact-head source evidence; no #98 acceptance transfers.
+Provider execution, paid spend, protected deployment, live-domain equivalence, independent review, merge, public release, live XR, and production migration remain separately unproven or unauthorized.
