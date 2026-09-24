@@ -41,7 +41,11 @@ type SystemManifestResponse = {
   };
   persistenceMode: 'firebase';
   fallbackActive: boolean;
-  firebase: typeof firebaseDiagnostics;
+  firebase: {
+    configured: boolean;
+    adminAvailable: boolean;
+    emulator: typeof firebaseDiagnostics.emulator;
+  };
   generatedAt: string;
 };
 
