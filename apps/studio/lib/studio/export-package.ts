@@ -34,6 +34,7 @@ export type StudioExportPackage = {
   provenance: StudioProvenanceRecord[];
   rights: StudioRightsPolicy;
   accessibility: StudioAccessibilityPackage;
+  localizationAuthorityRef: string;
   localization: Array<{
     locale: string;
     sourceLanguage: string;
