@@ -42,6 +42,7 @@ for (const requiredId of [
   'film-foundry-command-center',
   'live-brain-map-cockpit',
   'rights-provenance-release-evidence',
+  'life-movies-production-lane',
 ]) {
   assert.ok(ids.has(requiredId), `missing recovered roadmap capability: ${requiredId}`);
 }
@@ -64,3 +65,12 @@ assert.ok(
 );
 
 console.log('Studio future-capability registry guard passed', registry.capabilities.length);
+
+
+const lifeMovies = registry.capabilities.find((item) => item.id === 'life-movies-production-lane');
+assert.equal(lifeMovies.status, 'PARTIALLY IMPLEMENTED');
+assert.equal(lifeMovies.prelaunchClass, 'SAFE TO PREBUILD BUT MUST REMAIN HARD-OFF');
+assert.equal(lifeMovies.hardOff, true);
+assert.equal(lifeMovies.activationAuthorized, false);
+assert.ok(lifeMovies.affectedRepositories.includes('LifeLoggerAI/urai-jobs'));
+assert.ok(lifeMovies.privacySecurity.includes('private by default'));
