@@ -134,6 +134,8 @@ export interface SafetyBoundary {
 export interface StudioProject extends TenantScopedRecord {
   name: string;
   description?: string;
+  projectType?: 'studio' | 'life_movie';
+  metadata?: Record<string, unknown>;
   ownerSystem: 'urai-studio';
   linkedSystems: UraiSystemName[];
   capabilityKeys: UraiCapabilityKey[];
@@ -163,6 +165,12 @@ export interface StudioJob extends TenantScopedRecord {
   safetyBoundaries: SafetyBoundary[];
   errorCode?: string;
   errorMessage?: string;
+  externalExecution?: {
+    system: 'urai-jobs';
+    jobId: UraiId;
+    status: string;
+    updatedAt: UraiIsoDate;
+  };
 }
 
 export interface StudioAsset extends TenantScopedRecord {
