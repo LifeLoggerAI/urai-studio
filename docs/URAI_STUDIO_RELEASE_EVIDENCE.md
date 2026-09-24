@@ -93,9 +93,9 @@ The machine-green PR #98 checkpoint remains historical source proof only. Curren
 | --- | --- | --- | --- | --- |
 | #99 | canonical Studio data model V3 | `5d3dd68967aa9a170d2a29624db0c4dbef0f4d6a` | six workflows queued; no successor proof transferred | draft / no submitted approval / unmerged / undeployed |
 | #100 | observed readiness and truthful status | `b9389713020bf0b52d1059ef4a88e4b91586f29c` | six workflows queued; no successor proof transferred | draft / no submitted approval / unmerged / undeployed |
-| #101 | hard-off provider/job/export/review/accessibility/control rails | `e65bf4b2320e41c6e5966730bd1dba6429c2b5b6` | six workflows queued; no successor proof transferred | draft / no submitted approval / provider spend and public delivery hard-off |
+| #101 | hard-off provider/job/export/review/accessibility/control rails | `35bd809b5a7a09324aa60d06b7d01f16e8e15574` | six workflows queued; no successor proof transferred | draft / no submitted approval / provider spend and public delivery hard-off |
 | #103 | Studio ↔ Spatial 0.2.0 handoff contract | `f384d3c8bbeed0fd8d130b1f8cc8a64cb3b453e2` | six workflows queued; no successor proof transferred | draft / no submitted approval / XR remains disabled |
-| #104 | this evidence reconciliation lane | `fffcdac46a86741d987fd4a7c35b68d360af8079` before this documentation commit | workflows queued; this documentation change requires a new exact head | draft / no submitted approval / unmerged / undeployed |
+| #104 | this evidence reconciliation lane | `807ab82a938a8b99c4c0d43038f4b09e4597acf4` before this documentation commit | workflows queued; this documentation change requires a new exact head | draft / no submitted approval / unmerged / undeployed |
 | #105 | non-canonical source-root hygiene | `d23a8d1d409e52da33f7831286dd79b40ff1595a` | six workflows queued; no successor proof transferred | draft / no submitted approval / unmerged / undeployed |
 
 Separate paired consumer authority exists in `LifeLoggerAI/urai-spatial` PR #1300 for the Studio-Spatial `0.2.0` wire contract. Its consumer validator already requires `releaseEvidence.validatorVersion` to equal the contract version. Studio #103 now enforces the same requirement; paired exact-head proof remains required on both repositories.
