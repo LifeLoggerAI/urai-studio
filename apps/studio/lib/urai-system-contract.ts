@@ -1,3 +1,5 @@
+import { STUDIO_DATA_MODEL_VERSION, type StudioDataModelVersion } from './studio/data-model';
+
 export const URAI_SYSTEM_CONTRACT_VERSION = '0.1.0' as const;
 
 export type UraiId = string;
@@ -109,6 +111,7 @@ export type ConsentState = 'not_requested' | 'granted' | 'denied' | 'revoked' | 
 
 export interface TenantScopedRecord {
   id: UraiId;
+  schemaVersion: StudioDataModelVersion;
   tenantId: UraiId;
   userId: UraiId;
   createdAt: UraiIsoDate;
@@ -294,6 +297,8 @@ export const URAI_V1_V5_CAPABILITIES: UraiCapabilityContract[] = [
     acceptanceTests: ['Legacy output is exportable and includes consent receipt metadata.'],
   },
 ];
+
+export const STUDIO_CANONICAL_RECORD_SCHEMA_VERSION = STUDIO_DATA_MODEL_VERSION;
 
 export const URAI_SYSTEM_CONTRACT: UraiSystemContract = {
   contractVersion: URAI_SYSTEM_CONTRACT_VERSION,
