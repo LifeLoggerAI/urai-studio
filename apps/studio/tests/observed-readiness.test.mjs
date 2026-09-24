@@ -16,6 +16,12 @@ for (const token of ['AbortController', '2200', 'maxAttempts = 2', 'X-URAI-Corre
   assert.ok(observed.includes(token), `observed health implementation missing: ${token}`);
 }
 assert.ok(observed.includes('activationAuthorized: false'), 'readiness profiles may never authorize activation');
+for (const required of ['asset-factory', 'spatial', 'jobs', 'content', 'analytics', 'admin', 'privacy', 'b2b-portal']) {
+  assert.ok(observed.includes(`'${required}'`), `full-platform readiness missing required integration: ${required}`);
+}
+assert.ok(observed.includes("healthPath: '/api/system/health'"));
+assert.ok(observed.includes("integrationContractPath: '/api/system/integration-contract'"));
+assert.ok(observed.includes("authentication: 'server-only-bearer-when-configured'"));
 assert.ok(observed.includes("PROVIDER_EXECUTION: { required: ['asset-factory'], hardOff: true }"));
 assert.ok(observed.includes("SPATIAL_HANDOFF: { required: ['spatial'], hardOff: true }"));
 assert.ok(observed.includes("MEDIA_PRODUCTION: { required: ['asset-factory', 'spatial'], hardOff: true }"));
