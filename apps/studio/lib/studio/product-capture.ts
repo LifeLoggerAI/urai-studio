@@ -43,5 +43,6 @@ export function validateProductCaptureReceipt(receipt: StudioProductCaptureRecei
   if (receipt.accessibilityQa !== 'accepted') return false;
   if (receipt.founderApprovalRequired && !receipt.founderApprovalRef) return false;
   // A source receipt cannot self-promote itself to reusable authority.
-  return receipt.acceptedForReuse === true;
+  // Promotion requires a separately governed acceptance receipt outside this source contract.
+  return false;
 }
