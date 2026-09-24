@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
+
+import { canExecuteStudioFeature } from '@/lib/studio/feature-policy';
 
 export const metadata: Metadata = {
   title: 'Life Movies — URAI Studio',
@@ -11,6 +14,8 @@ const sources = ['Photos', 'Video', 'Audio', 'Transcripts', 'Memories', 'Storyti
 const stages = ['Select sources', 'Build chapters', 'Review provenance', 'Queue render', 'Preview', 'Export MP4 + captions'];
 
 export default function LifeMoviesPage() {
+  if (!canExecuteStudioFeature('life-movies-render')) notFound();
+
   return (
     <section data-urai-studio-page="life-movies" className="page-stack">
       <p className="eyebrow">URAI Life Movies</p>
