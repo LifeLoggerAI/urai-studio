@@ -1,5 +1,10 @@
 import { adminDb, firebaseAdminStatus } from '@/lib/firebase-admin';
 import {
+  STUDIO_CANONICAL_COLLECTIONS,
+  STUDIO_DATA_MODEL_VERSION,
+  requireCanonicalStudioRecord,
+} from '@/lib/studio/data-model';
+import {
   consentRequired,
   type ConsentRequirement,
   type StudioAsset,
@@ -14,11 +19,11 @@ import {
 } from '@/lib/urai-system-contract';
 
 const COLLECTIONS = {
-  projects: 'studioProjects',
-  briefs: 'studioBriefs',
-  jobs: 'studioJobs',
-  assets: 'studioAssets',
-  exports: 'studioExports',
+  projects: STUDIO_CANONICAL_COLLECTIONS.projects,
+  briefs: STUDIO_CANONICAL_COLLECTIONS.briefs,
+  jobs: STUDIO_CANONICAL_COLLECTIONS.jobs,
+  assets: STUDIO_CANONICAL_COLLECTIONS.assets,
+  exports: STUDIO_CANONICAL_COLLECTIONS.exports,
 } as const;
 
 const DEFAULT_TENANT_ID = 'public-studio';
@@ -86,6 +91,7 @@ export async function createStudioProject(input: Partial<StudioProject> = {}): P
   const id = input.id ?? newId('project');
   const project: StudioProject = {
     id,
+    schemaVersion: STUDIO_DATA_MODEL_VERSION,
     tenantId: cleanString(input.tenantId, DEFAULT_TENANT_ID),
     userId: cleanString(input.userId, DEFAULT_USER_ID),
     name: cleanString(input.name, 'URAI Studio Project'),
@@ -109,6 +115,7 @@ export async function createStudioBrief(input: Partial<StudioBrief> & { projectI
   const timestamp = nowIso();
   const brief: StudioBrief = {
     id: input.id ?? newId('brief'),
+    schemaVersion: STUDIO_DATA_MODEL_VERSION,
     tenantId: cleanString(input.tenantId, DEFAULT_TENANT_ID),
     userId: cleanString(input.userId, DEFAULT_USER_ID),
     projectId: input.projectId,
@@ -135,6 +142,7 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
   const projectId = cleanString(input.projectId, newId('project'));
   const job: StudioJob = {
     id: newId('job'),
+    schemaVersion: STUDIO_DATA_MODEL_VERSION,
     tenantId: cleanString(input.tenantId, DEFAULT_TENANT_ID),
     userId: cleanString(input.userId, DEFAULT_USER_ID),
     projectId,
@@ -175,6 +183,7 @@ export async function createStudioExport(input: CreateStudioExportInput): Promis
   const timestamp = nowIso();
   const studioExport: StudioExport = {
     id: newId('export'),
+    schemaVersion: STUDIO_DATA_MODEL_VERSION,
     tenantId: cleanString(input.tenantId, DEFAULT_TENANT_ID),
     userId: cleanString(input.userId, DEFAULT_USER_ID),
     projectId: input.projectId,
@@ -206,7 +215,12 @@ export async function listTenantJobs(tenantId = DEFAULT_TENANT_ID): Promise<Runt
     .limit(25)
     .get();
 
-  return { ok: true, mode: 'firebase', data: snapshot.docs.map((doc) => doc.data() as StudioJob) };
+  const data = snapshot.docs.map((doc) => {
+    const record = doc.data();
+    requireCanonicalStudioRecord(record);
+    return record as StudioJob;
+  });
+  return { ok: true, mode: 'firebase', data };
 }
 
 export type { StudioAsset, StudioBrief, StudioExport, StudioJob, StudioProject };
