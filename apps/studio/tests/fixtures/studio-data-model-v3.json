@@ -31,7 +31,8 @@
       "data": {
         "uid": "user-b",
         "projectId": "project-b",
-        "status": "queued"
+        "status": "queued",
+        "type": "image"
       }
     },
     {
@@ -41,7 +42,8 @@
         "uid": "user-b",
         "projectId": "project-b",
         "exportStatus": "ready",
-        "storagePath": "generated/user-b/studio/exports/export-b.json"
+        "storagePath": "generated/user-b/studio/exports/export-b.json",
+        "type": "manifest"
       }
     },
     {
