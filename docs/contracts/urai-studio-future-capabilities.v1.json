@@ -33,7 +33,11 @@
       "capability": "Canonical Studio tenant, membership and role authority",
       "status": "PARTIALLY IMPLEMENTED",
       "why": "Provide one server-authorized Studio membership lifecycle and tenant boundary for owner, admin, editor, reviewer and viewer roles.",
-      "serves": ["Studio operators", "creative teams", "reviewers"],
+      "serves": [
+        "Studio operators",
+        "creative teams",
+        "reviewers"
+      ],
       "sourceEvidence": [
         "LifeLoggerAI/urai-studio#52",
         "apps/studio/lib/studio-auth.ts",
@@ -42,24 +46,55 @@
         "firestore.rules",
         "storage.rules"
       ],
-      "dependencies": ["Firebase Auth", "Firestore", "reviewed production migration authority"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio"],
-      "affectedRoutes": ["/api/studio/jobs", "/api/studio/exports", "/studio/admin"],
-      "affectedData": ["studios/{studioId}", "studios/{studioId}/members/{uid}", "studioOperationRequests", "auditLogs"],
-      "privacySecurity": ["tenant isolation", "server-only membership mutation", "revocation-aware token verification", "migration freeze and rollback"],
-      "accessibility": ["role-restricted operations must remain keyboard and screen-reader operable"],
+      "dependencies": [
+        "Firebase Auth",
+        "Firestore",
+        "reviewed production migration authority"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio"
+      ],
+      "affectedRoutes": [
+        "/api/studio/jobs",
+        "/api/studio/exports",
+        "/studio/admin"
+      ],
+      "affectedData": [
+        "studios/{studioId}",
+        "studios/{studioId}/members/{uid}",
+        "studioOperationRequests",
+        "auditLogs"
+      ],
+      "privacySecurity": [
+        "tenant isolation",
+        "server-only membership mutation",
+        "revocation-aware token verification",
+        "migration freeze and rollback"
+      ],
+      "accessibility": [
+        "role-restricted operations must remain keyboard and screen-reader operable"
+      ],
       "prelaunchClass": "SAFE TO BUILD NOW",
       "hardOff": false,
       "activationAuthorized": false,
       "activationGate": "Exact-head review plus production membership migration, tenant-isolation smoke, rules deployment and rollback evidence.",
-      "acceptanceProof": ["emulator allow/deny matrix", "two-tenant negative tests", "migration receipt", "exact-head independent review"]
+      "acceptanceProof": [
+        "emulator allow/deny matrix",
+        "two-tenant negative tests",
+        "migration receipt",
+        "exact-head independent review"
+      ]
     },
     {
       "id": "canonical-data-model-convergence",
       "capability": "One versioned Studio project/job/asset/export/event model",
       "status": "PARTIALLY IMPLEMENTED",
       "why": "Remove overlapping uid-owned and tenant-scoped collection families before future providers, collaboration and exports deepen the split.",
-      "serves": ["Studio runtime", "workers", "future integrations"],
+      "serves": [
+        "Studio runtime",
+        "workers",
+        "future integrations"
+      ],
       "sourceEvidence": [
         "LifeLoggerAI/urai-studio#53",
         "docs/contracts/URAI_SYSTEM_CONTRACT.md",
@@ -68,24 +103,59 @@
         "apps/studio/lib/studio-runtime-store.ts",
         "firestore.rules"
       ],
-      "dependencies": ["canonical ADR", "migration and compatibility plan", "shared validators"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio"],
-      "affectedRoutes": ["/api/studio/jobs", "/api/studio/exports", "/studio/projects", "/studio/assets", "/studio/exports"],
-      "affectedData": ["studioProjects", "studioBriefs", "studioJobs", "studioAssets", "studioExports", "assetJobs", "exportJobs", "studioEvents"],
-      "privacySecurity": ["tenant binding", "writer authority", "rollback", "legacy collection containment"],
+      "dependencies": [
+        "canonical ADR",
+        "migration and compatibility plan",
+        "shared validators"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio"
+      ],
+      "affectedRoutes": [
+        "/api/studio/jobs",
+        "/api/studio/exports",
+        "/studio/projects",
+        "/studio/assets",
+        "/studio/exports"
+      ],
+      "affectedData": [
+        "studioProjects",
+        "studioBriefs",
+        "studioJobs",
+        "studioAssets",
+        "studioExports",
+        "assetJobs",
+        "exportJobs",
+        "studioEvents"
+      ],
+      "privacySecurity": [
+        "tenant binding",
+        "writer authority",
+        "rollback",
+        "legacy collection containment"
+      ],
       "accessibility": [],
       "prelaunchClass": "SAFE TO BUILD NOW",
       "hardOff": false,
       "activationAuthorized": false,
       "activationGate": "ADR approved; duplicate writers versioned or retired; migration/rollback/tenant tests green.",
-      "acceptanceProof": ["schema compatibility tests", "migration tests", "rollback tests", "tenant-isolation tests"]
+      "acceptanceProof": [
+        "schema compatibility tests",
+        "migration tests",
+        "rollback tests",
+        "tenant-isolation tests"
+      ]
     },
     {
       "id": "observed-integration-readiness-profiles",
       "capability": "Release-profile readiness based on observed integrations",
       "status": "PLANNED / CANONICAL",
       "why": "Prevent configured URLs from being reported as production health.",
-      "serves": ["release operators", "Studio users", "system health"],
+      "serves": [
+        "release operators",
+        "Studio users",
+        "system health"
+      ],
       "sourceEvidence": [
         "LifeLoggerAI/urai-studio#54",
         "apps/studio/app/readyz/route.ts",
@@ -93,7 +163,12 @@
         "apps/studio/lib/studio/integrations.ts",
         "docs/URAI_STUDIO_RELEASE_EVIDENCE.md"
       ],
-      "dependencies": ["authenticated service health contracts", "timeouts", "retry policy", "correlation IDs"],
+      "dependencies": [
+        "authenticated service health contracts",
+        "timeouts",
+        "retry policy",
+        "correlation IDs"
+      ],
       "affectedRepositories": [
         "LifeLoggerAI/urai-studio",
         "LifeLoggerAI/asset-factory",
@@ -105,22 +180,42 @@
         "LifeLoggerAI/urai-privacy",
         "LifeLoggerAI/B2Bportal"
       ],
-      "affectedRoutes": ["/readyz", "/api/system/health", "/status"],
-      "affectedData": ["release evidence receipts"],
-      "privacySecurity": ["health responses must be sanitized", "protected diagnostics stay authenticated"],
-      "accessibility": ["status must not rely on color alone"],
+      "affectedRoutes": [
+        "/readyz",
+        "/api/system/health",
+        "/status"
+      ],
+      "affectedData": [
+        "release evidence receipts"
+      ],
+      "privacySecurity": [
+        "health responses must be sanitized",
+        "protected diagnostics stay authenticated"
+      ],
+      "accessibility": [
+        "status must not rely on color alone"
+      ],
       "prelaunchClass": "SAFE TO BUILD NOW",
       "hardOff": false,
       "activationAuthorized": false,
       "activationGate": "Named public-site/full-platform profiles and authenticated observed checks are implemented and tested.",
-      "acceptanceProof": ["degraded-mode tests", "authenticated health receipts", "timeout/retry tests", "live exact-SHA smoke"]
+      "acceptanceProof": [
+        "degraded-mode tests",
+        "authenticated health receipts",
+        "timeout/retry tests",
+        "live exact-SHA smoke"
+      ]
     },
     {
       "id": "provider-job-export-execution-spine",
       "capability": "Receipt-backed provider, durable job and downloadable export execution",
       "status": "PARTIALLY IMPLEMENTED",
       "why": "Turn contract-only or fallback execution into governed production work without bypassing budget, retry, tenant or provenance controls.",
-      "serves": ["Studio creators", "operators", "downstream media pipelines"],
+      "serves": [
+        "Studio creators",
+        "operators",
+        "downstream media pipelines"
+      ],
       "sourceEvidence": [
         "LifeLoggerAI/urai-studio#55",
         "scripts/provider-readiness.mjs",
@@ -129,24 +224,66 @@
         "apps/studio/app/api/studio/exports/route.ts",
         "docs/operations/URAI_STUDIO_PROVIDER_COST_CONTROL.md"
       ],
-      "dependencies": ["canonical data model", "provider adapters", "storage verification", "protected provider identity"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio", "LifeLoggerAI/asset-factory", "LifeLoggerAI/urai-jobs"],
-      "affectedRoutes": ["/api/studio/jobs", "/api/studio/exports", "/studio/video-factory"],
-      "affectedData": ["jobs", "jobRuns", "outputs", "deadLetters", "auditLogs", "studioJobs", "studioExports"],
-      "privacySecurity": ["idempotency", "budget ceilings", "timeouts", "bounded retries", "kill switch", "tenant-scoped artifacts", "expiring downloads", "retention/deletion"],
-      "accessibility": ["job and export status must remain perceivable without animation"],
+      "dependencies": [
+        "canonical data model",
+        "provider adapters",
+        "storage verification",
+        "protected provider identity"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio",
+        "LifeLoggerAI/asset-factory",
+        "LifeLoggerAI/urai-jobs"
+      ],
+      "affectedRoutes": [
+        "/api/studio/jobs",
+        "/api/studio/exports",
+        "/studio/video-factory"
+      ],
+      "affectedData": [
+        "jobs",
+        "jobRuns",
+        "outputs",
+        "deadLetters",
+        "auditLogs",
+        "studioJobs",
+        "studioExports"
+      ],
+      "privacySecurity": [
+        "idempotency",
+        "budget ceilings",
+        "timeouts",
+        "bounded retries",
+        "kill switch",
+        "tenant-scoped artifacts",
+        "expiring downloads",
+        "retention/deletion"
+      ],
+      "accessibility": [
+        "job and export status must remain perceivable without animation"
+      ],
       "prelaunchClass": "SAFE TO PREBUILD BUT MUST REMAIN HARD-OFF",
       "hardOff": true,
       "activationAuthorized": false,
       "activationGate": "Approved provider/model, protected identity, explicit spend ceiling, storage/export authorization, deployment and retained execution receipts.",
-      "acceptanceProof": ["zero-network tests", "bounded retry tests", "dead-letter tests", "artifact checksum/MIME/size receipts", "authorized expiring-download tests"]
+      "acceptanceProof": [
+        "zero-network tests",
+        "bounded retry tests",
+        "dead-letter tests",
+        "artifact checksum/MIME/size receipts",
+        "authorized expiring-download tests"
+      ]
     },
     {
       "id": "asset-factory-orchestration-bridge",
       "capability": "Studio orchestration of Asset Factory generation and promotion state",
       "status": "PARTIALLY IMPLEMENTED",
       "why": "Keep Studio as the operator/review surface while Asset Factory remains generation, provenance, validation and promotion authority.",
-      "serves": ["Studio operators", "media production", "product asset pipelines"],
+      "serves": [
+        "Studio operators",
+        "media production",
+        "product asset pipelines"
+      ],
       "sourceEvidence": [
         "apps/studio/lib/studio/integrations.ts",
         "apps/studio/lib/studio/modules.ts",
@@ -155,117 +292,299 @@
         "FINITE TIME Film Foundry — Canonical Production Authority — 2026-07-21",
         "01 — URAI — Canon, Architecture, Estate & Guardrails"
       ],
-      "dependencies": ["Asset Factory authenticated contract", "observed readiness", "provenance receipts"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio", "LifeLoggerAI/asset-factory"],
-      "affectedRoutes": ["/asset-factory", "/studio", "/studio/assets"],
-      "affectedData": ["asset manifests", "provider receipts", "promotion state"],
-      "privacySecurity": ["private source remains in Drive", "no unapproved likeness movement", "no provider spend from public UI"],
-      "accessibility": ["review surfaces require alt text and nonvisual status equivalents"],
+      "dependencies": [
+        "Asset Factory authenticated contract",
+        "observed readiness",
+        "provenance receipts"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio",
+        "LifeLoggerAI/asset-factory"
+      ],
+      "affectedRoutes": [
+        "/asset-factory",
+        "/studio",
+        "/studio/assets"
+      ],
+      "affectedData": [
+        "asset manifests",
+        "provider receipts",
+        "promotion state"
+      ],
+      "privacySecurity": [
+        "private source remains in Drive",
+        "no unapproved likeness movement",
+        "no provider spend from public UI"
+      ],
+      "accessibility": [
+        "review surfaces require alt text and nonvisual status equivalents"
+      ],
       "prelaunchClass": "SAFE TO PREBUILD BUT MUST REMAIN HARD-OFF",
       "hardOff": true,
       "activationAuthorized": false,
       "activationGate": "Observed authenticated Asset Factory health plus approved provider/promotion authority where execution is requested.",
-      "acceptanceProof": ["contract tests", "authenticated health receipt", "immutable asset lineage", "promotion rejection tests"]
+      "acceptanceProof": [
+        "contract tests",
+        "authenticated health receipt",
+        "immutable asset lineage",
+        "promotion rejection tests"
+      ]
     },
     {
       "id": "studio-spatial-handoff-0-1",
       "capability": "Versioned Studio-to-Spatial scene and asset handoff",
       "status": "PARTIALLY IMPLEMENTED",
       "why": "Allow approved Studio exports to become Spatial inputs without pretending XR or live sync is available.",
-      "serves": ["Studio creators", "Spatial runtime"],
+      "serves": [
+        "Studio creators",
+        "Spatial runtime"
+      ],
       "sourceEvidence": [
         "apps/studio/lib/studio-spatial-handoff.ts",
         "apps/studio/system/spatial-handoff.discovery.json",
         "LifeLoggerAI/urai-spatial:urai-tier1/src/lib/studio-spatial-handoff.ts",
         "LifeLoggerAI/urai-spatial:docs/STUDIO_SPATIAL_HANDOFF.md"
       ],
-      "dependencies": ["Studio deployment receipt", "Spatial acceptance receipt", "consent registry", "tenant asset registry", "safety policy registry"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio", "LifeLoggerAI/urai-spatial"],
-      "affectedRoutes": ["/api/system/spatial-handoff", "/api/studio/exports", "/spatial", "/studio/xr"],
-      "affectedData": ["sceneManifest", "assetManifest", "consentReceipt", "safetyBoundaries", "releaseEvidence"],
-      "privacySecurity": ["tenant scope", "consent receipt", "safe URI/MIME validation", "no raw private memory", "trusted release authority"],
-      "accessibility": ["fallback renderer required", "XR remains disabled until evidence exists"],
+      "dependencies": [
+        "Studio deployment receipt",
+        "Spatial acceptance receipt",
+        "consent registry",
+        "tenant asset registry",
+        "safety policy registry"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio",
+        "LifeLoggerAI/urai-spatial"
+      ],
+      "affectedRoutes": [
+        "/api/system/spatial-handoff",
+        "/api/studio/exports",
+        "/spatial",
+        "/studio/xr"
+      ],
+      "affectedData": [
+        "sceneManifest",
+        "assetManifest",
+        "consentReceipt",
+        "safetyBoundaries",
+        "releaseEvidence"
+      ],
+      "privacySecurity": [
+        "tenant scope",
+        "consent receipt",
+        "safe URI/MIME validation",
+        "no raw private memory",
+        "trusted release authority"
+      ],
+      "accessibility": [
+        "fallback renderer required",
+        "XR remains disabled until evidence exists"
+      ],
       "prelaunchClass": "SAFE TO PREBUILD BUT MUST REMAIN HARD-OFF",
       "hardOff": true,
       "activationAuthorized": false,
       "activationGate": "Matching exact Studio/Spatial SHAs, protected deployment and acceptance receipts, consent/assets/safety authority, live smoke.",
-      "acceptanceProof": ["0.1.0 cross-repo contract tests", "blocked-by-default export proof", "exact-SHA live handoff receipt"]
+      "acceptanceProof": [
+        "0.1.0 cross-repo contract tests",
+        "blocked-by-default export proof",
+        "exact-SHA live handoff receipt"
+      ]
     },
     {
       "id": "v1-v5-media-master-orchestration",
       "capability": "V1–V5 media master, 213-asset semantic registry and 90-drop production graph",
       "status": "IMPLEMENTED",
       "why": "Provide one machine-readable parent graph for product capture, films, derivatives, localization and launch media without regenerating accepted assets.",
-      "serves": ["Studio media operations", "Marketing", "product launch"],
+      "serves": [
+        "Studio media operations",
+        "Marketing",
+        "product launch"
+      ],
       "sourceEvidence": [
         "LifeLoggerAI/urai-studio#70",
         "productions/media-master/urai-v1-v5-media-master.production.json",
         "URAI V1–V5 Cinema Factory Control — 2026-08-12",
         "URAI Final Asset Lock Master — 2026-08-11"
       ],
-      "dependencies": ["current Spatial authority", "Asset Factory", "Storytime where applicable", "human approvals"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio", "LifeLoggerAI/urai-spatial", "LifeLoggerAI/asset-factory", "LifeLoggerAI/urai-storytime", "LifeLoggerAI/urai-marketing"],
-      "affectedRoutes": ["/cinema", "/studio/video-factory"],
-      "affectedData": ["213 semantic deliverables", "90 stable media job IDs", "capture receipts", "derivative receipts"],
-      "privacySecurity": ["no private source in public GitHub", "rights/claims gates", "provider spend separate"],
-      "accessibility": ["captions", "SRT", "transcript", "audio description when required", "reduced motion when required"],
+      "dependencies": [
+        "current Spatial authority",
+        "Asset Factory",
+        "Storytime where applicable",
+        "human approvals"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio",
+        "LifeLoggerAI/urai-spatial",
+        "LifeLoggerAI/asset-factory",
+        "LifeLoggerAI/urai-storytime",
+        "LifeLoggerAI/urai-marketing"
+      ],
+      "affectedRoutes": [
+        "/cinema",
+        "/studio/video-factory"
+      ],
+      "affectedData": [
+        "213 semantic deliverables",
+        "90 stable media job IDs",
+        "capture receipts",
+        "derivative receipts"
+      ],
+      "privacySecurity": [
+        "no private source in public GitHub",
+        "rights/claims gates",
+        "provider spend separate"
+      ],
+      "accessibility": [
+        "captions",
+        "SRT",
+        "transcript",
+        "audio description when required",
+        "reduced motion when required"
+      ],
       "prelaunchClass": "SAFE TO BUILD NOW",
       "hardOff": true,
       "activationAuthorized": false,
       "activationGate": "Per-job upstream capture/rights/claim/human gates; paid generation remains separately authorized.",
-      "acceptanceProof": ["manifest regression guard", "asset-control coverage", "per-job release receipt"]
+      "acceptanceProof": [
+        "manifest regression guard",
+        "asset-control coverage",
+        "per-job release receipt"
+      ]
     },
     {
       "id": "exact-sha-product-capture-library",
       "capability": "Reusable exact-SHA product capture library for URAI worlds",
       "status": "PARTIALLY IMPLEMENTED",
       "why": "Bind genuine product footage to exact runtime authority for films, app-store assets, investor media and launch derivatives.",
-      "serves": ["Studio media production", "Marketing", "Investors"],
+      "serves": [
+        "Studio media production",
+        "Marketing",
+        "Investors"
+      ],
       "sourceEvidence": [
         "LifeLoggerAI/urai-studio#70",
         "productions/media-master/urai-v1-v5-media-master.production.json",
         "URAI V1–V5 Cinema Factory Control — 2026-08-12"
       ],
-      "dependencies": ["merged governed Spatial SHA", "live deployed runtime proving same SHA", "founder visual approval"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio", "LifeLoggerAI/urai-spatial"],
-      "affectedRoutes": ["/", "/home", "/ground", "/life-map", "/focus", "/replay", "/council", "/mirror", "/shadow", "/legacy", "/passport"],
-      "affectedData": ["capture receipt", "camera path", "viewport", "content SHA-256", "QA state"],
-      "privacySecurity": ["no synthetic UI represented as product truth", "private states excluded unless authorized"],
-      "accessibility": ["reduced-motion capture where applicable", "textless masters for localization"],
+      "dependencies": [
+        "merged governed Spatial SHA",
+        "live deployed runtime proving same SHA",
+        "founder visual approval"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio",
+        "LifeLoggerAI/urai-spatial"
+      ],
+      "affectedRoutes": [
+        "/",
+        "/home",
+        "/ground",
+        "/life-map",
+        "/focus",
+        "/replay",
+        "/council",
+        "/mirror",
+        "/shadow",
+        "/legacy",
+        "/passport"
+      ],
+      "affectedData": [
+        "capture receipt",
+        "camera path",
+        "viewport",
+        "content SHA-256",
+        "QA state"
+      ],
+      "privacySecurity": [
+        "no synthetic UI represented as product truth",
+        "private states excluded unless authorized"
+      ],
+      "accessibility": [
+        "reduced-motion capture where applicable",
+        "textless masters for localization"
+      ],
       "prelaunchClass": "SAFE TO PREBUILD BUT MUST REMAIN HARD-OFF",
       "hardOff": true,
       "activationAuthorized": false,
       "activationGate": "Exact deployed Spatial SHA equals accepted source SHA and current visual/accessibility gates pass.",
-      "acceptanceProof": ["capture SHA-256", "exact runtime SHA", "founder visual approval", "route/device capture receipt"]
+      "acceptanceProof": [
+        "capture SHA-256",
+        "exact runtime SHA",
+        "founder visual approval",
+        "route/device capture receipt"
+      ]
     },
     {
       "id": "derivative-launch-output-factory",
       "capability": "Reusable static/video/social/app-store/investor derivative templates",
       "status": "PARTIALLY IMPLEMENTED",
       "why": "Create outputs from governed product captures without recapturing or fabricating the product.",
-      "serves": ["Launch", "Marketing", "Investors", "press"],
+      "serves": [
+        "Launch",
+        "Marketing",
+        "Investors",
+        "press"
+      ],
       "sourceEvidence": [
         "productions/media-master/launch-output-templates.production.json",
         "productions/media-master/urai-v1-v5-media-master.production.json"
       ],
-      "dependencies": ["exact-SHA capture library", "claims approval", "accessibility QA"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio", "LifeLoggerAI/urai-marketing"],
-      "affectedRoutes": ["/cinema", "/motion", "/music", "/visuals"],
-      "affectedData": ["template IDs", "capture receipt IDs", "edit SHA", "content hash", "release authorization"],
-      "privacySecurity": ["public release authorization required", "synthetic product UI forbidden"],
-      "accessibility": ["captions", "SRT", "transcript", "reduced-motion", "textless masters"],
+      "dependencies": [
+        "exact-SHA capture library",
+        "claims approval",
+        "accessibility QA"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio",
+        "LifeLoggerAI/urai-marketing"
+      ],
+      "affectedRoutes": [
+        "/cinema",
+        "/motion",
+        "/music",
+        "/visuals"
+      ],
+      "affectedData": [
+        "template IDs",
+        "capture receipt IDs",
+        "edit SHA",
+        "content hash",
+        "release authorization"
+      ],
+      "privacySecurity": [
+        "public release authorization required",
+        "synthetic product UI forbidden"
+      ],
+      "accessibility": [
+        "captions",
+        "SRT",
+        "transcript",
+        "reduced-motion",
+        "textless masters"
+      ],
       "prelaunchClass": "SAFE TO PREBUILD BUT MUST REMAIN HARD-OFF",
       "hardOff": true,
       "activationAuthorized": false,
       "activationGate": "All source capture slots resolve to current approved receipts and claims/accessibility/release approvals pass.",
-      "acceptanceProof": ["source capture receipt set", "edit commit SHA", "content SHA-256", "technical/visual/accessibility QA"]
+      "acceptanceProof": [
+        "source capture receipt set",
+        "edit commit SHA",
+        "content SHA-256",
+        "technical/visual/accessibility QA"
+      ]
     },
     {
       "id": "film-foundry-command-center",
       "capability": "Reusable Film Foundry command center and FINITE TIME production orchestration",
       "status": "PARTIALLY IMPLEMENTED",
       "why": "Operate governed feature production across canon, shots, assets, renders, reviews, rights, costs and release profiles.",
-      "serves": ["Film operators", "reviewers", "Storytime", "Asset Factory", "Spatial"],
+      "serves": [
+        "Film operators",
+        "reviewers",
+        "Storytime",
+        "Asset Factory",
+        "Spatial"
+      ],
       "sourceEvidence": [
         "LifeLoggerAI/urai-studio#57",
         "LifeLoggerAI/urai-storytime#27",
@@ -274,215 +593,627 @@
         "productions/finite-time/film-foundry.production.json",
         "FINITE TIME Film Foundry — Canonical Production Authority — 2026-07-21"
       ],
-      "dependencies": ["Storytime canon", "Asset Factory render lane", "private Drive evidence", "Spatial immersive delivery"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio", "LifeLoggerAI/urai-storytime", "LifeLoggerAI/asset-factory", "LifeLoggerAI/urai-spatial"],
-      "affectedRoutes": ["/studio", "/cinema"],
-      "affectedData": ["sequence", "scene", "shot", "asset", "render", "review", "master", "rights", "cost", "approval"],
-      "privacySecurity": ["private-by-default likeness/source", "rights clearance", "provider retention/training terms", "explicit spend and publication actions"],
-      "accessibility": ["captions", "transcript", "audio description", "haptic cues", "reduced-motion/sensory-safe alternatives"],
+      "dependencies": [
+        "Storytime canon",
+        "Asset Factory render lane",
+        "private Drive evidence",
+        "Spatial immersive delivery"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio",
+        "LifeLoggerAI/urai-storytime",
+        "LifeLoggerAI/asset-factory",
+        "LifeLoggerAI/urai-spatial"
+      ],
+      "affectedRoutes": [
+        "/studio",
+        "/cinema"
+      ],
+      "affectedData": [
+        "sequence",
+        "scene",
+        "shot",
+        "asset",
+        "render",
+        "review",
+        "master",
+        "rights",
+        "cost",
+        "approval"
+      ],
+      "privacySecurity": [
+        "private-by-default likeness/source",
+        "rights clearance",
+        "provider retention/training terms",
+        "explicit spend and publication actions"
+      ],
+      "accessibility": [
+        "captions",
+        "transcript",
+        "audio description",
+        "haptic cues",
+        "reduced-motion/sensory-safe alternatives"
+      ],
       "prelaunchClass": "SAFE TO PREBUILD BUT MUST REMAIN HARD-OFF",
       "hardOff": true,
       "activationAuthorized": false,
       "activationGate": "Required canon/consent/continuity/rights/budget/accessibility/review/provenance fields complete; proof chapter and animatic approvals; explicit provider authority.",
-      "acceptanceProof": ["Farm-to-Lake end-to-end operator proof", "immutable approvals", "provider/cost receipts", "accessibility master evidence"]
+      "acceptanceProof": [
+        "Farm-to-Lake end-to-end operator proof",
+        "immutable approvals",
+        "provider/cost receipts",
+        "accessibility master evidence"
+      ]
     },
     {
       "id": "before-rest-world-private-master",
       "capability": "Before the Rest of the World private 8–10 minute finished master",
       "status": "PARTIALLY IMPLEMENTED",
       "why": "Produce a private founder/product film from exact product captures and governed media sources.",
-      "serves": ["private review", "launch media production"],
+      "serves": [
+        "private review",
+        "launch media production"
+      ],
       "sourceEvidence": [
         "LifeLoggerAI/urai-studio#61",
         "productions/before-the-rest-of-the-world/full-master.production.json",
         "productions/media-master/urai-v1-v5-media-master.production.json"
       ],
-      "dependencies": ["exact-SHA product capture", "motion/narration/audio", "conform/QC", "rights/provenance"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio", "LifeLoggerAI/urai-spatial", "LifeLoggerAI/asset-factory"],
-      "affectedRoutes": ["/cinema", "/studio/video-factory"],
-      "affectedData": ["source inventory", "shot manifest", "provider IDs", "music provenance", "delivery receipts"],
-      "privacySecurity": ["private-review-only", "no public release by source presence", "bounded provider calls"],
-      "accessibility": ["caption file and accessible review copy required"],
+      "dependencies": [
+        "exact-SHA product capture",
+        "motion/narration/audio",
+        "conform/QC",
+        "rights/provenance"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio",
+        "LifeLoggerAI/urai-spatial",
+        "LifeLoggerAI/asset-factory"
+      ],
+      "affectedRoutes": [
+        "/cinema",
+        "/studio/video-factory"
+      ],
+      "affectedData": [
+        "source inventory",
+        "shot manifest",
+        "provider IDs",
+        "music provenance",
+        "delivery receipts"
+      ],
+      "privacySecurity": [
+        "private-review-only",
+        "no public release by source presence",
+        "bounded provider calls"
+      ],
+      "accessibility": [
+        "caption file and accessible review copy required"
+      ],
       "prelaunchClass": "SAFE TO PREBUILD BUT MUST REMAIN HARD-OFF",
       "hardOff": true,
       "activationAuthorized": false,
       "activationGate": "Current exact-SHA capture plus remaining media/conform/QC and explicit release decision.",
-      "acceptanceProof": ["master file hash", "caption/SRT hash", "source/provenance inventory", "provider and delivery receipts"]
+      "acceptanceProof": [
+        "master file hash",
+        "caption/SRT hash",
+        "source/provenance inventory",
+        "provider and delivery receipts"
+      ]
     },
     {
       "id": "cut-one-production-command-center",
       "capability": "Cut One cross-estate production activation board",
       "status": "PLANNED / CANONICAL",
       "why": "Coordinate script, scenes, assets, approvals, staging and release across the URAI production estate.",
-      "serves": ["production operators", "release operators"],
-      "sourceEvidence": ["LifeLoggerAI/urai-studio#46"],
-      "dependencies": ["Studio", "Spatial", "Storytime", "Privacy", "Analytics", "Admin", "Staging", "Communications", "Jobs", "Labs"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio", "LifeLoggerAI/urai-spatial", "LifeLoggerAI/urai-storytime", "LifeLoggerAI/urai-privacy", "LifeLoggerAI/urai-analytics", "LifeLoggerAI/urai-admin", "LifeLoggerAI/urai-staging", "LifeLoggerAI/urai-communications", "LifeLoggerAI/urai-jobs", "LifeLoggerAI/urai-labs-llc"],
-      "affectedRoutes": ["/studio"],
-      "affectedData": ["status", "scripts", "scenes", "assets", "approvals", "staging", "release checklist"],
-      "privacySecurity": ["cross-system views must expose only authorized metadata"],
-      "accessibility": ["tracker must be keyboard/screen-reader operable"],
+      "serves": [
+        "production operators",
+        "release operators"
+      ],
+      "sourceEvidence": [
+        "LifeLoggerAI/urai-studio#46"
+      ],
+      "dependencies": [
+        "Studio",
+        "Spatial",
+        "Storytime",
+        "Privacy",
+        "Analytics",
+        "Admin",
+        "Staging",
+        "Communications",
+        "Jobs",
+        "Labs"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio",
+        "LifeLoggerAI/urai-spatial",
+        "LifeLoggerAI/urai-storytime",
+        "LifeLoggerAI/urai-privacy",
+        "LifeLoggerAI/urai-analytics",
+        "LifeLoggerAI/urai-admin",
+        "LifeLoggerAI/urai-staging",
+        "LifeLoggerAI/urai-communications",
+        "LifeLoggerAI/urai-jobs",
+        "LifeLoggerAI/urai-labs-llc"
+      ],
+      "affectedRoutes": [
+        "/studio"
+      ],
+      "affectedData": [
+        "status",
+        "scripts",
+        "scenes",
+        "assets",
+        "approvals",
+        "staging",
+        "release checklist"
+      ],
+      "privacySecurity": [
+        "cross-system views must expose only authorized metadata"
+      ],
+      "accessibility": [
+        "tracker must be keyboard/screen-reader operable"
+      ],
       "prelaunchClass": "SAFE TO BUILD NOW",
       "hardOff": true,
       "activationAuthorized": false,
       "activationGate": "Cross-repo status sources become authoritative and authenticated; release actions remain separately gated.",
-      "acceptanceProof": ["source-linked status board", "no inferred-green tests", "cross-repo evidence links"]
+      "acceptanceProof": [
+        "source-linked status board",
+        "no inferred-green tests",
+        "cross-repo evidence links"
+      ]
     },
     {
       "id": "live-brain-map-cockpit",
       "capability": "Interactive evidence-backed URAI system graph",
       "status": "PARTIALLY IMPLEMENTED",
       "why": "Make the system-of-systems operationally legible without collapsing source, deployment, provider and device states.",
-      "serves": ["Studio/Ops", "release governance"],
+      "serves": [
+        "Studio/Ops",
+        "release governance"
+      ],
       "sourceEvidence": [
         "LifeLoggerAI/urai-studio#51",
         "brain-map-ui",
         "URAI Brain Map — Interactive OS Cockpit Spec (Live)"
       ],
-      "dependencies": ["sanitized repo/service evidence feeds", "auth for private operational data"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio", "all governed URAI repositories"],
-      "affectedRoutes": ["/system", "/studio"],
-      "affectedData": ["repo nodes", "dependency edges", "exact SHAs", "workflow state", "receipts", "blockers"],
-      "privacySecurity": ["no raw memories, secrets, precise locations, health data or private device telemetry in public evidence"],
-      "accessibility": ["graph requires list/table alternative", "keyboard navigation", "non-color status"],
+      "dependencies": [
+        "sanitized repo/service evidence feeds",
+        "auth for private operational data"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio",
+        "all governed URAI repositories"
+      ],
+      "affectedRoutes": [
+        "/system",
+        "/studio"
+      ],
+      "affectedData": [
+        "repo nodes",
+        "dependency edges",
+        "exact SHAs",
+        "workflow state",
+        "receipts",
+        "blockers"
+      ],
+      "privacySecurity": [
+        "no raw memories, secrets, precise locations, health data or private device telemetry in public evidence"
+      ],
+      "accessibility": [
+        "graph requires list/table alternative",
+        "keyboard navigation",
+        "non-color status"
+      ],
       "prelaunchClass": "SAFE TO PREBUILD BUT MUST REMAIN HARD-OFF",
       "hardOff": true,
       "activationAuthorized": false,
       "activationGate": "Sanitized immutable evidence sources and authenticated private diagnostics are implemented; no inferred state.",
-      "acceptanceProof": ["node-to-source traceability", "evidence-state transition tests", "accessible non-graph fallback"]
+      "acceptanceProof": [
+        "node-to-source traceability",
+        "evidence-state transition tests",
+        "accessible non-graph fallback"
+      ]
     },
     {
       "id": "version-comparison-review-queues",
       "capability": "Version comparison, review queues, notes, rejection reasons and immutable approvals",
       "status": "PLANNED / CANONICAL",
       "why": "Give Studio a real operator/reviewer workflow without moving generation authority out of Asset Factory.",
-      "serves": ["creators", "reviewers", "Film Foundry"],
+      "serves": [
+        "creators",
+        "reviewers",
+        "Film Foundry"
+      ],
       "sourceEvidence": [
         "LifeLoggerAI/urai-studio#57",
         "FINITE TIME Film Foundry — Canonical Production Authority — 2026-07-21"
       ],
-      "dependencies": ["canonical data model", "membership roles", "audit log", "asset lineage"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio", "LifeLoggerAI/asset-factory", "LifeLoggerAI/urai-storytime"],
-      "affectedRoutes": ["/studio/projects", "/studio/assets", "/studio/admin"],
-      "affectedData": ["versions", "review notes", "approval state", "rejection reason", "reviewer", "content hash"],
-      "privacySecurity": ["review visibility by tenant/role", "immutable approval evidence"],
-      "accessibility": ["comparison and approval state must have text equivalents"],
+      "dependencies": [
+        "canonical data model",
+        "membership roles",
+        "audit log",
+        "asset lineage"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio",
+        "LifeLoggerAI/asset-factory",
+        "LifeLoggerAI/urai-storytime"
+      ],
+      "affectedRoutes": [
+        "/studio/projects",
+        "/studio/assets",
+        "/studio/admin"
+      ],
+      "affectedData": [
+        "versions",
+        "review notes",
+        "approval state",
+        "rejection reason",
+        "reviewer",
+        "content hash"
+      ],
+      "privacySecurity": [
+        "review visibility by tenant/role",
+        "immutable approval evidence"
+      ],
+      "accessibility": [
+        "comparison and approval state must have text equivalents"
+      ],
       "prelaunchClass": "SAFE TO BUILD NOW",
       "hardOff": true,
       "activationAuthorized": false,
       "activationGate": "Canonical model and role enforcement are stable; publish/provider side effects remain disabled.",
-      "acceptanceProof": ["role matrix", "immutable approval tests", "version lineage tests", "rejection/promotion tests"]
+      "acceptanceProof": [
+        "role matrix",
+        "immutable approval tests",
+        "version lineage tests",
+        "rejection/promotion tests"
+      ]
     },
     {
       "id": "rights-provenance-release-evidence",
       "capability": "Asset and production lineage, rights, licensing and release receipts",
       "status": "PARTIALLY IMPLEMENTED",
       "why": "Keep every generated or edited artifact traceable to source, tool/provider, human edits, approvals and release authority.",
-      "serves": ["creators", "reviewers", "legal/rights workflows", "release governance"],
+      "serves": [
+        "creators",
+        "reviewers",
+        "legal/rights workflows",
+        "release governance"
+      ],
       "sourceEvidence": [
         "productions/finite-time/film-foundry.production.json",
         "productions/media-master/urai-v1-v5-media-master.production.json",
         "docs/URAI_STUDIO_RELEASE_EVIDENCE.md"
       ],
-      "dependencies": ["canonical data model", "Asset Factory receipts", "private Drive authority"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio", "LifeLoggerAI/asset-factory", "LifeLoggerAI/urai-storytime"],
-      "affectedRoutes": ["/studio/assets", "/studio/exports", "/studio/admin"],
-      "affectedData": ["source authority", "prompt/tool/model version", "seed", "hash", "rights state", "reviewer", "approval", "derivative lineage"],
-      "privacySecurity": ["private evidence references remain opaque", "provider terms recorded", "retention/deletion"],
-      "accessibility": ["provenance views must be usable without visual-only graphs"],
+      "dependencies": [
+        "canonical data model",
+        "Asset Factory receipts",
+        "private Drive authority"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio",
+        "LifeLoggerAI/asset-factory",
+        "LifeLoggerAI/urai-storytime"
+      ],
+      "affectedRoutes": [
+        "/studio/assets",
+        "/studio/exports",
+        "/studio/admin"
+      ],
+      "affectedData": [
+        "source authority",
+        "prompt/tool/model version",
+        "seed",
+        "hash",
+        "rights state",
+        "reviewer",
+        "approval",
+        "derivative lineage"
+      ],
+      "privacySecurity": [
+        "private evidence references remain opaque",
+        "provider terms recorded",
+        "retention/deletion"
+      ],
+      "accessibility": [
+        "provenance views must be usable without visual-only graphs"
+      ],
       "prelaunchClass": "SAFE TO BUILD NOW",
       "hardOff": false,
       "activationAuthorized": false,
       "activationGate": "Canonical record ownership and storage boundaries are approved.",
-      "acceptanceProof": ["schema validation", "lineage round-trip", "hash verification", "rights-state fail-closed tests"]
+      "acceptanceProof": [
+        "schema validation",
+        "lineage round-trip",
+        "hash verification",
+        "rights-state fail-closed tests"
+      ]
     },
     {
       "id": "localized-accessible-derivative-packaging",
       "capability": "Localized and accessible media derivative packaging",
       "status": "PARTIALLY IMPLEMENTED",
       "why": "Make captions, textless masters, transcripts, audio description and reduced-motion outputs part of production rather than a later retrofit.",
-      "serves": ["global audiences", "disabled users", "launch media"],
+      "serves": [
+        "global audiences",
+        "disabled users",
+        "launch media"
+      ],
       "sourceEvidence": [
         "productions/media-master/urai-v1-v5-media-master.production.json",
         "productions/media-master/launch-output-templates.production.json",
         "productions/finite-time/film-foundry.production.json"
       ],
-      "dependencies": ["approved source media", "central language authority", "accessibility QA"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio", "LifeLoggerAI/urai-content", "LifeLoggerAI/urai-marketing", "LifeLoggerAI/urai-storytime"],
-      "affectedRoutes": ["/cinema", "/motion", "/music", "/visuals"],
-      "affectedData": ["captions", "SRT", "transcript", "audio-description script", "haptic cues", "localized metadata"],
-      "privacySecurity": ["localized outputs inherit source rights/privacy restrictions"],
-      "accessibility": ["captions", "audio description", "reduced motion", "sensory-safe alternatives", "textless masters"],
+      "dependencies": [
+        "approved source media",
+        "central language authority",
+        "accessibility QA"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio",
+        "LifeLoggerAI/urai-content",
+        "LifeLoggerAI/urai-marketing",
+        "LifeLoggerAI/urai-storytime"
+      ],
+      "affectedRoutes": [
+        "/cinema",
+        "/motion",
+        "/music",
+        "/visuals"
+      ],
+      "affectedData": [
+        "captions",
+        "SRT",
+        "transcript",
+        "audio-description script",
+        "haptic cues",
+        "localized metadata"
+      ],
+      "privacySecurity": [
+        "localized outputs inherit source rights/privacy restrictions"
+      ],
+      "accessibility": [
+        "captions",
+        "audio description",
+        "reduced motion",
+        "sensory-safe alternatives",
+        "textless masters"
+      ],
       "prelaunchClass": "SAFE TO BUILD NOW",
       "hardOff": false,
       "activationAuthorized": false,
       "activationGate": "Central language set is reconciled and each output passes accessibility/content approval.",
-      "acceptanceProof": ["caption timing tests", "reduced-motion proof", "localized metadata validation", "accessibility QA receipt"]
+      "acceptanceProof": [
+        "caption timing tests",
+        "reduced-motion proof",
+        "localized metadata validation",
+        "accessibility QA receipt"
+      ]
     },
     {
       "id": "webxr-ar-vr-creation-handoff",
       "capability": "Studio-authored Spatial/XR scene packaging",
       "status": "DORMANT BUT VALID",
       "why": "Preserve a future path from Studio scenes/assets into WebXR/AR/VR without representing unsupported runtimes as live.",
-      "serves": ["future Spatial creators", "XR users"],
+      "serves": [
+        "future Spatial creators",
+        "XR users"
+      ],
       "sourceEvidence": [
         "docs/contracts/URAI_SYSTEM_CONTRACT.md",
         "apps/studio/lib/urai-system-contract.ts",
         "apps/studio/lib/studio-spatial-handoff.ts",
         "LifeLoggerAI/urai-spatial:docs/STUDIO_SPATIAL_HANDOFF.md"
       ],
-      "dependencies": ["Studio-Spatial handoff", "device/runtime certification", "performance/comfort evidence"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio", "LifeLoggerAI/urai-spatial", "LifeLoggerAI/asset-factory"],
-      "affectedRoutes": ["/studio/xr", "/spatial"],
-      "affectedData": ["three_scene", "webxr_manifest", "scene manifest", "asset manifest"],
-      "privacySecurity": ["consent and asset scopes", "device permissions", "no biometric expansion without separate authority"],
-      "accessibility": ["comfort mode", "fallback renderer", "non-XR equivalent", "reduced motion"],
+      "dependencies": [
+        "Studio-Spatial handoff",
+        "device/runtime certification",
+        "performance/comfort evidence"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio",
+        "LifeLoggerAI/urai-spatial",
+        "LifeLoggerAI/asset-factory"
+      ],
+      "affectedRoutes": [
+        "/studio/xr",
+        "/spatial"
+      ],
+      "affectedData": [
+        "three_scene",
+        "webxr_manifest",
+        "scene manifest",
+        "asset manifest"
+      ],
+      "privacySecurity": [
+        "consent and asset scopes",
+        "device permissions",
+        "no biometric expansion without separate authority"
+      ],
+      "accessibility": [
+        "comfort mode",
+        "fallback renderer",
+        "non-XR equivalent",
+        "reduced motion"
+      ],
       "prelaunchClass": "SAFE TO PREBUILD BUT MUST REMAIN HARD-OFF",
       "hardOff": true,
       "activationAuthorized": false,
       "activationGate": "Physical-device/runtime evidence and owning Spatial release authority explicitly enable each target.",
-      "acceptanceProof": ["device matrix", "frame/comfort checks", "permission tests", "fallback parity", "exact-SHA receipts"]
+      "acceptanceProof": [
+        "device matrix",
+        "frame/comfort checks",
+        "permission tests",
+        "fallback parity",
+        "exact-SHA receipts"
+      ]
+    },
+    {
+      "id": "life-movies-production-lane",
+      "capability": "Provenance-bound private Life Movies production and render orchestration",
+      "status": "PARTIALLY IMPLEMENTED",
+      "why": "Turn approved personal photos, video, audio, transcripts, memories, Storytime and Replay sources into private, provenance-bound films without requiring Spatial or paid generation.",
+      "serves": [
+        "URAI users",
+        "families",
+        "legacy/story workflows",
+        "Studio operators"
+      ],
+      "sourceEvidence": [
+        "docs/contracts/URAI_LIFE_MOVIES_LAUNCH_AUTHORITY.md",
+        "apps/studio/lib/studio/life-movies.ts",
+        "apps/studio/lib/studio/life-movie-jobs-bridge.ts",
+        "LifeLoggerAI/urai-jobs PR #103 — provider-free studio.render.video worker"
+      ],
+      "dependencies": [
+        "Studio V3 tenant/membership authority",
+        "URAI Jobs studio.render.video contract",
+        "source consent and rights authority",
+        "Studio review/provenance/accessibility rails",
+        "private tenant-contained storage"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio",
+        "LifeLoggerAI/urai-jobs",
+        "LifeLoggerAI/urai-storytime",
+        "LifeLoggerAI/urai-privacy"
+      ],
+      "affectedRoutes": [
+        "/studio/life-movies",
+        "/api/studio/life-movies"
+      ],
+      "affectedData": [
+        "Life Movie project",
+        "source provenance",
+        "chapters",
+        "deterministic timeline",
+        "SRT captions",
+        "render-plan digest",
+        "Studio job",
+        "MP4/SRT/JSON output receipts"
+      ],
+      "privacySecurity": [
+        "private by default",
+        "tenant-contained GCS source and output paths",
+        "consent and rights references required per source",
+        "generated/reconstructed material remains provenance-labeled",
+        "no arbitrary web media URLs",
+        "provider generation unauthorized",
+        "public release unauthorized"
+      ],
+      "accessibility": [
+        "SRT captions",
+        "transcript/caption review",
+        "accessible Studio review path",
+        "localized/accessibility derivatives inherit shared Studio release gates"
+      ],
+      "prelaunchClass": "SAFE TO PREBUILD BUT MUST REMAIN HARD-OFF",
+      "hardOff": true,
+      "activationAuthorized": false,
+      "activationGate": "The life-movies-render feature receives separately governed activation authority only after Studio #108, Jobs #103, tenant/storage/privacy/review proof, deployment and runtime evidence are accepted.",
+      "acceptanceProof": [
+        "Studio exact-head CI",
+        "Jobs exact-head CI",
+        "zero-dispatch behavior while hard-off",
+        "schema parity with urai-life-movie-render-v1",
+        "tenant path rejection tests",
+        "consent/rights/provenance tests",
+        "render worker artifact receipt",
+        "private playback/QC",
+        "public release remains separately unauthorized"
+      ]
     },
     {
       "id": "public-publishing-and-delivery",
       "capability": "Public publish, revoke and permissioned delivery flow",
       "status": "BLOCKED",
       "why": "Publishing is a distinct release action and cannot be inferred from export manifests or source presence.",
-      "serves": ["creators", "public audiences", "campaign distribution"],
+      "serves": [
+        "creators",
+        "public audiences",
+        "campaign distribution"
+      ],
       "sourceEvidence": [
         "launch-proof/urai-studio-production-lock/2026-06-30T0000Z/FEATURE_MATRIX.md",
         "docs/URAI_STUDIO_RELEASE_EVIDENCE.md"
       ],
-      "dependencies": ["rights/privacy approval", "download/export authorization", "retention/deletion", "deployment/live evidence"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio", "LifeLoggerAI/urai-marketing", "LifeLoggerAI/urai-content"],
-      "affectedRoutes": ["/studio/exports"],
-      "affectedData": ["publication state", "revocation", "delivery receipt", "expiring access"],
-      "privacySecurity": ["explicit publication consent", "revoke", "rights", "retention/deletion"],
-      "accessibility": ["published outputs must carry required accessible variants"],
+      "dependencies": [
+        "rights/privacy approval",
+        "download/export authorization",
+        "retention/deletion",
+        "deployment/live evidence"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio",
+        "LifeLoggerAI/urai-marketing",
+        "LifeLoggerAI/urai-content"
+      ],
+      "affectedRoutes": [
+        "/studio/exports"
+      ],
+      "affectedData": [
+        "publication state",
+        "revocation",
+        "delivery receipt",
+        "expiring access"
+      ],
+      "privacySecurity": [
+        "explicit publication consent",
+        "revoke",
+        "rights",
+        "retention/deletion"
+      ],
+      "accessibility": [
+        "published outputs must carry required accessible variants"
+      ],
       "prelaunchClass": "BLOCKED",
       "hardOff": true,
       "activationAuthorized": false,
       "activationGate": "A separately reviewed publish/revoke/delivery contract plus live permission and deletion proof.",
-      "acceptanceProof": ["publish/revoke E2E", "authorized delivery receipt", "retention/deletion test", "rights/privacy approval"]
+      "acceptanceProof": [
+        "publish/revoke E2E",
+        "authorized delivery receipt",
+        "retention/deletion test",
+        "rights/privacy approval"
+      ]
     },
     {
       "id": "template-marketplace-editor",
       "capability": "Template marketplace/editor",
       "status": "PROPOSED / NOT YET CANONICAL",
       "why": "Historical Studio evidence explicitly says demo templates exist but are not a validated template marketplace/editor.",
-      "serves": ["potential future creators"],
-      "sourceEvidence": ["launch-proof/urai-studio-production-lock/2026-06-30T0000Z/FEATURE_MATRIX.md"],
-      "dependencies": ["product authority resolution", "rights/licensing model", "canonical asset/version model"],
-      "affectedRepositories": ["LifeLoggerAI/urai-studio"],
+      "serves": [
+        "potential future creators"
+      ],
+      "sourceEvidence": [
+        "launch-proof/urai-studio-production-lock/2026-06-30T0000Z/FEATURE_MATRIX.md"
+      ],
+      "dependencies": [
+        "product authority resolution",
+        "rights/licensing model",
+        "canonical asset/version model"
+      ],
+      "affectedRepositories": [
+        "LifeLoggerAI/urai-studio"
+      ],
       "affectedRoutes": [],
       "affectedData": [],
-      "privacySecurity": ["template licensing and third-party rights would require explicit policy"],
+      "privacySecurity": [
+        "template licensing and third-party rights would require explicit policy"
+      ],
       "accessibility": [],
       "prelaunchClass": "POST-LAUNCH ONLY",
       "hardOff": true,
       "activationAuthorized": false,
       "activationGate": "Explicit newer canon promotes this from proposal to approved product scope.",
-      "acceptanceProof": ["approved product canon", "rights/licensing design", "accessibility and moderation plan"]
+      "acceptanceProof": [
+        "approved product canon",
+        "rights/licensing design",
+        "accessibility and moderation plan"
+      ]
     }
   ],
   "notAdmittedWithoutNewAuthority": [
