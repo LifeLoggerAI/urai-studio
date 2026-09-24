@@ -59,3 +59,24 @@ assert.ok(lifeMoviesRoute.includes("canExecuteStudioFeature('life-movies-render'
 assert.ok(lifeMoviesRoute.includes("status: 'life_movies_render_hard_off'"));
 assert.ok(lifeMoviesRoute.indexOf("life_movies_render_hard_off") < lifeMoviesRoute.indexOf("createStudioProject({"), 'hard-off gate must precede persistent project creation');
 assert.ok(lifeMoviesRoute.indexOf("life_movies_render_hard_off") < lifeMoviesRoute.indexOf("dispatchLifeMovieRender({"), 'hard-off gate must precede Jobs dispatch');
+
+
+const lifeMoviesSource = fs.readFileSync(new URL('../lib/studio/life-movies.ts', import.meta.url), 'utf8');
+const lifeMovieBridge = fs.readFileSync(new URL('../lib/studio/life-movie-jobs-bridge.ts', import.meta.url), 'utf8');
+
+for (const token of [
+  "jobType: 'studio.render.video'",
+  "schemaVersion: 'urai-life-movie-render-v1'",
+  'maxSources: 100',
+  'maxTimelineItems: 250',
+  'maxTimelineItemMs: 30 * 60 * 1000',
+  'maxTotalTimelineMs: 45 * 60 * 1000',
+  'maxBridgeBodyBytes: 32768',
+]) {
+  assert.ok(lifeMoviesSource.includes(token), `Life Movies Jobs contract missing: ${token}`);
+}
+assert.ok(lifeMovieBridge.includes("ownerRepo: 'LifeLoggerAI/urai-jobs'"));
+assert.ok(lifeMovieBridge.includes("actions: ['create', 'status', 'cancel']"));
+assert.ok(lifeMovieBridge.includes("auth: 'protected-bearer'"));
+assert.ok(lifeMovieBridge.includes('validateLifeMovieBridgeRequest'));
+assert.ok(lifeMovieBridge.includes('life_movie_jobs_bridge_request_too_large'));
