@@ -54,7 +54,7 @@ export function StudioShell({ children }: { children: ReactNode }) {
 
         <div className="rail-status-v2">
           <span className="status-pulse-v2" aria-hidden="true" />
-          <span>Live studio spine</span>
+          <span>Evidence-gated studio spine</span>
         </div>
 
         {groups.map((group) => (
