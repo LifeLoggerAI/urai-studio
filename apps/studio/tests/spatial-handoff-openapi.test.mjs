@@ -23,7 +23,7 @@ for (const field of [
   assert.ok(wireSchema.required.includes(field), `OpenAPI wire schema must require ${field}`);
 }
 assert.equal(JSON.stringify(fragmentSpec).includes('"const"'), false, 'OpenAPI 3.0 schema must not use const');
-assert.deepEqual(wireSchema.properties.contractVersion.enum, ['0.1.0']);
+assert.deepEqual(wireSchema.properties.contractVersion.enum, ['0.2.0']);
 assert.deepEqual(wireSchema.properties.producer.enum, ['urai-studio']);
 assert.deepEqual(wireSchema.properties.consumer.enum, ['urai-spatial']);
 assert.deepEqual(wireSchema.properties.runtimeTargets.not.items.not.enum, ['web-spatial']);
