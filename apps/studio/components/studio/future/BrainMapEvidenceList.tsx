@@ -186,7 +186,7 @@ export function BrainMapEvidenceList({ nodes, edges }: { nodes: BrainMapNode[]; 
         </aside>
       ) : null}
 
-      <h3>Accessible list of evidence nodes</h3>
+      <h3>Accessible evidence node list</h3>
       <table>
         <caption>Filtered system evidence nodes</caption>
         <thead>
