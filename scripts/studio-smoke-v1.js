@@ -123,7 +123,7 @@ has('apps/studio/lib/urai-system-contract.ts', ['URAI_SYSTEM_CONTRACT', 'StudioJ
 has('apps/studio/lib/studio/data-model.ts', ['STUDIO_CANONICAL_COLLECTIONS', 'studioJobs', 'studioExports', 'STUDIO_DATA_MODEL_VERSION']);
 has('apps/studio/lib/studio-runtime-store.ts', ['createStudioJob', 'createStudioExport', 'listTenantJobs', 'tenantScoped', 'STUDIO_CANONICAL_COLLECTIONS', 'STUDIO_DATA_MODEL_VERSION']);
 has('apps/studio/lib/studio-spatial-handoff.ts', ['STUDIO_SPATIAL_HANDOFF_VERSION', 'DEFAULT_STUDIO_SPATIAL_RUNTIME_MATRIX', 'validateStudioSpatialExport', 'emitStudioSpatialExport', 'createBlockedStudioSpatialHandoff', 'model/gltf-binary', 'model/gltf+json']);
-has('apps/studio/system/spatial-handoff.discovery.json', ['"route": "/api/system/spatial-handoff"', '"exportRoute": "/api/studio/exports"', '"requiredExportField": "spatialHandoff"', '"defaultStatus": "blocked"', '"wireContract": "urai-spatial/0.1.0"']);
+has('apps/studio/system/spatial-handoff.discovery.json', ['"route": "/api/system/spatial-handoff"', '"exportRoute": "/api/studio/exports"', '"requiredExportField": "spatialHandoff"', '"defaultStatus": "blocked"', '"wireContract": "urai-spatial/0.2.0"']);
 has('apps/studio/system/spatial-handoff.openapi.json', ['"/api/system/spatial-handoff"', 'spatialHandoff', 'releaseEvidence', 'model/gltf-binary', 'model/gltf+json']);
 has('apps/studio/lib/studio/integrations.ts', ['asset-factory', 'spatial', 'jobs', 'content', 'analytics', 'marketing', 'admin', 'privacy', 'investors', 'b2b-portal']);
 has('apps/studio/app/api/system/urai-contract/route.ts', ['URAI_SYSTEM_CONTRACT', 'URAI_SYSTEM_CONTRACT_VERSION', 'Cache-Control']);
