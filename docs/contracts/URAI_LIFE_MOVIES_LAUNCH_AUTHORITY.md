@@ -59,3 +59,20 @@ This source lane does not itself authorize:
 - production data migration.
 
 Those require their owning gates and current exact-head proof.
+
+
+## Pre-launch execution state
+
+The source route and Jobs bridge are prebuilt but render execution is governed by the canonical Studio feature policy entry `life-movies-render`.
+
+That feature is hard-off in this pre-launch source candidate.
+
+While hard-off:
+
+- POST may validate the proposed project/render plan but must not persist a project;
+- no Studio render job may be created;
+- no URAI Jobs bridge request may be sent;
+- no provider call may occur;
+- no public release may occur.
+
+A configured bridge URL/token is not activation authority.
