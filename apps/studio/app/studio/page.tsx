@@ -55,9 +55,6 @@ export default function StudioPage() {
         <Link className="button button-secondary" href="/studio/video-factory">
           Video Factory
         </Link>
-        <Link className="button button-secondary" href="/studio/life-movies">
-          Life Movies
-        </Link>
         <Link className="button button-secondary" href="/studio/projects">
           Studio Projects
         </Link>
