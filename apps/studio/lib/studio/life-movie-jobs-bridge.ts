@@ -1,7 +1,7 @@
-import type { LifeMovieProject, LifeMovieRenderPlan, LifeMovieSource } from './life-movies';
+import { LIFE_MOVIE_JOBS_CONTRACT, type LifeMovieProject, type LifeMovieRenderPlan, type LifeMovieSource } from './life-movies';
 
 export type JobsLifeMovieRenderPayload = {
-  schemaVersion: 'urai-life-movie-render-v1';
+  schemaVersion: typeof LIFE_MOVIE_JOBS_CONTRACT.schemaVersion;
   projectId: string;
   renderPlanDigest: string;
   outputPrefix: string;
@@ -116,7 +116,7 @@ export function buildJobsLifeMovieRenderPayload(project: LifeMovieProject, rende
   });
 
   return {
-    schemaVersion: 'urai-life-movie-render-v1',
+    schemaVersion: LIFE_MOVIE_JOBS_CONTRACT.schemaVersion,
     projectId: project.id,
     renderPlanDigest: renderPlan.inputDigest,
     outputPrefix: `tenants/${project.tenantId}/life-movies/${project.id}/${renderPlan.inputDigest.slice(0, 16)}`,
@@ -132,10 +132,27 @@ export function buildJobsLifeMovieRenderPayload(project: LifeMovieProject, rende
   };
 }
 
+function bridgeBodyBytes(body: Record<string, unknown>) {
+  return Buffer.byteLength(JSON.stringify(body), 'utf8');
+}
+
+export function validateLifeMovieBridgeRequest(body: Record<string, unknown>) {
+  const bytes = bridgeBodyBytes(body);
+  if (bytes > LIFE_MOVIE_JOBS_CONTRACT.maxBridgeBodyBytes) {
+    throw new Error('life_movie_jobs_bridge_request_too_large');
+  }
+  return { body, bytes };
+}
+
 async function callBridge(body: Record<string, unknown>): Promise<LifeMovieBridgeResult> {
   const url = bridgeUrl();
   const token = bridgeToken();
   if (!url || !token) return { ok: false, error: 'life_movie_jobs_bridge_unconfigured' };
+  try {
+    validateLifeMovieBridgeRequest(body);
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : 'life_movie_jobs_bridge_request_invalid' };
+  }
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 15_000);
@@ -178,3 +195,15 @@ export async function getLifeMovieRenderStatus(input: { tenantId: string; userId
 export async function cancelLifeMovieRender(input: { tenantId: string; userId: string; jobId: string }) {
   return callBridge({ action: 'cancel', ...input });
 }
+
+
+export const LIFE_MOVIE_JOBS_BRIDGE_AUTHORITY = {
+  ownerRepo: 'LifeLoggerAI/urai-jobs',
+  jobType: LIFE_MOVIE_JOBS_CONTRACT.jobType,
+  schemaVersion: LIFE_MOVIE_JOBS_CONTRACT.schemaVersion,
+  method: 'POST',
+  actions: ['create', 'status', 'cancel'] as const,
+  auth: 'protected-bearer',
+  providerExecutionAuthorized: false,
+  publicReleaseAuthorized: false,
+} as const;
