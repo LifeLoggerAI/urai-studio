@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "URAI Studio Spatial Handoff API",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "paths": {
     "/api/system/spatial-handoff": {
@@ -19,10 +19,10 @@
     "schemas": {
       "spatialHandoff": {
         "type": "object",
-        "description": "Fail-closed Studio emitter contract matching the current URAI Spatial 0.1.0 wire shape plus required release evidence.",
+        "description": "Fail-closed Studio emitter contract matching the URAI Spatial 0.2.0 wire shape with required release evidence.",
         "required": ["contractVersion", "producer", "consumer", "exportId", "projectId", "tenantId", "createdAt", "runtimeTargets", "sceneManifest", "assetManifest", "consentReceipt", "safetyBoundaries", "releaseEvidence"],
         "properties": {
-          "contractVersion": {"type": "string", "enum": ["0.1.0"]},
+          "contractVersion": {"type": "string", "enum": ["0.2.0"]},
           "producer": {"type": "string", "enum": ["urai-studio"]},
           "consumer": {"type": "string", "enum": ["urai-spatial"]},
           "exportId": {"type": "string", "minLength": 1},
