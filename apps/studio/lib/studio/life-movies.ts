@@ -70,6 +70,16 @@ export type LifeMovieTimelineItem = {
   provenance: LifeMovieProvenanceState;
 };
 
+export const LIFE_MOVIE_JOBS_CONTRACT = {
+  jobType: 'studio.render.video',
+  schemaVersion: 'urai-life-movie-render-v1',
+  maxSources: 100,
+  maxTimelineItems: 250,
+  maxTimelineItemMs: 30 * 60 * 1000,
+  maxTotalTimelineMs: 45 * 60 * 1000,
+  maxBridgeBodyBytes: 32768,
+} as const;
+
 export type LifeMovieRenderPlan = {
   schemaVersion: 1;
   projectId: UraiId;
@@ -111,6 +121,7 @@ export function validateLifeMovieProject(project: LifeMovieProject) {
   safeSegment(project.userId, 'user_id');
   if (!project.title.trim()) throw new Error('life_movie_title_required');
   if (project.sources.length === 0) throw new Error('life_movie_sources_required');
+  if (project.sources.length > LIFE_MOVIE_JOBS_CONTRACT.maxSources) throw new Error('life_movie_source_limit_exceeded');
   if (project.chapters.length === 0) throw new Error('life_movie_chapters_required');
   if (project.spatialRequired !== false) throw new Error('life_movie_spatial_must_be_optional');
   if (project.publicReleaseAuthorized !== false) throw new Error('life_movie_public_release_must_start_off');
@@ -134,6 +145,10 @@ export function validateLifeMovieProject(project: LifeMovieProject) {
     chapterIds.add(chapter.id);
     if (chapter.durationMs <= 0 || !Number.isFinite(chapter.durationMs)) throw new Error(`invalid_chapter_duration:${chapter.id}`);
     if (chapter.sourceIds.length === 0) throw new Error(`chapter_sources_required:${chapter.id}`);
+    const perSourceMs = Math.max(1000, Math.floor(chapter.durationMs / chapter.sourceIds.length));
+    if (perSourceMs > LIFE_MOVIE_JOBS_CONTRACT.maxTimelineItemMs) {
+      throw new Error(`life_movie_timeline_item_too_long:${chapter.id}`);
+    }
     for (const sourceId of chapter.sourceIds) {
       if (!sourceIds.has(sourceId)) throw new Error(`unknown_chapter_source:${chapter.id}:${sourceId}`);
     }
@@ -182,6 +197,13 @@ export function buildLifeMovieRenderPlan(project: LifeMovieProject): LifeMovieRe
     chapters: project.chapters,
     requestedExports: [...project.requestedExports].sort(),
   });
+
+  if (timeline.length > LIFE_MOVIE_JOBS_CONTRACT.maxTimelineItems) {
+    throw new Error('life_movie_timeline_limit_exceeded');
+  }
+  if (cursorMs > LIFE_MOVIE_JOBS_CONTRACT.maxTotalTimelineMs) {
+    throw new Error('life_movie_launch_duration_exceeded');
+  }
 
   const providerGenerationRequired = project.sources.some((source) =>
     ['reconstructed', 'generated', 'artistic-interpretation'].includes(source.provenance),
