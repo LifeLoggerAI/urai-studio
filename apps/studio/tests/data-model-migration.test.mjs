@@ -23,6 +23,26 @@ assert.equal(plan.writes.length, 5);
 assert.equal(plan.blocked.length, 1);
 assert.equal(plan.blocked[0].reason, 'explicit_mapping_required');
 
+const ambiguousJob = convertLegacyRecord({
+  collection: 'assetJobs',
+  id: 'job-ambiguous',
+  data: { uid: 'user-a', type: 'audio' },
+  tenantId: 'studio-alpha',
+  migratedAt: '2026-09-23T00:00:00.000Z',
+});
+assert.equal(ambiguousJob.ok, false);
+assert.equal(ambiguousJob.reason, 'explicit_job_kind_mapping_required');
+
+const ambiguousAsset = convertLegacyRecord({
+  collection: 'studioAssets',
+  id: 'asset-ambiguous',
+  data: { uid: 'user-a', type: 'other', storagePath: 'legacy/a.bin' },
+  tenantId: 'studio-alpha',
+  migratedAt: '2026-09-23T00:00:00.000Z',
+});
+assert.equal(ambiguousAsset.ok, false);
+assert.equal(ambiguousAsset.reason, 'explicit_asset_kind_mapping_required');
+
 for (const write of plan.writes) {
   assert.equal(write.record.schemaVersion, 3);
   assert.ok(write.record.tenantId === 'studio-alpha' || write.record.tenantId === 'studio-beta');
