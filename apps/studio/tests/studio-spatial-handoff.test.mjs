@@ -75,6 +75,11 @@ test('emits the current Spatial 0.1.0 wire shape only when complete', () => {
   const emission = contract.emitStudioSpatialExport(fixture, trustedAuthority);
   assert.equal(emission.ok, true);
   assert.deepEqual(emission.export, fixture);
+  const { releaseEvidence: _releaseEvidence, ...expectedWire } = fixture;
+  assert.deepEqual(emission.wire, expectedWire);
+  assert.equal('releaseEvidence' in emission.wire, false);
+  assert.equal(emission.wire.contractVersion, '0.1.0');
+  assert.equal(contract.STUDIO_SPATIAL_PRODUCER_EXTENSION_VERSION, '1.0.0');
   assert.equal(emission.export.contractVersion, '0.1.0');
   assert.equal(emission.export.producer, 'urai-studio');
   assert.equal(emission.export.consumer, 'urai-spatial');
