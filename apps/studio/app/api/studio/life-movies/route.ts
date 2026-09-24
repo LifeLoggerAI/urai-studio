@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { requireStudioAuth } from '@/lib/studio-auth';
+import { canExecuteStudioFeature, resolveStudioFeaturePolicy } from '@/lib/studio/feature-policy';
 import {
   createStudioJob,
   createStudioProject,
@@ -161,6 +162,25 @@ export async function POST(req: Request) {
       chapters,
     });
     const renderPlan = buildLifeMovieRenderPlan(project);
+    const renderPolicy = resolveStudioFeaturePolicy('life-movies-render');
+    if (!canExecuteStudioFeature('life-movies-render')) {
+      return json({
+        ok: false,
+        status: 'life_movies_render_hard_off',
+        persisted: false,
+        dispatched: false,
+        project,
+        renderPlan,
+        feature: {
+          id: renderPolicy.id,
+          state: renderPolicy.state,
+          hardOff: renderPolicy.hardOff,
+          activationAuthorized: false,
+        },
+        providerGenerationAuthorized: false,
+        publicReleaseAuthorized: false,
+      }, 409);
+    }
 
     const persistedProject = await createStudioProject({
       id: project.id,
