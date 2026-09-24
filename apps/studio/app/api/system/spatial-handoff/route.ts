@@ -15,7 +15,7 @@ export async function GET() {
     consumerSystem: 'urai-spatial',
     endpoint: '/api/system/spatial-handoff',
     contractVersion: STUDIO_SPATIAL_HANDOFF_VERSION,
-    wireContract: 'urai-spatial/0.1.0',
+    wireContract: 'urai-spatial/0.2.0',
     runtimeTargets: DEFAULT_STUDIO_SPATIAL_RUNTIME_MATRIX,
     unsupportedRuntimeTargets: STUDIO_SPATIAL_UNSUPPORTED_RUNTIME_TARGETS,
     evidenceRequiredRuntimeTargets: STUDIO_SPATIAL_EVIDENCE_REQUIRED_TARGETS,
