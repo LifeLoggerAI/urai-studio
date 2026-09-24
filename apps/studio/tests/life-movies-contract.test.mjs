@@ -39,7 +39,7 @@ assert.ok(route.includes('dispatched: true'), 'Life Movies may claim queued only
 assert.ok(bridge.includes('URAI_JOBS_LIFE_MOVIE_BRIDGE_TOKEN'), 'Studio-to-Jobs execution must use a server-only bridge token');
 assert.ok(bridge.includes('URAI_STUDIO_STORAGE_BUCKET'), 'relative Studio media paths must bind to an explicit source bucket');
 assert.ok(bridge.includes('life_movie_source_not_staged_for_render'), 'un-staged web/private sources must fail closed before render dispatch');
-assert.ok(bridge.includes("schemaVersion: 'urai-life-movie-render-v1'"), 'Studio must emit the canonical Jobs render contract');
+assert.ok(bridge.includes('schemaVersion: LIFE_MOVIE_JOBS_CONTRACT.schemaVersion'), 'Studio must emit the canonical Jobs render contract authority');
 assert.ok(store.includes("projectType: input.projectType"), 'Studio project persistence must retain the Life Movie project type');
 assert.ok(store.includes('externalExecution'), 'Studio job records must retain Jobs execution linkage');
 assert.ok(route.includes('providerGenerationAuthorized: false'), 'provider generation must remain fail-closed');
