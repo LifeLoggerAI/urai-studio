@@ -76,3 +76,28 @@ While hard-off:
 - no public release may occur.
 
 A configured bridge URL/token is not activation authority.
+
+
+## URAI Jobs execution contract
+
+Canonical execution ownership is `LifeLoggerAI/urai-jobs`.
+
+The currently recovered launch worker authority defines:
+
+- job type: `studio.render.video`;
+- payload schema: `urai-life-movie-render-v1`;
+- protected bearer-authenticated create/status/cancel bridge;
+- maximum 100 sources;
+- maximum 250 timeline items;
+- maximum 30 minutes per timeline item;
+- maximum 45-minute launch render timeline;
+- maximum bridge request body of 32,768 bytes;
+- tenant-contained GCS paths only;
+- supported image/video/audio MIME allowlist;
+- provider generation false;
+- public release false;
+- Spatial required false.
+
+Studio mirrors these limits before any future dispatch. Jobs remains the durable execution owner; Studio remains orchestration/review/mastering authority.
+
+The pre-launch Studio feature gate still prevents dispatch even when the bridge is configured.
