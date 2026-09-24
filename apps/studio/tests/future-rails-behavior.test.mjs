@@ -26,8 +26,12 @@ const providerCode = transpile('../lib/studio/provider-adapter.ts', [
 ]);
 const provider = await import(dataUrl(providerCode));
 
-const evidence = await import(dataUrl(transpile('../lib/studio/evidence.ts')));
-const exportPackage = await import(dataUrl(transpile('../lib/studio/export-package.ts')));
+const evidenceCode = transpile('../lib/studio/evidence.ts');
+const evidenceUrl = dataUrl(evidenceCode);
+const evidence = await import(evidenceUrl);
+const exportPackage = await import(dataUrl(transpile('../lib/studio/export-package.ts', [
+  ["'./evidence'", JSON.stringify(evidenceUrl)],
+])));
 const assetFactory = await import(dataUrl(transpile('../lib/studio/asset-factory-orchestration.ts')));
 
 const hardOffPolicy = feature.resolveStudioFeaturePolicy('provider-execution', {
