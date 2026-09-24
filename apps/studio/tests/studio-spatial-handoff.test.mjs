@@ -5,7 +5,7 @@ import ts from 'typescript';
 
 const source = fs.readFileSync(new URL('../lib/studio-spatial-handoff.ts', import.meta.url), 'utf8');
 const fixture = JSON.parse(
-  fs.readFileSync(new URL('./fixtures/studio-spatial-export-0.1.0.json', import.meta.url), 'utf8'),
+  fs.readFileSync(new URL('./fixtures/studio-spatial-export-0.2.0.json', import.meta.url), 'utf8'),
 );
 const transpiled = ts.transpileModule(source, {
   compilerOptions: {
@@ -62,7 +62,7 @@ const trustedAuthority = {
   },
 };
 
-test('emits the current Spatial 0.1.0 wire shape only when complete', () => {
+test('emits the current Spatial 0.2.0 wire shape only when complete', () => {
   const validation = contract.validateStudioSpatialExport(fixture);
   assert.equal(validation.ok, true, validation.errors.join('\n'));
   assert.deepEqual(validation.rejectedRuntimeTargets, []);
@@ -75,7 +75,7 @@ test('emits the current Spatial 0.1.0 wire shape only when complete', () => {
   const emission = contract.emitStudioSpatialExport(fixture, trustedAuthority);
   assert.equal(emission.ok, true);
   assert.deepEqual(emission.export, fixture);
-  assert.equal(emission.export.contractVersion, '0.1.0');
+  assert.equal(emission.export.contractVersion, '0.2.0');
   assert.equal(emission.export.producer, 'urai-studio');
   assert.equal(emission.export.consumer, 'urai-spatial');
   assert.equal(contract.isStudioSpatialManifestReleaseSafe(fixture, trustedAuthority), true);
@@ -103,6 +103,7 @@ test('fails closed on incomplete asset, scene, consent, safety, or release evide
     ['safetyBoundaries', (value) => { value.safetyBoundaries = []; }],
     ['releaseEvidence', (value) => { delete value.releaseEvidence; }],
     ['release SHA', (value) => { value.releaseEvidence.spatialBuildSha = 'unknown'; }],
+    ['validator version', (value) => { value.releaseEvidence.validatorVersion = '0.1.0'; }],
     ['live smoke URL', (value) => { value.releaseEvidence.liveSmokeUrl = 'http://urai.app/status'; }],
   ];
 
