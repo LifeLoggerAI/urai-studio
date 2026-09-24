@@ -43,11 +43,21 @@ export type StudioReadinessProfile = {
 
 const PROFILE_REQUIREMENTS: Record<StudioReadinessProfileId, { required: string[]; hardOff: boolean }> = {
   PUBLIC_SITE: { required: [], hardOff: false },
-  FULL_STUDIO_PLATFORM: { required: ['asset-factory', 'spatial', 'analytics', 'admin', 'privacy'], hardOff: false },
+  FULL_STUDIO_PLATFORM: {
+    required: ['asset-factory', 'spatial', 'jobs', 'content', 'analytics', 'admin', 'privacy', 'b2b-portal'],
+    hardOff: false,
+  },
   PROVIDER_EXECUTION: { required: ['asset-factory'], hardOff: true },
   SPATIAL_HANDOFF: { required: ['spatial'], hardOff: true },
   MEDIA_PRODUCTION: { required: ['asset-factory', 'spatial'], hardOff: true },
 };
+
+export const STUDIO_INTEGRATION_HEALTH_CONTRACT = {
+  healthPath: '/api/system/health',
+  integrationContractPath: '/api/system/integration-contract',
+  authentication: 'server-only-bearer-when-configured',
+  rawCredentialsExposed: false,
+} as const;
 
 const timeoutMs = 2200;
 const maxAttempts = 2;
