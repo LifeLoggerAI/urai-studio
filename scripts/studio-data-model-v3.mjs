@@ -38,6 +38,43 @@ function sourceIdentity(collection, id, data) {
   };
 }
 
+function legacyAssetKind(value) {
+  const map = {
+    image: 'image',
+    video: 'video',
+    audio: 'audio',
+    script: 'script',
+    subtitle: 'subtitle',
+    scroll: 'storyboard',
+    scene: 'scene_manifest',
+    model: 'three_component',
+  };
+  return typeof value === 'string' ? map[value] ?? null : null;
+}
+
+function legacyJobKind(value) {
+  const map = {
+    image: 'image_generation',
+    video: 'video_generation',
+    scroll: 'scroll_export',
+    scene: 'three_scene_generation',
+    model: 'three_scene_generation',
+  };
+  return typeof value === 'string' ? map[value] ?? null : null;
+}
+
+function legacyExportKind(value) {
+  const map = {
+    manifest: 'json',
+    json: 'json',
+    pdf: 'pdf',
+    zip: 'zip',
+    mp4: 'mp4',
+    srt: 'srt',
+  };
+  return typeof value === 'string' ? map[value] ?? null : null;
+}
+
 export function classifyLegacyRecord(collection, id, data) {
   documentId(collection, 'collection');
   documentId(id, 'record_id');
@@ -94,6 +131,11 @@ export function convertLegacyRecord({ collection, id, data, tenantId, migratedAt
   }
 
   if (collection === 'studioAssets') {
+    const kind = legacyAssetKind(data.type);
+    if (!kind) return { ok: false, classification, reason: 'explicit_asset_kind_mapping_required' };
+    if (typeof data.storagePath !== 'string' || !data.storagePath.trim()) {
+      return { ok: false, classification, reason: 'asset_storage_path_required' };
+    }
     return {
       ok: true,
       classification,
@@ -105,7 +147,7 @@ export function convertLegacyRecord({ collection, id, data, tenantId, migratedAt
         tenantId: resolvedTenantId,
         userId,
         projectId: typeof data.projectId === 'string' && data.projectId ? data.projectId : 'legacy-unbound',
-        kind: typeof data.type === 'string' ? data.type : 'image',
+        kind,
         title: typeof data.title === 'string' && data.title.trim() ? data.title.trim() : 'Migrated Studio Asset',
         storagePath: typeof data.storagePath === 'string' ? data.storagePath : '',
         mimeType: typeof data.mimeType === 'string' ? data.mimeType : 'application/octet-stream',
@@ -119,6 +161,8 @@ export function convertLegacyRecord({ collection, id, data, tenantId, migratedAt
   }
 
   if (collection === 'assetJobs') {
+    const kind = legacyJobKind(data.type);
+    if (!kind) return { ok: false, classification, reason: 'explicit_job_kind_mapping_required' };
     return {
       ok: true,
       classification,
@@ -130,7 +174,7 @@ export function convertLegacyRecord({ collection, id, data, tenantId, migratedAt
         tenantId: resolvedTenantId,
         userId,
         projectId: typeof data.projectId === 'string' && data.projectId ? data.projectId : 'legacy-unbound',
-        kind: 'asset_bundle_export',
+        kind,
         status: data.status === 'failed' ? 'failed' : data.status === 'ready' ? 'succeeded' : 'queued',
         provider: 'legacy-migration',
         model: 'compatibility-only',
@@ -147,6 +191,8 @@ export function convertLegacyRecord({ collection, id, data, tenantId, migratedAt
   }
 
   if (collection === 'exportJobs') {
+    const kind = legacyExportKind(data.type);
+    if (!kind) return { ok: false, classification, reason: 'explicit_export_kind_mapping_required' };
     return {
       ok: true,
       classification,
@@ -159,7 +205,7 @@ export function convertLegacyRecord({ collection, id, data, tenantId, migratedAt
         userId,
         projectId: typeof data.projectId === 'string' && data.projectId ? data.projectId : 'legacy-unbound',
         assetIds: [],
-        kind: 'json',
+        kind,
         status: data.exportStatus === 'ready' ? 'succeeded' : data.exportStatus === 'failed' ? 'failed' : 'queued',
         storagePath: typeof data.storagePath === 'string' ? data.storagePath : undefined,
         tenantScoped: true,
