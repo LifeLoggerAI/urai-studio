@@ -21,7 +21,6 @@ const productionRoots = [
   'apps/studio/app',
   'apps/studio/components',
   'apps/studio/lib',
-  'apps/studio/src',
   'functions/src',
   'packages',
 ];
@@ -83,7 +82,6 @@ const requiredPipelineTerms = new Map([
 const userFacingRoots = [
   'apps/studio/app',
   'apps/studio/components',
-  'apps/studio/src/components',
 ];
 
 const internalLabelPatterns = [
