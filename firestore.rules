@@ -4,6 +4,15 @@ service cloud.firestore {
     function isSignedIn() { return request.auth != null; }
     function ownsExisting() { return isSignedIn() && resource.data.uid == request.auth.uid; }
     function ownsIncoming() { return isSignedIn() && request.resource.data.uid == request.auth.uid; }
+    function canonicalV3Record() {
+      return resource.data.schemaVersion == 3
+        && resource.data.tenantId is string
+        && resource.data.userId is string;
+    }
+    function legacyStudioRecord() {
+      return resource.data.schemaVersion != 3
+        && resource.data.uid is string;
+    }
 
     function membershipPath(studioId) {
       return /databases/$(database)/documents/studios/$(studioId)/members/$(request.auth.uid);
@@ -109,63 +118,63 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Legacy uid-owned collections remain isolated until their own migration.
+    // V3 records are trusted-server-owned. Legacy uid-owned shapes remain
+    // readable only for rollback/compatibility and cannot receive new writes.
     match /studioProjects/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if (canonicalV3Record() && canView(resource.data.tenantId))
+        || (legacyStudioRecord() && ownsExisting());
+      allow create, update, delete: if false;
     }
     match /studioScenes/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if legacyStudioRecord() && ownsExisting();
+      allow create, update, delete: if false;
     }
     match /studioAssets/{id} {
-      allow read: if (resource.data.isPublic == true) || ownsExisting();
-      allow create: if ownsIncoming();
-      allow update, delete: if ownsExisting();
+      allow read: if (canonicalV3Record() && canView(resource.data.tenantId))
+        || (legacyStudioRecord() && ((resource.data.isPublic == true) || ownsExisting()));
+      allow create, update, delete: if false;
     }
     match /assetJobs/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if legacyStudioRecord() && ownsExisting();
+      allow create, update, delete: if false;
     }
     match /assetCollections/{id} {
-      allow read: if (resource.data.isPublic == true) || ownsExisting();
-      allow create: if ownsIncoming();
-      allow update, delete: if ownsExisting();
+      allow read: if legacyStudioRecord() && ((resource.data.isPublic == true) || ownsExisting());
+      allow create, update, delete: if false;
     }
     match /studioScrolls/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if legacyStudioRecord() && ownsExisting();
+      allow create, update, delete: if false;
     }
     match /narratorScripts/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if legacyStudioRecord() && ownsExisting();
+      allow create, update, delete: if false;
     }
     match /subtitles/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if legacyStudioRecord() && ownsExisting();
+      allow create, update, delete: if false;
     }
     match /voiceoverJobs/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if legacyStudioRecord() && ownsExisting();
+      allow create, update, delete: if false;
     }
     match /exportJobs/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if legacyStudioRecord() && ownsExisting();
+      allow create, update, delete: if false;
     }
     match /studioEvents/{id} {
-      allow read: if ownsExisting();
-      allow create: if ownsIncoming();
-      allow update, delete: if false;
+      allow read: if legacyStudioRecord() && ownsExisting();
+      allow create, update, delete: if false;
     }
     match /catalogs/{id} { allow read: if true; allow write: if false; }
     match /remoteConfigMirror/{id} { allow read: if true; allow write: if false; }
     match /xrSessions/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if legacyStudioRecord() && ownsExisting();
+      allow create, update, delete: if false;
     }
     match /vrSessions/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if legacyStudioRecord() && ownsExisting();
+      allow create, update, delete: if false;
     }
 
     // Runtime and public-intake collections are server-owned.
