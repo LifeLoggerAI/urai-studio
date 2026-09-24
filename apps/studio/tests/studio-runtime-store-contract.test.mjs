@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const src = fs.readFileSync(new URL('../lib/studio-runtime-store.ts', import.meta.url), 'utf8');
+const model = fs.readFileSync(new URL('../lib/studio/data-model.ts', import.meta.url), 'utf8');
 
 for (const token of [
   'studioProjects',
@@ -9,6 +10,14 @@ for (const token of [
   'studioJobs',
   'studioAssets',
   'studioExports',
+]) {
+  assert.ok(model.includes(token), `canonical data model must include ${token}`);
+}
+
+for (const token of [
+  'STUDIO_CANONICAL_COLLECTIONS',
+  'STUDIO_DATA_MODEL_VERSION',
+  'requireCanonicalStudioRecord',
   'tenantScoped: true',
   'createStudioProject',
   'createStudioBrief',
