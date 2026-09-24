@@ -1,8 +1,8 @@
 {
   "service": "urai-studio",
   "consumerSystem": "urai-spatial",
-  "contractVersion": "0.1.0",
-  "wireContract": "urai-spatial/0.1.0",
+  "contractVersion": "0.2.0",
+  "wireContract": "urai-spatial/0.2.0",
   "route": "/api/system/spatial-handoff",
   "exportRoute": "/api/studio/exports",
   "typescriptContract": "apps/studio/lib/studio-spatial-handoff.ts",
