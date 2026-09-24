@@ -47,3 +47,15 @@ assert.ok(page.includes('does not depend on Spatial'), 'public Studio copy must 
 assert.ok(page.includes('MP4 · SRT · JSON'), 'Life Movies page must expose ordinary video/caption/manifest outputs');
 
 console.log('Life Movies launch contract guard passed');
+
+
+const featurePolicy = fs.readFileSync(new URL('../lib/studio/feature-policy.ts', import.meta.url), 'utf8');
+const lifeMoviesRoute = fs.readFileSync(new URL('../app/api/studio/life-movies/route.ts', import.meta.url), 'utf8');
+
+assert.ok(featurePolicy.includes("'life-movies-render'"), 'Life Movies render feature must exist');
+assert.ok(featurePolicy.includes("'life-movies-render',\n])"), 'Life Movies render must remain in the hard-off set');
+assert.ok(lifeMoviesRoute.includes("resolveStudioFeaturePolicy('life-movies-render')"));
+assert.ok(lifeMoviesRoute.includes("canExecuteStudioFeature('life-movies-render')"));
+assert.ok(lifeMoviesRoute.includes("status: 'life_movies_render_hard_off'"));
+assert.ok(lifeMoviesRoute.indexOf("life_movies_render_hard_off") < lifeMoviesRoute.indexOf("createStudioProject({"), 'hard-off gate must precede persistent project creation');
+assert.ok(lifeMoviesRoute.indexOf("life_movies_render_hard_off") < lifeMoviesRoute.indexOf("dispatchLifeMovieRender({"), 'hard-off gate must precede Jobs dispatch');
