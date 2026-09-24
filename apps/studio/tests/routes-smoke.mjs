@@ -19,6 +19,7 @@ const routes = [
   '/studio/settings',
   '/studio/xr',
   '/studio/video-factory',
+  '/studio/life-movies',
   '/generate',
   '/motion',
   '/cinema',
@@ -42,11 +43,12 @@ const routes = [
   '/api/system/health',
   '/api/system/spatial-handoff',
   '/api/studio/video-factory',
+  '/api/studio/life-movies',
   '/healthz',
   '/readyz',
 ];
 
-assert.equal(routes.length, 43);
+assert.equal(routes.length, 45);
 assert.ok(routes.includes('/'));
 assert.ok(routes.includes('/about'));
 assert.ok(routes.includes('/start'));
@@ -63,6 +65,7 @@ assert.ok(routes.includes('/studio/assets'));
 assert.ok(routes.includes('/studio/exports'));
 assert.ok(routes.includes('/studio/admin'));
 assert.ok(routes.includes('/studio/video-factory'));
+assert.ok(routes.includes('/studio/life-movies'));
 assert.ok(routes.includes('/generate'));
 assert.ok(routes.includes('/admin'));
 assert.ok(routes.includes('/studio/settings'));
@@ -74,5 +77,6 @@ assert.ok(routes.includes('/readyz'));
 assert.ok(routes.includes('/dashboard'));
 assert.ok(routes.includes('/api/system/spatial-handoff'));
 assert.ok(routes.includes('/api/studio/video-factory'));
+assert.ok(routes.includes('/api/studio/life-movies'));
 
 console.log('static route declaration passed', routes.length);
