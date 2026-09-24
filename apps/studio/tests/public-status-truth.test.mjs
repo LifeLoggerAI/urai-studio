@@ -6,6 +6,9 @@ const map = fs.readFileSync(new URL('../lib/studio/system-of-systems.ts', import
 const page = fs.readFileSync(new URL('../app/status/page.tsx', import.meta.url), 'utf8');
 const manifest = fs.readFileSync(new URL('../app/api/system/manifest/route.ts', import.meta.url), 'utf8');
 const integrations = fs.readFileSync(new URL('../app/api/system/integrations/route.ts', import.meta.url), 'utf8');
+const shell = fs.readFileSync(new URL('../components/studio/StudioShell.tsx', import.meta.url), 'utf8');
+const hero = fs.readFileSync(new URL('../components/site/CinematicHero.tsx', import.meta.url), 'utf8');
+const actionPanel = fs.readFileSync(new URL('../components/studio/StudioActionPanel.tsx', import.meta.url), 'utf8');
 
 assert.ok(!systems.includes("status: 'Live'"), 'static Studio systems may not claim Live without observed proof');
 assert.ok(systems.includes("'Evidence required'"), 'system cards need an evidence-required state');
@@ -24,3 +27,15 @@ assert.ok(integrations.includes('configurationRequired'), 'integration route may
 assert.ok(!integrations.includes('requiredEnv:'), 'public integration route must not expose required env key names');
 
 console.log('Studio public status truth guard passed');
+
+
+for (const [label, source] of [
+  ['Studio shell', shell],
+  ['Cinematic hero', hero],
+  ['Studio action panel', actionPanel],
+]) {
+  assert.ok(!source.includes('Live studio spine'), `${label} must not claim an unconditional live spine`);
+  assert.ok(!source.includes('Live system actions'), `${label} must not claim unconditional live actions`);
+}
+assert.ok(shell.includes('Evidence-gated studio spine'));
+assert.ok(actionPanel.includes('Gated system actions'));
