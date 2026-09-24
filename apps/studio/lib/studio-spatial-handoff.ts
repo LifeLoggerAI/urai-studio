@@ -1,5 +1,7 @@
-export const STUDIO_SPATIAL_HANDOFF_VERSION = '0.1.0' as const;
-export const STUDIO_SPATIAL_HANDOFF_CONTRACT_VERSION = STUDIO_SPATIAL_HANDOFF_VERSION;
+export const STUDIO_SPATIAL_CORE_CONTRACT_VERSION = '0.1.0' as const;
+export const STUDIO_SPATIAL_HANDOFF_VERSION = STUDIO_SPATIAL_CORE_CONTRACT_VERSION;
+export const STUDIO_SPATIAL_HANDOFF_CONTRACT_VERSION = STUDIO_SPATIAL_CORE_CONTRACT_VERSION;
+export const STUDIO_SPATIAL_PRODUCER_EXTENSION_VERSION = '1.0.0' as const;
 
 export const STUDIO_SPATIAL_HANDOFF_REQUIRED_GATES = [
   'StudioProject',
@@ -167,10 +169,9 @@ export interface StudioSpatialTrustedReleaseAuthority {
   };
 }
 
-// The core fields match the current urai-spatial 0.1.0 consumer contract.
-// Studio requires the releaseEvidence extension before emitting a wire payload.
-export interface StudioSpatialExport {
-  contractVersion: typeof STUDIO_SPATIAL_HANDOFF_CONTRACT_VERSION;
+// This is the exact urai-spatial 0.1.0 consumer wire shape.
+export interface StudioSpatialCoreExport {
+  contractVersion: typeof STUDIO_SPATIAL_CORE_CONTRACT_VERSION;
   producer: 'urai-studio';
   consumer: 'urai-spatial';
   exportId: string;
@@ -182,6 +183,11 @@ export interface StudioSpatialExport {
   consentReceipt: UraiSpatialConsentReceipt;
   safetyBoundaries: UraiSpatialSafetyBoundary[];
   runtimeTargets: UraiSpatialRuntimeTarget[];
+}
+
+// Studio validates protected release evidence in a producer-side envelope.
+// releaseEvidence is never represented as part of the Spatial 0.1.0 core schema.
+export interface StudioSpatialExport extends StudioSpatialCoreExport {
   releaseEvidence: StudioSpatialReleaseEvidence;
 }
 
@@ -194,8 +200,8 @@ export interface StudioSpatialValidationResult {
 }
 
 export type StudioSpatialEmissionResult =
-  | { ok: true; export: StudioSpatialExport; validation: StudioSpatialValidationResult }
-  | { ok: false; export: null; validation: StudioSpatialValidationResult };
+  | { ok: true; export: StudioSpatialExport; wire: StudioSpatialCoreExport; validation: StudioSpatialValidationResult }
+  | { ok: false; export: null; wire: null; validation: StudioSpatialValidationResult };
 
 export const STUDIO_SPATIAL_HANDOFF_GUARDRAILS = {
   requiredGateRegistry: STUDIO_SPATIAL_HANDOFF_REQUIRED_GATES,
@@ -203,6 +209,7 @@ export const STUDIO_SPATIAL_HANDOFF_GUARDRAILS = {
   adFreeCoreExperience: true,
   externalMarketingLayerEnabled: false,
   wireContract: 'urai-spatial/0.1.0',
+  producerExtensionVersion: STUDIO_SPATIAL_PRODUCER_EXTENSION_VERSION,
   emissionPolicy: 'trusted-release-authority-only',
   fallbackRenderer: 'fallback_cards',
 } as const;
@@ -613,6 +620,14 @@ export function validateStudioSpatialExport(input: unknown): StudioSpatialValida
   return { ok: errors.length === 0, acceptedRuntimeTargets, rejectedRuntimeTargets, warnings, errors };
 }
 
+export function toStudioSpatialCoreExport(input: StudioSpatialExport): StudioSpatialCoreExport {
+  const {
+    releaseEvidence: _releaseEvidence,
+    ...core
+  } = input;
+  return core;
+}
+
 export function emitStudioSpatialExport(
   input: unknown,
   authority?: StudioSpatialTrustedReleaseAuthority,
@@ -628,8 +643,13 @@ export function emitStudioSpatialExport(
     validation.ok = validation.errors.length === 0;
   }
   return validation.ok
-    ? { ok: true, export: input as StudioSpatialExport, validation }
-    : { ok: false, export: null, validation };
+    ? {
+        ok: true,
+        export: input as StudioSpatialExport,
+        wire: toStudioSpatialCoreExport(input as StudioSpatialExport),
+        validation,
+      }
+    : { ok: false, export: null, wire: null, validation };
 }
 
 export function createBlockedStudioSpatialHandoff(input: {
