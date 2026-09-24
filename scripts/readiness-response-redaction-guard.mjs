@@ -18,9 +18,12 @@ const status = fs.readFileSync(statusPath, 'utf8');
 const requiredRouteTokens = [
   'type PublicReadinessCheck',
   'checks: PublicReadinessCheck[]',
-  'checks: readiness.checks.map(({ id, required, ok }) => ({ id, required, ok }))',
+  'checks: local.checks.map(({ id, required, ok: checkOk }) => ({ id, required, ok: checkOk }))',
+  'integrations: profile.checks.map(({ id, configured, observed, state, httpStatus, attempts }) => ({',
+  'activationAuthorized: false',
+  'hardOff: profile.hardOff',
   "'Cache-Control': 'no-store, max-age=0'",
-  'status: readiness.ok ? 200 : 503',
+  'status: body.ok ? 200 : 503',
 ];
 for (const token of requiredRouteTokens) {
   if (!route.includes(token)) throw new Error(`readiness redaction guard failed: ${token}`);
