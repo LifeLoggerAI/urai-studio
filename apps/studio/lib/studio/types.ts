@@ -179,12 +179,17 @@ export interface StudioEvent {
   updatedAt?: unknown;
 }
 
+/**
+ * @deprecated Read-only compatibility projection for historical consumers.
+ * Execution authority lives in server-owned studio/feature-policy.ts.
+ * These booleans must never be accepted from a public client as activation authority.
+ */
 export interface StudioFeatureFlags {
-  callablesEnabled: boolean;
-  uploadsEnabled: boolean;
-  exportsEnabled: boolean;
-  xrPreviewEnabled: boolean;
-  demoSeedEnabled: boolean;
+  readonly callablesEnabled: boolean;
+  readonly uploadsEnabled: boolean;
+  readonly exportsEnabled: boolean;
+  readonly xrPreviewEnabled: boolean;
+  readonly demoSeedEnabled: boolean;
 }
 
 export interface StudioDashboardSummary {

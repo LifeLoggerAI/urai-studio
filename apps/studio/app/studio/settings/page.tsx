@@ -18,7 +18,7 @@ const settings = [
   },
   {
     title: 'Feature flags',
-    body: 'Use StudioFeatureFlags to gate callables, uploads, exports, XR preview, and demo seeding.',
+    body: 'Execution is governed by the server-owned feature policy. Legacy StudioFeatureFlags are display compatibility only and cannot authorize activation.',
   },
   {
     title: 'Release lock',
