@@ -64,6 +64,22 @@ export async function GET(req: Request) {
   const auth = await requireStudioAuth(req);
   if (!auth.ok) return authError(auth);
 
+  const renderPolicy = resolveStudioFeaturePolicy('life-movies-render');
+  if (!canExecuteStudioFeature('life-movies-render')) {
+    return json({
+      ok: false,
+      status: 'life_movies_render_hard_off',
+      feature: {
+        id: renderPolicy.id,
+        state: renderPolicy.state,
+        hardOff: renderPolicy.hardOff,
+        activationAuthorized: false,
+      },
+      providerGenerationAuthorized: false,
+      publicReleaseAuthorized: false,
+    }, 409);
+  }
+
   const jobId = new URL(req.url).searchParams.get('jobId');
   if (!jobId) {
     return json({
