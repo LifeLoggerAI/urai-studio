@@ -80,3 +80,14 @@ assert.ok(lifeMovieBridge.includes("actions: ['create', 'status', 'cancel']"));
 assert.ok(lifeMovieBridge.includes("auth: 'protected-bearer'"));
 assert.ok(lifeMovieBridge.includes('validateLifeMovieBridgeRequest'));
 assert.ok(lifeMovieBridge.includes('life_movie_jobs_bridge_request_too_large'));
+
+
+const lifeMoviesPage = fs.readFileSync(new URL('../app/studio/life-movies/page.tsx', import.meta.url), 'utf8');
+const studioPage = fs.readFileSync(new URL('../app/studio/page.tsx', import.meta.url), 'utf8');
+const activeRoutes = fs.readFileSync(new URL('./routes-smoke.mjs', import.meta.url), 'utf8');
+
+assert.ok(lifeMoviesPage.includes("canExecuteStudioFeature('life-movies-render')"));
+assert.ok(lifeMoviesPage.includes('notFound()'), 'hard-off Life Movies page must fail closed to notFound');
+assert.ok(!studioPage.includes('href="/studio/life-movies"'), 'hard-off Life Movies must not be linked from active Studio navigation');
+assert.ok(!activeRoutes.includes("'/studio/life-movies'"), 'hard-off Life Movies must not be in active route smoke');
+assert.ok(!activeRoutes.includes("'/api/studio/life-movies'"), 'hard-off Life Movies API must not be in active route smoke');
