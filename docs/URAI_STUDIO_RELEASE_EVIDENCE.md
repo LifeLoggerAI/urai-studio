@@ -45,23 +45,45 @@ The contract-only artifact command writes the deterministic JSON manifest, SRT c
 
 ## Source and protected evidence ledger
 
+Current source-control checkpoint: Studio PR #98 exact head `e1821b64f44911a94d618d1419f96e504488646c`.
+
+All six pull-request workflows completed successfully at that exact head on 2026-09-24 UTC:
+
+- Studio Visual Proof — run `35947630810`
+- Studio Audit — run `35947630853`
+- Studio CI — run `35947630841`
+- Studio Health Guard — run `35947630844`
+- URAI Production Verify — run `35947630822`
+- URAI Studio Video Factory Verification — run `35947630883`
+
+Retained exact-head artifacts:
+
+- `urai-studio-visual-e1821b64f44911a94d618d1419f96e504488646c` — artifact `10789095312` — `sha256:b0ac3daaa4cd8005e31145e2e00be945e9154a8fd174113eaf5c3bcf5019dc0c`
+- `studio-source-evidence-e1821b64f44911a94d618d1419f96e504488646c` — artifact `10787924356` — `sha256:452205f6ef8819754b5a4e72ef82652815a489eea596df054aca7a570a17e0dd`
+- `urai-studio-video-factory-evidence` — artifact `10788159957` — `sha256:bab922cffe85e964b54156a16ea25c2d00a51e84869056fd2ab710201fafc8f5`
+
+These receipts prove source/workflow state only. They do not transfer to successor heads and do not prove provider execution, protected deployment, live-domain equivalence, independent review, or public release.
+
 | Gate | Required command or proof | Current classification | Evidence location |
 | --- | --- | --- | --- |
-| Install | `corepack prepare pnpm@9.7.0 --activate && pnpm install --frozen-lockfile` | Not run at current exact head | Exact-head CI or terminal receipt required |
-| Lint | `pnpm lint` | Not run at current exact head | Exact-head CI or terminal receipt required |
-| Typecheck | `pnpm typecheck` | Not run at current exact head | Exact-head CI or terminal receipt required |
-| Unit/tests | `pnpm test` | Not run at current exact head | Exact-head CI or terminal receipt required |
-| App build | `pnpm build` | Not run at current exact head | Exact-head CI or terminal receipt required |
-| Functions build | `pnpm --dir functions build` | Not run at current exact head | Exact-head CI or terminal receipt required |
-| Done-done guard | `pnpm done-done:guard` | Not run at current exact head | Exact-head CI or terminal receipt required |
-| Evidence contract guard | `pnpm release:evidence:contract` | Not run at current exact head | Exact-head CI or terminal receipt required |
-| Release receipt guard | `RELEASE_EVIDENCE_FILE=<receipt.json> pnpm release:evidence:guard` | Not run at current exact head | A concrete exact-head receipt is mandatory; omission fails closed |
-| Source-only release check | `pnpm release:check` | Not run at current exact head | Exact-head CI or terminal receipt required |
-| Provider-backed release check | `pnpm release:check:provider` | Protected / credential-gated | Provider configuration and execution receipts required |
-| Binary artifacts | Playwright plus FFmpeg composer and playable-media validation | Protected / not proven | Binary hash, codec/probe, duration, frame, audio, and playback receipts required |
-| Local smoke | `HOST=http://127.0.0.1:3000 pnpm studio:smoke` | Not run at current exact head | Exact-head CI or terminal receipt required |
-| Firebase deployment | Protected Firebase deploy output | Not authorized in source phase | Deployment receipt required |
-| Live smoke | Approved Studio live URL | Not authorized in source phase | Route, auth, console, network, and rollback proof required |
+| Install | frozen workspace install | SOURCE-PROVEN at #98 exact head | Studio CI / Production Verify |
+| Lint | `pnpm lint` | SOURCE-PROVEN at #98 exact head | Studio Audit / exact-head source receipt |
+| Typecheck | `pnpm typecheck` | SOURCE-PROVEN at #98 exact head | Studio Audit / Production Verify |
+| Unit/tests | `pnpm test` | SOURCE-PROVEN at #98 exact head | Studio CI / Production Verify |
+| App build | `pnpm build` | SOURCE-PROVEN at #98 exact head | Studio CI / Visual Proof |
+| Functions build | `pnpm --dir functions build` | SOURCE-PROVEN at #98 exact head | Studio Audit / Production Verify |
+| Done-done guard | `pnpm done-done:guard` | SOURCE-PROVEN at #98 exact head | Studio Audit |
+| Evidence contract guard | `pnpm release:evidence:contract` | SOURCE-PROVEN at #98 exact head | Studio Audit |
+| Health guard | exact-head health guard workflow | SOURCE-PROVEN at #98 exact head | run `35947630844` |
+| Source-only release check | `pnpm release:check` | SOURCE-PROVEN at #98 exact head | Studio CI |
+| Visual proof | exact-head retained pixel workflow | SOURCE-PROVEN at #98 exact head | artifact `10789095312` |
+| Video factory source proof | exact-head video factory workflow | SOURCE-PROVEN at #98 exact head | artifact `10788159957` |
+| Provider-backed execution | protected execution receipt | UNPROVEN / HARD-OFF | No provider execution receipt |
+| Paid provider spend | explicit spend authority + provider receipt | NOT AUTHORIZED | Source state cannot authorize spend |
+| Firebase deployment | protected Firebase deploy output tied to exact SHA | UNPROVEN | No current protected deployment receipt |
+| Live-domain equivalence | provider/runtime SHA readback + route smoke | UNPROVEN | No current exact-head live readback |
+| Independent review | genuine exact-head APPROVED review | UNPROVEN | No review on #98 |
+| Public release | approved release action + deployment/live/review proof | NOT AUTHORIZED | Source proof alone is insufficient |
 
 ## Non-negotiable release rules
 
@@ -99,4 +121,8 @@ After generating any source, provider, artifact, deployment, or live receipt, va
 
 ## Current conclusion
 
-URAI Studio has meaningful source foundations and explicit truth boundaries. It is not provider-certified, deployed, independently live-verified, or production-frozen until the protected rows above have exact-head receipts.
+Studio PR #98 is exact-head machine-green with retained source, visual, and video-factory evidence at `e1821b64f44911a94d618d1419f96e504488646c`.
+
+That source proof is complete for the #98 checkpoint only.
+
+Provider execution, paid spend, protected deployment, live-domain equivalence, independent review, production freeze, and public release remain separately unproven or unauthorized. Successor branches must re-earn their own exact-head source evidence; no #98 acceptance transfers.
