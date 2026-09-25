@@ -44,6 +44,31 @@ assert.ok(ledger.includes('Source-only release check'), 'release ledger must lab
 assert.ok(ledger.includes('Provider-backed release check'), 'release ledger must label the provider-backed boundary');
 assert.ok(ledger.includes('does not prove deployment or a playable MP4'), 'release ledger must deny unsupported production claims');
 
+assert.ok(
+  ledger.includes('resolved from the live GitHub head of PR #114'),
+  'release ledger must resolve current Studio authority from live GitHub state',
+);
+assert.equal(
+  /Current terminal source-control authority:\s*Studio PR #114 exact head `[0-9a-f]{40}`/i.test(ledger),
+  false,
+  'release ledger must not hard-code its containing Studio commit as current authority',
+);
+assert.equal(
+  /\|\s*Studio PR #114\s*\|[^\n]*`[0-9a-f]{40}`/i.test(ledger),
+  false,
+  'release ledger must not hard-code current Studio PR authority in the execution matrix',
+);
+assert.equal(
+  /\|\s*Jobs PR #105\s*\|[^\n]*`[0-9a-f]{40}`/i.test(ledger),
+  false,
+  'release ledger must not hard-code current Jobs authority',
+);
+assert.equal(
+  /\|\s*Spatial PR #1301\s*\|[^\n]*`[0-9a-f]{40}`/i.test(ledger),
+  false,
+  'release ledger must not hard-code current Spatial handoff authority',
+);
+
 for (const token of [
   'binary-render-receipt.json',
   "status: 'not-rendered'",
