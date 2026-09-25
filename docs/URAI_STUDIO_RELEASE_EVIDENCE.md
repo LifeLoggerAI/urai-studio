@@ -45,61 +45,71 @@ The contract-only artifact command writes the deterministic JSON manifest, SRT c
 
 ## Source and protected evidence ledger
 
-Current terminal source-control authority: Studio PR #114 exact head `de24d0fe38735d761d1a36e9971f03ea8d6cc108`.
+### Authority rule
 
-This exact head supersedes the predecessor Studio stack as the single current review target. No predecessor review, deployment, live-runtime, provider, or release evidence transfers automatically.
+This document MUST NOT hard-code its own containing commit as the current Studio authority. Editing this ledger creates a new commit, so any self-declared "current SHA" inside the file becomes stale at the moment the edit lands.
 
-Current exact-head pull-request workflows completed successfully:
+The authoritative current Studio source SHA is therefore resolved from the live GitHub head of PR #114 (`release/studio-terminal-candidate-20260924`) at verification time.
 
+Likewise, cross-repository exact heads for Jobs and Spatial are resolved from the live GitHub heads of their governed PRs at verification time. This ledger may retain historical receipts, but it must not convert an observed external SHA into permanent current authority.
+
+### Historical exact-head proof retained
+
+The following receipts remain valid historical source evidence for their exact predecessor Studio SHA only:
+
+- predecessor Studio SHA `de24d0fe38735d761d1a36e9971f03ea8d6cc108`
 - Studio CI — run `36035410442`
 - Studio Visual Proof — run `36035410581`
 - Studio Audit — run `36035410633`
 - Studio Health Guard — run `36035410443`
 - URAI Production Verify — run `36035410530`
 - URAI Studio Video Factory Verification — run `36035410453`
+- source artifact `10825385628` — `sha256:7051325c1739ee30df276c4d049c57471aa5696635df7205a324ea49156d1055`
+- visual artifact `10824241635` — `sha256:952963250a1ce55fe4a3a9478e50fe36cfe2159b8e5757175f0dc9f11c6d0a1c`
+- video-factory artifact `10824356010` — `sha256:c9647d5b32eaf25cbc917238c771f0b90e72f484fb900eab6215c85db37c2512`
 
-Retained exact-head artifacts:
+Those receipts prove only that predecessor SHA. They do not transfer to the current PR #114 head or any later successor.
 
-- `studio-source-evidence-de24d0fe38735d761d1a36e9971f03ea8d6cc108` — artifact `10825385628` — `sha256:7051325c1739ee30df276c4d049c57471aa5696635df7205a324ea49156d1055`
-- `urai-studio-visual-de24d0fe38735d761d1a36e9971f03ea8d6cc108` — artifact `10824241635` — `sha256:952963250a1ce55fe4a3a9478e50fe36cfe2159b8e5757175f0dc9f11c6d0a1c`
-- `urai-studio-video-factory-evidence` — artifact `10824356010` — `sha256:c9647d5b32eaf25cbc917238c771f0b90e72f484fb900eab6215c85db37c2512`
+### Current verification procedure
 
-These receipts prove source/workflow state only. They do not prove protected deployment, live-domain exact-SHA equivalence, independent human approval, provider execution, paid spend, public release, or live XR.
+Before any merge or release decision:
 
-| Gate | Required command or proof | Current classification | Evidence location |
-| --- | --- | --- | --- |
-| Install | frozen workspace install | SOURCE-PROVEN at PR #114 predecessor exact head | Studio CI / Production Verify |
-| Lint | `pnpm lint` | SOURCE-PROVEN at PR #114 predecessor exact head | Studio Audit |
-| Typecheck | `pnpm typecheck` | SOURCE-PROVEN at PR #114 predecessor exact head | Studio Audit / Production Verify |
-| Unit/tests | `pnpm test` | SOURCE-PROVEN at PR #114 predecessor exact head | Studio CI / Production Verify |
-| App build | `pnpm build` | SOURCE-PROVEN at PR #114 predecessor exact head | Studio CI / Visual Proof |
-| Functions build | `pnpm --dir functions build` | SOURCE-PROVEN at PR #114 predecessor exact head | Studio Audit / Production Verify |
-| Done-done guard | `pnpm done-done:guard` | SOURCE-PROVEN at PR #114 predecessor exact head | Studio Audit |
-| Evidence contract guard | `pnpm release:evidence:contract` | SOURCE-PROVEN at PR #114 predecessor exact head | Studio Audit |
-| Health guard | exact-head health guard workflow | SOURCE-PROVEN at PR #114 predecessor exact head | run `36035410443` |
-| Source-only release check | `pnpm release:check` | SOURCE-PROVEN at PR #114 predecessor exact head | Studio CI |
-| Visual proof | exact-head retained pixel workflow | SOURCE-PROVEN at PR #114 predecessor exact head | artifact `10824241635` |
-| Video factory source proof | exact-head video factory workflow | SOURCE-PROVEN at PR #114 predecessor exact head | artifact `10824356010` |
-| Provider-backed execution | protected execution receipt | UNPROVEN / HARD-OFF | No paid provider execution receipt |
-| Paid provider spend | explicit spend authority + provider receipt | NOT AUTHORIZED | Source state cannot authorize spend |
-| Firebase deployment | protected Firebase deploy output tied to merged exact SHA | UNPROVEN | No current protected deployment receipt |
-| Live-domain equivalence | runtime/deployment SHA readback + route smoke | UNPROVEN | No current exact-head live readback |
-| Independent review | genuine exact-head APPROVED review | UNPROVEN | No APPROVED review on PR #114 current line |
-| Public release | approved release action + deployment/live/review proof | NOT AUTHORIZED | Source proof alone is insufficient |
+1. Resolve the live PR #114 head from GitHub.
+2. Require all governed Studio workflows to be terminal-successful on that exact SHA.
+3. Retain artifact IDs/digests produced for that exact SHA.
+4. Resolve the live governed Jobs PR and Spatial Studio-handoff PR heads from GitHub.
+5. Verify their required exact-head proof independently.
+6. Require genuine current independent human approval where governance requires it.
+7. Re-check that no reviewed head changed before merge.
+8. After merge, prove exact-main verification separately.
+9. Treat deployment, live runtime, provider execution, paid spend, public release and XR activation as separate evidence classes.
 
-## Current terminal execution matrix
+### Gate classification
 
-| Authority | Purpose | Exact head | Current classification |
-| --- | --- | --- | --- |
-| Studio PR #114 | terminal Studio release candidate | `de24d0fe38735d761d1a36e9971f03ea8d6cc108` | **SOURCE-PROVEN predecessor head; this ledger correction creates a successor SHA that must re-earn proof** |
-| Jobs PR #105 | terminal URAI Jobs authority | `82826ab4170d67d4c9df25f29696223cc7097f05` | **13/13 exact-head workflows SUCCESS / unmerged / independent review absent** |
-| Spatial PR #1301 | Studio-Spatial 0.2.0 consumer | `d12c3280104d50447c1d2fdb7781c9eaafa8cd92` | core exact-head workflows SUCCESS; Reference Estate Exact-Head Capture re-run queued; independent review absent |
+| Gate | Required proof | Classification rule |
+| --- | --- | --- |
+| Install / lint / typecheck / tests / app build / Functions build | terminal-successful exact-head workflow evidence | SOURCE only |
+| Done-done / evidence / health guards | terminal-successful exact-head guard evidence | SOURCE only |
+| Visual proof | retained exact-head visual artifact | SOURCE / presentation evidence only |
+| Video-factory proof | retained exact-head video-factory artifact | SOURCE / artifact evidence only |
+| Provider-backed execution | protected provider execution receipt | separate provider proof |
+| Paid provider spend | explicit spend authority + provider receipt | separately authorized only |
+| Firebase deployment | protected deployment output tied to merged exact SHA | deployment proof |
+| Live-domain equivalence | runtime/deployment SHA readback + route smoke | live proof |
+| Independent review | genuine APPROVED review bound to unchanged exact head | human governance proof |
+| Public release | approved release action + source/review/deploy/live evidence | separately authorized only |
 
-Superseded Studio predecessor PRs are historical provenance only. Their approval or deployment evidence must not transfer to PR #114 or any successor SHA.
+### Cross-repository authority rule
+
+- Jobs authority is resolved from the live governed URAI Jobs terminal PR at verification time.
+- Studio-Spatial consumer authority is resolved from the live governed Spatial Studio-Spatial handoff PR at verification time.
+- Their predecessor receipts remain historical provenance only.
+- No Jobs or Spatial approval, artifact, deployment or live evidence transfers across a changed SHA.
+- Moving Spatial visual/runtime authority must be inherited by the handoff branch without replaying stale visual/runtime files.
 
 ### Activation classification
 
-The following remain **HARD-OFF / NOT AUTHORIZED**, regardless of source completeness:
+The following remain **HARD-OFF / NOT AUTHORIZED** unless separately governed:
 
 - paid provider execution;
 - provider generation;
@@ -113,16 +123,16 @@ The following remain **HARD-OFF / NOT AUTHORIZED**, regardless of source complet
 - production V3 migration;
 - future marketplace.
 
-The following remain **UNPROVEN EXTERNAL/HUMAN GATES**:
+The following remain distinct **EXTERNAL / HUMAN / DEPLOYMENT GATES** until separately proven:
 
-- independent exact-head human approval on the unchanged terminal Studio head;
+- independent exact-head human approval;
 - protected merge into `main`;
 - exact-main verification;
 - protected Firebase deployment;
 - live-domain exact-SHA equivalence;
-- repository branch-protection administration readback/enforcement.
+- repository branch-protection administration.
 
-No row above is a deployment, provider, live-runtime, merge, human-approval, or public-release claim.
+No source-green state alone satisfies those gates.
 
 ## Non-negotiable release rules
 
@@ -160,6 +170,8 @@ After generating any source, provider, artifact, deployment, or live receipt, va
 
 ## Current conclusion
 
-PR #114 is the single terminal Studio release authority. The previously proven exact head `de24d0fe38735d761d1a36e9971f03ea8d6cc108` was six-of-six machine-green with retained source, visual, and video-factory artifacts. This ledger correction intentionally creates a successor SHA, so that predecessor machine proof becomes historical immediately after this commit and the successor must re-earn exact-head proof.
+PR #114 remains the single Studio release-candidate lane, but its exact current SHA must be resolved live from GitHub rather than hard-coded into this file.
 
-Provider execution, paid spend, protected deployment, live-domain equivalence, independent review, merge, public release, live XR, and production migration remain separately unproven or unauthorized.
+This ledger preserves exact historical receipts while preventing self-invalidating current-SHA claims and stale cross-repository authority. Every successor SHA must earn its own machine proof and human approval.
+
+Provider execution, paid spend, protected deployment, live-domain equivalence, merge, public release, live XR and production migration remain separate gates.
