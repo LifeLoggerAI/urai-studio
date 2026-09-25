@@ -8,6 +8,36 @@ export const dynamic = 'force-dynamic';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+const STUDIO_JOB_KINDS: readonly StudioJobKind[] = [
+  'image_generation',
+  'video_generation',
+  'music_generation',
+  'voice_generation',
+  'motion_spec_generation',
+  'three_scene_generation',
+  'webxr_scene_generation',
+  'pitch_export',
+  'scroll_export',
+  'asset_bundle_export',
+];
+
+const STUDIO_EXPORT_KINDS: readonly StudioExportKind[] = [
+  'png',
+  'svg',
+  'webp',
+  'mp4',
+  'wav',
+  'mp3',
+  'srt',
+  'json',
+  'pdf',
+  'zip',
+  'firebase_bundle',
+  'react_component',
+  'three_scene',
+  'webxr_manifest',
+];
+
 function json(body: Record<string, unknown>, status = 200) {
   return NextResponse.json(
     { ...body, timestamp: new Date().toISOString() },
@@ -36,6 +66,14 @@ function stringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string').map((item) => item.trim()).filter(Boolean) : [];
 }
 
+function isStudioJobKind(value: string): value is StudioJobKind {
+  return STUDIO_JOB_KINDS.includes(value as StudioJobKind);
+}
+
+function isStudioExportKind(value: string): value is StudioExportKind {
+  return STUDIO_EXPORT_KINDS.includes(value as StudioExportKind);
+}
+
 function authErrorResponse(auth: Awaited<ReturnType<typeof requireStudioAuth>>) {
   return json(
     {
@@ -44,7 +82,7 @@ function authErrorResponse(auth: Awaited<ReturnType<typeof requireStudioAuth>>) 
       error: auth.error ?? { code: 'unauthorized', message: 'Studio API authentication failed.' },
       authMode: auth.authMode,
     },
-    401,
+    auth.error?.code === 'studio_membership_lookup_failed' ? 503 : auth.error?.code === 'studio_edit_role_required' ? 403 : 401,
   );
 }
 
@@ -86,12 +124,24 @@ export async function POST(req: Request) {
   const prompt = text(body.prompt);
   const projectId = optionalText(body.projectId);
   const briefId = optionalText(body.briefId);
-  const kind = text(body.kind, 'asset_bundle_export') as StudioJobKind;
-  const requestedExports = stringArray(body.requestedExports) as StudioExportKind[];
+  const rawKind = text(body.kind, 'asset_bundle_export');
+  const rawRequestedExports = stringArray(body.requestedExports);
 
   if (prompt.length < 8) {
     return json({ ok: false, status: 'invalid_prompt', error: { code: 'invalid_prompt', message: 'Prompt must be at least 8 characters.' } }, 400);
   }
+
+  if (!isStudioJobKind(rawKind)) {
+    return json({ ok: false, status: 'invalid_job_kind', error: { code: 'invalid_job_kind', message: 'Unsupported Studio job kind.' } }, 400);
+  }
+
+  const invalidExport = rawRequestedExports.find((value) => !isStudioExportKind(value));
+  if (invalidExport) {
+    return json({ ok: false, status: 'invalid_export_kind', error: { code: 'invalid_export_kind', message: 'One or more requested export kinds are unsupported.' } }, 400);
+  }
+
+  const kind = rawKind;
+  const requestedExports = rawRequestedExports as StudioExportKind[];
 
   const result = await createStudioJob({
     projectId,

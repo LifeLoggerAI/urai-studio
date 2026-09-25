@@ -1,0 +1,129 @@
+name: Studio Visual Proof
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: studio-visual-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  visual-proof:
+    name: Retain exact-head Studio pixels
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      EVIDENCE_DIR: /tmp/urai-studio-visual-${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Prove exact clean candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == "${{ github.event.pull_request.head.sha }}" ]]
+          test -z "$(git status --porcelain)"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+
+      - name: Activate pinned pnpm
+        shell: bash
+        run: |
+          set -euo pipefail
+          corepack enable
+          corepack prepare pnpm@9.7.0 --activate
+          pnpm --version
+
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build exact Studio candidate
+        run: pnpm build
+
+      - name: Start exact-head Studio
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          (cd apps/studio && pnpm start --hostname 127.0.0.1 --port 3000 >"$EVIDENCE_DIR/server.log" 2>&1 & echo $! >"$EVIDENCE_DIR/server.pid")
+          ready=0
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          [[ "$ready" == "1" ]] || { cat "$EVIDENCE_DIR/server.log"; exit 1; }
+
+      - name: Install Chromium
+        run: pnpm --dir apps/studio exec playwright install --with-deps chromium
+
+      - name: Capture and validate literal pixels
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$EVIDENCE_DIR/capture.cjs" <<'EOF'
+          const { chromium } = require('@playwright/test');
+          const fs = require('fs');
+          const path = require('path');
+          const out = process.env.EVIDENCE_DIR;
+          const routes = ['/', '/studio', '/cinema', '/privacy', '/dashboard', '/admin'];
+          const viewports = [
+            { name: 'desktop-1440', width: 1440, height: 1000 },
+            { name: 'mobile-430', width: 430, height: 900 },
+          ];
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const manifest = { exactHead: process.env.GITHUB_SHA, routes: [], findings: [] };
+            for (const viewport of viewports) {
+              const context = await browser.newContext({ viewport, reducedMotion: 'reduce' });
+              for (const route of routes) {
+                const page = await context.newPage();
+                const errors = [];
+                page.on('pageerror', e => errors.push(`pageerror:${e.message}`));
+                page.on('console', m => { if (m.type() === 'error') errors.push(`console:${m.text()}`); });
+                const response = await page.goto(`http://127.0.0.1:3000${route}`, { waitUntil: 'networkidle' });
+                const status = response ? response.status() : 0;
+                const fatal = await page.locator('body').innerText().then(t => /this page couldn.t load|application error|internal server error/i.test(t));
+                const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 2);
+                const slug = route === '/' ? 'home' : route.slice(1).replaceAll('/', '-');
+                const file = `${viewport.name}-${slug}.png`;
+                await page.screenshot({ path: path.join(out, file), fullPage: true });
+                manifest.routes.push({ route, viewport: viewport.name, status, fatal, overflow, errors, screenshot: file });
+                if (!status || status >= 500 || fatal || overflow || errors.length) {
+                  manifest.findings.push({ route, viewport: viewport.name, status, fatal, overflow, errors });
+                }
+                await page.close();
+              }
+              await context.close();
+            }
+            fs.writeFileSync(path.join(out, 'manifest.json'), JSON.stringify(manifest, null, 2));
+            await browser.close();
+            if (manifest.findings.length) {
+              console.error(JSON.stringify(manifest.findings, null, 2));
+              process.exit(1);
+            }
+          })().catch(error => { console.error(error); process.exit(1); });
+          EOF
+          (cd apps/studio && EVIDENCE_DIR="$EVIDENCE_DIR" GITHUB_SHA="${{ github.event.pull_request.head.sha }}" NODE_PATH="$PWD/node_modules" node "$EVIDENCE_DIR/capture.cjs")
+          test "$(find "$EVIDENCE_DIR" -name '*.png' -size +0c | wc -l)" -eq 12
+          sha256sum "$EVIDENCE_DIR"/*.png > "$EVIDENCE_DIR/screenshot-sha256.txt"
+          test -z "$(git status --porcelain)"
+
+      - name: Upload retained Studio visual evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: urai-studio-visual-${{ github.event.pull_request.head.sha }}
+          path: /tmp/urai-studio-visual-${{ github.event.pull_request.head.sha }}
+          if-no-files-found: error
+          retention-days: 90

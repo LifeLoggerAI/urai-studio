@@ -16,8 +16,8 @@ fi
 echo "[urai-studio] Removing stale install/build artifacts"
 rm -rf node_modules apps/studio/node_modules packages/*/node_modules apps/studio/.next .next
 
-echo "[urai-studio] Installing dependencies"
-pnpm install --no-frozen-lockfile
+echo "[urai-studio] Installing dependencies from committed lockfile"
+pnpm install --frozen-lockfile
 
 echo "[urai-studio] Building Studio app"
 pnpm --filter studio build

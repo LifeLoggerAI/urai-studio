@@ -11,13 +11,16 @@ test('system manifest exposes the Studio Spatial handoff contract block', () => 
   const requiredManifestFragments = [
     'STUDIO_SPATIAL_HANDOFF_VERSION',
     'spatialHandoff',
-    'schemaVersion',
+    'contractVersion',
+    'wireContract',
     'discovery',
     'exportField',
     'exportRoute',
     'staticDiscovery',
-    'fallbackStatus',
+    'defaultStatus',
     'fallbackRenderer',
+    'completeEvidenceRequiredForEmission',
+    'liveIntegrationClaimed',
   ];
 
   for (const fragment of requiredManifestFragments) {
@@ -25,5 +28,5 @@ test('system manifest exposes the Studio Spatial handoff contract block', () => 
   }
 
   assert.match(handoffSource, /export const STUDIO_SPATIAL_HANDOFF_VERSION/, 'handoff version export is required');
-  assert.match(manifestSource, /schemaVersion:\s*STUDIO_SPATIAL_HANDOFF_VERSION/, 'manifest must use the shared handoff version');
+  assert.match(manifestSource, /contractVersion:\s*STUDIO_SPATIAL_HANDOFF_VERSION/, 'manifest must use the shared handoff version');
 });

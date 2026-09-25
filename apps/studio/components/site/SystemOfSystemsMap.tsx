@@ -12,6 +12,7 @@ const statusLabels: Record<UraiSystemNode['status'], string> = {
   operational: 'Operational',
   limited: 'Limited',
   degraded: 'Degraded',
+  unverified: 'Evidence required',
 };
 
 export function SystemOfSystemsMap({ compact = false }: { compact?: boolean }) {
