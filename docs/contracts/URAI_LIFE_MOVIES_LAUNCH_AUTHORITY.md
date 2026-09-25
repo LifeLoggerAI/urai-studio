@@ -78,6 +78,22 @@ While hard-off:
 A configured bridge URL/token is not activation authority.
 
 
+## Current URAI Jobs renderer evidence
+
+Live source inspection of `LifeLoggerAI/urai-jobs` PR #105 confirms that the canonical `studio-worker` is no longer a placeholder on that candidate branch. The candidate contains:
+
+- a `studio.render.video` FFmpeg worker for `urai-life-movie-render-v1`;
+- tenant/source-bucket and output-prefix validation;
+- source MIME allowlisting and timeline limits aligned with this contract;
+- no-provider/no-public-release enforcement;
+- MP4, SRT and JSON render-manifest outputs with SHA-256 receipts;
+- protected worker auth plus health/readiness endpoints;
+- an FFmpeg-bearing Cloud Run image;
+- deployment scripts that admit `studio-worker` only through explicit approved worker selection and exact secret/source/rollback receipts;
+- source contract guards in `scripts/life-movies-studio-worker-contract.mjs`.
+
+This is **source and CI evidence, not deployment evidence**. Life Movies must remain hard-off until a current exact-head Studio worker deployment receipt, exact runtime SHA/readiness proof, configured Studio-to-Jobs bridge, private source-bucket authority, and end-to-end render receipt exist.
+
 ## URAI Jobs execution contract
 
 Canonical execution ownership is `LifeLoggerAI/urai-jobs`.
