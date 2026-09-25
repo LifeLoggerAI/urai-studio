@@ -2,51 +2,68 @@ name: Studio CI
 
 on:
   pull_request:
-    branches:
-      - main
   push:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: read
 
 concurrency:
-  group: studio-ci-${{ github.ref }}
+  group: studio-ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
+
+env:
+  TARGET_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
   verify-studio:
-    name: Typecheck, lint, test, build, and smoke studio
+    name: Exact-head source, membership, build, smoke, and evidence
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
+    timeout-minutes: 45
     env:
       NEXT_PUBLIC_SITE_URL: https://www.uraistudio.com
       NEXT_PUBLIC_FIREBASE_PROJECT_ID: ci-placeholder
       NEXT_PUBLIC_FIREBASE_APP_ID: ci-placeholder
       FIREBASE_PROJECT_ID: ci-placeholder
-      FIREBASE_CLIENT_EMAIL: ci@example.com
-      FIREBASE_PRIVATE_KEY: ci-placeholder
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout exact reviewed head
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ env.TARGET_SHA }}
+          persist-credentials: false
+
+      - name: Prove exact clean head
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Enable Corepack
         run: corepack enable
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
-      - name: Install dependencies
+      - name: Setup Java for Firebase emulators
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install frozen dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Release check
+      - name: Release check with canonical membership emulator matrix
         run: pnpm release:check
+
+      - name: Prove verification preserved exact source
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Static smoke declaration
         run: pnpm --filter studio smoke:static
@@ -56,9 +73,7 @@ jobs:
           pnpm --filter studio start > /tmp/urai-studio.log 2>&1 &
           echo $! > /tmp/urai-studio.pid
           for i in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:3000/healthz >/dev/null; then
-              exit 0
-            fi
+            if curl -fsS http://127.0.0.1:3000/healthz >/dev/null; then exit 0; fi
             sleep 2
           done
           cat /tmp/urai-studio.log
@@ -70,9 +85,33 @@ jobs:
           EXPECT_READY: "false"
         run: bash scripts/smoke.sh
 
+      - name: Write self-verified exact-head source evidence
+        env:
+          EVIDENCE_OUTPUT: release-evidence/studio-source-${{ env.TARGET_SHA }}.json
+          HOST: http://127.0.0.1:3000
+          EXPECT_READY: "false"
+        run: pnpm release:evidence:source
+
+      - name: Validate exact-head source evidence receipt
+        env:
+          RELEASE_EVIDENCE_FILE: release-evidence/studio-source-${{ env.TARGET_SHA }}.json
+        run: pnpm release:evidence:guard
+
+      - name: Re-prove exact clean head after evidence generation
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test -z "$(git status --porcelain --untracked-files=all -- . ':(exclude)release-evidence')"
+
+      - name: Upload exact-head source evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: studio-source-evidence-${{ env.TARGET_SHA }}
+          path: release-evidence/studio-source-${{ env.TARGET_SHA }}.json
+          if-no-files-found: error
+          retention-days: 90
+
       - name: Stop Studio server
         if: always()
         run: |
-          if [ -f /tmp/urai-studio.pid ]; then
-            kill $(cat /tmp/urai-studio.pid) || true
-          fi
+          if [ -f /tmp/urai-studio.pid ]; then kill $(cat /tmp/urai-studio.pid) || true; fi

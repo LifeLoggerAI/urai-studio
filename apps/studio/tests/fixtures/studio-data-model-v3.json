@@ -1,0 +1,67 @@
+{
+  "tenantByUid": {
+    "user-a": "studio-alpha",
+    "user-b": "studio-beta"
+  },
+  "records": [
+    {
+      "collection": "studioProjects",
+      "id": "project-a",
+      "data": {
+        "uid": "user-a",
+        "title": "Legacy Project A",
+        "createdAt": "2026-06-01T00:00:00.000Z"
+      }
+    },
+    {
+      "collection": "studioAssets",
+      "id": "asset-a",
+      "data": {
+        "uid": "user-a",
+        "projectId": "project-a",
+        "title": "Legacy Asset A",
+        "type": "image",
+        "storagePath": "user-uploads/user-a/studio/a.png",
+        "createdAt": "2026-06-02T00:00:00.000Z"
+      }
+    },
+    {
+      "collection": "assetJobs",
+      "id": "job-b",
+      "data": {
+        "uid": "user-b",
+        "projectId": "project-b",
+        "status": "queued",
+        "type": "image"
+      }
+    },
+    {
+      "collection": "exportJobs",
+      "id": "export-b",
+      "data": {
+        "uid": "user-b",
+        "projectId": "project-b",
+        "exportStatus": "ready",
+        "storagePath": "generated/user-b/studio/exports/export-b.json",
+        "type": "manifest"
+      }
+    },
+    {
+      "collection": "studioEvents",
+      "id": "event-a",
+      "data": {
+        "uid": "user-a",
+        "type": "project_created",
+        "projectId": "project-a"
+      }
+    },
+    {
+      "collection": "studioScenes",
+      "id": "scene-a",
+      "data": {
+        "uid": "user-a",
+        "projectId": "project-a"
+      }
+    }
+  ]
+}

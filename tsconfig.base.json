@@ -12,7 +12,7 @@
     "isolatedModules": true,
     "incremental": true,
     "paths": {
-      "@/*": ["./apps/studio/src/*"],
+      "@/*": ["./apps/studio/*"],
       "@urai/ui": ["./packages/ui/src"],
       "@urai/utils": ["./packages/utils/src"]
     }

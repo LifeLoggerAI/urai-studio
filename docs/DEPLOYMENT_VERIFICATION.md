@@ -69,6 +69,7 @@ The live smoke script verifies:
 - `/api/system/health` identifies `urai-studio`;
 - `/api/system/urai-contract` exposes the runtime URAI contract;
 - `/api/system/integration-contract` advertises runtime contract, job, and export APIs;
+- `/api/integrations/asset-factory/health` and `/api/integrations/asset-factory/manifest` are exercised as real HTTP routes; disconnected/fallback states must fail closed with `503` during partial verification and must be healthy for full readiness;
 - `/api/studio/jobs` and `/api/studio/exports` reject unauthenticated production requests with `401` when `EXPECT_PROTECTED_AUTH=true`;
 - local fallback can still validate contract metadata when `EXPECT_PROTECTED_AUTH=false`;
 - invalid waitlist and contact requests fail safely with `400`;
