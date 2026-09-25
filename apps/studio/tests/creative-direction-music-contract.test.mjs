@@ -3,6 +3,7 @@ import fs from 'node:fs';
 
 const direction = fs.readFileSync(new URL('../lib/studio/creative-direction.ts', import.meta.url), 'utf8');
 const music = fs.readFileSync(new URL('../lib/studio/music-direction.ts', import.meta.url), 'utf8');
+const motion = fs.readFileSync(new URL('../lib/studio/motion-direction.ts', import.meta.url), 'utf8');
 
 for (const token of [
   "studioRole: 'director, continuity supervisor, editorial compiler, finishing authority'",
@@ -33,3 +34,20 @@ for (const token of [
 ]) assert.ok(music.includes(token), `music direction authority missing: ${token}`);
 
 console.log('creative direction and music authority contracts passed');
+
+
+for (const token of [
+  "'camera motion'",
+  "'Orb state motion'",
+  "'haptic cues'",
+  "'reduced-motion alternatives'",
+  "'photoreal facial performance'",
+  "'production lip sync'",
+  "'hair simulation'",
+  "'cloth simulation'",
+  'providerExecutionAuthorized: false',
+  'motion_direction_reduced_motion_equivalent_required',
+  'motion_direction_provenance_unresolved',
+]) assert.ok(motion.includes(token), `motion direction authority missing: ${token}`);
+
+console.log('motion direction authority contract passed');
