@@ -24,6 +24,12 @@ for (const token of [
   'music_direction_rights_required',
   'music_direction_provenance_unresolved',
   'music_direction_generation_must_start_off',
+  'music_direction_stems_required',
+  'music_direction_cue_sheet_required',
+  'music_direction_loop_tail_plan_required',
+  'music_direction_dialogue_ducking_plan_required',
+  'music_direction_delivery_mix_required',
+  "'sensory-safe alternative where required'",
 ]) assert.ok(music.includes(token), `music direction authority missing: ${token}`);
 
 console.log('creative direction and music authority contracts passed');
