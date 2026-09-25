@@ -22,6 +22,20 @@ export type LifeMovieMode =
   | 'legacy'
   | 'user-directed';
 
+export type LifeMovieNarrativeTheme =
+  | 'daily-reflection'
+  | 'weekly-recap'
+  | 'seasonal-story'
+  | 'relationship-arc'
+  | 'emotional-arc'
+  | 'recovery-arc'
+  | 'memory-replay'
+  | 'mirror-of-becoming'
+  | 'soul-thread'
+  | 'family-history'
+  | 'legacy'
+  | 'custom';
+
 export type LifeMovieSource = {
   id: string;
   kind: LifeMovieSourceKind;
@@ -52,6 +66,8 @@ export type LifeMovieProject = {
   userId: UraiId;
   title: string;
   mode: LifeMovieMode;
+  narrativeTheme?: LifeMovieNarrativeTheme;
+  narrativeAuthorityRef?: string;
   sources: LifeMovieSource[];
   chapters: LifeMovieChapter[];
   requestedExports: StudioExportKind[];
@@ -120,6 +136,9 @@ export function validateLifeMovieProject(project: LifeMovieProject) {
   safeSegment(project.tenantId, 'tenant_id');
   safeSegment(project.userId, 'user_id');
   if (!project.title.trim()) throw new Error('life_movie_title_required');
+  if (project.narrativeTheme && project.narrativeTheme !== 'custom' && !project.narrativeAuthorityRef?.trim()) {
+    throw new Error('life_movie_narrative_authority_required');
+  }
   if (project.sources.length === 0) throw new Error('life_movie_sources_required');
   if (project.sources.length > LIFE_MOVIE_JOBS_CONTRACT.maxSources) throw new Error('life_movie_source_limit_exceeded');
   if (project.chapters.length === 0) throw new Error('life_movie_chapters_required');
