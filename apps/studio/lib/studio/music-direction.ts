@@ -20,6 +20,11 @@ export type MusicDirectionCue = {
   provenance: 'original-local' | 'licensed' | 'generated' | 'user-supplied' | 'unknown';
   generationRequested: boolean;
   generationAuthorized: false;
+  stemsRequired: boolean;
+  cueSheetRequired: boolean;
+  loopAndTailPlanRequired: boolean;
+  dialogueDuckingDb?: { min: number; max: number };
+  deliveryMixes: Array<'stereo' | 'headphone' | 'sensory-safe' | 'audio-description'>;
 };
 
 export const MUSIC_DIRECTION_AUTHORITY = {
@@ -31,6 +36,14 @@ export const MUSIC_DIRECTION_AUTHORITY = {
   licensedOrUserMusicRequiresRightsAuthority: true,
   providerExecutionAuthorized: false,
   publicReleaseAuthorized: false,
+  finalMixRequirements: [
+    'retained stems',
+    'cue sheet',
+    'loop/tail plan',
+    'dialogue/narration intelligibility review',
+    'rights provenance',
+    'sensory-safe alternative where required',
+  ],
 } as const;
 
 export function validateMusicDirectionCue(cue: MusicDirectionCue): string[] {
@@ -46,5 +59,15 @@ export function validateMusicDirectionCue(cue: MusicDirectionCue): string[] {
   }
   if (cue.provenance === 'unknown') errors.push('music_direction_provenance_unresolved');
   if (cue.generationAuthorized !== false) errors.push('music_direction_generation_must_start_off');
+  if (!cue.stemsRequired) errors.push('music_direction_stems_required');
+  if (!cue.cueSheetRequired) errors.push('music_direction_cue_sheet_required');
+  if (!cue.loopAndTailPlanRequired) errors.push('music_direction_loop_tail_plan_required');
+  if (cue.dialoguePriority) {
+    const ducking = cue.dialogueDuckingDb;
+    if (!ducking || ducking.min < 0 || ducking.max < ducking.min || ducking.max > 24) {
+      errors.push('music_direction_dialogue_ducking_plan_required');
+    }
+  }
+  if (cue.deliveryMixes.length === 0) errors.push('music_direction_delivery_mix_required');
   return errors;
 }
