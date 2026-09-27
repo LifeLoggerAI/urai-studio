@@ -28,5 +28,8 @@ assert.ok(source.includes("runtimePresentation: 'URAI Spatial'"));
 assert.ok(!source.includes('providerSpendAuthorized: true'));
 assert.ok(!source.includes('publicReleaseAuthorized: true'));
 assert.ok(!source.includes('xrReleaseAuthorized: true'));
+assert.ok(source.includes("cameraSolveReceiptRef?.trim()"), 'Captured Reality readiness must reject blank camera-solve refs');
+assert.ok(source.includes("reviewRefs.some((ref) => ref.trim())"), 'Captured Reality readiness must reject blank review refs');
+assert.ok(source.includes("approvalRefs.some((ref) => ref.trim())"), 'Captured Reality readiness must reject blank approval refs');
 
 console.log('Captured Reality Studio orchestration contract guard passed');
