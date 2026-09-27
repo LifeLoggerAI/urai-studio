@@ -37,8 +37,9 @@ function transcriptFromSrt(srt: string) {
 export function LifeMoviePlayer({ jobId }: { jobId: string }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [playback, setPlayback] = useState<PlaybackPayload | null>(null);
-  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'deleted'>('loading');
   const [error, setError] = useState('');
+  const [mediaAction, setMediaAction] = useState<'idle' | 'downloading' | 'deleting'>('idle');
   const [captionTrackAdded, setCaptionTrackAdded] = useState(false);
 
   const load = useCallback(async () => {
@@ -85,8 +86,76 @@ export function LifeMoviePlayer({ jobId }: { jobId: string }) {
 
   const transcript = useMemo(() => transcriptFromSrt(playback?.subtitleText || ''), [playback?.subtitleText]);
 
+  const download = useCallback(async () => {
+    setMediaAction('downloading');
+    setError('');
+    try {
+      const response = await fetch(`/api/studio/life-movies?jobId=${encodeURIComponent(jobId)}&download=1`, {
+        credentials: 'same-origin',
+        cache: 'no-store',
+      });
+      const payload = await response.json().catch(() => ({})) as {
+        ok?: boolean;
+        status?: string;
+        download?: { video?: { url?: string } };
+      };
+      if (!response.ok || payload.ok !== true || !payload.download?.video?.url) {
+        throw new Error(payload.status || `download_http_${response.status}`);
+      }
+      const anchor = document.createElement('a');
+      anchor.href = payload.download.video.url;
+      anchor.rel = 'noopener';
+      anchor.download = 'urai-life-movie.mp4';
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'life_movie_download_failed');
+    } finally {
+      setMediaAction('idle');
+    }
+  }, [jobId]);
+
+  const deleteOutput = useCallback(async () => {
+    if (!window.confirm('Delete this generated Life Movie output? Your original source memories will be kept.')) return;
+    setMediaAction('deleting');
+    setError('');
+    try {
+      const response = await fetch('/api/studio/life-movies', {
+        method: 'DELETE',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId, deleteOutput: true }),
+      });
+      const payload = await response.json().catch(() => ({})) as {
+        ok?: boolean;
+        status?: string;
+        sourceMediaDeleted?: boolean;
+      };
+      if (!response.ok || payload.ok !== true || payload.status !== 'output_deleted' || payload.sourceMediaDeleted !== false) {
+        throw new Error(payload.status || `delete_http_${response.status}`);
+      }
+      setPlayback(null);
+      setStatus('deleted');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'life_movie_output_delete_failed');
+    } finally {
+      setMediaAction('idle');
+    }
+  }, [jobId]);
+
   if (status === 'loading') {
     return <section className="section-panel" aria-live="polite"><p>Loading private Life Movie playback…</p></section>;
+  }
+
+  if (status === 'deleted') {
+    return (
+      <section className="section-panel" aria-live="polite">
+        <h2>Generated output deleted.</h2>
+        <p>Your original source memories were kept. You can create a new render from the source project when the feature is enabled.</p>
+      </section>
+    );
   }
 
   if (status === 'error' || !playback?.video?.url) {
@@ -115,6 +184,41 @@ export function LifeMoviePlayer({ jobId }: { jobId: string }) {
       >
         Your browser does not support HTML video.
       </video>
+
+      <div className="cta-row" aria-label="Life Movie media controls">
+        <button
+          className="button button-secondary"
+          type="button"
+          disabled={mediaAction !== 'idle'}
+          onClick={() => void download()}
+        >
+          {mediaAction === 'downloading' ? 'Preparing download…' : 'Download MP4'}
+        </button>
+        <label>
+          Playback speed{' '}
+          <select
+            defaultValue="1"
+            onChange={(event) => {
+              if (videoRef.current) videoRef.current.playbackRate = Number(event.target.value);
+            }}
+          >
+            <option value="0.75">0.75×</option>
+            <option value="1">1×</option>
+            <option value="1.25">1.25×</option>
+            <option value="1.5">1.5×</option>
+            <option value="2">2×</option>
+          </select>
+        </label>
+        <button
+          className="button button-secondary"
+          type="button"
+          disabled={mediaAction !== 'idle'}
+          onClick={() => void deleteOutput()}
+        >
+          {mediaAction === 'deleting' ? 'Deleting…' : 'Delete generated output'}
+        </button>
+      </div>
+      {error ? <p role="alert">{error}</p> : null}
 
       <div className="grid two">
         <article className="card">
