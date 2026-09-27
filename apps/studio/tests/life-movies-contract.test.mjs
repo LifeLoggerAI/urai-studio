@@ -63,6 +63,25 @@ assert.ok(route.includes("narrativeAuthorityRef: typeof body.narrativeAuthorityR
 assert.ok(page.includes('does not depend on Spatial'), 'public Studio copy must state the non-Spatial video path');
 assert.ok(page.includes('MP4 · SRT · JSON'), 'Life Movies page must expose ordinary video/caption/manifest outputs');
 
+const player = fs.readFileSync(new URL('../components/studio/LifeMoviePlayer.tsx', import.meta.url), 'utf8');
+const watchPage = fs.readFileSync(new URL('../app/studio/life-movies/watch/[jobId]/page.tsx', import.meta.url), 'utf8');
+
+assert.ok(bridge.includes("actions: ['create', 'status', 'cancel', 'playback']"), 'Studio bridge authority must include private playback');
+assert.ok(bridge.includes("callBridge({ action: 'playback'"), 'Studio must use the protected Jobs playback action');
+assert.ok(route.includes("new URL(req.url).searchParams.get('playback') === '1'"), 'Studio API must explicitly request private playback');
+assert.ok(route.includes("status !== 'succeeded'"), 'Studio API must fail closed until the render succeeds');
+assert.ok(route.includes('getLifeMoviePlayback'), 'Studio API must fetch playback through the owner-bound bridge');
+assert.ok(player.includes('<video'), 'Life Movie player must render a real video element');
+assert.ok(player.includes('controls'), 'Life Movie player must expose native playback controls');
+assert.ok(player.includes('playsInline'), 'Life Movie player must support mobile inline playback');
+assert.ok(player.includes("video.addTextTrack('captions'"), 'Life Movie player must attach captions');
+assert.ok(player.includes('new VTTCue'), 'SRT captions must become browser-native cues');
+assert.ok(player.includes('Transcript and captions'), 'Life Movie player must expose transcript access');
+assert.ok(player.includes("cache: 'no-store'"), 'Playback grant retrieval must not be cached');
+assert.ok(watchPage.includes("robots: { index: false, follow: false }"), 'Private watch route must not be indexed');
+assert.ok(watchPage.includes("canExecuteStudioFeature('life-movies-render')"), 'Private player must remain behind the Life Movies feature gate');
+assert.ok(!player.includes('gs://'), 'Browser player must never receive or embed raw GCS references');
+
 console.log('Life Movies launch contract guard passed');
 
 
