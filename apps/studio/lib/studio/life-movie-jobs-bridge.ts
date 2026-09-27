@@ -122,11 +122,12 @@ export function lifeMovieJobsBridgeStatus() {
 
 export function buildJobsLifeMovieRenderPayload(project: LifeMovieProject, renderPlan: LifeMovieRenderPlan): JobsLifeMovieRenderPayload {
   const durationMs = Math.max(0, ...renderPlan.timeline.map(({ endMs }) => endMs));
+  const audioCues = renderPlan.audioCues ?? [];
   const budget = LIFE_MOVIE_SYNCHRONOUS_RENDER_BUDGET;
   if (!Number.isFinite(durationMs) || durationMs > budget.maxDurationMs
     || 1920 * 1080 * 30 * durationMs / 1000 > budget.maxPixelFrames
     || project.sources.length > budget.maxSources || renderPlan.timeline.length > budget.maxTimelineItems
-    || renderPlan.audioCues.length > budget.maxAudioCues) {
+    || audioCues.length > budget.maxAudioCues) {
     throw new Error('life_movie_exceeds_synchronous_render_budget');
   }
   const sources = project.sources.map((source) => {
@@ -152,7 +153,7 @@ export function buildJobsLifeMovieRenderPayload(project: LifeMovieProject, rende
     fps: 30,
     sources,
     timeline: renderPlan.timeline.map(({ sourceId, startMs, endMs }) => ({ sourceId, startMs, endMs })),
-    audioCues: renderPlan.audioCues.map(({ sourceId, role, startMs, endMs, sourceStartMs = 0, gainDb = 0 }) => ({
+    audioCues: audioCues.map(({ sourceId, role, startMs, endMs, sourceStartMs = 0, gainDb = 0 }) => ({
       sourceId, role, startMs, endMs, sourceStartMs, gainDb,
     })),
     subtitleText: renderPlan.subtitleText,
