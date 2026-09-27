@@ -66,16 +66,16 @@ export function validateCapturedRealityProject(project: CapturedRealityProject) 
 export function capturedRealityReviewReadiness(project: CapturedRealityProject): CapturedRealityReviewReadiness {
   validateCapturedRealityProject(project);
   const blockers: string[] = [];
-  if (!project.cameraSolveReceiptRef) blockers.push('camera_solve_receipt_required');
-  if (!project.trainingReceiptRef) blockers.push('training_receipt_required');
-  if (!project.sourceVsReconstructionReceiptRef) blockers.push('source_vs_reconstruction_receipt_required');
-  if (!project.archivalArtifactRef) blockers.push('archival_artifact_required');
-  if (!project.runtimeArtifactRef) blockers.push('runtime_artifact_required');
-  if (!project.collisionArtifactRef) blockers.push('collision_artifact_required');
-  if (!project.assetFactoryPromotionReceiptRef) blockers.push('asset_factory_promotion_receipt_required');
-  if (!project.spatialReplayBindingRef) blockers.push('spatial_replay_binding_required');
-  if (project.reviewRefs.length === 0) blockers.push('review_receipt_required');
-  if (project.approvalRefs.length === 0) blockers.push('approval_receipt_required');
+  if (!project.cameraSolveReceiptRef?.trim()) blockers.push('camera_solve_receipt_required');
+  if (!project.trainingReceiptRef?.trim()) blockers.push('training_receipt_required');
+  if (!project.sourceVsReconstructionReceiptRef?.trim()) blockers.push('source_vs_reconstruction_receipt_required');
+  if (!project.archivalArtifactRef?.trim()) blockers.push('archival_artifact_required');
+  if (!project.runtimeArtifactRef?.trim()) blockers.push('runtime_artifact_required');
+  if (!project.collisionArtifactRef?.trim()) blockers.push('collision_artifact_required');
+  if (!project.assetFactoryPromotionReceiptRef?.trim()) blockers.push('asset_factory_promotion_receipt_required');
+  if (!project.spatialReplayBindingRef?.trim()) blockers.push('spatial_replay_binding_required');
+  if (!project.reviewRefs.some((ref) => ref.trim())) blockers.push('review_receipt_required');
+  if (!project.approvalRefs.some((ref) => ref.trim())) blockers.push('approval_receipt_required');
   return { ready: blockers.length === 0, blockers };
 }
 
