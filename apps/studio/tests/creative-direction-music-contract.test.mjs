@@ -33,6 +33,9 @@ for (const token of [
   "'sensory-safe alternative where required'",
 ]) assert.ok(music.includes(token), `music direction authority missing: ${token}`);
 
+assert.ok(music.includes('Number.isFinite(ducking.min)'), 'music ducking minimum must be finite');
+assert.ok(music.includes('Number.isFinite(ducking.max)'), 'music ducking maximum must be finite');
+
 console.log('creative direction and music authority contracts passed');
 
 

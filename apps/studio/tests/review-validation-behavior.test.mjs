@@ -68,3 +68,5 @@ for (const narrativeTheme of ['', ' ', 'unsupported', null, 42, {}, []]) {
 for (const narrativeTheme of [undefined, 'daily-reflection', 'weekly-recap', 'seasonal-story', 'relationship-arc', 'emotional-arc', 'recovery-arc', 'memory-replay', 'mirror-of-becoming', 'soul-thread', 'family-history', 'legacy', 'custom']) {
   assert.doesNotThrow(() => life.createLifeMovieProject({ ...input, narrativeTheme }));
 }
+
+assert.equal(life.createLifeMovieProject({ ...input, narrativeAuthorityRef: '  storytime:authority  ' }).narrativeAuthorityRef, 'storytime:authority');

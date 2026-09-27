@@ -270,7 +270,7 @@ export function createLifeMovieProject(input: {
     title: input.title.trim(),
     mode: input.mode,
     ...(input.narrativeTheme !== undefined ? { narrativeTheme: input.narrativeTheme } : {}),
-    ...(input.narrativeAuthorityRef !== undefined ? { narrativeAuthorityRef: input.narrativeAuthorityRef } : {}),
+    ...(input.narrativeAuthorityRef !== undefined ? { narrativeAuthorityRef: input.narrativeAuthorityRef?.trim() || undefined } : {}),
     sources: input.sources,
     chapters: input.chapters,
     requestedExports: ['mp4', 'srt', 'json'],

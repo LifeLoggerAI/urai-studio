@@ -43,6 +43,12 @@ assert.ok(bridge.includes('schemaVersion: LIFE_MOVIE_JOBS_CONTRACT.schemaVersion
 assert.ok(store.includes("projectType: input.projectType"), 'Studio project persistence must retain the Life Movie project type');
 assert.ok(store.includes('externalExecution'), 'Studio job records must retain Jobs execution linkage');
 assert.ok(route.includes('providerGenerationAuthorized: false'), 'provider generation must remain fail-closed');
+assert.ok(life.includes('narrativeTheme?: LifeMovieNarrativeTheme'), 'Life Movie constructor input must preserve narrative theme');
+assert.ok(life.includes('narrativeAuthorityRef?: string'), 'Life Movie constructor input must preserve narrative authority reference');
+assert.ok(life.includes('narrativeTheme: input.narrativeTheme'), 'Life Movie constructor must copy narrative theme');
+assert.ok(life.includes('narrativeAuthorityRef: input.narrativeAuthorityRef?.trim() || undefined'), 'Life Movie constructor must copy normalized narrative authority');
+assert.ok(route.includes('narrativeTheme: parseLifeMovieNarrativeTheme(body.narrativeTheme)'), 'Life Movies API must pass narrative theme into canonical constructor');
+assert.ok(route.includes("narrativeAuthorityRef: typeof body.narrativeAuthorityRef === 'string'"), 'Life Movies API must pass narrative authority into canonical constructor');
 assert.ok(page.includes('does not depend on Spatial'), 'public Studio copy must state the non-Spatial video path');
 assert.ok(page.includes('MP4 · SRT · JSON'), 'Life Movies page must expose ordinary video/caption/manifest outputs');
 
