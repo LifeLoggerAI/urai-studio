@@ -201,7 +201,7 @@ export async function POST(req: Request) {
       }, 409);
     }
 
-    const persistedProject = await createStudioProject({
+    // Validate the bounded Jobs payload before any durable project/job write.\n    // Invalid or over-budget requests must fail without leaving queued work behind.\n    const payload = buildJobsLifeMovieRenderPayload(project, renderPlan);\n\n    const persistedProject = await createStudioProject({
       id: project.id,
       tenantId: auth.tenantId,
       userId: auth.uid,
@@ -247,7 +247,6 @@ export async function POST(req: Request) {
       }, 503);
     }
 
-    const payload = buildJobsLifeMovieRenderPayload(project, renderPlan);
     const dispatch = await dispatchLifeMovieRender({
       tenantId: auth.tenantId,
       userId: auth.uid,
