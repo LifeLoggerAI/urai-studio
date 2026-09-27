@@ -21,6 +21,7 @@ import {
   createLifeMovieProject,
   type LifeMovieChapter,
   type LifeMovieMode,
+  type LifeMovieNarrativeTheme,
   type LifeMovieSource,
 } from '@/lib/studio/life-movies';
 import type { StudioJobStatus } from '@/lib/urai-system-contract';
@@ -164,6 +165,8 @@ export async function POST(req: Request) {
   const id = typeof body.id === 'string' ? body.id : `life-movie-${Date.now()}`;
   const title = typeof body.title === 'string' ? body.title : '';
   const mode = typeof body.mode === 'string' ? body.mode as LifeMovieMode : 'user-directed';
+  const narrativeTheme = typeof body.narrativeTheme === 'string' ? body.narrativeTheme as LifeMovieNarrativeTheme : undefined;
+  const narrativeAuthorityRef = typeof body.narrativeAuthorityRef === 'string' ? body.narrativeAuthorityRef : undefined;
   const sources = Array.isArray(body.sources) ? body.sources as LifeMovieSource[] : [];
   const chapters = Array.isArray(body.chapters) ? body.chapters as LifeMovieChapter[] : [];
 
@@ -174,6 +177,8 @@ export async function POST(req: Request) {
       userId: auth.uid,
       title,
       mode,
+      narrativeTheme,
+      narrativeAuthorityRef,
       sources,
       chapters,
     });
