@@ -81,6 +81,16 @@ assert.ok(player.includes("cache: 'no-store'"), 'Playback grant retrieval must n
 assert.ok(watchPage.includes("robots: { index: false, follow: false }"), 'Private watch route must not be indexed');
 assert.ok(watchPage.includes("canExecuteStudioFeature('life-movies-render')"), 'Private player must remain behind the Life Movies feature gate');
 assert.ok(!player.includes('gs://'), 'Browser player must never receive or embed raw GCS references');
+assert.ok(bridge.includes("actions: ['create', 'status', 'cancel', 'playback', 'download', 'delete-output']"), 'Studio bridge authority must include private download and output deletion');
+assert.ok(bridge.includes("callBridge({ action: 'download'"), 'Studio must use the protected Jobs download action');
+assert.ok(bridge.includes("callBridge({ action: 'delete-output'"), 'Studio must use the protected Jobs output-deletion action');
+assert.ok(route.includes("url.searchParams.get('download') === '1'"), 'Studio API must explicitly request private download');
+assert.ok(route.includes('body.deleteOutput === true'), 'Studio API must distinguish generated-output deletion from render cancellation');
+assert.ok(route.includes('sourceMediaDeleted: false'), 'Studio deletion response must state that source memories are retained');
+assert.ok(player.includes('Download MP4'), 'Life Movie player must expose explicit download control');
+assert.ok(player.includes('Delete generated output'), 'Life Movie player must expose generated-output deletion');
+assert.ok(player.includes('Playback speed'), 'Life Movie player must expose playback-rate control');
+assert.ok(player.includes("window.confirm('Delete this generated Life Movie output? Your original source memories will be kept.')"), 'Destructive output deletion must clearly distinguish generated media from source memories');
 
 console.log('Life Movies launch contract guard passed');
 
