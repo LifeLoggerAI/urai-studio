@@ -40,6 +40,16 @@ const SUPPORTED_RENDER_MIME = new Set([
   'audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/x-wav', 'audio/webm', 'audio/ogg',
 ]);
 
+// Render admission is narrower than the 45-minute authoring contract. These
+// limits match Jobs' bounded synchronous worker; no long-form queue claim.
+export const LIFE_MOVIE_SYNCHRONOUS_RENDER_BUDGET = {
+  maxDurationMs: 30_000,
+  maxPixelFrames: 1920 * 1080 * 30 * 15,
+  maxFramePixels: 3840 * 2160,
+  maxSources: 12,
+  maxTimelineItems: 12,
+} as const;
+
 function bridgeUrl() {
   const value = process.env.URAI_JOBS_LIFE_MOVIE_BRIDGE_URL?.trim() || '';
   if (!value) return null;
@@ -102,6 +112,13 @@ export function lifeMovieJobsBridgeStatus() {
 }
 
 export function buildJobsLifeMovieRenderPayload(project: LifeMovieProject, renderPlan: LifeMovieRenderPlan): JobsLifeMovieRenderPayload {
+  const durationMs = Math.max(0, ...renderPlan.timeline.map(({ endMs }) => endMs));
+  const budget = LIFE_MOVIE_SYNCHRONOUS_RENDER_BUDGET;
+  if (!Number.isFinite(durationMs) || durationMs > budget.maxDurationMs
+    || 1920 * 1080 * 30 * durationMs / 1000 > budget.maxPixelFrames
+    || project.sources.length > budget.maxSources || renderPlan.timeline.length > budget.maxTimelineItems) {
+    throw new Error('life_movie_exceeds_synchronous_render_budget');
+  }
   const sources = project.sources.map((source) => {
     const location = parseSourceLocation(source, project.tenantId);
     return {
