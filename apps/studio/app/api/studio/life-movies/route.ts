@@ -15,6 +15,8 @@ import {
   dispatchLifeMovieRender,
   getLifeMovieRenderStatus,
   getLifeMoviePlayback,
+  getLifeMovieDownload,
+  deleteLifeMovieOutput,
   lifeMovieJobsBridgeStatus,
 } from '@/lib/studio/life-movie-jobs-bridge';
 import {
@@ -123,19 +125,36 @@ export async function GET(req: Request) {
     errorCode: status === 'failed' ? 'jobs_render_failed' : undefined,
   });
 
-  const playbackRequested = new URL(req.url).searchParams.get('playback') === '1';
+  const url = new URL(req.url);
+  const playbackRequested = url.searchParams.get('playback') === '1';
+  const downloadRequested = url.searchParams.get('download') === '1';
+  if (playbackRequested && downloadRequested) return json({ ok: false, status: 'life_movie_media_action_conflict' }, 400);
+
   let playback: LifeMovieBridgeResult['playback'] | undefined;
-  if (playbackRequested) {
-    if (status !== 'succeeded') return json({ ok: false, status: 'life_movie_not_ready_for_playback' }, 409);
-    const result = await getLifeMoviePlayback({
-      tenantId: auth.tenantId,
-      userId: auth.uid,
-      jobId: resolved.externalJobId,
-    });
-    if (!result.ok || !result.playback?.video?.url) {
-      return json({ ok: false, status: result.error ?? 'life_movie_playback_unavailable' }, 503);
+  let download: LifeMovieBridgeResult['download'] | undefined;
+  if (playbackRequested || downloadRequested) {
+    if (status !== 'succeeded') return json({ ok: false, status: 'life_movie_not_ready_for_media_access' }, 409);
+    if (playbackRequested) {
+      const result = await getLifeMoviePlayback({
+        tenantId: auth.tenantId,
+        userId: auth.uid,
+        jobId: resolved.externalJobId,
+      });
+      if (!result.ok || !result.playback?.video?.url) {
+        return json({ ok: false, status: result.error ?? 'life_movie_playback_unavailable' }, 503);
+      }
+      playback = result.playback;
+    } else {
+      const result = await getLifeMovieDownload({
+        tenantId: auth.tenantId,
+        userId: auth.uid,
+        jobId: resolved.externalJobId,
+      });
+      if (!result.ok || !result.download?.video?.url) {
+        return json({ ok: false, status: result.error ?? 'life_movie_download_unavailable' }, 503);
+      }
+      download = result.download;
     }
-    playback = result.playback;
   }
 
   return json({
@@ -144,6 +163,7 @@ export async function GET(req: Request) {
     job: updated.data ?? resolved.local,
     execution: external.job,
     ...(playback ? { playback } : {}),
+    ...(download ? { download } : {}),
   });
 }
 
@@ -157,6 +177,23 @@ export async function DELETE(req: Request) {
 
   const resolved = await resolveJob(req, auth, jobId);
   if ('error' in resolved) return json({ ok: false, status: resolved.error }, resolved.status);
+
+  if (body.deleteOutput === true) {
+    const deletion = await deleteLifeMovieOutput({
+      tenantId: auth.tenantId,
+      userId: auth.uid,
+      jobId: resolved.externalJobId,
+    });
+    if (!deletion.ok || deletion.deletion?.deleted !== true) {
+      return json({ ok: false, status: deletion.error ?? 'life_movie_output_delete_failed' }, 503);
+    }
+    return json({
+      ok: true,
+      status: 'output_deleted',
+      deletion: deletion.deletion,
+      sourceMediaDeleted: false,
+    });
+  }
 
   const cancelled = await cancelLifeMovieRender({
     tenantId: auth.tenantId,
