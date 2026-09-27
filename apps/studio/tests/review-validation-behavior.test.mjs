@@ -58,3 +58,13 @@ const hardOff = await route.POST({ json: async () => input });
 assert.equal(hardOff.status, 409);
 assert.equal(hardOff.body.status, 'life_movies_render_hard_off');
 console.log('Studio review validation behavior passed');
+
+for (const narrativeTheme of ['', ' ', 'unsupported', null, 42, {}, []]) {
+  assert.throws(() => life.createLifeMovieProject({ ...input, narrativeTheme }), /life_movie_narrative_theme_invalid/);
+  const response = await route.POST({ json: async () => ({ ...input, narrativeTheme }) });
+  assert.equal(response.status, 400);
+  assert.ok(JSON.stringify(response.body).includes('life_movie_narrative_theme_invalid'));
+}
+for (const narrativeTheme of [undefined, 'daily-reflection', 'weekly-recap', 'seasonal-story', 'relationship-arc', 'emotional-arc', 'recovery-arc', 'memory-replay', 'mirror-of-becoming', 'soul-thread', 'family-history', 'legacy', 'custom']) {
+  assert.doesNotThrow(() => life.createLifeMovieProject({ ...input, narrativeTheme }));
+}

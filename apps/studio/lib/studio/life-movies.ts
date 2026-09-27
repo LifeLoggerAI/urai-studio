@@ -36,6 +36,13 @@ export type LifeMovieNarrativeTheme =
   | 'legacy'
   | 'custom';
 
+export function parseLifeMovieNarrativeTheme(value: unknown): LifeMovieNarrativeTheme | undefined {
+  if (value === undefined) return undefined;
+  const themes: readonly string[] = ['daily-reflection', 'weekly-recap', 'seasonal-story', 'relationship-arc', 'emotional-arc', 'recovery-arc', 'memory-replay', 'mirror-of-becoming', 'soul-thread', 'family-history', 'legacy', 'custom'];
+  if (typeof value !== 'string' || !themes.includes(value)) throw new Error('life_movie_narrative_theme_invalid');
+  return value as LifeMovieNarrativeTheme;
+}
+
 export type LifeMovieSource = {
   id: string;
   kind: LifeMovieSourceKind;
@@ -132,6 +139,7 @@ function timestamp(ms: number) {
 }
 
 export function validateLifeMovieProject(project: LifeMovieProject) {
+  parseLifeMovieNarrativeTheme(project.narrativeTheme);
   safeSegment(project.id, 'project_id');
   safeSegment(project.tenantId, 'tenant_id');
   safeSegment(project.userId, 'user_id');
