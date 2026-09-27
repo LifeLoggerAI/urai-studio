@@ -21,6 +21,7 @@ import {
   createLifeMovieProject,
   type LifeMovieChapter,
   type LifeMovieMode,
+  type LifeMovieNarrativeTheme,
   type LifeMovieSource,
 } from '@/lib/studio/life-movies';
 import type { StudioJobStatus } from '@/lib/urai-system-contract';
@@ -174,6 +175,8 @@ export async function POST(req: Request) {
       userId: auth.uid,
       title,
       mode,
+      narrativeTheme: typeof body.narrativeTheme === 'string' ? body.narrativeTheme as LifeMovieNarrativeTheme : undefined,
+      narrativeAuthorityRef: typeof body.narrativeAuthorityRef === 'string' ? body.narrativeAuthorityRef : undefined,
       sources,
       chapters,
     });

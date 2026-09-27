@@ -64,7 +64,7 @@ export function validateMusicDirectionCue(cue: MusicDirectionCue): string[] {
   if (!cue.loopAndTailPlanRequired) errors.push('music_direction_loop_tail_plan_required');
   if (cue.dialoguePriority) {
     const ducking = cue.dialogueDuckingDb;
-    if (!ducking || ducking.min < 0 || ducking.max < ducking.min || ducking.max > 24) {
+    if (!ducking || !Number.isFinite(ducking.min) || !Number.isFinite(ducking.max) || ducking.min < 0 || ducking.max < ducking.min || ducking.max > 24) {
       errors.push('music_direction_dialogue_ducking_plan_required');
     }
   }

@@ -47,6 +47,14 @@ function requireId(value: string, label: string) {
   if (!SAFE_ID.test(value)) throw new Error(`invalid_${label}`);
 }
 
+function usableReference(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function usableReferences(values: string[]) {
+  return values.length > 0 && values.every(usableReference);
+}
+
 export function validateCapturedRealityProject(project: CapturedRealityProject) {
   requireId(project.id, 'captured_reality_project_id');
   requireId(project.tenantId, 'tenant_id');
@@ -56,7 +64,7 @@ export function validateCapturedRealityProject(project: CapturedRealityProject) 
   if (project.providerSpendAuthorized !== false) throw new Error('captured_reality_provider_spend_must_start_off');
   if (project.publicReleaseAuthorized !== false) throw new Error('captured_reality_public_release_must_start_off');
   if (project.xrReleaseAuthorized !== false) throw new Error('captured_reality_xr_release_must_start_off');
-  if (project.sourceReceiptRefs.length === 0) throw new Error('captured_reality_source_receipt_required');
+  if (!usableReferences(project.sourceReceiptRefs)) throw new Error('captured_reality_source_receipt_required');
   if (project.requiredConsentPurposes.join('|') !== 'memory.storage|location.context') {
     throw new Error('captured_reality_memory_location_consent_required');
   }
@@ -66,16 +74,16 @@ export function validateCapturedRealityProject(project: CapturedRealityProject) 
 export function capturedRealityReviewReadiness(project: CapturedRealityProject): CapturedRealityReviewReadiness {
   validateCapturedRealityProject(project);
   const blockers: string[] = [];
-  if (!project.cameraSolveReceiptRef) blockers.push('camera_solve_receipt_required');
-  if (!project.trainingReceiptRef) blockers.push('training_receipt_required');
-  if (!project.sourceVsReconstructionReceiptRef) blockers.push('source_vs_reconstruction_receipt_required');
-  if (!project.archivalArtifactRef) blockers.push('archival_artifact_required');
-  if (!project.runtimeArtifactRef) blockers.push('runtime_artifact_required');
-  if (!project.collisionArtifactRef) blockers.push('collision_artifact_required');
-  if (!project.assetFactoryPromotionReceiptRef) blockers.push('asset_factory_promotion_receipt_required');
-  if (!project.spatialReplayBindingRef) blockers.push('spatial_replay_binding_required');
-  if (project.reviewRefs.length === 0) blockers.push('review_receipt_required');
-  if (project.approvalRefs.length === 0) blockers.push('approval_receipt_required');
+  if (!usableReference(project.cameraSolveReceiptRef)) blockers.push('camera_solve_receipt_required');
+  if (!usableReference(project.trainingReceiptRef)) blockers.push('training_receipt_required');
+  if (!usableReference(project.sourceVsReconstructionReceiptRef)) blockers.push('source_vs_reconstruction_receipt_required');
+  if (!usableReference(project.archivalArtifactRef)) blockers.push('archival_artifact_required');
+  if (!usableReference(project.runtimeArtifactRef)) blockers.push('runtime_artifact_required');
+  if (!usableReference(project.collisionArtifactRef)) blockers.push('collision_artifact_required');
+  if (!usableReference(project.assetFactoryPromotionReceiptRef)) blockers.push('asset_factory_promotion_receipt_required');
+  if (!usableReference(project.spatialReplayBindingRef)) blockers.push('spatial_replay_binding_required');
+  if (!usableReferences(project.reviewRefs)) blockers.push('review_receipt_required');
+  if (!usableReferences(project.approvalRefs)) blockers.push('approval_receipt_required');
   return { ready: blockers.length === 0, blockers };
 }
 
