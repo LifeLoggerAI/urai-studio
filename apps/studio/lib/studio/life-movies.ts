@@ -248,6 +248,8 @@ export function createLifeMovieProject(input: {
   userId: UraiId;
   title: string;
   mode: LifeMovieMode;
+  narrativeTheme?: LifeMovieNarrativeTheme;
+  narrativeAuthorityRef?: string;
   sources: LifeMovieSource[];
   chapters: LifeMovieChapter[];
   now?: string;
@@ -259,6 +261,8 @@ export function createLifeMovieProject(input: {
     userId: input.userId,
     title: input.title.trim(),
     mode: input.mode,
+    narrativeTheme: input.narrativeTheme,
+    narrativeAuthorityRef: input.narrativeAuthorityRef?.trim() || undefined,
     sources: input.sources,
     chapters: input.chapters,
     requestedExports: ['mp4', 'srt', 'json'],
