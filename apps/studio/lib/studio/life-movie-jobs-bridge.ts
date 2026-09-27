@@ -41,11 +41,21 @@ export type LifeMovieBridgeResult = {
   job?: Record<string, unknown>;
   playback?: {
     expiresAt?: string;
+    disposition?: 'inline';
     video?: { url?: string; mimeType?: string; checksum?: string };
     subtitleText?: string;
     renderPlanDigest?: string;
     publicReleaseAuthorized?: false;
   };
+  download?: {
+    expiresAt?: string;
+    disposition?: 'attachment';
+    video?: { url?: string; mimeType?: string; checksum?: string };
+    subtitleText?: string;
+    renderPlanDigest?: string;
+    publicReleaseAuthorized?: false;
+  };
+  deletion?: { deleted?: boolean; deletedObjectCount?: number; retainedSourceMedia?: boolean };
   error?: string;
 };
 
@@ -238,13 +248,21 @@ export async function getLifeMoviePlayback(input: { tenantId: string; userId: st
   return callBridge({ action: 'playback', ...input });
 }
 
+export async function getLifeMovieDownload(input: { tenantId: string; userId: string; jobId: string }) {
+  return callBridge({ action: 'download', ...input });
+}
+
+export async function deleteLifeMovieOutput(input: { tenantId: string; userId: string; jobId: string }) {
+  return callBridge({ action: 'delete-output', ...input });
+}
+
 
 export const LIFE_MOVIE_JOBS_BRIDGE_AUTHORITY = {
   ownerRepo: 'LifeLoggerAI/urai-jobs',
   jobType: LIFE_MOVIE_JOBS_CONTRACT.jobType,
   schemaVersion: LIFE_MOVIE_JOBS_CONTRACT.schemaVersion,
   method: 'POST',
-  actions: ['create', 'status', 'cancel', 'playback'] as const,
+  actions: ['create', 'status', 'cancel', 'playback', 'download', 'delete-output'] as const,
   auth: 'protected-bearer',
   providerExecutionAuthorized: false,
   publicReleaseAuthorized: false,
