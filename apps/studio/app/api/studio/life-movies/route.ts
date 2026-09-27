@@ -14,6 +14,7 @@ import {
   cancelLifeMovieRender,
   dispatchLifeMovieRender,
   getLifeMovieRenderStatus,
+  getLifeMoviePlayback,
   lifeMovieJobsBridgeStatus,
 } from '@/lib/studio/life-movie-jobs-bridge';
 import {
@@ -26,6 +27,7 @@ import {
   type LifeMovieSource,
 } from '@/lib/studio/life-movies';
 import type { StudioJobStatus } from '@/lib/urai-system-contract';
+import type { LifeMovieBridgeResult } from '@/lib/studio/life-movie-jobs-bridge';
 
 export const dynamic = 'force-dynamic';
 
@@ -121,11 +123,27 @@ export async function GET(req: Request) {
     errorCode: status === 'failed' ? 'jobs_render_failed' : undefined,
   });
 
+  const playbackRequested = new URL(req.url).searchParams.get('playback') === '1';
+  let playback: LifeMovieBridgeResult['playback'] | undefined;
+  if (playbackRequested) {
+    if (status !== 'succeeded') return json({ ok: false, status: 'life_movie_not_ready_for_playback' }, 409);
+    const result = await getLifeMoviePlayback({
+      tenantId: auth.tenantId,
+      userId: auth.uid,
+      jobId: resolved.externalJobId,
+    });
+    if (!result.ok || !result.playback?.video?.url) {
+      return json({ ok: false, status: result.error ?? 'life_movie_playback_unavailable' }, 503);
+    }
+    playback = result.playback;
+  }
+
   return json({
     ok: true,
     status,
     job: updated.data ?? resolved.local,
     execution: external.job,
+    ...(playback ? { playback } : {}),
   });
 }
 
