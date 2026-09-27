@@ -20,6 +20,7 @@ import {
   buildLifeMovieRenderPlan,
   createLifeMovieProject,
   type LifeMovieChapter,
+  type LifeMovieAudioCue,
   type LifeMovieMode,
   parseLifeMovieNarrativeTheme,
   type LifeMovieSource,
@@ -167,6 +168,7 @@ export async function POST(req: Request) {
   const mode = typeof body.mode === 'string' ? body.mode as LifeMovieMode : 'user-directed';
   const sources = Array.isArray(body.sources) ? body.sources as LifeMovieSource[] : [];
   const chapters = Array.isArray(body.chapters) ? body.chapters as LifeMovieChapter[] : [];
+  const audioCues = Array.isArray(body.audioCues) ? body.audioCues as LifeMovieAudioCue[] : [];
 
   try {
     const project = createLifeMovieProject({
@@ -179,6 +181,7 @@ export async function POST(req: Request) {
       narrativeAuthorityRef: typeof body.narrativeAuthorityRef === 'string' ? body.narrativeAuthorityRef : undefined,
       sources,
       chapters,
+      audioCues,
     });
     const renderPlan = buildLifeMovieRenderPlan(project);
     const renderPolicy = resolveStudioFeaturePolicy('life-movies-render');
