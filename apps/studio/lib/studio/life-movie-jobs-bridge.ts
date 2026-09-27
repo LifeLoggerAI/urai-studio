@@ -19,6 +19,14 @@ export type JobsLifeMovieRenderPayload = {
     ownerOrRightsRef: string;
   }>;
   timeline: Array<{ sourceId: string; startMs: number; endMs: number }>;
+  audioCues: Array<{
+    sourceId: string;
+    role: 'narration' | 'dialogue' | 'music' | 'ambience' | 'foley' | 'effects';
+    startMs: number;
+    endMs: number;
+    sourceStartMs: number;
+    gainDb: number;
+  }>;
   subtitleText: string;
   spatialRequired: false;
   publicReleaseAuthorized: false;
@@ -48,6 +56,7 @@ export const LIFE_MOVIE_SYNCHRONOUS_RENDER_BUDGET = {
   maxFramePixels: 3840 * 2160,
   maxSources: 12,
   maxTimelineItems: 12,
+  maxAudioCues: 12,
 } as const;
 
 function bridgeUrl() {
@@ -116,7 +125,8 @@ export function buildJobsLifeMovieRenderPayload(project: LifeMovieProject, rende
   const budget = LIFE_MOVIE_SYNCHRONOUS_RENDER_BUDGET;
   if (!Number.isFinite(durationMs) || durationMs > budget.maxDurationMs
     || 1920 * 1080 * 30 * durationMs / 1000 > budget.maxPixelFrames
-    || project.sources.length > budget.maxSources || renderPlan.timeline.length > budget.maxTimelineItems) {
+    || project.sources.length > budget.maxSources || renderPlan.timeline.length > budget.maxTimelineItems
+    || renderPlan.audioCues.length > budget.maxAudioCues) {
     throw new Error('life_movie_exceeds_synchronous_render_budget');
   }
   const sources = project.sources.map((source) => {
@@ -142,6 +152,9 @@ export function buildJobsLifeMovieRenderPayload(project: LifeMovieProject, rende
     fps: 30,
     sources,
     timeline: renderPlan.timeline.map(({ sourceId, startMs, endMs }) => ({ sourceId, startMs, endMs })),
+    audioCues: renderPlan.audioCues.map(({ sourceId, role, startMs, endMs, sourceStartMs = 0, gainDb = 0 }) => ({
+      sourceId, role, startMs, endMs, sourceStartMs, gainDb,
+    })),
     subtitleText: renderPlan.subtitleText,
     spatialRequired: false,
     publicReleaseAuthorized: false,
