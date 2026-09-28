@@ -63,6 +63,35 @@ assert.ok(route.includes("narrativeAuthorityRef: typeof body.narrativeAuthorityR
 assert.ok(page.includes('does not depend on Spatial'), 'public Studio copy must state the non-Spatial video path');
 assert.ok(page.includes('MP4 · SRT · JSON'), 'Life Movies page must expose ordinary video/caption/manifest outputs');
 
+const player = fs.readFileSync(new URL('../components/studio/LifeMoviePlayer.tsx', import.meta.url), 'utf8');
+const watchPage = fs.readFileSync(new URL('../app/studio/life-movies/watch/[jobId]/page.tsx', import.meta.url), 'utf8');
+
+assert.ok(bridge.includes("actions: ['create', 'status', 'cancel', 'playback', 'download', 'delete-output']"), 'Studio bridge authority must include private playback, download, and output deletion');
+assert.ok(bridge.includes("callBridge({ action: 'playback'"), 'Studio must use the protected Jobs playback action');
+assert.ok(route.includes("const playbackRequested = url.searchParams.get('playback') === '1'"), 'Studio API must explicitly request private playback');
+assert.ok(route.includes("status !== 'succeeded'"), 'Studio API must fail closed until the render succeeds');
+assert.ok(route.includes('getLifeMoviePlayback'), 'Studio API must fetch playback through the owner-bound bridge');
+assert.ok(player.includes('<video'), 'Life Movie player must render a real video element');
+assert.ok(player.includes('controls'), 'Life Movie player must expose native playback controls');
+assert.ok(player.includes('playsInline'), 'Life Movie player must support mobile inline playback');
+assert.ok(player.includes("video.addTextTrack('captions'"), 'Life Movie player must attach captions');
+assert.ok(player.includes('new VTTCue'), 'SRT captions must become browser-native cues');
+assert.ok(player.includes('Transcript and captions'), 'Life Movie player must expose transcript access');
+assert.ok(player.includes("cache: 'no-store'"), 'Playback grant retrieval must not be cached');
+assert.ok(watchPage.includes("robots: { index: false, follow: false }"), 'Private watch route must not be indexed');
+assert.ok(watchPage.includes("canExecuteStudioFeature('life-movies-render')"), 'Private player must remain behind the Life Movies feature gate');
+assert.ok(!player.includes('gs://'), 'Browser player must never receive or embed raw GCS references');
+assert.ok(bridge.includes("actions: ['create', 'status', 'cancel', 'playback', 'download', 'delete-output']"), 'Studio bridge authority must include private download and output deletion');
+assert.ok(bridge.includes("callBridge({ action: 'download'"), 'Studio must use the protected Jobs download action');
+assert.ok(bridge.includes("callBridge({ action: 'delete-output'"), 'Studio must use the protected Jobs output-deletion action');
+assert.ok(route.includes("url.searchParams.get('download') === '1'"), 'Studio API must explicitly request private download');
+assert.ok(route.includes('body.deleteOutput === true'), 'Studio API must distinguish generated-output deletion from render cancellation');
+assert.ok(route.includes('sourceMediaDeleted: false'), 'Studio deletion response must state that source memories are retained');
+assert.ok(player.includes('Download MP4'), 'Life Movie player must expose explicit download control');
+assert.ok(player.includes('Delete generated output'), 'Life Movie player must expose generated-output deletion');
+assert.ok(player.includes('Playback speed'), 'Life Movie player must expose playback-rate control');
+assert.ok(player.includes("window.confirm('Delete this generated Life Movie output? Your original source memories will be kept.')"), 'Destructive output deletion must clearly distinguish generated media from source memories');
+
 console.log('Life Movies launch contract guard passed');
 
 
@@ -94,7 +123,7 @@ for (const token of [
   assert.ok(lifeMoviesSource.includes(token), `Life Movies Jobs contract missing: ${token}`);
 }
 assert.ok(lifeMovieBridge.includes("ownerRepo: 'LifeLoggerAI/urai-jobs'"));
-assert.ok(lifeMovieBridge.includes("actions: ['create', 'status', 'cancel']"));
+assert.ok(lifeMovieBridge.includes("actions: ['create', 'status', 'cancel', 'playback', 'download', 'delete-output']"));
 assert.ok(lifeMovieBridge.includes("auth: 'protected-bearer'"));
 assert.ok(lifeMovieBridge.includes('validateLifeMovieBridgeRequest'));
 assert.ok(lifeMovieBridge.includes('life_movie_jobs_bridge_request_too_large'));
