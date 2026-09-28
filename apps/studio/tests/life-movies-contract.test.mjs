@@ -66,7 +66,7 @@ assert.ok(page.includes('MP4 · SRT · JSON'), 'Life Movies page must expose ord
 const player = fs.readFileSync(new URL('../components/studio/LifeMoviePlayer.tsx', import.meta.url), 'utf8');
 const watchPage = fs.readFileSync(new URL('../app/studio/life-movies/watch/[jobId]/page.tsx', import.meta.url), 'utf8');
 
-assert.ok(bridge.includes("actions: ['create', 'status', 'cancel', 'playback']"), 'Studio bridge authority must include private playback');
+assert.ok(bridge.includes("actions: ['create', 'status', 'cancel', 'playback', 'download', 'delete-output']"), 'Studio bridge authority must include private playback, download, and output deletion');
 assert.ok(bridge.includes("callBridge({ action: 'playback'"), 'Studio must use the protected Jobs playback action');
 assert.ok(route.includes("new URL(req.url).searchParams.get('playback') === '1'"), 'Studio API must explicitly request private playback');
 assert.ok(route.includes("status !== 'succeeded'"), 'Studio API must fail closed until the render succeeds');
@@ -123,7 +123,7 @@ for (const token of [
   assert.ok(lifeMoviesSource.includes(token), `Life Movies Jobs contract missing: ${token}`);
 }
 assert.ok(lifeMovieBridge.includes("ownerRepo: 'LifeLoggerAI/urai-jobs'"));
-assert.ok(lifeMovieBridge.includes("actions: ['create', 'status', 'cancel']"));
+assert.ok(lifeMovieBridge.includes("actions: ['create', 'status', 'cancel', 'playback', 'download', 'delete-output']"));
 assert.ok(lifeMovieBridge.includes("auth: 'protected-bearer'"));
 assert.ok(lifeMovieBridge.includes('validateLifeMovieBridgeRequest'));
 assert.ok(lifeMovieBridge.includes('life_movie_jobs_bridge_request_too_large'));
