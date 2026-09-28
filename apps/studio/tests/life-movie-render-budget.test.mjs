@@ -19,5 +19,10 @@ for (const endMs of [15001, 30000, 45 * 60 * 1000, NaN, Infinity]) {
 assert.throws(() => build(project, { ...plan, timeline: [{ sourceId: 'source', startMs: 45000, endMs: 46000 }] }), /synchronous_render_budget/);
 assert.throws(() => build({ ...project, sources: Array(13).fill(project.sources[0]) }, plan), /synchronous_render_budget/);
 assert.throws(() => build(project, { ...plan, timeline: Array(13).fill(plan.timeline[0]) }), /synchronous_render_budget/);
+const audioCue = { sourceId: 'source', role: 'music', startMs: 0, endMs: 1000, sourceStartMs: 0, gainDb: -6 };
+assert.throws(() => build(project, { ...plan, audioCues: Array(13).fill(audioCue) }), /synchronous_render_budget/);
+const withAudio = build(project, { ...plan, audioCues: [audioCue] });
+assert.equal(withAudio.audioCues[0].role, 'music');
+assert.equal(withAudio.audioCues[0].gainDb, -6);
 assert.equal(LIFE_MOVIE_JOBS_CONTRACT.maxTotalTimelineMs, 45 * 60 * 1000, 'render budget must not silently rewrite authoring limits');
 console.log('Life Movie bridge rejects unsupported synchronous renders before dispatch; authoring and hard-off boundaries retained');
