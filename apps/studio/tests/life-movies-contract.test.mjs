@@ -68,7 +68,7 @@ const watchPage = fs.readFileSync(new URL('../app/studio/life-movies/watch/[jobI
 
 assert.ok(bridge.includes("actions: ['create', 'status', 'cancel', 'playback', 'download', 'delete-output']"), 'Studio bridge authority must include private playback, download, and output deletion');
 assert.ok(bridge.includes("callBridge({ action: 'playback'"), 'Studio must use the protected Jobs playback action');
-assert.ok(route.includes("new URL(req.url).searchParams.get('playback') === '1'"), 'Studio API must explicitly request private playback');
+assert.ok(route.includes("const playbackRequested = url.searchParams.get('playback') === '1'"), 'Studio API must explicitly request private playback');
 assert.ok(route.includes("status !== 'succeeded'"), 'Studio API must fail closed until the render succeeds');
 assert.ok(route.includes('getLifeMoviePlayback'), 'Studio API must fetch playback through the owner-bound bridge');
 assert.ok(player.includes('<video'), 'Life Movie player must render a real video element');
