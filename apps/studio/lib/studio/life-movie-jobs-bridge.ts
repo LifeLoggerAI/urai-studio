@@ -19,6 +19,14 @@ export type JobsLifeMovieRenderPayload = {
     ownerOrRightsRef: string;
   }>;
   timeline: Array<{ sourceId: string; startMs: number; endMs: number }>;
+  audioCues: Array<{
+    sourceId: string;
+    role: 'narration' | 'dialogue' | 'music' | 'ambience' | 'foley' | 'effects';
+    startMs: number;
+    endMs: number;
+    sourceStartMs: number;
+    gainDb: number;
+  }>;
   subtitleText: string;
   spatialRequired: false;
   publicReleaseAuthorized: false;
@@ -31,6 +39,23 @@ export type LifeMovieBridgeResult = {
   jobId?: string;
   deduplicated?: boolean;
   job?: Record<string, unknown>;
+  playback?: {
+    expiresAt?: string;
+    disposition?: 'inline';
+    video?: { url?: string; mimeType?: string; checksum?: string };
+    subtitleText?: string;
+    renderPlanDigest?: string;
+    publicReleaseAuthorized?: false;
+  };
+  download?: {
+    expiresAt?: string;
+    disposition?: 'attachment';
+    video?: { url?: string; mimeType?: string; checksum?: string };
+    subtitleText?: string;
+    renderPlanDigest?: string;
+    publicReleaseAuthorized?: false;
+  };
+  deletion?: { deleted?: boolean; deletedObjectCount?: number; retainedSourceMedia?: boolean };
   error?: string;
 };
 
@@ -48,6 +73,7 @@ export const LIFE_MOVIE_SYNCHRONOUS_RENDER_BUDGET = {
   maxFramePixels: 3840 * 2160,
   maxSources: 12,
   maxTimelineItems: 12,
+  maxAudioCues: 12,
 } as const;
 
 function bridgeUrl() {
@@ -113,10 +139,12 @@ export function lifeMovieJobsBridgeStatus() {
 
 export function buildJobsLifeMovieRenderPayload(project: LifeMovieProject, renderPlan: LifeMovieRenderPlan): JobsLifeMovieRenderPayload {
   const durationMs = Math.max(0, ...renderPlan.timeline.map(({ endMs }) => endMs));
+  const audioCues = renderPlan.audioCues ?? [];
   const budget = LIFE_MOVIE_SYNCHRONOUS_RENDER_BUDGET;
   if (!Number.isFinite(durationMs) || durationMs > budget.maxDurationMs
     || 1920 * 1080 * 30 * durationMs / 1000 > budget.maxPixelFrames
-    || project.sources.length > budget.maxSources || renderPlan.timeline.length > budget.maxTimelineItems) {
+    || project.sources.length > budget.maxSources || renderPlan.timeline.length > budget.maxTimelineItems
+    || audioCues.length > budget.maxAudioCues) {
     throw new Error('life_movie_exceeds_synchronous_render_budget');
   }
   const sources = project.sources.map((source) => {
@@ -142,6 +170,9 @@ export function buildJobsLifeMovieRenderPayload(project: LifeMovieProject, rende
     fps: 30,
     sources,
     timeline: renderPlan.timeline.map(({ sourceId, startMs, endMs }) => ({ sourceId, startMs, endMs })),
+    audioCues: audioCues.map(({ sourceId, role, startMs, endMs, sourceStartMs = 0, gainDb = 0 }) => ({
+      sourceId, role, startMs, endMs, sourceStartMs, gainDb,
+    })),
     subtitleText: renderPlan.subtitleText,
     spatialRequired: false,
     publicReleaseAuthorized: false,
@@ -213,13 +244,25 @@ export async function cancelLifeMovieRender(input: { tenantId: string; userId: s
   return callBridge({ action: 'cancel', ...input });
 }
 
+export async function getLifeMoviePlayback(input: { tenantId: string; userId: string; jobId: string }) {
+  return callBridge({ action: 'playback', ...input });
+}
+
+export async function getLifeMovieDownload(input: { tenantId: string; userId: string; jobId: string }) {
+  return callBridge({ action: 'download', ...input });
+}
+
+export async function deleteLifeMovieOutput(input: { tenantId: string; userId: string; jobId: string }) {
+  return callBridge({ action: 'delete-output', ...input });
+}
+
 
 export const LIFE_MOVIE_JOBS_BRIDGE_AUTHORITY = {
   ownerRepo: 'LifeLoggerAI/urai-jobs',
   jobType: LIFE_MOVIE_JOBS_CONTRACT.jobType,
   schemaVersion: LIFE_MOVIE_JOBS_CONTRACT.schemaVersion,
   method: 'POST',
-  actions: ['create', 'status', 'cancel'] as const,
+  actions: ['create', 'status', 'cancel', 'playback', 'download', 'delete-output'] as const,
   auth: 'protected-bearer',
   providerExecutionAuthorized: false,
   publicReleaseAuthorized: false,
