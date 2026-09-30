@@ -26,6 +26,12 @@ for (const token of [
   'source_consent_required',
   'source_rights_required',
   'source_provenance_required',
+  "export type LifeMovieAudioRole = 'narration' | 'dialogue' | 'music' | 'ambience' | 'foley' | 'effects'",
+  'audioCues: LifeMovieAudioCue[]',
+  'life_movie_audio_cue_limit_exceeded',
+  'audio_cue_source_not_audio_capable',
+  'invalid_audio_cue_gain',
+  'audio_cue_outside_timeline',
 ]) assert.ok(life.includes(token), `Life Movies contract missing ${token}`);
 
 assert.ok(route.includes('requireStudioAuth'), 'Life Movies API must use canonical Studio auth');
@@ -43,14 +49,48 @@ assert.ok(bridge.includes('schemaVersion: LIFE_MOVIE_JOBS_CONTRACT.schemaVersion
 assert.ok(store.includes("projectType: input.projectType"), 'Studio project persistence must retain the Life Movie project type');
 assert.ok(store.includes('externalExecution'), 'Studio job records must retain Jobs execution linkage');
 assert.ok(route.includes('providerGenerationAuthorized: false'), 'provider generation must remain fail-closed');
+assert.ok(route.includes('body.audioCues'), 'Life Movies API must accept governed cinematic audio cues');
+assert.ok(route.includes('audioCues,'), 'Life Movies API must pass audio cues into the canonical project constructor');
+assert.ok(bridge.includes('audioCues: Array<{'), 'Jobs bridge must carry cinematic audio cues');
+assert.ok(bridge.includes('maxAudioCues: 12'), 'bounded render bridge must cap synchronous audio cues');
+assert.ok(bridge.includes('audioCues: audioCues.map'), 'Jobs payload must carry normalized audio cues');
 assert.ok(life.includes('narrativeTheme?: LifeMovieNarrativeTheme'), 'Life Movie constructor input must preserve narrative theme');
 assert.ok(life.includes('narrativeAuthorityRef?: string'), 'Life Movie constructor input must preserve narrative authority reference');
 assert.ok(life.includes('narrativeTheme: input.narrativeTheme'), 'Life Movie constructor must copy narrative theme');
 assert.ok(life.includes('narrativeAuthorityRef: input.narrativeAuthorityRef?.trim() || undefined'), 'Life Movie constructor must copy normalized narrative authority');
-assert.ok(route.includes('narrativeTheme,'), 'Life Movies API must pass narrative theme into canonical constructor');
-assert.ok(route.includes('narrativeAuthorityRef,'), 'Life Movies API must pass narrative authority into canonical constructor');
+assert.ok(route.includes('narrativeTheme: parseLifeMovieNarrativeTheme(body.narrativeTheme)'), 'Life Movies API must pass narrative theme into canonical constructor');
+assert.ok(route.includes("narrativeAuthorityRef: typeof body.narrativeAuthorityRef === 'string'"), 'Life Movies API must pass narrative authority into canonical constructor');
 assert.ok(page.includes('does not depend on Spatial'), 'public Studio copy must state the non-Spatial video path');
 assert.ok(page.includes('MP4 · SRT · JSON'), 'Life Movies page must expose ordinary video/caption/manifest outputs');
+
+const player = fs.readFileSync(new URL('../components/studio/LifeMoviePlayer.tsx', import.meta.url), 'utf8');
+const watchPage = fs.readFileSync(new URL('../app/studio/life-movies/watch/[jobId]/page.tsx', import.meta.url), 'utf8');
+
+assert.ok(bridge.includes("actions: ['create', 'status', 'cancel', 'playback', 'download', 'delete-output']"), 'Studio bridge authority must include private playback, download, and output deletion');
+assert.ok(bridge.includes("callBridge({ action: 'playback'"), 'Studio must use the protected Jobs playback action');
+assert.ok(route.includes("const playbackRequested = url.searchParams.get('playback') === '1'"), 'Studio API must explicitly request private playback');
+assert.ok(route.includes("status !== 'succeeded'"), 'Studio API must fail closed until the render succeeds');
+assert.ok(route.includes('getLifeMoviePlayback'), 'Studio API must fetch playback through the owner-bound bridge');
+assert.ok(player.includes('<video'), 'Life Movie player must render a real video element');
+assert.ok(player.includes('controls'), 'Life Movie player must expose native playback controls');
+assert.ok(player.includes('playsInline'), 'Life Movie player must support mobile inline playback');
+assert.ok(player.includes("video.addTextTrack('captions'"), 'Life Movie player must attach captions');
+assert.ok(player.includes('new VTTCue'), 'SRT captions must become browser-native cues');
+assert.ok(player.includes('Transcript and captions'), 'Life Movie player must expose transcript access');
+assert.ok(player.includes("cache: 'no-store'"), 'Playback grant retrieval must not be cached');
+assert.ok(watchPage.includes("robots: { index: false, follow: false }"), 'Private watch route must not be indexed');
+assert.ok(watchPage.includes("canExecuteStudioFeature('life-movies-render')"), 'Private player must remain behind the Life Movies feature gate');
+assert.ok(!player.includes('gs://'), 'Browser player must never receive or embed raw GCS references');
+assert.ok(bridge.includes("actions: ['create', 'status', 'cancel', 'playback', 'download', 'delete-output']"), 'Studio bridge authority must include private download and output deletion');
+assert.ok(bridge.includes("callBridge({ action: 'download'"), 'Studio must use the protected Jobs download action');
+assert.ok(bridge.includes("callBridge({ action: 'delete-output'"), 'Studio must use the protected Jobs output-deletion action');
+assert.ok(route.includes("url.searchParams.get('download') === '1'"), 'Studio API must explicitly request private download');
+assert.ok(route.includes('body.deleteOutput === true'), 'Studio API must distinguish generated-output deletion from render cancellation');
+assert.ok(route.includes('sourceMediaDeleted: false'), 'Studio deletion response must state that source memories are retained');
+assert.ok(player.includes('Download MP4'), 'Life Movie player must expose explicit download control');
+assert.ok(player.includes('Delete generated output'), 'Life Movie player must expose generated-output deletion');
+assert.ok(player.includes('Playback speed'), 'Life Movie player must expose playback-rate control');
+assert.ok(player.includes("window.confirm('Delete this generated Life Movie output? Your original source memories will be kept.')"), 'Destructive output deletion must clearly distinguish generated media from source memories');
 
 console.log('Life Movies launch contract guard passed');
 
@@ -83,7 +123,7 @@ for (const token of [
   assert.ok(lifeMoviesSource.includes(token), `Life Movies Jobs contract missing: ${token}`);
 }
 assert.ok(lifeMovieBridge.includes("ownerRepo: 'LifeLoggerAI/urai-jobs'"));
-assert.ok(lifeMovieBridge.includes("actions: ['create', 'status', 'cancel']"));
+assert.ok(lifeMovieBridge.includes("actions: ['create', 'status', 'cancel', 'playback', 'download', 'delete-output']"));
 assert.ok(lifeMovieBridge.includes("auth: 'protected-bearer'"));
 assert.ok(lifeMovieBridge.includes('validateLifeMovieBridgeRequest'));
 assert.ok(lifeMovieBridge.includes('life_movie_jobs_bridge_request_too_large'));

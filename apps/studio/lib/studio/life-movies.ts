@@ -36,6 +36,13 @@ export type LifeMovieNarrativeTheme =
   | 'legacy'
   | 'custom';
 
+export function parseLifeMovieNarrativeTheme(value: unknown): LifeMovieNarrativeTheme | undefined {
+  if (value === undefined) return undefined;
+  const themes: readonly string[] = ['daily-reflection', 'weekly-recap', 'seasonal-story', 'relationship-arc', 'emotional-arc', 'recovery-arc', 'memory-replay', 'mirror-of-becoming', 'soul-thread', 'family-history', 'legacy', 'custom'];
+  if (typeof value !== 'string' || !themes.includes(value)) throw new Error('life_movie_narrative_theme_invalid');
+  return value as LifeMovieNarrativeTheme;
+}
+
 export type LifeMovieSource = {
   id: string;
   kind: LifeMovieSourceKind;
@@ -59,6 +66,18 @@ export type LifeMovieChapter = {
   durationMs: number;
 };
 
+
+export type LifeMovieAudioRole = 'narration' | 'dialogue' | 'music' | 'ambience' | 'foley' | 'effects';
+
+export type LifeMovieAudioCue = {
+  sourceId: string;
+  role: LifeMovieAudioRole;
+  startMs: number;
+  endMs: number;
+  sourceStartMs?: number;
+  gainDb?: number;
+};
+
 export type LifeMovieProject = {
   schemaVersion: 1;
   id: UraiId;
@@ -70,6 +89,7 @@ export type LifeMovieProject = {
   narrativeAuthorityRef?: string;
   sources: LifeMovieSource[];
   chapters: LifeMovieChapter[];
+  audioCues: LifeMovieAudioCue[];
   requestedExports: StudioExportKind[];
   spatialRequired: false;
   privateByDefault: true;
@@ -91,6 +111,7 @@ export const LIFE_MOVIE_JOBS_CONTRACT = {
   schemaVersion: 'urai-life-movie-render-v1',
   maxSources: 100,
   maxTimelineItems: 250,
+  maxAudioCues: 250,
   maxTimelineItemMs: 30 * 60 * 1000,
   maxTotalTimelineMs: 45 * 60 * 1000,
   maxBridgeBodyBytes: 32768,
@@ -100,6 +121,7 @@ export type LifeMovieRenderPlan = {
   schemaVersion: 1;
   projectId: UraiId;
   timeline: LifeMovieTimelineItem[];
+  audioCues: LifeMovieAudioCue[];
   subtitleText: string;
   requestedExports: StudioExportKind[];
   renderEngine: 'ffmpeg-worker';
@@ -132,6 +154,7 @@ function timestamp(ms: number) {
 }
 
 export function validateLifeMovieProject(project: LifeMovieProject) {
+  parseLifeMovieNarrativeTheme(project.narrativeTheme);
   safeSegment(project.id, 'project_id');
   safeSegment(project.tenantId, 'tenant_id');
   safeSegment(project.userId, 'user_id');
@@ -155,6 +178,24 @@ export function validateLifeMovieProject(project: LifeMovieProject) {
     if (!source.consentRef) throw new Error(`source_consent_required:${source.id}`);
     if (!source.ownerOrRightsRef) throw new Error(`source_rights_required:${source.id}`);
     if (source.sourceRefs.length === 0) throw new Error(`source_provenance_required:${source.id}`);
+  }
+
+  if (project.audioCues.length > LIFE_MOVIE_JOBS_CONTRACT.maxAudioCues) throw new Error('life_movie_audio_cue_limit_exceeded');
+  const audioRoles = new Set<LifeMovieAudioRole>(['narration', 'dialogue', 'music', 'ambience', 'foley', 'effects']);
+  for (const [index, cue] of project.audioCues.entries()) {
+    safeSegment(cue.sourceId, 'audio_cue_source_id');
+    if (!sourceIds.has(cue.sourceId)) throw new Error(`unknown_audio_cue_source:${cue.sourceId}`);
+    const source = project.sources.find((candidate) => candidate.id === cue.sourceId)!;
+    if (source.kind !== 'audio' && source.kind !== 'video') throw new Error(`audio_cue_source_not_audio_capable:${cue.sourceId}`);
+    if (!audioRoles.has(cue.role)) throw new Error(`invalid_audio_cue_role:${index}`);
+    if (!Number.isInteger(cue.startMs) || !Number.isInteger(cue.endMs) || cue.startMs < 0 || cue.endMs <= cue.startMs) {
+      throw new Error(`invalid_audio_cue_range:${index}`);
+    }
+    if (cue.sourceStartMs !== undefined && (!Number.isInteger(cue.sourceStartMs) || cue.sourceStartMs < 0)) {
+      throw new Error(`invalid_audio_cue_source_start:${index}`);
+    }
+    const gainDb = cue.gainDb ?? 0;
+    if (!Number.isFinite(gainDb) || gainDb < -60 || gainDb > 12) throw new Error(`invalid_audio_cue_gain:${index}`);
   }
 
   const chapterIds = new Set<string>();
@@ -214,6 +255,7 @@ export function buildLifeMovieRenderPlan(project: LifeMovieProject): LifeMovieRe
       id, uri, provenance, sourceRefs: [...sourceRefs].sort(), consentRef, ownerOrRightsRef,
     })),
     chapters: project.chapters,
+    audioCues: project.audioCues,
     requestedExports: [...project.requestedExports].sort(),
   });
 
@@ -224,6 +266,10 @@ export function buildLifeMovieRenderPlan(project: LifeMovieProject): LifeMovieRe
     throw new Error('life_movie_launch_duration_exceeded');
   }
 
+  for (const [index, cue] of project.audioCues.entries()) {
+    if (cue.endMs > cursorMs) throw new Error(`audio_cue_outside_timeline:${index}`);
+  }
+
   const providerGenerationRequired = project.sources.some((source) =>
     ['reconstructed', 'generated', 'artistic-interpretation'].includes(source.provenance),
   );
@@ -232,6 +278,11 @@ export function buildLifeMovieRenderPlan(project: LifeMovieProject): LifeMovieRe
     schemaVersion: 1,
     projectId: project.id,
     timeline,
+    audioCues: project.audioCues.map((cue) => ({
+      ...cue,
+      sourceStartMs: cue.sourceStartMs ?? 0,
+      gainDb: cue.gainDb ?? 0,
+    })),
     subtitleText: subtitleBlocks.join('\n\n'),
     requestedExports: project.requestedExports,
     renderEngine: 'ffmpeg-worker',
@@ -252,6 +303,7 @@ export function createLifeMovieProject(input: {
   narrativeAuthorityRef?: string;
   sources: LifeMovieSource[];
   chapters: LifeMovieChapter[];
+  audioCues?: LifeMovieAudioCue[];
   now?: string;
 }): LifeMovieProject {
   return validateLifeMovieProject({
@@ -261,10 +313,11 @@ export function createLifeMovieProject(input: {
     userId: input.userId,
     title: input.title.trim(),
     mode: input.mode,
-    narrativeTheme: input.narrativeTheme,
-    narrativeAuthorityRef: input.narrativeAuthorityRef?.trim() || undefined,
+    ...(input.narrativeTheme !== undefined ? { narrativeTheme: input.narrativeTheme } : {}),
+    ...(input.narrativeAuthorityRef !== undefined ? { narrativeAuthorityRef: input.narrativeAuthorityRef?.trim() || undefined } : {}),
     sources: input.sources,
     chapters: input.chapters,
+    audioCues: input.audioCues ?? [],
     requestedExports: ['mp4', 'srt', 'json'],
     spatialRequired: false,
     privateByDefault: true,

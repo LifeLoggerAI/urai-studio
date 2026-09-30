@@ -1,0 +1,104 @@
+admin route gate coverage passed
+all-test runner coverage passed: auto-discovers every .test.mjs file
+Brain Map hard-off interactive cockpit guard passed
+Captured Reality Studio orchestration contract guard passed
+create-job validation coverage passed
+creative direction and music authority contracts passed
+motion direction authority contract passed
+creative timeline authority contract passed
+Studio V3 data-model convergence guard passed
+Studio V3 migration dry-run and rollback fixtures passed
+deploy evidence template coverage passed
+Digital Human and voice authority contract passed
+digital-human voice launch authority contract passed
+docs-index: ok
+Studio dormant control-plane contracts guard passed
+fail-closed export spatial handoff response coverage passed
+Studio feature-policy authority convergence guard passed
+Studio feature-policy diagnostic route guard passed
+✔ deploy evidence template records required proof fields (2.142577ms)
+✔ env example documents public ecosystem integration urls used by Studio (1.414893ms)
+✔ FINITE TIME remains private, provenance-bound and no-spend by default (0.760707ms)
+✔ FINITE TIME preserves the eight-stage governed production path and proof chapter (1.583839ms)
+firebase admin ADC/workload-identity contract passed
+✔ FINITE TIME receipts and advancement rule stay fail closed (1.035656ms)
+functions index export regression passed
+Studio future-capability registry guard passed 20
+Studio dormant future control models guard passed
+Studio dormant control-plane UI guard passed
+Studio future rails behavioral guard passed
+Studio hard-off future rails source guard passed
+health summary response coverage passed
+ecosystem integration diagnostics coverage passed
+job-runner fallback output coverage passed
+job runner transaction and maximum-attempt checks passed
+legacy root workspace coverage passed: urai-studio canonical app root
+legal page posture coverage passed
+Studio legal route and sitemap guard passed
+Life Movies launch contract guard passed
+Studio managed Firebase runtime identity guard passed
+media master capture contract passed: 14 governed surfaces + exact-SHA fail-closed planner
+media master contract passed: 213 semantic assets + 90 fail-closed calendar jobs
+✔ audio reconciliation preserves accepted assets and spend gates (0.926349ms)
+✔ launch templates are reusable, canonical and fail closed (0.964192ms)
+mobile-responsive-canon: ok
+✔ capture executor requires exact preview binding and deterministic canonical state drivers (1.302567ms)
+✔ Before the Rest binds canonical capture slots without weakening film gates (0.886249ms)
+module copy posture coverage passed
+module registry coverage passed
+new Studio route file regression passed 5
+Studio observed readiness and redaction guard passed
+openapi contract passed
+Studio provider cost-control hard-off guard passed
+provider readiness mode regression passed
+Studio public status truth guard passed
+public submission security coverage passed
+README proof-path navigation checks passed
+release evidence schema coverage passed
+Studio review validation behavior passed
+root release scripts coverage passed
+Studio runtime API and Asset Factory smoke guard passed
+security surface presence checks passed
+source-hygiene: scanned 168 files
+spatial handoff discovery coverage passed
+spatial handoff openapi fragment and canonical route passed
+public status copy coverage passed
+storage rules security coverage passed
+Storytime to Life Movie editorial bridge contract passed
+studio action panel gate regression passed
+Studio API token and canonical-membership auth gate passed
+Studio API kind validation regression checks passed
+studio export route smoke regression passed
+✔ trusted Studio creation atomically creates canonical owner and audit evidence (0.763876ms)
+✔ canonical authority never trusts legacy concatenated membership ids (1.326789ms)
+✔ membership management is idempotent, audited, and privilege bounded (1.05953ms)
+✔ ownership transfer is explicit and atomic (0.930099ms)
+studio runtime store contract regression passed
+✔ Studio and canonical membership creation are server-authorized (0.653826ms)
+✔ authorization is bound to canonical path, identity, Studio, schema, status, and role (2.101127ms)
+✔ worker, operation, migration, and intake records are browser-write denied (57.858732ms)
+✔ Storage uses the same canonical active membership and denies client output writes (0.465743ms)
+✔ emits the current Spatial 0.2.0 wire shape only when complete (5.040488ms)
+✔ supports GLB and glTF as mesh assets with their standard MIME types (2.231577ms)
+✔ fails closed on incomplete asset, scene, consent, safety, or release evidence (5.594236ms)
+✔ rejects unsafe URIs, unsupported runtime claims, and mismatched GLB kind (3.585776ms)
+V1 magical home coverage passed
+✔ rejects malformed MIME types, non-RFC3339 timestamps, and undeclared properties (3.301659ms)
+✔ binds consent and asset ownership to protected authority evidence (4.169548ms)
+video factory page regression passed
+✔ binds the complete safety boundary set to protected policy evidence (1.803669ms)
+✔ rejects self-attested or mismatched release authority (8.948429ms)
+video factory regression passed
+✔ blocked descriptors are not wire exports and never claim live integration (0.913642ms)
+✔ system manifest exposes the Studio Spatial handoff contract block (0.837119ms)
+video render artifact truth coverage passed
+video render package smoke passed
+all Studio regression tests passed 75
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1317.615715

@@ -14,17 +14,22 @@ import {
   cancelLifeMovieRender,
   dispatchLifeMovieRender,
   getLifeMovieRenderStatus,
+  getLifeMoviePlayback,
+  getLifeMovieDownload,
+  deleteLifeMovieOutput,
   lifeMovieJobsBridgeStatus,
 } from '@/lib/studio/life-movie-jobs-bridge';
 import {
   buildLifeMovieRenderPlan,
   createLifeMovieProject,
   type LifeMovieChapter,
+  type LifeMovieAudioCue,
   type LifeMovieMode,
-  type LifeMovieNarrativeTheme,
+  parseLifeMovieNarrativeTheme,
   type LifeMovieSource,
 } from '@/lib/studio/life-movies';
 import type { StudioJobStatus } from '@/lib/urai-system-contract';
+import type { LifeMovieBridgeResult } from '@/lib/studio/life-movie-jobs-bridge';
 
 export const dynamic = 'force-dynamic';
 
@@ -120,11 +125,45 @@ export async function GET(req: Request) {
     errorCode: status === 'failed' ? 'jobs_render_failed' : undefined,
   });
 
+  const url = new URL(req.url);
+  const playbackRequested = url.searchParams.get('playback') === '1';
+  const downloadRequested = url.searchParams.get('download') === '1';
+  if (playbackRequested && downloadRequested) return json({ ok: false, status: 'life_movie_media_action_conflict' }, 400);
+
+  let playback: LifeMovieBridgeResult['playback'] | undefined;
+  let download: LifeMovieBridgeResult['download'] | undefined;
+  if (playbackRequested || downloadRequested) {
+    if (status !== 'succeeded') return json({ ok: false, status: 'life_movie_not_ready_for_media_access' }, 409);
+    if (playbackRequested) {
+      const result = await getLifeMoviePlayback({
+        tenantId: auth.tenantId,
+        userId: auth.uid,
+        jobId: resolved.externalJobId,
+      });
+      if (!result.ok || !result.playback?.video?.url) {
+        return json({ ok: false, status: result.error ?? 'life_movie_playback_unavailable' }, 503);
+      }
+      playback = result.playback;
+    } else {
+      const result = await getLifeMovieDownload({
+        tenantId: auth.tenantId,
+        userId: auth.uid,
+        jobId: resolved.externalJobId,
+      });
+      if (!result.ok || !result.download?.video?.url) {
+        return json({ ok: false, status: result.error ?? 'life_movie_download_unavailable' }, 503);
+      }
+      download = result.download;
+    }
+  }
+
   return json({
     ok: true,
     status,
     job: updated.data ?? resolved.local,
     execution: external.job,
+    ...(playback ? { playback } : {}),
+    ...(download ? { download } : {}),
   });
 }
 
@@ -138,6 +177,23 @@ export async function DELETE(req: Request) {
 
   const resolved = await resolveJob(req, auth, jobId);
   if ('error' in resolved) return json({ ok: false, status: resolved.error }, resolved.status);
+
+  if (body.deleteOutput === true) {
+    const deletion = await deleteLifeMovieOutput({
+      tenantId: auth.tenantId,
+      userId: auth.uid,
+      jobId: resolved.externalJobId,
+    });
+    if (!deletion.ok || deletion.deletion?.deleted !== true) {
+      return json({ ok: false, status: deletion.error ?? 'life_movie_output_delete_failed' }, 503);
+    }
+    return json({
+      ok: true,
+      status: 'output_deleted',
+      deletion: deletion.deletion,
+      sourceMediaDeleted: false,
+    });
+  }
 
   const cancelled = await cancelLifeMovieRender({
     tenantId: auth.tenantId,
@@ -165,10 +221,9 @@ export async function POST(req: Request) {
   const id = typeof body.id === 'string' ? body.id : `life-movie-${Date.now()}`;
   const title = typeof body.title === 'string' ? body.title : '';
   const mode = typeof body.mode === 'string' ? body.mode as LifeMovieMode : 'user-directed';
-  const narrativeTheme = typeof body.narrativeTheme === 'string' ? body.narrativeTheme as LifeMovieNarrativeTheme : undefined;
-  const narrativeAuthorityRef = typeof body.narrativeAuthorityRef === 'string' ? body.narrativeAuthorityRef : undefined;
   const sources = Array.isArray(body.sources) ? body.sources as LifeMovieSource[] : [];
   const chapters = Array.isArray(body.chapters) ? body.chapters as LifeMovieChapter[] : [];
+  const audioCues = Array.isArray(body.audioCues) ? body.audioCues as LifeMovieAudioCue[] : [];
 
   try {
     const project = createLifeMovieProject({
@@ -177,10 +232,11 @@ export async function POST(req: Request) {
       userId: auth.uid,
       title,
       mode,
-      narrativeTheme,
-      narrativeAuthorityRef,
+      narrativeTheme: parseLifeMovieNarrativeTheme(body.narrativeTheme),
+      narrativeAuthorityRef: typeof body.narrativeAuthorityRef === 'string' ? body.narrativeAuthorityRef : undefined,
       sources,
       chapters,
+      audioCues,
     });
     const renderPlan = buildLifeMovieRenderPlan(project);
     const renderPolicy = resolveStudioFeaturePolicy('life-movies-render');
@@ -202,6 +258,10 @@ export async function POST(req: Request) {
         publicReleaseAuthorized: false,
       }, 409);
     }
+
+    // Validate the bounded Jobs payload before any durable project/job write.
+    // Invalid or over-budget requests must fail without leaving queued work behind.
+    const payload = buildJobsLifeMovieRenderPayload(project, renderPlan);
 
     const persistedProject = await createStudioProject({
       id: project.id,
@@ -249,7 +309,6 @@ export async function POST(req: Request) {
       }, 503);
     }
 
-    const payload = buildJobsLifeMovieRenderPayload(project, renderPlan);
     const dispatch = await dispatchLifeMovieRender({
       tenantId: auth.tenantId,
       userId: auth.uid,
