@@ -1,6 +1,6 @@
 # UrAi Private Family Showcase — AAA Cinematic Master 001
 
-Status: existing provider tasks verified complete; human visual acceptance and final composite NOT complete
+Status: existing provider tasks verified complete; private human review identified material canon failures; repair and revalidation REQUIRED; final composite NOT complete
 Audience: private family review
 Public release: NOT authorized
 
@@ -102,3 +102,33 @@ Only family media already documented as authorized may be used. This repository 
 ## Current truthful state
 
 All ten listed existing provider tasks resolve successfully in the 2026-10-01 read-only audit, so task-generation existence is verified. That does NOT equal human likeness/visual acceptance or a finished Life Movie. Final full-length composite, original-voice mix, captions, final QC, and private-family acceptance remain incomplete; directly exposed joint raw audio and a clean authorized mother likeness reference remain separate blockers.
+
+
+## 2026-10-01 canon-lock correction
+
+Private human review of the generated family material identified material failures that provider task success did not catch. The affected material is now classified as **QUALITY FAILED / REPAIR REQUIRED** rather than accepted cinematic master material.
+
+Recorded public-safe failure classes:
+
+- IDENTITY_FAIL
+- ROLE_FAIL
+- EYEWEAR_FAIL
+- VEHICLE_FAIL
+- ENVIRONMENT_FAIL
+- GEOGRAPHY_FAIL
+- GENERICIZATION_FAIL
+
+The specific private biographical corrections, identity references, source-media identifiers, and family names remain in the private canon and MUST NOT be copied into this public repository.
+
+Before any failed shot can advance, Studio must:
+
+1. resolve the private canon through the authorized broker;
+2. build a shot-specific SceneTruthPacket;
+3. block generation when a critical contradiction or critical unknown remains;
+4. constrain the provider as a renderer rather than a biographical authority;
+5. compare the generated output against the same SceneTruthPacket;
+6. retain human-visible identity/environment comparison evidence where applicable;
+7. reject any material failure code;
+8. regenerate only the failed elements when preservation of correct elements is technically possible.
+
+Provider SUCCEEDED status is evidence of artifact existence only. It is not likeness acceptance, role accuracy, era accuracy, environmental accuracy, continuity acceptance, or historical truth.
