@@ -1,6 +1,6 @@
 # UrAi Private Family Showcase — AAA Cinematic Master 001
 
-Status: visual generation complete; final composite blocked by external compositor credits
+Status: existing provider tasks verified complete; human visual acceptance and final composite NOT complete
 Audience: private family review
 Public release: NOT authorized
 
@@ -8,7 +8,7 @@ Public release: NOT authorized
 
 1. Young father likeness keyframe
    - Runway task: c2479585-d14d-4f2d-9886-e8715aa4a77d
-   - Grounded from confirmed Wayne family reference
+   - Grounded from an authorized father likeness reference
    - Class: cinematic recreation from authorized likeness reference
 
 2. Young father dawn animation
@@ -26,7 +26,7 @@ Public release: NOT authorized
    - Runway task: aa09b929-c7dd-4661-ac88-ae20edac1fad
    - 1920x1080, ~15s
    - Class: attributed-recollection recreation
-   - Young woman is not claimed as identity-locked Terry until a clean Terry likeness reference is verified
+   - Young woman is not claimed as identity-locked mother until a clean authorized mother likeness reference is verified
 
 5. East Texas family-life sequence
    - Runway task: fa166fd9-b163-4b38-8b03-16bc456e305a
@@ -61,20 +61,20 @@ Public release: NOT authorized
 
 ## Source audio truth
 
-- dad.mp3 raw source is directly available in private Drive and contains confirmed end-of-recording identification of Robert Wayne Clamp and Adam.
-- The joint "mom and dad talking" transcript is available and contains the Why Not / marriage / slide-projector material.
-- The archive receipts prove the joint raw audio existed in the original upload batch, but current Drive discovery does not expose the raw joint file directly.
-- Terry voice-source recordings are available privately, but the currently exposed clips are dominated by hospital/family logistics and are not being forced into the showcase simply because they exist.
+- A raw father voice source is directly available in private Drive and includes speaker-identification context.
+- The joint family-story transcript is available and contains the relationship-origin / marriage / slide-projector material.
+- Archive receipts prove the joint raw audio existed in the original upload batch, but current Drive discovery does not expose that raw joint file directly.
+- Mother voice-source recordings are available privately, but currently exposed clips are not being forced into the showcase simply because they exist.
 - No stock voice is authorized as a substitute for family identity.
 - No family voice clone is currently provisioned in the connected HeyGen voice workspace.
 
 ## Consent
 
-User states full permission exists for realistic likeness, voice, avatar, regenerated video, and related private family-showcase use for all people referenced or depicted in the authorized family materials. Provider-side consent objects remain separate where a provider technically requires them.
+Only family media already documented as authorized may be used. This repository audit does not independently establish the authorization provenance for prior provider-generated tasks; provider-side consent objects and any additional generation authorization remain separate gates. No new paid/provider generation is authorized by this document.
 
 ## Edit order
 
-1. Young Wayne dawn identity opening
+1. Young father dawn identity opening
 2. Cold War service world
 3. Relationship-origin / Why Not-era world
 4. East Texas family life
@@ -101,4 +101,4 @@ User states full permission exists for realistic likeness, voice, avatar, regene
 
 ## Current truthful state
 
-AAA cinematic source-block generation is complete for Master 001. Final full-length composite, voice mix, captions, and final QC remain blocked only by compositor access/credits plus the missing directly exposed joint raw audio and clean Terry likeness reference.
+All ten listed existing provider tasks resolve successfully in the 2026-10-01 read-only audit, so task-generation existence is verified. That does NOT equal human likeness/visual acceptance or a finished Life Movie. Final full-length composite, original-voice mix, captions, final QC, and private-family acceptance remain incomplete; directly exposed joint raw audio and a clean authorized mother likeness reference remain separate blockers.
