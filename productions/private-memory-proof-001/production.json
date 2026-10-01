@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.1.0",
+  "schemaVersion": "1.2.0",
   "projectId": "private-memory-proof-001",
   "title": "Private Memory Proof 001",
   "classification": "private-family-review",
@@ -79,9 +79,20 @@
   "target": {
     "durationSeconds": 105,
     "masterAspectRatio": "16:9",
-    "derivatives": ["9:16", "1:1"],
+    "derivatives": [
+      "9:16",
+      "1:1"
+    ],
     "audience": "private-family-review",
-    "tone": ["warm", "cinematic", "specific", "grounded", "intimate", "generational", "hopeful"]
+    "tone": [
+      "warm",
+      "cinematic",
+      "specific",
+      "grounded",
+      "intimate",
+      "generational",
+      "hopeful"
+    ]
   },
   "editPlan": [
     {
@@ -141,8 +152,11 @@
     }
   ],
   "generationPolicy": {
-    "paidProviderGenerationAuthorized": false,
-    "generatedIdentifiableFamilyLikenessAuthorized": false,
+    "existingProviderGeneratedAssetsPresent": true,
+    "existingProviderTaskAudit": "productions/private-memory-proof-001/RUNWAY_TASK_AUDIT_20261001.md",
+    "priorProviderGenerationAuthorizationProvenance": "not-established-by-this-repository-audit",
+    "newPaidProviderGenerationAuthorized": false,
+    "generatedIdentifiableFamilyLikenessAcceptance": "blocked-until-human-likeness-and-consent-review",
     "cinematicEnvironmentGenerationMayBeAddedLater": "bounded-authorization-required",
     "providerSpendRequiresSeparateBoundedManifest": true
   },
@@ -162,6 +176,8 @@
     "mustDistinguishRecollectionFromVerifiedHistoricalFact": true,
     "mustRetainPrivateSourceInDrive": true,
     "mustBindProductCaptureToExactSpatialSha": true,
-    "mustNotClaimPublicRelease": true
+    "mustNotClaimPublicRelease": true,
+    "mustRetainProviderTaskReceipt": true,
+    "mustNotTreatGenerationSuccessAsHumanAcceptance": true
   }
 }
