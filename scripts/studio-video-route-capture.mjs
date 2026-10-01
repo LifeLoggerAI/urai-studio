@@ -10,7 +10,7 @@ const outDir = path.join(repoRoot, '_audit/20260623_urai_studio_video_factory/ca
 const motionDir = path.join(outDir, 'motion');
 const baseUrl = process.env.SPATIAL_BASE_URL || process.env.HOST || 'http://127.0.0.1:3000';
 const expectedSpatialSha = process.env.URAI_SPATIAL_EXPECTED_SHA?.trim() || null;
-const recordSeconds = Math.max(2, Math.min(12, Number(process.env.VIDEO_FACTORY_ROUTE_RECORDING_SECONDS || 8)));
+const recordSeconds = Math.max(2, Math.min(12, Number(process.env.VIDEO_FACTORY_ROUTE_RECORDING_SECONDS || 10)));
 
 function unique(values) {
   return [...new Set(values)];
