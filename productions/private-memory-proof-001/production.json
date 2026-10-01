@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.2.0",
+  "schemaVersion": "1.3.0",
   "projectId": "private-memory-proof-001",
   "title": "Private Memory Proof 001",
   "classification": "private-family-review",
@@ -11,7 +11,8 @@
     "runtimeRepository": "LifeLoggerAI/urai-spatial",
     "generationRepository": "LifeLoggerAI/asset-factory",
     "narrativeRepository": "LifeLoggerAI/urai-storytime",
-    "resolveCurrentRuntimeHeadBeforeCapture": true
+    "resolveCurrentRuntimeHeadBeforeCapture": true,
+    "memoryToMediaCanonContract": "productions/media-master/memory-to-media-canon.contract.json"
   },
   "privacy": {
     "rawPrivateMediaRemainsInDrive": true,
@@ -158,7 +159,12 @@
     "newPaidProviderGenerationAuthorized": false,
     "generatedIdentifiableFamilyLikenessAcceptance": "blocked-until-human-likeness-and-consent-review",
     "cinematicEnvironmentGenerationMayBeAddedLater": "bounded-authorization-required",
-    "providerSpendRequiresSeparateBoundedManifest": true
+    "providerSpendRequiresSeparateBoundedManifest": true,
+    "sceneTruthPacketRequiredBeforeGeneration": true,
+    "postGenerationCanonValidationRequired": true,
+    "providerSuccessIsAcceptance": false,
+    "photorealismAloneIsAcceptance": false,
+    "surgicalRegenerationPreferred": true
   },
   "humanGates": [
     "family-likeness",
@@ -178,6 +184,27 @@
     "mustBindProductCaptureToExactSpatialSha": true,
     "mustNotClaimPublicRelease": true,
     "mustRetainProviderTaskReceipt": true,
-    "mustNotTreatGenerationSuccessAsHumanAcceptance": true
+    "mustNotTreatGenerationSuccessAsHumanAcceptance": true,
+    "mustHaveSceneTruthPacket": true,
+    "mustPassPostGenerationCanonValidation": true,
+    "mustRejectMaterialFailureCodes": true,
+    "mustHaveHumanVisibleIdentityEvidenceForIdentifiablePeople": true,
+    "mustHaveContinuityReceiptForDependentShots": true
+  },
+  "currentMediaReview": {
+    "state": "QUALITY_FAILED_REPAIR_REQUIRED",
+    "source": "private-human-review-20261001",
+    "knownFailureClasses": [
+      "IDENTITY_FAIL",
+      "ROLE_FAIL",
+      "EYEWEAR_FAIL",
+      "VEHICLE_FAIL",
+      "ENVIRONMENT_FAIL",
+      "GEOGRAPHY_FAIL",
+      "GENERICIZATION_FAIL"
+    ],
+    "existingProviderSuccessMayBePromotedToAccepted": false,
+    "failedShotsMustBeRevalidatedAgainstPrivateCanon": true,
+    "privateCorrectionsRemainOutsidePublicRepository": true
   }
 }
