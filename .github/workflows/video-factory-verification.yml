@@ -101,6 +101,11 @@ jobs:
           fi
           node scripts/studio-video-compose-diagnostic.mjs
 
+      - name: Compose and verify semantic-ready motion MP4
+        env:
+          URAI_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: pnpm run video-factory:compose-motion
+
       - name: Upload Video Factory evidence
         if: always()
         uses: actions/upload-artifact@v4
