@@ -3,9 +3,12 @@ import path from 'node:path';
 
 const productionPath = path.resolve('productions/built-from-survival/built-from-survival.production.json');
 const contractPath = path.resolve('apps/studio/lib/life-film-canon.ts');
+const memoryToMediaContractPath = path.resolve('productions/media-master/memory-to-media-canon.contract.json');
 
 const productionText = fs.readFileSync(productionPath, 'utf8');
 const contractText = fs.readFileSync(contractPath, 'utf8');
+const memoryToMediaContractText = fs.readFileSync(memoryToMediaContractPath, 'utf8');
+const memoryToMedia = JSON.parse(memoryToMediaContractText);
 const production = JSON.parse(productionText);
 
 // Detect concrete private source pointers, not harmless prose that names a provider.
@@ -23,7 +26,7 @@ const forbidden = [
   /1D-ISJKQkSa9__ASzRUvUyOnXAVnAc77Y/,
 ];
 
-const combinedPublicText = `${productionText}\n${contractText}`;
+const combinedPublicText = `${productionText}\n${contractText}\n${memoryToMediaContractText}`;
 for (const pattern of forbidden) {
   if (pattern.test(combinedPublicText)) {
     throw new Error(`private_life_film_pointer_leaked:${pattern}`);
@@ -68,6 +71,30 @@ const requiredRuntimeCaptureKeys = [
 for (const key of requiredRuntimeCaptureKeys) {
   if (!production.sourceKeys.includes(key)) {
     throw new Error(`missing_life_film_runtime_capture_key:${key}`);
+  }
+}
+
+if (memoryToMedia?.state !== 'fail-closed') {
+  throw new Error('memory_to_media_contract_not_fail_closed');
+}
+if (memoryToMedia?.providerRole !== 'renderer-only') {
+  throw new Error('provider_promoted_to_truth_authority');
+}
+if (memoryToMedia?.preGeneration?.sceneTruthPacketRequired !== true) {
+  throw new Error('scene_truth_packet_not_required');
+}
+if (memoryToMedia?.preGeneration?.rawNarrativeOnlyPromptingAllowed !== false) {
+  throw new Error('raw_narrative_prompting_not_blocked');
+}
+if (memoryToMedia?.postGeneration?.validationRequired !== true) {
+  throw new Error('post_generation_canon_validation_not_required');
+}
+if (memoryToMedia?.postGeneration?.providerSuccessIsAcceptance !== false) {
+  throw new Error('provider_success_incorrectly_counts_as_acceptance');
+}
+for (const failureCode of ['IDENTITY_FAIL','ROLE_FAIL','EYEWEAR_FAIL','VEHICLE_FAIL','ENVIRONMENT_FAIL','GENERICIZATION_FAIL']) {
+  if (!memoryToMedia.failureCodes?.includes(failureCode)) {
+    throw new Error(`missing_memory_to_media_failure_code:${failureCode}`);
   }
 }
 
