@@ -1,0 +1,111 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "private-memory-proof-001",
+  "title": "Private Memory Proof 001",
+  "classification": "private-family-review",
+  "publicReleaseAuthorized": false,
+  "purpose": "Create a short emotionally legible proof showing how private family source material becomes a governed UrAi memory-film experience.",
+  "authority": {
+    "privateSourceSystem": "google-drive-private-canon",
+    "orchestrationRepository": "LifeLoggerAI/urai-studio",
+    "runtimeRepository": "LifeLoggerAI/urai-spatial",
+    "generationRepository": "LifeLoggerAI/asset-factory",
+    "narrativeRepository": "LifeLoggerAI/urai-storytime",
+    "resolveCurrentRuntimeHeadBeforeCapture": true
+  },
+  "privacy": {
+    "rawPrivateMediaRemainsInDrive": true,
+    "privateDriveIdentifiersAllowedInPublicGitHub": false,
+    "privateNamesAllowedInPublicGitHub": false,
+    "exactPrivateAddressesAllowed": false,
+    "unconfirmedIdentityAssertionsAllowed": false,
+    "publicDistribution": false
+  },
+  "inputState": {
+    "familyStillArchive": "available",
+    "familyReferencePages": "available-context-only-not-cinematic-source",
+    "jointFamilyStoryTranscript": "available-editing-guide-only",
+    "originalJointStoryAudio": "pending-source-availability",
+    "additionalUploads": "in-progress"
+  },
+  "story": {
+    "storyKey": "relationship-origin-memory-001",
+    "treatment": "A warm, humorous recollection of the informal moment a couple realized they were going to marry, connected to old family photographs and the idea that ordinary conversation becomes durable memory.",
+    "truthClass": "attributed-family-recollection",
+    "transcriptIsFinalQuoteAuthority": false,
+    "speakerIdentityMustBeHumanVerified": true
+  },
+  "target": {
+    "durationSeconds": 90,
+    "masterAspectRatio": "16:9",
+    "derivatives": ["9:16", "1:1"],
+    "audience": "private-family-review",
+    "tone": ["warm", "cinematic", "grounded", "intimate", "hopeful"]
+  },
+  "editPlan": [
+    {
+      "shotId": "pmp001-01",
+      "kind": "archival-still",
+      "sourceKey": "private-family-still-select-001",
+      "durationSeconds": 10,
+      "treatment": "Subtle camera movement on a real family photograph. Preserve the source image; do not invent missing facial detail."
+    },
+    {
+      "shotId": "pmp001-02",
+      "kind": "original-voice",
+      "sourceKey": "private-joint-story-audio-001",
+      "durationSeconds": 18,
+      "status": "blocked-until-original-audio-available",
+      "treatment": "Use the real authorized recording after source availability and human speaker review. Do not voice-clone or synthesize missing speech."
+    },
+    {
+      "shotId": "pmp001-03",
+      "kind": "urai-runtime-capture",
+      "durationSeconds": 14,
+      "treatment": "Transition the real photograph into the UrAi memory world using actual exact-head product capture. Generated UI substitution is forbidden."
+    },
+    {
+      "shotId": "pmp001-04",
+      "kind": "archival-still-sequence",
+      "sourceKey": "private-family-still-select-002",
+      "durationSeconds": 18,
+      "treatment": "Two or three real family images with restrained parallax/crop motion. No synthetic likeness replacement."
+    },
+    {
+      "shotId": "pmp001-05",
+      "kind": "memory-connection",
+      "durationSeconds": 16,
+      "treatment": "Show the memory connected to people, time, place, story and related images inside real UrAi runtime capture."
+    },
+    {
+      "shotId": "pmp001-06",
+      "kind": "end-card",
+      "durationSeconds": 14,
+      "treatment": "Private review closing thought: this proof uses only a small fraction of the available family archive and is meant to demonstrate why continued storytelling matters."
+    }
+  ],
+  "generationPolicy": {
+    "paidProviderGenerationAuthorized": false,
+    "generatedIdentifiableFamilyLikenessAuthorized": false,
+    "cinematicEnvironmentGenerationMayBeAddedLater": "bounded-authorization-required",
+    "providerSpendRequiresSeparateBoundedManifest": true
+  },
+  "humanGates": [
+    "family-likeness",
+    "speaker-attribution",
+    "emotional-truth",
+    "autobiographical-truth",
+    "privacy",
+    "final-pacing",
+    "private-review-acceptance",
+    "public-release-separate-and-disabled"
+  ],
+  "acceptance": {
+    "mustUseRealFamilySourceMedia": true,
+    "mustUseOriginalFamilyVoiceWhenVoiceIsPresentedAsOriginal": true,
+    "mustDistinguishRecollectionFromVerifiedHistoricalFact": true,
+    "mustRetainPrivateSourceInDrive": true,
+    "mustBindProductCaptureToExactSpatialSha": true,
+    "mustNotClaimPublicRelease": true
+  }
+}
