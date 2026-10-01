@@ -115,12 +115,14 @@ for (const route of routes) {
     recordVideo: { dir: motionDir, size: { width: 1280, height: 720 } },
   });
   const page = await context.newPage();
+  const pageVideoStartedAtMs = Date.now();
   const video = page.video();
   let responseStatus = null;
   let title = '';
   let screenshot = '';
   let motion = '';
   let semanticState = '';
+  let semanticReadyOffsetSeconds = null;
   let deployedSha = null;
   let error = '';
 
@@ -139,6 +141,7 @@ for (const route of routes) {
 
     semanticState = await waitForSemanticReady(page, route);
     await page.waitForTimeout(750);
+    semanticReadyOffsetSeconds = (Date.now() - pageVideoStartedAtMs) / 1000;
     title = await page.title().catch(() => '');
     deployedSha = await page.locator('meta[name="urai-deployed-sha"]').getAttribute('content').catch(() => null);
 
@@ -177,6 +180,7 @@ for (const route of routes) {
     screenshot,
     motion,
     semanticState,
+    semanticReadyOffsetSeconds,
     deployedSha,
     expectedSpatialSha,
     consoleErrors,
