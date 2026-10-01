@@ -41,7 +41,8 @@
     "release:evidence:contract": "node scripts/release-evidence-boundary-guard.mjs --contract-only",
     "release:evidence:guard": "node scripts/release-evidence-boundary-guard.mjs",
     "release:evidence:source": "node scripts/write-source-release-evidence.mjs",
-    "release:check:provider": "pnpm provider:check:strict && pnpm release:check"
+    "release:check:provider": "pnpm provider:check:strict && pnpm release:check",
+    "video-factory:compose-motion": "node scripts/studio-video-compose-motion.mjs"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
