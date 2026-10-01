@@ -176,7 +176,7 @@ export function buildVideoFactoryRenderPackage(input: BuildVideoFactoryRenderPac
     status: 'planned' as const,
     notes:
       kind === 'mp4'
-        ? 'Planned final video export. Contract-only mode records the path and render instructions; playwright-ffmpeg mode renders the binary.'
+        ? 'Planned final video export. This render package records the path and render instructions only; a separate receipted composer execution must produce and verify the binary.'
         : 'Generated deterministically from the Video Factory manifest.',
   }));
 
