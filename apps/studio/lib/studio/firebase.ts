@@ -15,11 +15,23 @@ function envValue(key: string): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
 }
 
+function runtimeProjectId(): string | null {
+  return (
+    envValue('NEXT_PUBLIC_FIREBASE_PROJECT_ID') ??
+    envValue('FIREBASE_PROJECT_ID') ??
+    envValue('GOOGLE_CLOUD_PROJECT') ??
+    envValue('GCLOUD_PROJECT')
+  );
+}
+
+const projectId = runtimeProjectId();
+const adcVerified = envValue('URAI_STUDIO_FIREBASE_ADMIN_ADC_VERIFIED') === '1';
+
 export const firebaseDiagnostics: FirebaseDiagnostics = {
-  configured: Boolean(envValue('NEXT_PUBLIC_FIREBASE_PROJECT_ID') || envValue('FIREBASE_PROJECT_ID')),
-  projectId: envValue('NEXT_PUBLIC_FIREBASE_PROJECT_ID') ?? envValue('FIREBASE_PROJECT_ID'),
+  configured: Boolean(projectId),
+  projectId,
   hostingSite: envValue('NEXT_PUBLIC_HOSTING_SITE') ?? 'urai-studio',
-  adminAvailable: Boolean(envValue('GOOGLE_APPLICATION_CREDENTIALS') || envValue('FIREBASE_PROJECT_ID')),
+  adminAvailable: Boolean(projectId && adcVerified),
   emulator: {
     firestore: Boolean(envValue('FIRESTORE_EMULATOR_HOST')),
     auth: Boolean(envValue('FIREBASE_AUTH_EMULATOR_HOST')),

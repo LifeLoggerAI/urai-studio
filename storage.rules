@@ -1,31 +1,38 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-
     function isSignedIn() { return request.auth != null; }
-
+    function membershipPath(studioId) {
+      return /databases/(default)/documents/studios/$(studioId)/members/$(request.auth.uid);
+    }
     function isStudioMember(studioId) {
       return isSignedIn()
-        && exists(/databases/(default)/documents/memberships/$(request.auth.uid + "_" + studioId));
+        && firestore.exists(membershipPath(studioId))
+        && firestore.get(membershipPath(studioId)).data.uid == request.auth.uid
+        && firestore.get(membershipPath(studioId)).data.studioId == studioId
+        && firestore.get(membershipPath(studioId)).data.schemaVersion == 2
+        && firestore.get(membershipPath(studioId)).data.status == "active";
+    }
+    function canEdit(studioId) {
+      return isStudioMember(studioId)
+        && firestore.get(membershipPath(studioId)).data.role in ["owner", "admin", "editor"];
     }
 
     match /studios/{studioId}/uploads/{allPaths=**} {
-      allow read, write: if isStudioMember(studioId);
+      allow read: if isStudioMember(studioId);
+      allow write: if canEdit(studioId);
     }
-
     match /studios/{studioId}/outputs/{allPaths=**} {
-      allow read, write: if isStudioMember(studioId);
+      allow read: if isStudioMember(studioId);
+      allow write: if false;
     }
-
     match /user-uploads/{uid}/studio/{allPaths=**} {
       allow read, write: if isSignedIn() && request.auth.uid == uid;
     }
-
     match /generated/{uid}/studio/{allPaths=**} {
       allow read: if isSignedIn() && request.auth.uid == uid;
       allow write: if false;
     }
-
     match /public/studio-assets/{allPaths=**} {
       allow read: if true;
       allow write: if false;

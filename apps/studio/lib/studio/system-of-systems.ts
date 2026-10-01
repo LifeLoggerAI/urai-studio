@@ -7,7 +7,8 @@ export type UraiSystemStatus =
   | 'fallback'
   | 'operational'
   | 'limited'
-  | 'degraded';
+  | 'degraded'
+  | 'unverified';
 
 export type UraiSystemNode = {
   id: string;
@@ -95,7 +96,7 @@ export const uraiSystemNodes: UraiSystemNode[] = [
   {
     id: 'studio',
     title: 'URAI Studio',
-    status: 'live',
+    status: 'unverified',
     route: '/studio',
     apiRoute: '/api/system/manifest',
     description: 'The creative command layer that turns interpreted intelligence into projects, scenes, scripts, scrolls, and export packages.',
@@ -152,7 +153,7 @@ export const uraiSystemNodes: UraiSystemNode[] = [
   {
     id: 'visuals',
     title: 'URAI Visuals',
-    status: 'live',
+    status: 'unverified',
     route: '/visuals',
     description: 'Renders the symbolic language of URAI through glyphs, aura fields, sky systems, life-map visuals, and export-ready art direction.',
     inputs: ['aura state', 'memory type', 'symbolic direction'],
@@ -174,7 +175,7 @@ export const uraiSystemNodes: UraiSystemNode[] = [
   {
     id: 'privacy',
     title: 'URAI Privacy',
-    status: 'live',
+    status: 'unverified',
     route: '/privacy',
     description: 'The consent and trust layer for user ownership, export control, private-by-design workflows, and feature-gated transparency.',
     inputs: ['consent choices', 'tenant rules', 'export permissions'],
@@ -207,7 +208,7 @@ export const uraiSystemNodes: UraiSystemNode[] = [
   {
     id: 'labs',
     title: 'URAI Labs LLC',
-    status: 'live',
+    status: 'unverified',
     route: '/contact',
     description: 'The commercial, partnership, investor, licensing, and product stewardship layer for the URAI ecosystem.',
     inputs: ['partnerships', 'client requests', 'investor interest'],
@@ -218,10 +219,10 @@ export const uraiSystemNodes: UraiSystemNode[] = [
 ];
 
 export const proofPoints = [
-  'Core website live',
   'System contracts available',
-  'Firebase connected',
+  'Firebase readiness is reported, not assumed',
+  'Integration health requires observed evidence',
   'Privacy contract available',
-  'Export formats ready',
-  'Studio actions partially enabled',
+  'Export formats are defined but release-gated',
+  'Studio actions remain feature-gated',
 ];

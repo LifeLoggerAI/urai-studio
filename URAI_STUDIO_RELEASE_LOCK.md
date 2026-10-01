@@ -1,79 +1,64 @@
-import * as admin from 'firebase-admin';
+# URAI Studio Release Lock
 
-type FirebaseAdminMode =
-  | 'service-account'
-  | 'application-default'
-  | 'unconfigured'
-  | 'error';
+Status: fail-closed release authority for `LifeLoggerAI/urai-studio`.
 
-let firebaseAdminMode: FirebaseAdminMode = 'unconfigured';
-let firebaseAdminInitError: string | null = null;
+This document is a governance boundary. It is not runtime code, a credential recipe, deployment approval, or proof that any provider resource is configured.
 
-function hasPemShape(value: string | undefined): value is string {
-  return (
-    !!value &&
-    value.includes('-----BEGIN PRIVATE KEY-----') &&
-    value.includes('-----END PRIVATE KEY-----')
-  );
-}
+## Credential authority
 
-function initAdmin() {
-  if (admin.apps.length) {
-    firebaseAdminMode = 'service-account';
-    return;
-  }
+URAI Studio production and protected nonproduction workflows must use short-lived Google identity only:
 
-  const projectId =
-    process.env.FIREBASE_PROJECT_ID ||
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+- GitHub Actions: OIDC + Workload Identity Federation with protected environment variables and least-privilege IAM.
+- Google-managed runtime: provider metadata / Application Default Credentials where the deployment platform supplies the identity.
+- Authorized local verification: Application Default Credentials only after the active account and project are explicitly checked.
 
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+The following are forbidden as deployment/runtime authority:
 
-  try {
-    if (projectId && clientEmail && hasPemShape(privateKey)) {
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId,
-          clientEmail,
-          privateKey,
-        }),
-        projectId,
-      });
+- `FIREBASE_PRIVATE_KEY`;
+- `FIREBASE_CLIENT_EMAIL` paired with private-key material;
+- `FIREBASE_SERVICE_ACCOUNT_KEY`;
+- raw service-account JSON or base64 service-account JSON;
+- `credentials_json` workflow inputs/secrets;
+- `FIREBASE_TOKEN` as a production deployment substitute;
+- committed credential files or copied provider keys.
 
-      firebaseAdminMode = 'service-account';
-      return;
-    }
+Missing WIF/ADC identity is a blocker. Do not bypass it with a long-lived credential.
 
-    if (projectId && process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      admin.initializeApp({
-        credential: admin.credential.applicationDefault(),
-        projectId,
-      });
+## Release prerequisites
 
-      firebaseAdminMode = 'application-default';
-      return;
-    }
+No Studio production or provider mutation is authorized unless all applicable gates are simultaneously true on one unchanged exact candidate SHA:
 
-    firebaseAdminMode = 'unconfigured';
-  } catch (error) {
-    firebaseAdminMode = 'error';
-    firebaseAdminInitError =
-      error instanceof Error
-        ? error.message
-        : 'unknown_firebase_admin_init_error';
-  }
-}
+1. exact-head CI, audit, security, privacy, and release verification are terminal-success;
+2. all technical review threads are resolved;
+3. required independent approval covers that exact head;
+4. migration and tenant-isolation evidence is retained for the exact candidate;
+5. protected WIF/ADC identity and least-privilege IAM are verified;
+6. target project, storage boundary, hosting/runtime target, and environment are exact and non-ambiguous;
+7. provider secrets are referenced only through protected provider-native mechanisms and are never read back into evidence;
+8. deployment authority is explicit and scoped to the intended environment;
+9. exact deployed SHA/revision can be read back from the provider/runtime;
+10. monitoring, recovery, and a distinct rollback revision are proven before completion is claimed.
 
-initAdmin();
+Source-green, preview output, a reachable URL, or a prior-head approval does not satisfy these gates.
 
-export const adminDb = admin.apps.length ? admin.firestore() : null;
-export const adminAuth = admin.apps.length ? admin.auth() : null;
+## Migration and data boundary
 
-export const firebaseAdminReady = Boolean(adminDb && adminAuth);
+- Do not perform production migration from source CI.
+- Do not copy customer/private media into test evidence.
+- Test and staging evidence must use synthetic or explicitly authorized nonproduction data.
+- Tenant isolation, ownership, consent, retention, deletion/export, and media-rights rules remain separate release gates.
+- A migration must be reversible or have a documented recovery plan before execution.
 
-export const firebaseAdminStatus = {
-  ready: firebaseAdminReady,
-  mode: firebaseAdminMode,
-  error: firebaseAdminInitError,
-};
+## Provider/deployment boundary
+
+Verification workflows may inspect source and credential-free contracts but must not silently gain deployment authority. Any workflow that can mutate a provider must be protected, exact-SHA bound, environment-scoped, and independently authorized by the repository's current governance.
+
+Never infer production completion from Firebase/GCP project existence, a domain, a repository setting, or provider account access alone.
+
+## Exact-head rule
+
+Any source write creates a successor. When the head changes, predecessor CI, reviews, migration receipts, provider receipts, screenshots, deployment evidence, and approvals are historical only unless a governing contract explicitly and truthfully supports transfer. Default behavior is **no transfer**.
+
+## Current classification
+
+**SOURCE GOVERNED / LONG-LIVED FIREBASE CREDENTIALS FORBIDDEN / PROVIDER + MIGRATION + RUNTIME + REVIEW EVIDENCE REQUIRED / NO DEPLOYMENT AUTHORITY FROM THIS FILE.**

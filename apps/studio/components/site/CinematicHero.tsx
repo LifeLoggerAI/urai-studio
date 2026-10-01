@@ -31,7 +31,7 @@ export function CinematicHero() {
       <div className="hero-panel cinematic-panel" aria-label="URAI Studio living aura field">
         <AuraField />
         <div className="hero-panel-copy">
-          <span>Live studio spine</span>
+          <span>Studio production spine</span>
           <strong>Studio · Asset Factory · Motion · Cinema · Spatial</strong>
         </div>
       </div>

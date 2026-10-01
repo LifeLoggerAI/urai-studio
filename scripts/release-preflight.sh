@@ -21,8 +21,8 @@ pnpm test
 echo "[preflight] app build"
 pnpm build
 
-echo "[preflight] functions install"
-pnpm --dir functions install --no-frozen-lockfile
+echo "[preflight] functions install from committed lockfile"
+pnpm --dir functions install --frozen-lockfile
 
 echo "[preflight] functions build"
 pnpm --dir functions build

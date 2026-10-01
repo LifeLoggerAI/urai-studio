@@ -263,3 +263,38 @@
   .proof-panel { padding: 18px; }
   .checkbox-grid { grid-template-columns: 1fr; }
 }
+
+
+/* 2026-09-21 creative-workstation authority reconciliation
+   Decorative spatial metaphors are not part of Studio's product role. */
+.cinematic-hero::before,
+.aura-orb,
+.aura-ring,
+.star-point,
+.constellation-line {
+  display: none !important;
+}
+
+.aura-field {
+  background:
+    linear-gradient(180deg, rgba(14, 18, 26, .9), rgba(5, 7, 13, .32)),
+    radial-gradient(circle at 52% 46%, rgba(244, 217, 166, .08), transparent 46%);
+}
+
+.system-center-card {
+  background: linear-gradient(180deg, rgba(20, 25, 36, .96), rgba(8, 12, 20, .8));
+}
+
+.system-node-card::before,
+.portal-card::before {
+  content: none;
+}
+
+.portal-card {
+  border-radius: 16px;
+}
+
+.status-operational {
+  border-color: rgba(244, 217, 166, .34);
+  box-shadow: none;
+}

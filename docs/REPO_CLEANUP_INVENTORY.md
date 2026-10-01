@@ -1,40 +1,53 @@
 # URAI Studio repo cleanup inventory
 
-This inventory supports issue #27. It is intentionally non-destructive: it records cleanup candidates before files or trees are removed.
+This inventory supports issue #27.
 
 ## Canonical production source
 
 The production app root is `apps/studio`.
 
-Firebase Hosting points to `apps/studio` through `firebase.json`. Public website routes, system APIs, readiness/liveness probes, form handlers, and launch documentation should be maintained in `apps/studio` unless the architecture changes in a reviewed PR.
+Canonical active application roots:
 
-## Confirmed cleanup candidates
+- `apps/studio/app`
+- `apps/studio/components`
+- `apps/studio/lib`
+- `functions/src`
 
-These paths should be reviewed before public launch. Each item needs one of three decisions: keep as production source, migrate useful code into `apps/studio`, or remove/archive from the active branch.
+The root TypeScript alias now resolves `@/*` to `apps/studio/*`, and the done-done guard scans those canonical roots rather than the deleted duplicate `apps/studio/src` tree.
 
-| Path or pattern | Current concern | Suggested decision |
-|---|---|---|
-| `apps/studio/src/app` | Duplicate App Router tree parallel to `apps/studio/app`. Search results show pages and API disabled notes under this tree. | Inventory files, migrate any missing value into `apps/studio/app`, then remove from active branch. |
-| `uraistudio-app` | Historical app tree with routes, Firebase files, admin/user pages, jobs, outputs, share/project pages. | Treat as non-canonical. Migrate only explicitly needed code into `apps/studio`. |
-| `studio` | Historical app tree with overlapping Studio routes. | Treat as non-canonical unless a maintainer identifies a live deployment dependency. |
-| `tmp` | Temporary lock/freeze scripts found in repository search. | Remove from active branch after confirming no CI/deploy dependency. |
-| `scripts/local` | Local one-off ship/fix/redeploy scripts found in repository search. | Move durable commands into documented scripts or remove one-off local scripts. |
-| root `urai-studio-lock.sh` | Root-level lock script separate from canonical scripts. | Confirm whether superseded by `scripts/lock_urai_studio.sh`; remove if stale. |
-| `_audit` | Generated audit/proof artifacts. Useful for history, but noisy in source tree. | Keep only if intentionally used as release evidence; otherwise move to release notes or archive branch. |
-| timestamped `.bak` files | Backup snapshots should not live in active source. | Remove after confirming no unique code needs migration. |
-| `.bak` folders | Backup snapshots should not live in active source. | Remove after confirming no unique code needs migration. |
-| `--typescript` | Looks like generated or accidentally named app scaffold. | Review, migrate anything useful, then remove if non-canonical. |
-| `apps/studio/app/API_DISABLED_FOR_STATIC_EXPORT.md` | Static-export note may be stale now that the app uses runtime APIs/readiness. | Confirm whether still accurate; update or remove. |
-| `apps/studio/src/app/API_DISABLED_FOR_STATIC_EXPORT.md` | Same concern, also in duplicate tree. | Remove with duplicate tree if no longer needed. |
+## Completed cleanup in PR #105
 
-## Required review steps before deletion
+Removed from the active branch:
 
-1. List files under each candidate path.
-2. Compare route/API coverage against `apps/studio/app`.
-3. Identify any unique production behavior not yet migrated.
-4. Migrate useful code into canonical files with tests.
-5. Remove stale paths in a dedicated cleanup PR.
-6. Run:
+- complete `apps/studio/src/` duplicate tree;
+- root `src/components/studio/JobStatePill.tsx`;
+- root `src/components/studio/StudioShell.tsx`;
+- root `src/lib/firebaseClient.ts`;
+- root `src/lib/studioTypes.ts`.
+
+These paths were either explicitly excluded by the canonical Studio tsconfig or disconnected from current active imports.
+
+## Intentionally retained
+
+| Path | Classification | Rule |
+| --- | --- | --- |
+| `archive/` | historical evidence only | never patch or deploy as production source |
+| `apps/docs` | separate docs workspace | not a competing Studio runtime |
+| `brain-map-ui/` | research/reference | governed Brain Map implementation belongs in canonical Studio contracts |
+| `src/urai-foundation/wave1-foundation.js` | historical Foundation Wave 1 evidence | retained because current history docs reference it; not Studio production runtime |
+| `_audit/` | historical audit evidence | not runtime authority |
+
+Historical backup/deprecated app trees that previously existed as active roots are contained under `archive/`; they are not production roots.
+
+## Superseded cleanup candidates
+
+The old inventory referenced active `uraistudio-app`, `studio`, `tmp`, `--typescript`, timestamped backup trees, and `apps/studio/src/app/API_DISABLED_FOR_STATIC_EXPORT.md`. At the current #98-derived authority these are either already archived/absent or removed with the duplicate tree. They must not be revived as current source without a new reviewed architecture decision.
+
+## Verification gate
+
+Do not close issue #27 from source edits alone.
+
+The cleanup successor must pass:
 
 ```bash
 pnpm install --frozen-lockfile
@@ -42,9 +55,6 @@ pnpm release:check
 HOST=http://127.0.0.1:3000 EXPECT_READY=false bash scripts/smoke.sh
 ```
 
-## Launch gate
+and receive normal review/merge authority.
 
-This cleanup does not have to block internal development, but public launch should not proceed until either:
-
-- the cleanup is complete, or
-- the remaining non-canonical paths are explicitly accepted as a documented launch risk.
+Git history remains available; removal from the active branch is not erasure of historical evidence.

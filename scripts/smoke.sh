@@ -37,6 +37,8 @@ PUBLIC_API_ROUTES=(
   /api/system/integration-contract
   /api/system/urai-contract
   /api/system/openapi
+  /api/integrations/asset-factory/health
+  /api/integrations/asset-factory/manifest
   /healthz
   /sitemap.xml
   /robots.txt
@@ -193,14 +195,16 @@ check_api_route() {
   }
 
   if [ "$code" != "200" ]; then
-    if [ "$route" = "/api/system/health" ] && [ "$EXPECT_READY" = "false" ] && [ "$code" = "503" ]; then
+    if { [ "$route" = "/api/system/health" ] || [ "$route" = "/api/integrations/asset-factory/health" ] || [ "$route" = "/api/integrations/asset-factory/manifest" ]; } && [ "$EXPECT_READY" = "false" ] && [ "$code" = "503" ]; then
       node -e "
         const fs = require('fs');
+        const route = process.argv[2];
         const data = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
         if (data.service && data.service !== 'urai-studio') process.exit(2);
         if (data.ok !== false) process.exit(3);
-        if (data.readiness?.status !== 'degraded') process.exit(4);
-      " "$body" || {
+        if (route === '/api/system/health' && data.readiness?.status !== 'degraded') process.exit(4);
+        if (route.startsWith('/api/integrations/asset-factory/') && !['disconnected', 'fallback'].includes(data.status)) process.exit(5);
+      " "$body" "$route" || {
         rm -f "$body"
         fail "$route returned invalid degraded health JSON"
       }

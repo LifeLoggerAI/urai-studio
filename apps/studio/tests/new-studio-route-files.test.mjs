@@ -5,6 +5,8 @@ const requiredFiles = [
   '../app/generate/page.tsx',
   '../app/studio/video-factory/page.tsx',
   '../app/api/studio/video-factory/route.ts',
+  '../app/studio/life-movies/page.tsx',
+  '../app/api/studio/life-movies/route.ts',
 ];
 
 for (const file of requiredFiles) {

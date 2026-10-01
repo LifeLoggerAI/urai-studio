@@ -45,3 +45,20 @@ HOST=https://www.uraistudio.com EXPECT_READY=true bash scripts/smoke.sh
 ```
 
 Production `/readyz` must return `200` before public launch.
+
+
+## Canonical-root hygiene
+
+The active production source tree does not use a parallel `src/` application root.
+
+As of the 2026-09-23 cleanup:
+
+- `apps/studio/app`, `apps/studio/components`, and `apps/studio/lib` are the canonical Studio application roots.
+- `apps/studio/src` was removed because `apps/studio/tsconfig.json` explicitly excluded it and the current application does not import it.
+- disconnected root `src/components/studio` and `src/lib` duplicates were removed after repository search found no active imports.
+- `archive/` remains intentionally retained as historical evidence and is never production source.
+- `apps/docs` is a separate documentation workspace package, not the Studio production application.
+- `brain-map-ui` is retained as a research/reference artifact; current governed Brain Map contracts live under the canonical Studio control plane.
+- `src/urai-foundation/wave1-foundation.js` is retained as historical Foundation-wave evidence referenced by `docs/URAI_STUDIO_WAVE1_POLISH_STATUS.md`; it is not a production Studio app root.
+
+Any future code recovered from retained historical/reference areas must be migrated into a canonical active root and independently tested before use.

@@ -31,15 +31,24 @@ export type ModuleStatusSummary = {
 function envValue(...keys: string[]): string | null {
   for (const key of keys) {
     const value = process.env[key];
-    if (typeof value === 'string' && value.trim().length > 0) return value;
+    if (typeof value === 'string' && value.trim().length > 0) return value.trim();
   }
   return null;
+}
+
+function runtimeProjectId(): string | null {
+  return envValue(
+    'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+    'FIREBASE_PROJECT_ID',
+    'GOOGLE_CLOUD_PROJECT',
+    'GCLOUD_PROJECT',
+  );
 }
 
 export function statusWarnings(): string[] {
   const warnings: string[] = [];
 
-  if (!envValue('NEXT_PUBLIC_FIREBASE_PROJECT_ID', 'FIREBASE_PROJECT_ID')) {
+  if (!runtimeProjectId()) {
     warnings.push('firebase_project_unconfigured');
   }
 
@@ -59,7 +68,7 @@ export function statusWarnings(): string[] {
 }
 
 export function readinessChecks(): ReadinessCheck[] {
-  const firebaseProjectId = envValue('NEXT_PUBLIC_FIREBASE_PROJECT_ID', 'FIREBASE_PROJECT_ID');
+  const firebaseProjectId = runtimeProjectId();
   const assetFactoryUrl = envValue('NEXT_PUBLIC_ASSET_FACTORY_URL', 'ASSET_FACTORY_INTERNAL_URL');
   const siteUrl = envValue('NEXT_PUBLIC_SITE_URL') ?? studioConfig.siteUrl;
 

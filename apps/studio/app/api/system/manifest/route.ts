@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { STUDIO_SPATIAL_HANDOFF_VERSION } from '@/lib/studio-spatial-handoff';
 import { studioConfig } from '@/lib/studio/config';
 import { firebaseDiagnostics } from '@/lib/studio/firebase';
-import { studioIntegrations, type StudioIntegrationDiagnostic } from '@/lib/studio/integrations';
+import { publicIntegrationDiagnostics, type PublicStudioIntegrationDiagnostic } from '@/lib/studio/integrations';
 import { studioModules } from '@/lib/studio/modules';
 import { readinessSummary } from '@/lib/studio/status';
 import { systemCapabilities, type StudioModule, type SystemCapability } from '@/lib/studio/types';
@@ -21,15 +21,19 @@ type SystemManifestResponse = {
   routes: string[];
   modules: StudioModule[];
   capabilities: readonly SystemCapability[];
-  integrations: StudioIntegrationDiagnostic[];
+  integrations: PublicStudioIntegrationDiagnostic[];
   spatialHandoff: {
-    schemaVersion: typeof STUDIO_SPATIAL_HANDOFF_VERSION;
+    contractVersion: typeof STUDIO_SPATIAL_HANDOFF_VERSION;
+    wireContract: 'urai-spatial/0.2.0';
     discovery: '/api/system/spatial-handoff';
     exportField: 'spatialHandoff';
     exportRoute: '/api/studio/exports';
     staticDiscovery: 'apps/studio/system/spatial-handoff.discovery.json';
-    fallbackStatus: 'fallback_only';
+    defaultStatus: 'blocked';
     fallbackRenderer: 'fallback_cards';
+    completeEvidenceRequiredForEmission: true;
+    trustedReleaseAuthorityRequired: true;
+    liveIntegrationClaimed: false;
   };
   deployment: {
     hosting: 'firebase';
@@ -37,7 +41,11 @@ type SystemManifestResponse = {
   };
   persistenceMode: 'firebase';
   fallbackActive: boolean;
-  firebase: typeof firebaseDiagnostics;
+  firebase: {
+    configured: boolean;
+    adminAvailable: boolean;
+    emulator: typeof firebaseDiagnostics.emulator;
+  };
   generatedAt: string;
 };
 
@@ -56,20 +64,28 @@ export async function GET() {
     routes: Array.from(new Set(studioModules.map((module) => module.route))).sort(),
     modules: studioModules,
     capabilities: systemCapabilities,
-    integrations: studioIntegrations,
+    integrations: publicIntegrationDiagnostics(),
     spatialHandoff: {
-      schemaVersion: STUDIO_SPATIAL_HANDOFF_VERSION,
+      contractVersion: STUDIO_SPATIAL_HANDOFF_VERSION,
+      wireContract: 'urai-spatial/0.2.0',
       discovery: '/api/system/spatial-handoff',
       exportField: 'spatialHandoff',
       exportRoute: '/api/studio/exports',
       staticDiscovery: 'apps/studio/system/spatial-handoff.discovery.json',
-      fallbackStatus: 'fallback_only',
+      defaultStatus: 'blocked',
       fallbackRenderer: 'fallback_cards',
+      completeEvidenceRequiredForEmission: true,
+      trustedReleaseAuthorityRequired: true,
+      liveIntegrationClaimed: false,
     },
     deployment: { hosting: 'firebase', canonical },
     persistenceMode: 'firebase',
     fallbackActive: !readiness.ok,
-    firebase: firebaseDiagnostics,
+    firebase: {
+      configured: firebaseDiagnostics.configured,
+      adminAvailable: firebaseDiagnostics.adminAvailable,
+      emulator: firebaseDiagnostics.emulator,
+    },
     generatedAt: new Date().toISOString(),
   };
 

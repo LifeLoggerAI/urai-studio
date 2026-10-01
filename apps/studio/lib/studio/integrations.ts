@@ -50,3 +50,10 @@ export const studioIntegrations: StudioIntegrationDiagnostic[] = [
   integration('investors', 'URAI Investors', 'NEXT_PUBLIC_URAI_INVESTORS_URL'),
   integration('b2b-portal', 'B2B Portal', 'NEXT_PUBLIC_B2B_PORTAL_URL'),
 ];
+
+
+export type PublicStudioIntegrationDiagnostic = Pick<StudioIntegrationDiagnostic, 'id' | 'label' | 'status' | 'required'>;
+
+export function publicIntegrationDiagnostics(): PublicStudioIntegrationDiagnostic[] {
+  return studioIntegrations.map(({ id, label, status, required }) => ({ id, label, status, required }));
+}

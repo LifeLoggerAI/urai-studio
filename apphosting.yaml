@@ -15,6 +15,11 @@ env:
     availability:
       - BUILD
       - RUNTIME
+  - variable: FIREBASE_PROJECT_ID
+    value: urai-studio
+    availability:
+      - BUILD
+      - RUNTIME
   - variable: NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLED
     value: "false"
     availability:

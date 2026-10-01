@@ -93,9 +93,9 @@ export function StudioActionPanel() {
   const statusClassName = `card status-${state.status}`;
 
   return (
-    <section className="section-panel" aria-label="URAI Studio live action panel">
+    <section className="section-panel" aria-label="URAI Studio gated action panel">
       <div className="section-heading">
-        <p className="eyebrow">Live system actions</p>
+        <p className="eyebrow">Gated system actions</p>
         <h2>Callable verification panel</h2>
         <p>
           These controls call the Firebase callable layer when Firebase client config is present. Without config,

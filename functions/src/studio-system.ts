@@ -82,6 +82,16 @@ function nowFields() {
   };
 }
 
+function requireLegacyWritesEnabled(): void {
+  const explicitlyEnabled = process.env.URAI_STUDIO_LEGACY_WRITES_ENABLED === "true";
+  if (process.env.NODE_ENV === "production" || !explicitlyEnabled) {
+    throw new HttpsError(
+      "failed-precondition",
+      "legacy_studio_writes_disabled"
+    );
+  }
+}
+
 function assertAdmin(request: CallableRequest<unknown>): void {
   const authenticated = requireAuth(request);
   if (authenticated.auth.token.admin !== true) {
@@ -99,6 +109,7 @@ export const ping = onCall(async () => ({
 }));
 
 export const createStudioProject = onCall(async (request) => {
+  requireLegacyWritesEnabled();
   const uid = requireUid(request);
   const db = getDb();
   const data = asRecord(request.data);
@@ -130,6 +141,7 @@ export const createStudioProject = onCall(async (request) => {
 });
 
 export const seedStudioDemo = onCall(async (request) => {
+  requireLegacyWritesEnabled();
   const uid = requireUid(request);
   const db = getDb();
   const data = asRecord(request.data);
@@ -246,6 +258,7 @@ export const seedStudioDemo = onCall(async (request) => {
 });
 
 export const generateStudioScript = onCall(async (request) => {
+  requireLegacyWritesEnabled();
   const uid = requireUid(request);
   const db = getDb();
   const data = asRecord(request.data);
@@ -278,6 +291,7 @@ export const generateStudioScript = onCall(async (request) => {
 });
 
 export const generateSceneNarration = onCall(async (request) => {
+  requireLegacyWritesEnabled();
   const uid = requireUid(request);
   const db = getDb();
   const data = asRecord(request.data);
@@ -301,6 +315,7 @@ export const generateSceneNarration = onCall(async (request) => {
 });
 
 export const generateSrtForProject = onCall(async (request) => {
+  requireLegacyWritesEnabled();
   const uid = requireUid(request);
   const db = getDb();
   const data = asRecord(request.data);
@@ -322,6 +337,7 @@ export const generateSrtForProject = onCall(async (request) => {
 });
 
 export const generateCompanionIntro = onCall(async (request) => {
+  requireLegacyWritesEnabled();
   const uid = requireUid(request);
   const db = getDb();
   const data = asRecord(request.data);
@@ -346,6 +362,7 @@ export const generateCompanionIntro = onCall(async (request) => {
 });
 
 export const createAssetJob = onCall(async (request) => {
+  requireLegacyWritesEnabled();
   const uid = requireUid(request);
   const db = getDb();
   const data = asRecord(request.data);
@@ -374,6 +391,7 @@ export const createAssetJob = onCall(async (request) => {
 });
 
 export const markAssetReady = onCall(async (request) => {
+  requireLegacyWritesEnabled();
   assertAdmin(request);
   const db = getDb();
   const data = asRecord(request.data);
@@ -396,6 +414,7 @@ export const markAssetReady = onCall(async (request) => {
 });
 
 export const createExportJob = onCall(async (request) => {
+  requireLegacyWritesEnabled();
   const uid = requireUid(request);
   const db = getDb();
   const data = asRecord(request.data);
@@ -425,6 +444,7 @@ export const createExportJob = onCall(async (request) => {
 });
 
 export const processExportJob = onCall(async (request) => {
+  requireLegacyWritesEnabled();
   const uid = requireUid(request);
   const db = getDb();
   const data = asRecord(request.data);
@@ -499,6 +519,7 @@ export const getStudioDashboard = onCall(async (request) => {
 });
 
 export const logStudioEvent = onCall(async (request) => {
+  requireLegacyWritesEnabled();
   const uid = requireUid(request);
   const db = getDb();
   const data = asRecord(request.data);

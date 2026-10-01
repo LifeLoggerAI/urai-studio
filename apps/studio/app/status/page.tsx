@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { buildReadinessProfile, observeAllStudioIntegrations } from '@/lib/studio/observed-readiness';
+import { readinessSummary } from '@/lib/studio/status';
 import { proofPoints } from '@/lib/studio/system-of-systems';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Status',
@@ -11,55 +15,52 @@ export const metadata: Metadata = {
   },
 };
 
-const publicSignals = [
-  'Core website live',
-  'System contracts available',
-  'Studio actions feature-gated',
-  'Generation backends feature-gated',
-  'Firebase readiness surfaced',
-  'Privacy contract available',
-  'Export formats defined',
-];
+export default async function StatusPage() {
+  const local = readinessSummary();
+  const observations = await observeAllStudioIntegrations();
+  const fullPlatform = buildReadinessProfile('FULL_STUDIO_PLATFORM', observations);
+  const healthyCount = observations.filter((item) => item.state === 'healthy').length;
 
-export default function StatusPage() {
+  const localLabel = local.ok ? 'Ready' : 'Degraded';
+  const platformLabel = fullPlatform.ok ? 'Observed healthy' : 'Evidence incomplete';
+
   return (
     <section data-urai-studio-page="status" className="page-stack">
       <p className="eyebrow">System status</p>
       <h1>URAI Studio diagnostics</h1>
       <p className="hero-lede">
-        Public status is intentionally confidence-focused. Raw Firebase payloads, callable traces, and operator diagnostics stay gated away from public visitors.
+        Public status separates local Studio readiness from downstream integration proof. Configuration alone never counts as observed health.
       </p>
 
       <div className="grid three">
-        <article className="card status-operational">
-          <p className="eyebrow">Health</p>
-          <h2>Public shell online</h2>
-          <p>Core public website, status routes, system contracts, and integration surfaces are available without claiming unconfigured backends are live.</p>
+        <article className="card">
+          <p className="eyebrow">Local readiness</p>
+          <h2>{localLabel}</h2>
+          <p>{local.ok ? 'The local Studio readiness contract has no required blockers.' : 'One or more required local readiness checks are blocked.'}</p>
         </article>
         <article className="card">
-          <p className="eyebrow">Service</p>
-          <h2>urai-studio</h2>
-          <p>Primary public service identity for URAI Studio and integration contract consumers.</p>
+          <p className="eyebrow">Full platform</p>
+          <h2>{platformLabel}</h2>
+          <p>{fullPlatform.ok ? 'Every required downstream integration in this profile was observed healthy.' : 'Required downstream health has not all been observed healthy.'}</p>
         </article>
         <article className="card">
-          <p className="eyebrow">Posture</p>
-          <h2>Transparent</h2>
-          <p>Unconfigured generation, billing, tenant, or external systems are feature-gated instead of faking live status.</p>
+          <p className="eyebrow">Observed integrations</p>
+          <h2>{healthyCount} / {observations.length}</h2>
+          <p>Healthy is awarded only after a bounded server-side health observation.</p>
         </article>
       </div>
 
       <section className="section-panel">
         <div className="section-heading">
-          <p className="eyebrow">Public signals</p>
-          <h2>Launch-facing system confidence.</h2>
+          <p className="eyebrow">Readiness profiles</p>
+          <h2>Proof stays scoped to the operation.</h2>
+          <p>Provider execution, Spatial handoff, and media production remain separately hard-off even when a downstream health check succeeds.</p>
         </div>
-        <div className="grid feature-grid">
-          {publicSignals.map((signal) => (
-            <article className="card proof-card" key={signal}>
-              <p className="eyebrow">Visible</p>
-              <h3>{signal}</h3>
-            </article>
-          ))}
+        <div className="cta-row">
+          <Link className="button button-secondary" href="/readyz?profile=PUBLIC_SITE">Public site readiness</Link>
+          <Link className="button button-secondary" href="/readyz?profile=FULL_STUDIO_PLATFORM">Full platform readiness</Link>
+          <Link className="button button-secondary" href="/readyz?profile=PROVIDER_EXECUTION">Provider execution gate</Link>
+          <Link className="button button-secondary" href="/readyz?profile=SPATIAL_HANDOFF">Spatial handoff gate</Link>
         </div>
       </section>
 

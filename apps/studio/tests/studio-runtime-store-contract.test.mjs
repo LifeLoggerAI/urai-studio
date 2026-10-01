@@ -4,11 +4,12 @@ import fs from 'node:fs';
 const src = fs.readFileSync(new URL('../lib/studio-runtime-store.ts', import.meta.url), 'utf8');
 
 for (const token of [
-  'studioProjects',
-  'studioBriefs',
-  'studioJobs',
-  'studioAssets',
-  'studioExports',
+  'STUDIO_CANONICAL_COLLECTIONS',
+  'projects: STUDIO_CANONICAL_COLLECTIONS.projects',
+  'briefs: STUDIO_CANONICAL_COLLECTIONS.briefs',
+  'jobs: STUDIO_CANONICAL_COLLECTIONS.jobs',
+  'assets: STUDIO_CANONICAL_COLLECTIONS.assets',
+  'exports: STUDIO_CANONICAL_COLLECTIONS.exports',
   'tenantScoped: true',
   'createStudioProject',
   'createStudioBrief',

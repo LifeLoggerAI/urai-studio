@@ -1,42 +1,27 @@
 import { NextResponse } from 'next/server';
 
-import { studioIntegrations, type StudioIntegrationDiagnostic } from '@/lib/studio/integrations';
+import { publicIntegrationDiagnostics } from '@/lib/studio/integrations';
 import { studioModules } from '@/lib/studio/modules';
 
 export const dynamic = 'force-dynamic';
 
-type SystemIntegrationsResponse = {
-  ok: boolean;
-  service: 'urai-studio';
-  integrations: StudioIntegrationDiagnostic[];
-  modules: Array<{
-    id: string;
-    name: string;
-    route: string;
-    integrationType: string;
-    status: string;
-    requiredEnv: string[];
-  }>;
-  missingRequired: string[];
-  generatedAt: string;
-};
-
 export async function GET() {
-  const missingRequired = studioIntegrations
+  const integrations = publicIntegrationDiagnostics();
+  const missingRequired = integrations
     .filter((integration) => integration.required && integration.status === 'missing')
     .map((integration) => integration.id);
 
-  const body: SystemIntegrationsResponse = {
+  const body = {
     ok: missingRequired.length === 0,
-    service: 'urai-studio',
-    integrations: studioIntegrations,
+    service: 'urai-studio' as const,
+    integrations,
     modules: studioModules.map((module) => ({
       id: module.id,
       name: module.name,
       route: module.route,
       integrationType: module.integrationType,
       status: module.status,
-      requiredEnv: module.requiredEnv,
+      configurationRequired: module.requiredEnv.length > 0,
     })),
     missingRequired,
     generatedAt: new Date().toISOString(),

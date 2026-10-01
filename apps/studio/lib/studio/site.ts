@@ -6,7 +6,7 @@ export const siteMeta = {
   url: 'https://www.uraistudio.com',
   domain: 'www.uraistudio.com',
   ogImage: '/og.png',
-  contactEmail: 'lifeloggerai@gmail.com',
+  contactEmail: 'support@urailabs.com',
 };
 
 export const publicRoutes = [
@@ -19,6 +19,7 @@ export const publicRoutes = [
   '/visuals',
   '/spatial',
   '/privacy',
+  '/terms',
   '/demo',
   '/waitlist',
   '/contact',

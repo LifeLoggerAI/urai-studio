@@ -1,5 +1,9 @@
 name: URAI Studio Video Factory Verification
 
+concurrency:
+  group: urai-studio-video-factory-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 on:
   workflow_dispatch:
   pull_request:
@@ -86,6 +90,16 @@ jobs:
         env:
           SPATIAL_BASE_URL: https://urai.app
         run: pnpm run video-factory:capture
+
+      - name: Compose and verify playable diagnostic MP4
+        env:
+          URAI_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+          node scripts/studio-video-compose-diagnostic.mjs
 
       - name: Upload Video Factory evidence
         if: always()
