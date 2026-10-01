@@ -1,10 +1,10 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "projectId": "private-memory-proof-001",
   "title": "Private Memory Proof 001",
   "classification": "private-family-review",
   "publicReleaseAuthorized": false,
-  "purpose": "Create a short emotionally legible proof showing how private family source material becomes a governed UrAi memory-film experience.",
+  "purpose": "Create a short emotionally legible proof from the real family archive showing how photographs, objects, oral history, generations and the UrAi memory world become one connected experience.",
   "authority": {
     "privateSourceSystem": "google-drive-private-canon",
     "orchestrationRepository": "LifeLoggerAI/urai-studio",
@@ -22,66 +22,122 @@
     "publicDistribution": false
   },
   "inputState": {
-    "familyStillArchive": "available",
+    "familyStillArchive": "available-and-visually-reviewed",
     "familyReferencePages": "available-context-only-not-cinematic-source",
     "jointFamilyStoryTranscript": "available-editing-guide-only",
     "originalJointStoryAudio": "pending-source-availability",
+    "familyObjectReference": "available",
+    "multiGenerationReference": "available",
+    "ruralFamilyReference": "available",
+    "homeMemoryDisplayReference": "available",
     "additionalUploads": "in-progress"
   },
+  "realArchiveAnchors": [
+    {
+      "sourceKey": "lake-boat-dog-memory",
+      "class": "archival-still",
+      "use": "open with a vivid ordinary-life memory; water, boat, person and companion animal"
+    },
+    {
+      "sourceKey": "family-watch-object",
+      "class": "archival-object",
+      "use": "show how an ordinary physical object carries family history across generations"
+    },
+    {
+      "sourceKey": "rural-tractor-child-memory",
+      "class": "archival-still",
+      "use": "connect rural/farm identity to a younger generation without inventing date or location"
+    },
+    {
+      "sourceKey": "graduation-next-generation",
+      "class": "archival-still",
+      "use": "show family continuity moving forward into the next generation"
+    },
+    {
+      "sourceKey": "home-memory-display",
+      "class": "archival-environment",
+      "use": "show that the family already preserves identity through pictures, art, faith, service and objects in the home"
+    },
+    {
+      "sourceKey": "relationship-origin-oral-history",
+      "class": "attributed-recollection",
+      "use": "use the informal marriage-origin story as the emotional narration spine once original audio is source-verified"
+    },
+    {
+      "sourceKey": "old-family-slides",
+      "class": "attributed-recollection",
+      "use": "bridge the family's older slide/projector memory practice to UrAi as a living continuation, not a replacement"
+    }
+  ],
   "story": {
-    "storyKey": "relationship-origin-memory-001",
-    "treatment": "A warm, humorous recollection of the informal moment a couple realized they were going to marry, connected to old family photographs and the idea that ordinary conversation becomes durable memory.",
-    "truthClass": "attributed-family-recollection",
+    "storyKey": "one-family-many-threads-001",
+    "treatment": "Begin with real ordinary family life, move through objects and generations, let the family's own oral history reveal meaning the photographs cannot contain, then show UrAi connecting those fragments into a navigable private memory world.",
+    "truthClass": "mixed-recorded-source-and-attributed-family-recollection",
     "transcriptIsFinalQuoteAuthority": false,
     "speakerIdentityMustBeHumanVerified": true
   },
   "target": {
-    "durationSeconds": 90,
+    "durationSeconds": 105,
     "masterAspectRatio": "16:9",
     "derivatives": ["9:16", "1:1"],
     "audience": "private-family-review",
-    "tone": ["warm", "cinematic", "grounded", "intimate", "hopeful"]
+    "tone": ["warm", "cinematic", "specific", "grounded", "intimate", "generational", "hopeful"]
   },
   "editPlan": [
     {
       "shotId": "pmp001-01",
       "kind": "archival-still",
-      "sourceKey": "private-family-still-select-001",
+      "sourceKey": "lake-boat-dog-memory",
       "durationSeconds": 10,
-      "treatment": "Subtle camera movement on a real family photograph. Preserve the source image; do not invent missing facial detail."
+      "treatment": "Open on the real lake/boat memory with restrained motion and natural sound. No synthetic face reconstruction."
     },
     {
       "shotId": "pmp001-02",
-      "kind": "original-voice",
-      "sourceKey": "private-joint-story-audio-001",
-      "durationSeconds": 18,
-      "status": "blocked-until-original-audio-available",
-      "treatment": "Use the real authorized recording after source availability and human speaker review. Do not voice-clone or synthesize missing speech."
+      "kind": "archival-object",
+      "sourceKey": "family-watch-object",
+      "durationSeconds": 10,
+      "treatment": "Macro-style crop across the real family watch while narration introduces the idea that objects outlive the stories attached to them unless somebody records why they matter."
     },
     {
       "shotId": "pmp001-03",
-      "kind": "urai-runtime-capture",
-      "durationSeconds": 14,
-      "treatment": "Transition the real photograph into the UrAi memory world using actual exact-head product capture. Generated UI substitution is forbidden."
+      "kind": "archival-still",
+      "sourceKey": "rural-tractor-child-memory",
+      "durationSeconds": 10,
+      "treatment": "Use the real tractor image as a generational/rural anchor. Do not assert an unverified date, place or person beyond private source authority."
     },
     {
       "shotId": "pmp001-04",
-      "kind": "archival-still-sequence",
-      "sourceKey": "private-family-still-select-002",
-      "durationSeconds": 18,
-      "treatment": "Two or three real family images with restrained parallax/crop motion. No synthetic likeness replacement."
+      "kind": "original-voice",
+      "sourceKey": "relationship-origin-oral-history",
+      "durationSeconds": 20,
+      "status": "blocked-until-original-audio-source-is-available-and-speaker-reviewed",
+      "treatment": "Use the family's real informal marriage-origin recollection, including its humor, only after original audio verification. Do not synthesize or clone missing speech."
     },
     {
       "shotId": "pmp001-05",
-      "kind": "memory-connection",
-      "durationSeconds": 16,
-      "treatment": "Show the memory connected to people, time, place, story and related images inside real UrAi runtime capture."
+      "kind": "archival-still-sequence",
+      "sourceKey": "graduation-next-generation",
+      "durationSeconds": 12,
+      "treatment": "Move from older memories to real graduation imagery to make the generational continuity visible."
     },
     {
       "shotId": "pmp001-06",
+      "kind": "archival-environment",
+      "sourceKey": "home-memory-display",
+      "durationSeconds": 10,
+      "treatment": "Use the real home display as evidence that memory already lives in rooms, objects, portraits, art and small family arrangements."
+    },
+    {
+      "shotId": "pmp001-07",
+      "kind": "urai-runtime-capture",
+      "durationSeconds": 18,
+      "treatment": "Transition the real archive into exact-head UrAi capture: object, person, place, relationship, story and generation become connected memory nodes. Generated UI substitution is forbidden."
+    },
+    {
+      "shotId": "pmp001-08",
       "kind": "end-card",
-      "durationSeconds": 14,
-      "treatment": "Private review closing thought: this proof uses only a small fraction of the available family archive and is meant to demonstrate why continued storytelling matters."
+      "durationSeconds": 15,
+      "treatment": "Return to real source imagery and close on the idea that this proof uses only a small fraction of the family archive. Encourage continued storytelling without implying the archive is complete."
     }
   ],
   "generationPolicy": {
