@@ -23,6 +23,8 @@ assert.ok(route.includes("action:'create'"));
 assert.ok(route.includes('tenantId:auth.tenantId'));
 assert.ok(route.includes('userId:auth.uid'));
 assert.ok(route.includes('idempotencyKey:envelope.idempotencyKey'));
+assert.ok(route.includes('sceneTruthReceiptRef: typeof body.sceneTruthReceiptRef'));
+assert.ok(route.includes('sceneTruthReceiptRef:envelope.payload.sceneTruthReceiptRef'));
 assert.ok(route.includes('publicReleaseAuthorized:false'));
 assert.ok(route.includes('providerGenerationAuthorized:false'));
 assert.ok(route.includes("executionAuthority:'urai-jobs'"));
