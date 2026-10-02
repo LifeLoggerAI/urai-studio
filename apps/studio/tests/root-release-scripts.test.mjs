@@ -4,9 +4,11 @@ import fs from 'node:fs';
 const rootPackage = JSON.parse(fs.readFileSync(new URL('../../../package.json', import.meta.url), 'utf8'));
 const scripts = rootPackage.scripts ?? {};
 
+assert.equal(scripts['private-family-film:guard'], 'node scripts/private-family-life-film-guard.mjs');
 assert.equal(scripts['done-done:guard'], 'node scripts/done-done-guard.mjs');
 assert.equal(scripts['evidence:guard'], 'node scripts/evidence-schema-guard.mjs');
 assert.equal(scripts['health:guard'], 'node scripts/health-summary-guard.mjs');
+assert.ok(scripts.audit.includes('pnpm private-family-film:guard'), 'audit must run the private family Life Film guard');
 assert.ok(scripts.audit.includes('pnpm done-done:guard'), 'audit must run the done-done guard');
 assert.ok(scripts.audit.includes('pnpm evidence:guard'), 'audit must run the evidence guard');
 assert.ok(scripts.audit.includes('pnpm health:guard'), 'audit must run the health guard');
