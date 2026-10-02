@@ -40,7 +40,7 @@ export async function GET(request: Request) {
     dispatchAuthorized:false,
     providerGenerationAuthorized:false,
     publicReleaseAuthorized:false,
-    requiredSceneFields:['sceneTruthReceiptRef'],
+    requiredSceneFields:['sceneTruthReceiptRef','sceneTruthDigest'],
     requiredSourceFields:['id','bucket','objectPath','mimeType','provenance','sourceRefs','consentRef','ownerOrRightsRef'],
     note:'This endpoint builds a governed Jobs request envelope only. It does not dispatch work or authorize providers/public release.',
   });
@@ -58,6 +58,7 @@ export async function POST(request: Request) {
       tenantId: auth.tenantId,
       projectId,
       sceneTruthReceiptRef: typeof body.sceneTruthReceiptRef === 'string' ? body.sceneTruthReceiptRef : '',
+      sceneTruthDigest: typeof body.sceneTruthDigest === 'string' ? body.sceneTruthDigest : '',
       sources: Array.isArray(body.sources) ? body.sources as JobsLifeMovieSource[] : [],
       timeline: Array.isArray(body.timeline) ? body.timeline as JobsLifeMovieTimelineItem[] : [],
       audioCues: Array.isArray(body.audioCues) ? body.audioCues as JobsLifeMovieAudioCue[] : [],
