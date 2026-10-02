@@ -1,183 +1,115 @@
 {
-  "schemaVersion": "1.2.0",
+  "schemaVersion": "2.0.0",
   "projectId": "private-memory-proof-001",
-  "title": "Private Memory Proof 001",
-  "classification": "private-family-review",
+  "title": "UrAi Family Life Film / Living Memory World",
+  "classification": "private-family-production",
   "publicReleaseAuthorized": false,
-  "purpose": "Create a short emotionally legible proof from the real family archive showing how photographs, objects, oral history, generations and the UrAi memory world become one connected experience.",
-  "authority": {
-    "privateSourceSystem": "google-drive-private-canon",
-    "orchestrationRepository": "LifeLoggerAI/urai-studio",
-    "runtimeRepository": "LifeLoggerAI/urai-spatial",
-    "generationRepository": "LifeLoggerAI/asset-factory",
-    "narrativeRepository": "LifeLoggerAI/urai-storytime",
-    "resolveCurrentRuntimeHeadBeforeCapture": true
+  "runtimeIntegrationRequired": true,
+  "sourcePolicy": {
+    "privateSourceSystemIsAuthority": true,
+    "rawPrivateMediaInPublicRepository": false,
+    "privateSourceIdentifiersInPublicRepository": false,
+    "exactPrivateLocationsInPublicRepository": false,
+    "generatedCinemaIsArchivalEvidence": false
   },
-  "privacy": {
-    "rawPrivateMediaRemainsInDrive": true,
-    "privateDriveIdentifiersAllowedInPublicGitHub": false,
-    "privateNamesAllowedInPublicGitHub": false,
-    "exactPrivateAddressesAllowed": false,
-    "unconfirmedIdentityAssertionsAllowed": false,
-    "publicDistribution": false
-  },
-  "inputState": {
-    "familyStillArchive": "available-and-visually-reviewed",
-    "familyReferencePages": "available-context-only-not-cinematic-source",
-    "jointFamilyStoryTranscript": "available-editing-guide-only",
-    "originalJointStoryAudio": "pending-source-availability",
-    "familyObjectReference": "available",
-    "multiGenerationReference": "available",
-    "ruralFamilyReference": "available",
-    "homeMemoryDisplayReference": "available",
-    "additionalUploads": "in-progress"
-  },
-  "realArchiveAnchors": [
-    {
-      "sourceKey": "lake-boat-dog-memory",
-      "class": "archival-still",
-      "use": "open with a vivid ordinary-life memory; water, boat, person and companion animal"
-    },
-    {
-      "sourceKey": "family-watch-object",
-      "class": "archival-object",
-      "use": "show how an ordinary physical object carries family history across generations"
-    },
-    {
-      "sourceKey": "rural-tractor-child-memory",
-      "class": "archival-still",
-      "use": "connect rural/farm identity to a younger generation without inventing date or location"
-    },
-    {
-      "sourceKey": "graduation-next-generation",
-      "class": "archival-still",
-      "use": "show family continuity moving forward into the next generation"
-    },
-    {
-      "sourceKey": "home-memory-display",
-      "class": "archival-environment",
-      "use": "show that the family already preserves identity through pictures, art, faith, service and objects in the home"
-    },
-    {
-      "sourceKey": "relationship-origin-oral-history",
-      "class": "attributed-recollection",
-      "use": "use the informal marriage-origin story as the emotional narration spine once original audio is source-verified"
-    },
-    {
-      "sourceKey": "old-family-slides",
-      "class": "attributed-recollection",
-      "use": "bridge the family's older slide/projector memory practice to UrAi as a living continuation, not a replacement"
-    }
+  "truthClasses": [
+    "RECORDED_SOURCE_TRUTH",
+    "ATTRIBUTED_FAMILY_RECOLLECTION",
+    "SPATIALLY_RECONSTRUCTABLE",
+    "INTERPRETIVE_CINEMATIC_RECREATION",
+    "UNKNOWN_UNRESOLVED"
   ],
-  "story": {
-    "storyKey": "one-family-many-threads-001",
-    "treatment": "Begin with real ordinary family life, move through objects and generations, let the family's own oral history reveal meaning the photographs cannot contain, then show UrAi connecting those fragments into a navigable private memory world.",
-    "truthClass": "mixed-recorded-source-and-attributed-family-recollection",
-    "transcriptIsFinalQuoteAuthority": false,
-    "speakerIdentityMustBeHumanVerified": true
+  "deliverables": {
+    "fullFeature": { "targetMinutes": [15, 25], "status": "production" },
+    "heroCut": { "targetMinutes": [5, 8], "status": "production" },
+    "trailer": { "targetSeconds": [60, 120], "status": "production" },
+    "teaser": { "targetSeconds": [30, 60], "status": "planned" },
+    "vertical916": { "status": "planned" },
+    "replayChapters": { "status": "integration" },
+    "captions": { "status": "production" },
+    "provenanceManifest": { "status": "production" }
   },
-  "target": {
-    "durationSeconds": 105,
-    "masterAspectRatio": "16:9",
-    "derivatives": [
-      "9:16",
-      "1:1"
-    ],
-    "audience": "private-family-review",
-    "tone": [
-      "warm",
-      "cinematic",
-      "specific",
-      "grounded",
-      "intimate",
-      "generational",
-      "hopeful"
-    ]
-  },
-  "editPlan": [
-    {
-      "shotId": "pmp001-01",
-      "kind": "archival-still",
-      "sourceKey": "lake-boat-dog-memory",
-      "durationSeconds": 10,
-      "treatment": "Open on the real lake/boat memory with restrained motion and natural sound. No synthetic face reconstruction."
-    },
-    {
-      "shotId": "pmp001-02",
-      "kind": "archival-object",
-      "sourceKey": "family-watch-object",
-      "durationSeconds": 10,
-      "treatment": "Macro-style crop across the real family watch while narration introduces the idea that objects outlive the stories attached to them unless somebody records why they matter."
-    },
-    {
-      "shotId": "pmp001-03",
-      "kind": "archival-still",
-      "sourceKey": "rural-tractor-child-memory",
-      "durationSeconds": 10,
-      "treatment": "Use the real tractor image as a generational/rural anchor. Do not assert an unverified date, place or person beyond private source authority."
-    },
-    {
-      "shotId": "pmp001-04",
-      "kind": "original-voice",
-      "sourceKey": "relationship-origin-oral-history",
-      "durationSeconds": 20,
-      "status": "blocked-until-original-audio-source-is-available-and-speaker-reviewed",
-      "treatment": "Use the family's real informal marriage-origin recollection, including its humor, only after original audio verification. Do not synthesize or clone missing speech."
-    },
-    {
-      "shotId": "pmp001-05",
-      "kind": "archival-still-sequence",
-      "sourceKey": "graduation-next-generation",
-      "durationSeconds": 12,
-      "treatment": "Move from older memories to real graduation imagery to make the generational continuity visible."
-    },
-    {
-      "shotId": "pmp001-06",
-      "kind": "archival-environment",
-      "sourceKey": "home-memory-display",
-      "durationSeconds": 10,
-      "treatment": "Use the real home display as evidence that memory already lives in rooms, objects, portraits, art and small family arrangements."
-    },
-    {
-      "shotId": "pmp001-07",
-      "kind": "urai-runtime-capture",
-      "durationSeconds": 18,
-      "treatment": "Transition the real archive into exact-head UrAi capture: object, person, place, relationship, story and generation become connected memory nodes. Generated UI substitution is forbidden."
-    },
-    {
-      "shotId": "pmp001-08",
-      "kind": "end-card",
-      "durationSeconds": 15,
-      "treatment": "Return to real source imagery and close on the idea that this proof uses only a small fraction of the family archive. Encourage continued storytelling without implying the archive is complete."
-    }
+  "runtimeJourney": [
+    "home",
+    "ascent",
+    "life-map",
+    "focus",
+    "replay",
+    "life-movie-or-memory-world",
+    "unwind",
+    "focus",
+    "life-map",
+    "home"
   ],
-  "generationPolicy": {
-    "existingProviderGeneratedAssetsPresent": true,
-    "existingProviderTaskAudit": "productions/private-memory-proof-001/RUNWAY_TASK_AUDIT_20261001.md",
-    "priorProviderGenerationAuthorizationProvenance": "not-established-by-this-repository-audit",
-    "newPaidProviderGenerationAuthorized": false,
-    "generatedIdentifiableFamilyLikenessAcceptance": "blocked-until-human-likeness-and-consent-review",
-    "cinematicEnvironmentGenerationMayBeAddedLater": "bounded-authorization-required",
-    "providerSpendRequiresSeparateBoundedManifest": true
-  },
-  "humanGates": [
-    "family-likeness",
-    "speaker-attribution",
-    "emotional-truth",
-    "autobiographical-truth",
-    "privacy",
-    "final-pacing",
-    "private-review-acceptance",
-    "public-release-separate-and-disabled"
+  "runtimeContract": [
+    "memoryId",
+    "personIds",
+    "placeId",
+    "timeRange",
+    "relationshipIds",
+    "sourceIds",
+    "audioIds",
+    "imageIds",
+    "videoIds",
+    "objectIds",
+    "storyNodeIds",
+    "truthClass",
+    "confidence",
+    "privacyClass",
+    "consentState",
+    "cinematicAssetId",
+    "spatialAssetId",
+    "captionTrack",
+    "audioMix",
+    "languageTracks",
+    "emotionalWeather",
+    "replayEntry",
+    "replayExit",
+    "lifeMovieChapter",
+    "provenance"
+  ],
+  "chapterClasses": [
+    "early-life",
+    "work-and-service",
+    "relationship-origin",
+    "regional-roots",
+    "ordinary-home-life",
+    "family-memory-practice",
+    "values-and-care",
+    "humor-and-corrections",
+    "pets-and-place",
+    "generations",
+    "care-role-reversal",
+    "founder-origin",
+    "photograph-to-place",
+    "memory-graph",
+    "runtime-journey",
+    "open-questions"
+  ],
+  "existingGeneratedAssets": [
+    { "taskId": "5537e052-ebd0-4158-b69c-8fcf5fb22536", "role": "early-life-dawn", "acceptance": "pending-literal-visual-qc" },
+    { "taskId": "5f10666c-4483-4689-af48-6d7c2cbeea7c", "role": "work-memory", "acceptance": "pending-literal-visual-qc" },
+    { "taskId": "aa09b929-c7dd-4661-ac88-ae20edac1fad", "role": "relationship-origin-era", "acceptance": "pending-literal-visual-qc" },
+    { "taskId": "fa166fd9-b163-4b38-8b03-16bc456e305a", "role": "regional-family-life", "acceptance": "pending-literal-visual-qc" },
+    { "taskId": "755423ed-ec1a-44fa-8264-267168e82491", "role": "care-role-reversal", "acceptance": "pending-literal-visual-qc" },
+    { "taskId": "e4f5052a-4c58-409d-bee8-c0e317b6d7d9", "role": "memory-world-reveal", "acceptance": "pending-literal-visual-qc" }
   ],
   "acceptance": {
-    "mustUseRealFamilySourceMedia": true,
-    "mustUseOriginalFamilyVoiceWhenVoiceIsPresentedAsOriginal": true,
-    "mustDistinguishRecollectionFromVerifiedHistoricalFact": true,
-    "mustRetainPrivateSourceInDrive": true,
-    "mustBindProductCaptureToExactSpatialSha": true,
-    "mustNotClaimPublicRelease": true,
-    "mustRetainProviderTaskReceipt": true,
-    "mustNotTreatGenerationSuccessAsHumanAcceptance": true
-  }
+    "generationSuccessIsVisualAcceptance": false,
+    "originalVoiceRequiredWhenPresentedAsOriginal": true,
+    "recollectionMustRemainDistinctFromVerifiedFact": true,
+    "runtimeCaptureMustBindExactSpatialSha": true,
+    "finalMixRequiresAudioQc": true,
+    "finalMasterRequiresVisualQc": true,
+    "goldMasterRequiresRenderedVerifiedArtifact": true,
+    "publicReleaseRemainsSeparate": true
+  },
+  "knownBoundaries": [
+    "some-source-binaries-not-directly-exposed",
+    "additional-identity-reference-review",
+    "pending-large-source-collection-ingest",
+    "private-place-walkthrough-discovery",
+    "durable-final-compositor",
+    "exact-head-runtime-capture"
+  ]
 }
