@@ -50,6 +50,15 @@ function ownerAuthorized(record: RecordData, uid: string, adminClaim: boolean): 
   return allowed.includes(uid);
 }
 
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
 function canonicalSceneDigest(record: RecordData): string {
   const stored = typeof record.sceneTruthDigest === "string" ? record.sceneTruthDigest.toLowerCase() : "";
   if (SHA256.test(stored)) return stored;
@@ -59,13 +68,7 @@ function canonicalSceneDigest(record: RecordData): string {
     throw new HttpsError("failed-precondition", "Accepted SceneTruth packet has no canonical digest.");
   }
 
-  const stable = JSON.stringify(
-    Object.keys(canonical).sort().reduce<RecordData>((acc, key) => {
-      acc[key] = canonical[key];
-      return acc;
-    }, {}),
-  );
-  return createHash("sha256").update(stable).digest("hex");
+  return createHash("sha256").update(canonicalJson(canonical)).digest("hex");
 }
 
 function mintReceipt(projectId: string, digest: string) {
@@ -113,7 +116,7 @@ export const resolveAuthorizedLifeFilmCanon = onCall(
       evidenceClass: "visual-canon",
       mediaKind,
       mimeType: typeof record.mimeType === "string" ? record.mimeType : "application/octet-stream",
-      byteSize: Number.isFinite(record.byteSize) ? Number(record.byteSize) : 0,
+      byteSize: typeof record.byteSize === "number" && Number.isFinite(record.byteSize) ? record.byteSize : 0,
       storageObject: typeof record.storageObject === "string" ? record.storageObject : "",
       generationEligible: true,
       truthBoundary: typeof record.truthBoundary === "string" ? record.truthBoundary : "private-source-only",
