@@ -48,6 +48,7 @@ export type JobsLifeMovieAudioCue = {
 export type BuildJobsLifeMovieEnvelopeInput = {
   tenantId: string;
   projectId: string;
+  sceneTruthReceiptRef: string;
   sources: JobsLifeMovieSource[];
   timeline: JobsLifeMovieTimelineItem[];
   audioCues?: JobsLifeMovieAudioCue[];
@@ -94,6 +95,8 @@ export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInpu
   const tenantId = safeSegment(input.tenantId, 'life_movie_invalid_tenant');
   const projectId = safeSegment(input.projectId, 'life_movie_invalid_project');
   if (!SAFE_PROJECT.test(projectId)) fail('life_movie_invalid_project');
+  const sceneTruthReceiptRef = input.sceneTruthReceiptRef;
+  if (!/^str_[A-Za-z0-9_-]{16,128}$/.test(sceneTruthReceiptRef)) fail('life_movie_invalid_scene_truth_receipt');
 
   const width = input.width ?? 1280;
   const height = input.height ?? 720;
@@ -156,13 +159,14 @@ export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInpu
   if (Buffer.byteLength(subtitleText,'utf8') > 2 * 1024 * 1024) fail('life_movie_subtitles_too_large');
 
   const outputPrefix = `tenants/${tenantId}/life-movies/${projectId}/`;
-  const plan = { projectId, outputPrefix, width, height, fps, sources, timeline, audioCues:normalizedAudio, subtitleText };
+  const plan = { projectId, sceneTruthReceiptRef, outputPrefix, width, height, fps, sources, timeline, audioCues:normalizedAudio, subtitleText };
   const renderPlanDigest = createHash('sha256').update(canonicalJson(plan)).digest('hex');
 
   const payload = {
     schemaVersion: 'urai-life-movie-render-v1' as const,
     projectId,
     renderPlanDigest,
+    sceneTruthReceiptRef,
     outputPrefix,
     width,
     height,
