@@ -4,11 +4,14 @@ import path from 'node:path';
 const productionPath = path.resolve('productions/built-from-survival/built-from-survival.production.json');
 const contractPath = path.resolve('apps/studio/lib/life-film-canon.ts');
 const memoryToMediaContractPath = path.resolve('productions/media-master/memory-to-media-canon.contract.json');
+const sourceEvidenceContractPath = path.resolve('productions/media-master/source-evidence.contract.json');
 
 const productionText = fs.readFileSync(productionPath, 'utf8');
 const contractText = fs.readFileSync(contractPath, 'utf8');
 const memoryToMediaContractText = fs.readFileSync(memoryToMediaContractPath, 'utf8');
+const sourceEvidenceContractText = fs.readFileSync(sourceEvidenceContractPath, 'utf8');
 const memoryToMedia = JSON.parse(memoryToMediaContractText);
+const sourceEvidence = JSON.parse(sourceEvidenceContractText);
 const production = JSON.parse(productionText);
 
 // Detect concrete private source pointers, not harmless prose that names a provider.
@@ -26,7 +29,7 @@ const forbidden = [
   /1D-ISJKQkSa9__ASzRUvUyOnXAVnAc77Y/,
 ];
 
-const combinedPublicText = `${productionText}\n${contractText}\n${memoryToMediaContractText}`;
+const combinedPublicText = `${productionText}\n${contractText}\n${memoryToMediaContractText}\n${sourceEvidenceContractText}`;
 for (const pattern of forbidden) {
   if (pattern.test(combinedPublicText)) {
     throw new Error(`private_life_film_pointer_leaked:${pattern}`);
@@ -96,6 +99,28 @@ for (const failureCode of ['IDENTITY_FAIL','ROLE_FAIL','EYEWEAR_FAIL','VEHICLE_F
   if (!memoryToMedia.failureCodes?.includes(failureCode)) {
     throw new Error(`missing_memory_to_media_failure_code:${failureCode}`);
   }
+}
+
+if (memoryToMedia?.preGeneration?.exactDimensionsMustBeSourceLocked !== true) {
+  throw new Error('exact_scene_dimensions_not_source_locked');
+}
+if (memoryToMedia?.preGeneration?.criticalExactDimensionMayUseReconstruction !== false) {
+  throw new Error('critical_exact_dimension_allows_reconstruction');
+}
+if (sourceEvidence?.rules?.sourceBytesImmutable !== true) {
+  throw new Error('source_originals_not_immutable');
+}
+if (sourceEvidence?.rules?.metadataTimestampIsNotCaptureTimeUnlessProven !== true) {
+  throw new Error('metadata_time_can_silently_become_capture_time');
+}
+if (sourceEvidence?.rules?.generatedMediaIsNeverSourceTruth !== true) {
+  throw new Error('generated_media_can_become_source_truth');
+}
+if (sourceEvidence?.rules?.preciseGpsPrivateByDefault !== true) {
+  throw new Error('precise_gps_not_private_by_default');
+}
+if (sourceEvidence?.rules?.sameEventClusteringRequiresEvidence !== true) {
+  throw new Error('same_event_clustering_not_evidence_bound');
 }
 
 console.log('Life Film canon guard: PASS');
