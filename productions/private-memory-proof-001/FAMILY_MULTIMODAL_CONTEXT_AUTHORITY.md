@@ -463,3 +463,68 @@ The system should deliberately mix:
 - uncertainty
 
 This is the correct multimodal production basis for the next private AAA cinematic pass.
+
+
+## 2026-10-01 source-ingest delta
+
+Fresh Drive readback expands the private family corpus materially beyond Pass 001.
+
+### Corpus size / dedupe
+- Root-level fresh media inventory: 69 audio/video/image files.
+- 66 are audio/video sources and 3 are still images.
+- After collapsing simple "(1)" same-name duplicates, 58 canonical media names remain in the root batch.
+- 11 exact same-name duplicate groups were observed.
+- A newer private Drive production authority independently classifies 24 audio/video entries as prior-source mappings/re-uploads and 42 as new or unmatched sources requiring fixity comparison, transcription, speaker review, and graph correlation.
+- Do not assume the prior 27-audio + 3 video-audio transcript corpus covers the 42 unmatched sources.
+
+### Newly exposed raw audio
+- The raw joint parent conversation is now directly discoverable in Drive, with both a primary file and a same-size duplicate copy.
+- Therefore the earlier blocker "joint raw audio not directly exposed" is historical and must not be repeated as current truth.
+- The raw source should be speaker-reviewed against the existing transcript before any literal lip-sync/dialogue placement.
+
+### New directory / photo evidence
+- Three newly surfaced stills are photographed family-directory pages.
+- One ~62.5 second 1280x720 video is a handheld scan across additional family-directory pages.
+- One ~0.93 second 1280x720 video is a photographed print containing an adult woman outdoors; identity is not inferred from appearance.
+- Directory pages contain names, dates and legacy private contact fields. Only chronology/relationship evidence may be promoted into production. Addresses, phone numbers, email addresses and similar contact data remain private and excluded from repository/runtime/public outputs.
+
+### Identity collision guard — Jacob
+There are two distinct real people sharing the first name Jacob in the user's private family/work context.
+
+Public-repository handling uses opaque identity keys only:
+- JACOB_WICHITA_001
+- JACOB_LONGVIEW_001
+
+Rules:
+- Never merge these two identity nodes.
+- Never transfer face, voice, house, garage, vehicle, relationship, story, timeline, workplace or location evidence between them.
+- Any source that says only "Jacob" remains JACOB_UNRESOLVED until surname/location/relationship/provenance resolves it.
+- The existing transcript phrase "Jacob can do it in the grooves" is bare-first-name evidence and must remain unresolved.
+- Existing "Jacob garage" / work-environment labels are not sufficient by themselves to assign either private Jacob identity; bind only after private source provenance confirms the person.
+- Full-name/private-location mapping remains in private source authority, not public repository text.
+
+### New high-value story lanes from filenames / private authority
+New unmatched recordings include source-labeled lanes for:
+- parent RV travel stories
+- adoption/family-formation history
+- youth/friend recollections
+- extended-family/uncle history
+- homelessness discussion with father
+- a current vehicle/purchase conversation with father
+- ride-to-store / return-home / back-porch family conversation
+- Catholic/saint/family-faith material
+- three-person parent/child conversation
+- childhood recollections
+- narrated red-photo-album and brown-picture-folder passes
+- Mardi Gras / travel material
+- maternal-side family batches
+- grandparents
+- named extended-family conversations
+
+Filename labels are provenance hints, not transcript truth. Each unmatched source remains pending transcription/speaker review before detailed dialogue or event claims are promoted.
+
+### Processing contract
+For every unmatched source:
+source fixity/dedupe -> transcript -> speaker intervals -> person/alias candidates -> time/date claims -> place claims -> object/vehicle/clothing/building/pet/artifact extraction -> cross-media linkage -> contradiction/correction ledger -> truth class -> privacy/publication class -> memory/event cluster -> SceneTruthPacket candidate.
+
+Generated cinema must never write back into the historical-source layer.
