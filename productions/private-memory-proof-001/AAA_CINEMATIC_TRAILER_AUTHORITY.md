@@ -63,7 +63,7 @@ Public release: NOT authorized
 
 - A raw father voice source is directly available in private Drive and includes speaker-identification context.
 - The joint family-story transcript is available and contains the relationship-origin / marriage / slide-projector material.
-- Archive receipts prove the joint raw audio existed in the original upload batch, but current Drive discovery does not expose that raw joint file directly.
+- Fresh 2026-10-01 Drive readback now directly exposes the raw joint parent conversation (plus a same-size duplicate copy). The prior 'raw joint audio not directly exposed' blocker is superseded.
 - Mother voice-source recordings are available privately, but currently exposed clips are not being forced into the showcase simply because they exist.
 - No stock voice is authorized as a substitute for family identity.
 - No family voice clone is currently provisioned in the connected HeyGen voice workspace.
@@ -101,4 +101,4 @@ Only family media already documented as authorized may be used. This repository 
 
 ## Current truthful state
 
-All ten listed existing provider tasks resolve successfully in the 2026-10-01 read-only audit, so task-generation existence is verified. That does NOT equal human likeness/visual acceptance or a finished Life Movie. Final full-length composite, original-voice mix, captions, final QC, and private-family acceptance remain incomplete; directly exposed joint raw audio and a clean authorized mother likeness reference remain separate blockers.
+All ten listed existing provider tasks resolve successfully in the 2026-10-01 read-only audit, so task-generation existence is verified. That does NOT equal human likeness/visual acceptance or a finished Life Movie. Final full-length composite, original-voice mix, captions, final QC, and private-family acceptance remain incomplete. The raw joint parent audio is now directly exposed and should be speaker-reviewed for source-true dialogue placement. A clean age-matched mother likeness reference and the newly arrived unmatched-source transcription/correlation pass remain separate blockers.
