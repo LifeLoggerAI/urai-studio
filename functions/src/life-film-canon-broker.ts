@@ -61,14 +61,24 @@ function canonicalJson(value: unknown): string {
 
 function canonicalSceneDigest(record: RecordData): string {
   const stored = typeof record.sceneTruthDigest === "string" ? record.sceneTruthDigest.toLowerCase() : "";
-  if (SHA256.test(stored)) return stored;
-
   const canonical = asRecord(record.canonicalPacket);
-  if (!Object.keys(canonical).length) {
+  const hasCanonicalPacket = Object.keys(canonical).length > 0;
+  const computed = hasCanonicalPacket
+    ? createHash("sha256").update(canonicalJson(canonical)).digest("hex")
+    : "";
+
+  if (SHA256.test(stored)) {
+    if (hasCanonicalPacket && computed !== stored) {
+      throw new HttpsError("failed-precondition", "Stored SceneTruth digest does not match the canonical packet.");
+    }
+    return stored;
+  }
+
+  if (!hasCanonicalPacket) {
     throw new HttpsError("failed-precondition", "Accepted SceneTruth packet has no canonical digest.");
   }
 
-  return createHash("sha256").update(canonicalJson(canonical)).digest("hex");
+  return computed;
 }
 
 function mintReceipt(projectId: string, digest: string) {
