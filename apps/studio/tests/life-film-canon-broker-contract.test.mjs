@@ -28,8 +28,9 @@ test('SceneTruth receipt authority is HMAC bound and expiring', () => {
   assert.ok(broker.includes('defineSecret("URAI_SCENE_TRUTH_RECEIPT_HMAC")'));
   assert.ok(broker.includes('createHmac("sha256", secretValue())'));
   assert.ok(broker.includes('RECEIPT_TTL_MS = 15 * 60 * 1000'));
-  assert.ok(broker.includes('const message = `${receiptId}\\n${projectId}\\n${digest}\\n${expiryToken}`'));
+  assert.ok(broker.includes('const message = `${receiptId}\\n${projectId}\\n${digest}\\n${ownerUid}\\n${expiryToken}`'));
   assert.ok(broker.includes('receiptRef: `str_${receiptId}_${expiryToken}_${signature}`'));
+  assert.ok(broker.includes('mintReceipt(projectId, sceneTruthDigest, auth.uid)'));
 });
 
 test('private canon broker does not expose private source pointers in receipt', () => {
