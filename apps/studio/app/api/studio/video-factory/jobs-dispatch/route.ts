@@ -62,6 +62,7 @@ export async function POST(request: Request) {
     const envelope = buildJobsLifeMovieEnvelope({
       tenantId: auth.tenantId,
       projectId,
+      sceneTruthReceiptRef: typeof body.sceneTruthReceiptRef === 'string' ? body.sceneTruthReceiptRef : '',
       sources: Array.isArray(body.sources) ? body.sources as JobsLifeMovieSource[] : [],
       timeline: Array.isArray(body.timeline) ? body.timeline as JobsLifeMovieTimelineItem[] : [],
       audioCues: Array.isArray(body.audioCues) ? body.audioCues as JobsLifeMovieAudioCue[] : [],
@@ -89,6 +90,7 @@ export async function POST(request: Request) {
         jobType:envelope.jobType,
         idempotencyKey:envelope.idempotencyKey,
         renderPlanDigest:envelope.payload.renderPlanDigest,
+        sceneTruthReceiptRef:envelope.payload.sceneTruthReceiptRef,
         publicReleaseAuthorized:false,
         providerGenerationAuthorized:false,
       },
