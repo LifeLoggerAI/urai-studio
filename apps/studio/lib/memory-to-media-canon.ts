@@ -34,6 +34,50 @@ export type MemoryToMediaFailureCode =
 
 export type CanonConfidence = 'confirmed' | 'high' | 'medium' | 'low' | 'unknown';
 
+export type CanonDetailState =
+  | 'confirmed-source'
+  | 'source-supported'
+  | 'attributed-recollection'
+  | 'reconstruction'
+  | 'interpretive'
+  | 'unknown';
+
+export type CanonExactness =
+  | 'exact-required'
+  | 'source-faithful'
+  | 'approximation-allowed'
+  | 'not-applicable';
+
+export type CanonDetailKey =
+  | 'identity'
+  | 'ageEra'
+  | 'role'
+  | 'date'
+  | 'season'
+  | 'timeOfDay'
+  | 'place'
+  | 'environment'
+  | 'weather'
+  | 'vehicle'
+  | 'wardrobe'
+  | 'uniform'
+  | 'architecture'
+  | 'objects'
+  | 'vegetation'
+  | 'voice'
+  | 'dialogue'
+  | 'ambience'
+  | 'continuity';
+
+export type CanonDetailBinding = {
+  key: CanonDetailKey;
+  exactness: CanonExactness;
+  state: CanonDetailState;
+  evidenceKeys: string[];
+  valueKey: string | null;
+  notesKey: string | null;
+};
+
 export type ScenePersonBinding = {
   personKey: string;
   ageEraKey: string;
@@ -78,6 +122,7 @@ export type SceneTruthPacket = {
   continuityDependencies: string[];
   unresolvedContradictions: string[];
   criticalUnknownFields: string[];
+  detailBindings: CanonDetailBinding[];
 };
 
 export type ShotQualityDimension =
@@ -129,6 +174,61 @@ function requireSafeKey(errors: string[], field: string, value: string) {
   }
 }
 
+
+const EXACT_STATES = new Set<CanonDetailState>(['confirmed-source', 'source-supported']);
+
+function validateDetailBindings(packet: SceneTruthPacket, errors: string[]) {
+  const seen = new Map<CanonDetailKey, CanonDetailBinding>();
+  for (const binding of packet.detailBindings) {
+    if (seen.has(binding.key)) errors.push(`duplicate_detail_binding:${binding.key}`);
+    seen.set(binding.key, binding);
+
+    if (binding.exactness === 'not-applicable') continue;
+
+    if (!binding.evidenceKeys.length && binding.state !== 'unknown') {
+      errors.push(`detail_missing_evidence:${binding.key}`);
+    }
+
+    if (binding.exactness === 'exact-required' && !EXACT_STATES.has(binding.state)) {
+      errors.push(`exact_detail_not_source_locked:${binding.key}:${binding.state}`);
+    }
+
+    if (binding.exactness === 'source-faithful' && binding.state === 'unknown') {
+      errors.push(`source_faithful_detail_unknown:${binding.key}`);
+    }
+
+    if (binding.state === 'unknown' && binding.valueKey !== null) {
+      errors.push(`unknown_detail_has_value:${binding.key}`);
+    }
+  }
+
+  const requiredExactnessKeys: CanonDetailKey[] = [
+    'identity',
+    'ageEra',
+    'role',
+    'date',
+    'season',
+    'timeOfDay',
+    'place',
+    'environment',
+    'weather',
+    'vehicle',
+    'wardrobe',
+    'uniform',
+    'architecture',
+    'objects',
+    'vegetation',
+    'voice',
+    'dialogue',
+    'ambience',
+    'continuity',
+  ];
+
+  for (const key of requiredExactnessKeys) {
+    if (!seen.has(key)) errors.push(`missing_detail_binding:${key}`);
+  }
+}
+
 export function validateSceneTruthPacket(packet: SceneTruthPacket): SceneTruthValidation {
   const errors: string[] = [];
 
@@ -148,6 +248,12 @@ export function validateSceneTruthPacket(packet: SceneTruthPacket): SceneTruthVa
   }
   if (packet.criticalUnknownFields.length) {
     errors.push('critical_unknown_field');
+  }
+
+  if (!packet.detailBindings.length) {
+    errors.push('missing_detail_bindings');
+  } else {
+    validateDetailBindings(packet, errors);
   }
 
   for (const person of packet.persons) {
