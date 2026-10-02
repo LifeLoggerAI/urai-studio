@@ -111,6 +111,7 @@ export async function GET() {
       'STRIPE_SECRET_KEY',
       'STRIPE_WEBHOOK_SECRET',
       'CRON_SECRET',
+      'URAI_SCENE_TRUTH_RECEIPT_HMAC',
     ],
     assetHandoffModel: 'uri+metadata+jobId',
     statusModel: ['live', 'fallback', 'mock', 'disconnected'],
