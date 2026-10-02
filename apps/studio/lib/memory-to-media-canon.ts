@@ -89,7 +89,7 @@ export type ScenePersonBinding = {
 };
 
 export type SceneTruthPacket = {
-  schemaVersion: '1.0.0';
+  schemaVersion: '1.1.0';
   sceneId: string;
   projectId: string;
   memoryKey: string;
@@ -232,7 +232,7 @@ function validateDetailBindings(packet: SceneTruthPacket, errors: string[]) {
 export function validateSceneTruthPacket(packet: SceneTruthPacket): SceneTruthValidation {
   const errors: string[] = [];
 
-  if (packet.schemaVersion !== '1.0.0') errors.push('unsupported_schema_version');
+  if (packet.schemaVersion !== '1.1.0') errors.push('unsupported_schema_version');
   requireSafeKey(errors, 'scene_id', packet.sceneId);
   requireSafeKey(errors, 'project_id', packet.projectId);
   requireSafeKey(errors, 'memory_key', packet.memoryKey);
