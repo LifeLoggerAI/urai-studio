@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "contractId": "urai-memory-to-media-canon-lock",
   "state": "fail-closed",
   "purpose": "Require UrAi memory/context truth to constrain generation and require post-generation validation before a shot may advance.",
@@ -55,7 +55,8 @@
       "confidence",
       "continuityDependencies",
       "unresolvedContradictions",
-      "criticalUnknownFields"
+      "criticalUnknownFields",
+      "detailBindings"
     ],
     "unresolvedCriticalFieldsBlockGeneration": true,
     "unresolvedContradictionsBlockGeneration": true,
@@ -64,7 +65,51 @@
     "eraSpecificIdentityRequiredForIdentifiablePeople": true,
     "environmentClassRequired": true,
     "roleBindingRequiredWhenOccupationOrServiceIsDepicted": true,
-    "vehicleSpecificityCannotExceedEvidence": true
+    "vehicleSpecificityCannotExceedEvidence": true,
+    "detailBindingContract": {
+      "requiredKeys": [
+        "identity",
+        "ageEra",
+        "role",
+        "date",
+        "season",
+        "timeOfDay",
+        "place",
+        "environment",
+        "weather",
+        "vehicle",
+        "wardrobe",
+        "uniform",
+        "architecture",
+        "objects",
+        "vegetation",
+        "voice",
+        "dialogue",
+        "ambience",
+        "continuity"
+      ],
+      "exactnessStates": [
+        "exact-required",
+        "source-faithful",
+        "approximation-allowed",
+        "not-applicable"
+      ],
+      "truthStates": [
+        "confirmed-source",
+        "source-supported",
+        "attributed-recollection",
+        "reconstruction",
+        "interpretive",
+        "unknown"
+      ],
+      "exactRequiredAcceptsOnly": [
+        "confirmed-source",
+        "source-supported"
+      ],
+      "unknownMayCarryConcreteValue": false,
+      "nonUnknownRequiresEvidence": true,
+      "duplicateKeysAllowed": false
+    }
   },
   "preGeneration": {
     "sceneTruthPacketRequired": true,
@@ -73,7 +118,9 @@
     "providerAuthorizationRequired": true,
     "providerAuthorizationMustBeBounded": true,
     "rawNarrativeOnlyPromptingAllowed": false,
-    "criticalContradictionMayProceed": false
+    "criticalContradictionMayProceed": false,
+    "exactDimensionsMustBeSourceLocked": true,
+    "criticalExactDimensionMayUseReconstruction": false
   },
   "failureCodes": [
     "IDENTITY_FAIL",
@@ -147,6 +194,10 @@
     "era-specific-eyewear-must-not-drift",
     "rural-environment-must-not-drift-urban",
     "generic-parent-likeness-must-fail",
-    "unsupported-period-vehicle-must-fail"
+    "unsupported-period-vehicle-must-fail",
+    "exact-season-must-not-be-inferred-from-vegetation-alone",
+    "exact-clock-time-must-not-be-inferred-from-daylight-alone",
+    "exact-vehicle-model-must-not-be-invented-from-brand-or-class",
+    "file-metadata-time-must-not-equal-capture-time-without-proof"
   ]
 }
