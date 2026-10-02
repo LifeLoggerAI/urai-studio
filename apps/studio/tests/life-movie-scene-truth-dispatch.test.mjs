@@ -24,7 +24,7 @@ const { buildJobsLifeMovieEnvelope } = module.exports;
 const base = {
   tenantId: 'tenant-fixture',
   projectId: 'project-fixture',
-  sceneTruthReceiptRef: 'str_fixture_truth_receipt_0001',
+  sceneTruthReceiptRef: 'str_abcdefghijklmnopqrstuvwx_mabcdefg_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopq',
   sceneTruthDigest: 'b'.repeat(64),
   sources: [{
     id: 'source-1',
@@ -59,7 +59,7 @@ assert.throws(
 
 const alternate = buildJobsLifeMovieEnvelope({
   ...base,
-  sceneTruthReceiptRef: 'str_fixture_truth_receipt_0002',
+  sceneTruthReceiptRef: 'str_zyxwvutsrqponmlkjihgfedc_mabcdefg_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopq',
   sceneTruthDigest: 'b'.repeat(64),
 });
 assert.notEqual(
