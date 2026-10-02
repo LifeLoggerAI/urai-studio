@@ -138,7 +138,7 @@ has('docs/URAI_STUDIO_RELEASE_EVIDENCE.schema.json', ['URAI Studio release evide
 has('firestore.rules', ['match /waitlist/{id}', 'match /contactRequests/{id}', 'match /projectRequests/{id}', 'match /integrationRequests/{id}', 'match /studioBriefs/{id}', 'match /studioJobs/{id}', 'match /studioExports/{id}', 'allow read, write: if false;']);
 has('firestore.indexes.json', ['"collectionGroup": "studioBriefs"', '"collectionGroup": "studioJobs"', '"collectionGroup": "studioExports"', '"fieldPath": "tenantId"']);
 has('storage.rules', ['match /generated/{uid}/studio', 'match /public/studio-assets', 'allow write: if false;', 'request.auth.uid == uid', 'isStudioMember(studioId)']);
-has('.github/workflows/studio-audit.yml', ['pnpm done-done:guard', 'pnpm lint', 'pnpm typecheck', 'pnpm test', 'pnpm build', 'pnpm --dir functions build', 'pnpm studio:smoke']);
+has('.github/workflows/studio-audit.yml', ['pnpm private-family-film:guard', 'pnpm done-done:guard', 'pnpm lint', 'pnpm typecheck', 'pnpm test', 'pnpm build', 'pnpm --dir functions build', 'pnpm studio:smoke']);
 has('functions/src/studio-system.ts', ['export const ping', 'export const seedStudioDemo', 'export const getStudioDashboard', 'firebase-functions/v2/https']);
 
 archivedBackupsAreNeutralized('apps/studio/src');
