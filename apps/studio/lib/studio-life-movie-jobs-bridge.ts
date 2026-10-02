@@ -97,7 +97,7 @@ export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInpu
   const projectId = safeSegment(input.projectId, 'life_movie_invalid_project');
   if (!SAFE_PROJECT.test(projectId)) fail('life_movie_invalid_project');
   const sceneTruthReceiptRef = input.sceneTruthReceiptRef;
-  if (!/^str_[A-Za-z0-9_-]{16,196}$/.test(sceneTruthReceiptRef)) fail('life_movie_invalid_scene_truth_receipt');
+  if (!/^str_[A-Za-z0-9_-]{16,64}_[a-z0-9]{8,16}_[A-Za-z0-9_-]{40,64}$/.test(sceneTruthReceiptRef)) fail('life_movie_invalid_scene_truth_receipt');
   const sceneTruthDigest = input.sceneTruthDigest;
   if (!/^[a-f0-9]{64}$/.test(sceneTruthDigest)) fail('life_movie_invalid_scene_truth_digest');
 
