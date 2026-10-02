@@ -25,6 +25,7 @@ const base = {
   tenantId: 'tenant-fixture',
   projectId: 'project-fixture',
   sceneTruthReceiptRef: 'str_fixture_truth_receipt_0001',
+  sceneTruthDigest: 'b'.repeat(64),
   sources: [{
     id: 'source-1',
     bucket: 'private-fixture-bucket',
@@ -59,6 +60,7 @@ assert.throws(
 const alternate = buildJobsLifeMovieEnvelope({
   ...base,
   sceneTruthReceiptRef: 'str_fixture_truth_receipt_0002',
+  sceneTruthDigest: 'b'.repeat(64),
 });
 assert.notEqual(
   accepted.payload.renderPlanDigest,
@@ -67,3 +69,17 @@ assert.notEqual(
 );
 
 console.log('Life Movie SceneTruth dispatch binding passed');
+
+const alternateDigest = buildJobsLifeMovieEnvelope({
+  ...base,
+  sceneTruthDigest: 'c'.repeat(64),
+});
+assert.notEqual(
+  accepted.payload.renderPlanDigest,
+  alternateDigest.payload.renderPlanDigest,
+  'SceneTruth digest must be cryptographically bound into the render-plan digest',
+);
+assert.throws(
+  () => buildJobsLifeMovieEnvelope({ ...base, sceneTruthDigest: 'bad' }),
+  /life_movie_invalid_scene_truth_digest/,
+);
