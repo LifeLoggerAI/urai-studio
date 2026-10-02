@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.5.0",
+  "schemaVersion": "1.6.0",
   "projectId": "private-memory-proof-001",
   "title": "Private Memory Proof 001",
   "classification": "private-family-review",
@@ -198,7 +198,8 @@
     "mustRejectExpiredSceneTruthReceipt": true,
     "mustRejectCrossProjectSceneTruthReceipt": true,
     "mustRejectCrossDigestSceneTruthReceipt": true,
-    "mustRejectSceneTruthReceiptReplayToDifferentRender": true
+    "mustRejectSceneTruthReceiptReplayToDifferentRender": true,
+    "mustRejectCrossOwnerSceneTruthReceipt": true
   },
   "currentMediaReview": {
     "state": "QUALITY_FAILED_REPAIR_REQUIRED",
@@ -228,6 +229,7 @@
       "receiptId",
       "projectId",
       "sceneTruthDigest",
+      "ownerUid",
       "expiry"
     ],
     "sceneTruthReceiptReplayPolicy": "first-use binds exact Jobs request fingerprint; identical retry may deduplicate; different request must conflict",
