@@ -75,3 +75,38 @@ test('public repository contract contains only abstract production policy', () =
   assert.equal(contract.publicRepoPolicy.rawPrivateMediaAllowed, false);
   assert.doesNotMatch(serialized, /drive\.google\.com|docs\.google\.com|gmail\.com/i);
 });
+
+
+test('exact scene dimensions must be individually source locked', () => {
+  assert.equal(contract.schemaVersion, '1.1.0');
+  assert.equal(contract.preGeneration.exactDimensionsMustBeSourceLocked, true);
+  assert.equal(contract.preGeneration.criticalExactDimensionMayUseReconstruction, false);
+  assert.deepEqual(
+    contract.sceneTruthPacket.detailBindingContract.exactRequiredAcceptsOnly,
+    ['confirmed-source', 'source-supported'],
+  );
+  assert.equal(contract.sceneTruthPacket.detailBindingContract.unknownMayCarryConcreteValue, false);
+  assert.equal(contract.sceneTruthPacket.detailBindingContract.nonUnknownRequiresEvidence, true);
+
+  for (const key of [
+    'identity','ageEra','role','date','season','timeOfDay','place','environment','weather',
+    'vehicle','wardrobe','uniform','architecture','objects','vegetation','voice','dialogue',
+    'ambience','continuity',
+  ]) {
+    assert.ok(
+      contract.sceneTruthPacket.detailBindingContract.requiredKeys.includes(key),
+      `missing exactness key: ${key}`,
+    );
+  }
+});
+
+test('time, season, vehicle and metadata inference regressions stay blocked', () => {
+  for (const regression of [
+    'exact-season-must-not-be-inferred-from-vegetation-alone',
+    'exact-clock-time-must-not-be-inferred-from-daylight-alone',
+    'exact-vehicle-model-must-not-be-invented-from-brand-or-class',
+    'file-metadata-time-must-not-equal-capture-time-without-proof',
+  ]) {
+    assert.ok(contract.regressionCases.includes(regression), `missing regression case: ${regression}`);
+  }
+});
