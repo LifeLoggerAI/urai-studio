@@ -81,11 +81,11 @@ function canonicalSceneDigest(record: RecordData): string {
   return computed;
 }
 
-function mintReceipt(projectId: string, digest: string) {
+function mintReceipt(projectId: string, digest: string, ownerUid: string) {
   const receiptId = randomBytes(18).toString("base64url");
   const expiresAt = Date.now() + RECEIPT_TTL_MS;
   const expiryToken = expiresAt.toString(36);
-  const message = `${receiptId}\n${projectId}\n${digest}\n${expiryToken}`;
+  const message = `${receiptId}\n${projectId}\n${digest}\n${ownerUid}\n${expiryToken}`;
   const signature = createHmac("sha256", secretValue()).update(message).digest("base64url");
   return {
     receiptRef: `str_${receiptId}_${expiryToken}_${signature}`,
@@ -171,7 +171,7 @@ export const issueAcceptedSceneTruthReceipt = onCall(
 
     const sceneTruthDigest = canonicalSceneDigest(record);
     requireSha256(sceneTruthDigest, "sceneTruthDigest");
-    const receipt = mintReceipt(projectId, sceneTruthDigest);
+    const receipt = mintReceipt(projectId, sceneTruthDigest, auth.uid);
 
     await admin.firestore().collection("sceneTruthReceipts").doc(receipt.receiptRef).set({
       receiptRef: receipt.receiptRef,
