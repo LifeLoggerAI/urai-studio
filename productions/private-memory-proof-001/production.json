@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.4.0",
+  "schemaVersion": "1.5.0",
   "projectId": "private-memory-proof-001",
   "title": "Private Memory Proof 001",
   "classification": "private-family-review",
@@ -193,7 +193,12 @@
     "mustHaveContinuityReceiptForDependentShots": true,
     "mustRetainSceneTruthReceipt": true,
     "mustBindRenderReceiptToSceneTruthReceipt": true,
-    "mustRejectMissingOrMalformedSceneTruthReceipt": true
+    "mustRejectMissingOrMalformedSceneTruthReceipt": true,
+    "mustVerifySceneTruthReceiptHmac": true,
+    "mustRejectExpiredSceneTruthReceipt": true,
+    "mustRejectCrossProjectSceneTruthReceipt": true,
+    "mustRejectCrossDigestSceneTruthReceipt": true,
+    "mustRejectSceneTruthReceiptReplayToDifferentRender": true
   },
   "currentMediaReview": {
     "state": "QUALITY_FAILED_REPAIR_REQUIRED",
@@ -215,6 +220,18 @@
     "jobsBridge": "urai-jobs/studio.render.video",
     "sceneTruthReceiptPrefix": "str_",
     "rawPrivateCanonMayEnterJobsPayload": false,
-    "opaqueReceiptOnly": true
+    "opaqueReceiptOnly": true,
+    "sceneTruthReceiptAuthority": "issueAcceptedSceneTruthReceipt",
+    "sceneTruthReceiptSecret": "URAI_SCENE_TRUTH_RECEIPT_HMAC",
+    "sceneTruthReceiptTtlMinutes": 15,
+    "sceneTruthReceiptCryptographicBinding": [
+      "receiptId",
+      "projectId",
+      "sceneTruthDigest",
+      "expiry"
+    ],
+    "sceneTruthReceiptReplayPolicy": "first-use binds exact Jobs request fingerprint; identical retry may deduplicate; different request must conflict",
+    "genericJobsCreateBypassAllowed": false,
+    "privateCanonEmbeddedInJobsPayload": false
   }
 }
