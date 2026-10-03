@@ -11,3 +11,5 @@ export * from "./user-management";
 export * from "./studio-system";
 
 export * from "./life-film-canon-broker";
+
+export * from "./data-rights";
