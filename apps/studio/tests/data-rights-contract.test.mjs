@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-const source = fs.readFileSync(new URL('../../functions/src/data-rights.ts', import.meta.url), 'utf8');
-const index = fs.readFileSync(new URL('../../functions/src/index.ts', import.meta.url), 'utf8');
-const rules = fs.readFileSync(new URL('../../firestore.rules', import.meta.url), 'utf8');
+const source = fs.readFileSync(new URL('../../../functions/src/data-rights.ts', import.meta.url), 'utf8');
+const index = fs.readFileSync(new URL('../../../functions/src/index.ts', import.meta.url), 'utf8');
+const rules = fs.readFileSync(new URL('../../../firestore.rules', import.meta.url), 'utf8');
 
 test('Studio data-rights source contract is explicit and production execution is not claimed', () => {
   assert.match(source, /STUDIO_DATA_RIGHTS_SOURCE_CONTRACT/);
