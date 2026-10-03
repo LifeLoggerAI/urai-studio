@@ -31,6 +31,8 @@ export function Header() {
           </Link>
         ))}
 
+        <a href="https://urai.app/adam">Adam</a>
+
         <Link className="nav-cta header-cta" href="/contact">
           Start a Project
         </Link>
