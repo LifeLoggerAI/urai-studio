@@ -1,4 +1,4 @@
-# urai-studio — LOCK ✅
+# urai-studio — HISTORICAL LOCK RECORD
 
 - Locked at (UTC): 2026-02-04 04:06:22
 - Repo: /home/user/urai-studio
@@ -8,3 +8,5 @@
 - Operator: user
 - Log: /tmp/urai-studio_lock_20260204_040449.log
 
+
+Current V200 note: this February 2026 record is historical and does not establish the current repository's production, provider, independent-review, Life Movie, or runtime-release state. Current truth must be established from the exact current SHA and fresh evidence.
