@@ -10,16 +10,16 @@ const compiled = ts.transpileModule(
   { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } },
 ).outputText;
 
-const module = { exports: {} };
+const cjsModule = { exports: {} };
 vm.runInNewContext(compiled, {
-  module,
-  exports: module.exports,
+  module: cjsModule,
+  exports: cjsModule.exports,
   require,
   Buffer,
   console,
 });
 
-const { buildJobsLifeMovieEnvelope } = module.exports;
+const { buildJobsLifeMovieEnvelope } = cjsModule.exports;
 
 const base = {
   tenantId: 'tenant-fixture',
