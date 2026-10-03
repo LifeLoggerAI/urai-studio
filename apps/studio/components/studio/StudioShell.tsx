@@ -57,6 +57,10 @@ export function StudioShell({ children }: { children: ReactNode }) {
           <span>Live studio spine</span>
         </div>
 
+        <a className="rail-adam-presence-v2" href="https://urai.app/adam">
+          Adam · Founder presence
+        </a>
+
         {groups.map((group) => (
           <nav key={group.title} className="rail-group-v2" aria-label={group.title}>
             <p>{group.title}</p>
