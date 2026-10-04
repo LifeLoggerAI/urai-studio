@@ -179,6 +179,17 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Studio data-rights control-plane records are server-owned. End users access
+    // them only through authenticated callables that enforce ownership, restore
+    // windows, legal holds, backup verification, and audit receipts.
+    match /studioDataRightsRequests/{id} {
+      allow read, write: if false;
+    }
+
+    match /studioDataRightsAudit/{id} {
+      allow read, write: if false;
+    }
+
     // Public forms are written only through trusted server routes using Firebase Admin.
     // Client SDK access is denied to prevent scraping, enumeration, or direct writes.
     match /waitlist/{id} {

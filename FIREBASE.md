@@ -35,6 +35,17 @@ Callable functions added for Studio system workflows:
 - `getExportJobStatus`
 - `getStudioDashboard`
 - `logStudioEvent`
+- `resolveAuthorizedLifeFilmCanon`
+- `issueAcceptedSceneTruthReceipt`
+
+## SceneTruth receipt Secret Manager authority
+
+- Required secret name: `URAI_SCENE_TRUTH_RECEIPT_HMAC`.
+- Configure the same high-entropy secret value in the UrAi Studio and UrAi Jobs Firebase/GCP projects.
+- The secret value must never be committed, returned to clients, or written into release receipts.
+- Studio uses it only to mint accepted, expiring SceneTruth receipts after private canon validation.
+- Jobs independently verifies the receipt against the exact project ID, SceneTruth digest, expiry, and HMAC signature.
+- A production release must verify the intended enabled secret version in both projects before enabling Life Movie render admission.
 
 ## Firestore Collections
 

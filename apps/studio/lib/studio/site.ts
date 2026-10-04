@@ -19,6 +19,7 @@ export const publicRoutes = [
   '/visuals',
   '/spatial',
   '/privacy',
+  '/terms',
   '/demo',
   '/waitlist',
   '/contact',

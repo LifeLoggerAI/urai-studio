@@ -41,6 +41,10 @@ jobs:
         run: |
           if [ -f pnpm-lock.yaml ]; then pnpm run build; else npm run build --if-present; fi
 
+      - name: Build Firebase Functions
+        run: |
+          if [ -f pnpm-lock.yaml ]; then pnpm --dir functions build; else npm --prefix functions run build --if-present; fi
+
       - name: Run URAI QA
         run: |
           if [ -f pnpm-lock.yaml ]; then

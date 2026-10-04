@@ -67,3 +67,5 @@ export function buildLifeFilmCanonResolutionRequest(
  * no Drive IDs, private filenames, private cloud links, or identity secrets.
  */
 export const LIFE_FILM_CANON_BROKER_FUNCTION = 'resolveAuthorizedLifeFilmCanon' as const;
+
+export const SCENE_TRUTH_RECEIPT_FUNCTION = 'issueAcceptedSceneTruthReceipt' as const;
