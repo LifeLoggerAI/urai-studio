@@ -31,7 +31,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout exact event source
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
@@ -44,7 +44,7 @@ jobs:
           test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '20'
 
@@ -87,7 +87,7 @@ jobs:
         run: pnpm run video-factory:render-artifacts
 
       - name: Checkout exact Spatial candidate
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: LifeLoggerAI/urai-spatial
           ref: ff6f3df71a18b7ac6a2e5b7872b2fd0e802dbe3b
@@ -96,7 +96,7 @@ jobs:
           fetch-depth: 1
 
       - name: Setup Node 22 for exact Spatial build
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
 
@@ -114,7 +114,7 @@ jobs:
           cd ..
 
       - name: Restore Node 20 for Studio motion proof
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '20'
 
@@ -164,7 +164,7 @@ jobs:
 
       - name: Upload Video Factory evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: urai-studio-video-factory-evidence
           path: |
