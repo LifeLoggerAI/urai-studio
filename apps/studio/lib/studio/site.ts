@@ -20,6 +20,8 @@ export const publicRoutes = [
   '/spatial',
   '/privacy',
   '/terms',
+  '/security',
+  '/accessibility',
   '/demo',
   '/waitlist',
   '/contact',

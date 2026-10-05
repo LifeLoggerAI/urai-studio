@@ -17,6 +17,8 @@ const footerLinks = [
   { label: 'Spatial', href: '/spatial' },
   { label: 'Privacy', href: '/privacy' },
   { label: 'Terms', href: '/terms' },
+  { label: 'Security', href: '/security' },
+  { label: 'Accessibility', href: '/accessibility' },
   { label: 'Contact', href: '/contact' },
   { label: 'Status', href: '/status' },
 ];
