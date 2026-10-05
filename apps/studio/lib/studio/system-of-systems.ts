@@ -83,7 +83,7 @@ export const uraiSystemNodes: UraiSystemNode[] = [
   },
   {
     id: 'emotional-os',
-    title: 'URAI Symbolic Emotional OS',
+    title: 'URAI Symbolic Emotional Weather',
     status: 'prototype',
     route: '/systems',
     description: 'The interpretation layer that converts passive signals into emotional weather, memory stars, narrator states, and symbolic fields.',
@@ -146,7 +146,7 @@ export const uraiSystemNodes: UraiSystemNode[] = [
     description: 'Scores the emotional atmosphere of the system with narrator tone, ambient identity, sonic rituals, and mood-linked scoring.',
     inputs: ['mood state', 'scene tone', 'narrator style'],
     outputs: ['sound identity', 'ambient score', 'voice direction'],
-    dependencies: ['Cinema', 'Emotional OS'],
+    dependencies: ['Cinema', 'Emotional Weather'],
     ctaLabel: 'View Music',
   },
   {
