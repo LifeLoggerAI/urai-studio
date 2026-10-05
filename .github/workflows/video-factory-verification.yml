@@ -123,6 +123,9 @@ jobs:
           corepack enable
           corepack prepare pnpm@9.7.0 --activate
 
+      - name: Restore browser for exact Spatial route capture
+        run: pnpm --filter studio exec playwright install chromium
+
       - name: Serve exact Spatial candidate locally
         shell: bash
         run: |
