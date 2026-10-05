@@ -86,9 +86,48 @@ jobs:
           STUDIO_BASE_URL: http://127.0.0.1:3000
         run: pnpm run video-factory:render-artifacts
 
-      - name: Capture route evidence
+      - name: Checkout exact Spatial candidate
+        uses: actions/checkout@v4
+        with:
+          repository: LifeLoggerAI/urai-spatial
+          ref: 3482c84c194b5c538755528f85f758ccfb234247
+          path: spatial-source
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Build exact Spatial candidate locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C spatial-source rev-parse HEAD)" = "3482c84c194b5c538755528f85f758ccfb234247"
+          test -z "$(git -C spatial-source status --porcelain --untracked-files=all)"
+          corepack prepare pnpm@10.0.0 --activate
+          cd spatial-source
+          pnpm install --frozen-lockfile
+          NEXT_PUBLIC_URAI_BUILD_SHA=3482c84c194b5c538755528f85f758ccfb234247           URAI_LOCATION_MAP_ACCEPTANCE_FIXTURES=1           URAI_FIREBASE_STATIC_EXPORT=true           pnpm build:static
+          test -z "$(git status --porcelain --untracked-files=all)"
+          cd ..
+          corepack prepare pnpm@9.7.0 --activate
+
+      - name: Serve exact Spatial candidate locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --directory spatial-source/urai-tier1/out > /tmp/urai-spatial-preview.log 2>&1 &
+          echo $! > /tmp/urai-spatial-preview.pid
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/urai-spatial-preview.log
+          exit 1
+
+      - name: Capture exact Spatial route evidence
         env:
-          SPATIAL_BASE_URL: https://urai.app
+          SPATIAL_BASE_URL: http://127.0.0.1:4173
+          URAI_SPATIAL_EXPECTED_SHA: 3482c84c194b5c538755528f85f758ccfb234247
         run: pnpm run video-factory:capture
 
       - name: Compose and verify playable diagnostic MP4
