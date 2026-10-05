@@ -95,6 +95,11 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
+      - name: Setup Node 22 for exact Spatial build
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - name: Build exact Spatial candidate locally
         shell: bash
         run: |
@@ -107,6 +112,15 @@ jobs:
           NEXT_PUBLIC_URAI_BUILD_SHA=3482c84c194b5c538755528f85f758ccfb234247           URAI_LOCATION_MAP_ACCEPTANCE_FIXTURES=1           URAI_FIREBASE_STATIC_EXPORT=true           pnpm build:static
           test -z "$(git status --porcelain --untracked-files=all)"
           cd ..
+
+      - name: Restore Node 20 for Studio motion proof
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Restore Studio pnpm
+        run: |
+          corepack enable
           corepack prepare pnpm@9.7.0 --activate
 
       - name: Serve exact Spatial candidate locally
