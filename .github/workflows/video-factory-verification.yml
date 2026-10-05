@@ -1,11 +1,14 @@
 name: URAI Studio Video Factory Verification
 
+concurrency:
+  group: urai-studio-video-factory-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 on:
   workflow_dispatch:
   pull_request:
     paths:
       - 'apps/studio/**'
-      - 'functions/**'
       - 'packages/**'
       - 'scripts/studio-video-*.mjs'
       - 'package.json'
@@ -15,7 +18,6 @@ on:
   push:
     paths:
       - 'apps/studio/**'
-      - 'functions/**'
       - 'packages/**'
       - 'scripts/studio-video-*.mjs'
       - 'package.json'
@@ -63,9 +65,6 @@ jobs:
       - name: Build
         run: pnpm --filter studio build
 
-      - name: Build Firebase Functions
-        run: pnpm --dir functions build
-
       - name: Install browser for route capture
         run: pnpm --filter studio exec playwright install chromium
 
@@ -87,10 +86,81 @@ jobs:
           STUDIO_BASE_URL: http://127.0.0.1:3000
         run: pnpm run video-factory:render-artifacts
 
-      - name: Capture route evidence
+      - name: Checkout exact Spatial candidate
+        uses: actions/checkout@v4
+        with:
+          repository: LifeLoggerAI/urai-spatial
+          ref: 20b8c2da9f602bcf2d4d977623cad48d8c7e91ce
+          path: spatial-source
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Setup Node 22 for exact Spatial build
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build exact Spatial candidate locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C spatial-source rev-parse HEAD)" = "20b8c2da9f602bcf2d4d977623cad48d8c7e91ce"
+          test -z "$(git -C spatial-source status --porcelain --untracked-files=all)"
+          corepack prepare pnpm@10.0.0 --activate
+          cd spatial-source
+          pnpm install --frozen-lockfile
+          NEXT_PUBLIC_URAI_BUILD_SHA=20b8c2da9f602bcf2d4d977623cad48d8c7e91ce           URAI_LOCATION_MAP_ACCEPTANCE_FIXTURES=1           URAI_FIREBASE_STATIC_EXPORT=true           pnpm build:static
+          test -z "$(git status --porcelain --untracked-files=all)"
+          cd ..
+
+      - name: Restore Node 20 for Studio motion proof
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Restore Studio pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.7.0 --activate
+
+      - name: Restore browser for exact Spatial route capture
+        run: pnpm --filter studio exec playwright install chromium
+
+      - name: Serve exact Spatial candidate locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --directory spatial-source/urai-tier1/out > /tmp/urai-spatial-preview.log 2>&1 &
+          echo $! > /tmp/urai-spatial-preview.pid
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/urai-spatial-preview.log
+          exit 1
+
+      - name: Capture exact Spatial route evidence
         env:
-          SPATIAL_BASE_URL: https://urai.app
+          SPATIAL_BASE_URL: http://127.0.0.1:4173
+          URAI_SPATIAL_EXPECTED_SHA: 20b8c2da9f602bcf2d4d977623cad48d8c7e91ce
         run: pnpm run video-factory:capture
+
+      - name: Compose and verify playable diagnostic MP4
+        env:
+          URAI_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+          node scripts/studio-video-compose-diagnostic.mjs
+
+      - name: Compose and verify semantic-ready motion MP4
+        env:
+          URAI_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: pnpm run video-factory:compose-motion
 
       - name: Upload Video Factory evidence
         if: always()

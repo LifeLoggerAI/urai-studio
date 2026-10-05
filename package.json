@@ -35,7 +35,8 @@
     "studio:preview": "pnpm -C apps/studio dev -- --hostname 0.0.0.0 --port ${PORT:-3000}",
     "firebase:preview": "pnpm run studio:preview",
     "firebase:emulators": "npx firebase emulators:start --only auth,firestore,storage,functions,hosting",
-    "private-family-film:guard": "node scripts/private-family-life-film-guard.mjs"
+    "private-family-film:guard": "node scripts/private-family-life-film-guard.mjs",
+    "video-factory:compose-motion": "node scripts/studio-video-compose-motion.mjs"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
