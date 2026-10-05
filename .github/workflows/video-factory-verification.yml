@@ -90,7 +90,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           repository: LifeLoggerAI/urai-spatial
-          ref: 911df21b7278c4d37a2635eff071591346972480
+          ref: ff6f3df71a18b7ac6a2e5b7872b2fd0e802dbe3b
           path: spatial-source
           persist-credentials: false
           fetch-depth: 1
@@ -104,12 +104,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git -C spatial-source rev-parse HEAD)" = "911df21b7278c4d37a2635eff071591346972480"
+          test "$(git -C spatial-source rev-parse HEAD)" = "ff6f3df71a18b7ac6a2e5b7872b2fd0e802dbe3b"
           test -z "$(git -C spatial-source status --porcelain --untracked-files=all)"
           corepack prepare pnpm@10.0.0 --activate
           cd spatial-source
           pnpm install --frozen-lockfile
-          NEXT_PUBLIC_URAI_BUILD_SHA=911df21b7278c4d37a2635eff071591346972480           URAI_LOCATION_MAP_ACCEPTANCE_FIXTURES=1           URAI_FIREBASE_STATIC_EXPORT=true           pnpm build:static
+          NEXT_PUBLIC_URAI_BUILD_SHA=ff6f3df71a18b7ac6a2e5b7872b2fd0e802dbe3b           URAI_LOCATION_MAP_ACCEPTANCE_FIXTURES=1           URAI_FIREBASE_STATIC_EXPORT=true           pnpm build:static
           test -z "$(git status --porcelain --untracked-files=all)"
           cd ..
 
@@ -144,7 +144,7 @@ jobs:
       - name: Capture exact Spatial route evidence
         env:
           SPATIAL_BASE_URL: http://127.0.0.1:4173
-          URAI_SPATIAL_EXPECTED_SHA: 911df21b7278c4d37a2635eff071591346972480
+          URAI_SPATIAL_EXPECTED_SHA: ff6f3df71a18b7ac6a2e5b7872b2fd0e802dbe3b
         run: pnpm run video-factory:capture
 
       - name: Compose and verify playable diagnostic MP4
