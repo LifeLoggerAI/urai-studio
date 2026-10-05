@@ -20,7 +20,7 @@ body {
 }
 
 :where(.button, .header-cta, .nav-cta, button, [role="button"]) {
-  min-height: 44px;
+  min-height: 48px;
   -webkit-tap-highlight-color: transparent;
 }
 
