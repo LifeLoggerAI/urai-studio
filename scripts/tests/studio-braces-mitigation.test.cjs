@@ -16,8 +16,19 @@ assert.equal(packageJson.pnpm.patchedDependencies['braces@3.0.3'],manifest.patch
 const lock=fs.readFileSync(path.join(root,'pnpm-lock.yaml'));
 assert.ok(lock.toString('utf8').includes(manifest.upstreamIntegrity));
 const studioRequire=createRequire(path.join(root,'apps/studio/package.json'));
-const tailwindRequire=createRequire(studioRequire.resolve('tailwindcss/package.json'));
-const parents=[['Tailwind chokidar',createRequire(tailwindRequire.resolve('chokidar/package.json'))],['Tailwind micromatch',createRequire(tailwindRequire.resolve('micromatch/package.json'))]];
+const fastGlobPackagePath=studioRequire.resolve('fast-glob/package.json');
+const fastGlobPackage=JSON.parse(fs.readFileSync(fastGlobPackagePath,'utf8'));
+assert.equal(fastGlobPackage.name,'fast-glob');assert.equal(typeof fastGlobPackage.dependencies.micromatch,'string');
+const fastGlobRequire=createRequire(fastGlobPackagePath);
+const micromatchPackagePath=fastGlobRequire.resolve('micromatch/package.json');
+const micromatchPackage=JSON.parse(fs.readFileSync(micromatchPackagePath,'utf8'));
+assert.equal(micromatchPackage.name,'micromatch');assert.equal(typeof micromatchPackage.dependencies.braces,'string');
+const micromatchRequire=createRequire(micromatchPackagePath);
+const parents=[['fast-glob -> micromatch -> braces',micromatchRequire]];
+const actualParentChain={
+ fastGlob:{version:fastGlobPackage.version,declaredMicromatch:fastGlobPackage.dependencies.micromatch,packageSha256:hash(fs.readFileSync(fastGlobPackagePath))},
+ micromatch:{version:micromatchPackage.version,declaredBraces:micromatchPackage.dependencies.braces,packageSha256:hash(fs.readFileSync(micromatchPackagePath))}
+};
 const bindings=[];
 for(const [name,scoped] of parents){
  const packagePath=scoped.resolve('braces/package.json'),dir=path.dirname(packagePath),pkg=JSON.parse(fs.readFileSync(packagePath,'utf8')),braces=scoped('braces');
@@ -50,8 +61,17 @@ for(const [name,scoped] of parents){
   }
  });
 }
+test('actual micromatch consumer retains brace glob API behavior',()=>{
+ const micromatch=fastGlobRequire('micromatch');assert.deepEqual(micromatch(['a.js','b.ts','c.txt'],'*.{js,ts}'),['a.js','b.ts']);
+});
+test('actual fast-glob consumer retains filesystem glob API behavior',()=>{
+ const os=require('node:os'),directory=fs.mkdtempSync(path.join(os.tmpdir(),'urai-studio-glob-'));
+ try{for(const file of ['a.js','b.ts','c.txt'])fs.writeFileSync(path.join(directory,file),'fixture');
+  const fastGlob=studioRequire('fast-glob');assert.deepEqual(fastGlob.sync('*.{js,ts}',{cwd:directory,onlyFiles:true}).sort(),['a.js','b.ts']);
+ }finally{fs.rmSync(directory,{recursive:true,force:true});}
+});
 after(()=>{
- const receipt={schemaVersion:'urai-studio-braces-installed-binding-v1',sourceSha:process.env.EXACT_SOURCE_SHA,workflowRunId:process.env.GITHUB_RUN_ID,advisoryId:manifest.advisoryId,upstreamVersion:manifest.upstreamVersion,upstreamIntegrity:manifest.upstreamIntegrity,patchSha256:manifest.patchSha256,lockSha256:{pnpm:hash(lock),npmFunctions:hash(fs.readFileSync(path.join(root,'functions/package-lock.json')))},actualConsumerBindings:bindings,installedBodyVerified:true,behaviorResult:'REFER_TO_EXACT_NODE_TEST_STEP_RESULT',rawUpstreamAdvisoryRetained:true,upstreamFixed:false,productionAcceptance:false};
+ const receipt={schemaVersion:'urai-studio-braces-installed-binding-v1',sourceSha:process.env.EXACT_SOURCE_SHA,workflowRunId:process.env.GITHUB_RUN_ID,advisoryId:manifest.advisoryId,upstreamVersion:manifest.upstreamVersion,upstreamIntegrity:manifest.upstreamIntegrity,patchSha256:manifest.patchSha256,lockSha256:{pnpm:hash(lock),npmFunctions:hash(fs.readFileSync(path.join(root,'functions/package-lock.json')))},actualParentChain,actualConsumerBindings:bindings,installedBodyVerified:true,behaviorResult:'REFER_TO_EXACT_NODE_TEST_STEP_RESULT',rawUpstreamAdvisoryRetained:true,upstreamFixed:false,productionAcceptance:false};
  fs.mkdirSync(path.join(root,'dependency-evidence'),{recursive:true});fs.writeFileSync(path.join(root,'dependency-evidence/braces-installed-runtime.json'),JSON.stringify(receipt,null,2)+'\n');
  console.log(JSON.stringify(receipt));
 });
