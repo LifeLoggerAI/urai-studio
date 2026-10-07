@@ -1,0 +1,20 @@
+# Studio private long-form bridge
+
+The Studio short-render bridge remains unchanged. `/api/studio/video-factory/longform` is a separate server API for the existing Jobs `studioLifeMovieLongformBridge` at source `9d29be1bcd3a45a4b9a743df9c9706c00811f38b`. It does not generate footage or enable rendering by default.
+
+GET reports bounded bridge readiness. POST supports `create` and the exact plan actions `status`, `cancel`, `playback`, `download`, `resume`, `assemble`, `delete-output`. Plan actions accept only `action` and `planId`. Create accepts a project, SceneTruth receipt/digest, source provenance/rights/consent, pre-cut timeline clips, audio cues, captions/dimensions and canonical `life-movie.render` consent. Caller owner/tenant/output prefixes, acceptance flags and arbitrary job IDs are rejected. The server binds tenant and owner, constructs the private output prefix, hashes the normalized render plan and derives idempotency. Jobs remains authoritative for signatures, source authority, consent, child segmentation and execution.
+
+Every API action requires a real Firebase ID token with revocation check, a signed `tenantId` or `studioId` matching the verified auth context, and the existing server-owned `studioUsers/<uid>` record with matching uid, non-disabled state and owner/admin role. Local fallback, user/tenant headers and client-writable membership roles cannot grant access. This changes neither shared auth nor membership rules. A real trusted tenant claim and server role must be provisioned separately; this code does not create them.
+
+The create envelope follows the pinned Jobs ceiling: 45 minutes, 180 bounded 15-second segments, up to 128 sources, 360 timeline items and 720 audio cues, 1080p maximum at 24/25/30 fps. Sources stay under the authenticated tenant, clips are already cut to at most 15 seconds, and every segment retains the short worker's 12 source/item/audio limits. Input is streamed with the actual Jobs 512 KiB request ceiling; oversized/invalid/foreign inputs are rejected before dispatch. Public release and provider generation remain false.
+
+Protected configuration is separate from the short bridge:
+
+- `URAI_STUDIO_LONGFORM_DISPATCH_ENABLED` must be explicitly `true`; unset/false remains hard-off.
+- `URAI_JOBS_LONGFORM_BRIDGE_URL` must be the protected HTTPS long-form endpoint, without credentials, query or fragment.
+- `URAI_STUDIO_JOBS_BRIDGE_TOKEN` is server-only managed secret injection, shared with the existing Jobs service; never place it in a public variable or URL.
+- Jobs independently retains `URAI_LIFE_MOVIE_LONGFORM_ENABLED=false` until its runtime admission evidence exists.
+
+`life-movie-longform-route.test.mjs` compiles and executes the real handler, auth guard, validator and HTTP client using synthetic Firebase/network doubles. It checks authorization, revocation, role/tenant binding, malformed/oversized/foreign inputs, successful bounded creation beyond the old short ceiling, all plan actions, cancellation/deletion owner scope, upstream denial and default-off behavior. Its pinned source fixture is contract evidence, not deployed Jobs execution. CI installs the existing TypeScript dependency; local Node 24 can use built-in type stripping for these isolated tests.
+
+This source API does not establish final-film media, an artist/editor UI, deployed restart/resume/cost evidence, real private source processing, actual captions/audio quality, Spatial cinematic-asset playback, provider consent/voice identity, devices, independent approval or production deployment. The existing Jobs #129 handoff routes producer/Studio work through Lane 4, contracts through Lane 2 and Spatial consumer admission through Lane 1. No source test marks those gates accepted.
