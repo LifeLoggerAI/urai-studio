@@ -2,10 +2,56 @@
   "classification": "PINNED_PUBLIC_SOURCE_CONTRACT_SNAPSHOT_NOT_RUNTIME_ACCEPTANCE",
   "repository": "LifeLoggerAI/urai-jobs",
   "jobsSourceSha": "9d29be1bcd3a45a4b9a743df9c9706c00811f38b",
-  "sourcePaths": ["functions/src/jobs/studioLifeMovieLongformContract.ts", "functions/src/jobs/studioLifeMovieLongformBridge.ts", "functions/src/jobs/studioLifeMovieContract.ts"],
-  "actions": ["create", "status", "cancel", "playback", "download", "resume", "assemble", "delete-output"],
-  "budget": { "maxDurationMs": 2700000, "maxSegmentDurationMs": 15000, "maxSegments": 180, "maxSources": 128, "maxTimelineItems": 360, "maxAudioCues": 720, "maxRequestBytes": 524288 },
-  "payloadKeys": ["schemaVersion", "projectId", "renderPlanDigest", "sceneTruthReceiptRef", "sceneTruthDigest", "outputPrefix", "width", "height", "fps", "sources", "timeline", "audioCues", "subtitleText", "spatialRequired", "publicReleaseAuthorized", "providerGenerationAuthorized"],
-  "consentKeys": ["purpose", "policyVersion", "decisionReceiptId"],
-  "rule": "Fixture records exact inspected Jobs schema/action/budget source. Real Jobs HMAC, consent, owner, segmentation, worker execution and consumer acceptance require their own tests and current protected runtime evidence. Refresh this snapshot when Jobs source authority changes."
+  "sourcePaths": [
+    "functions/src/jobs/studioLifeMovieLongformContract.ts",
+    "functions/src/jobs/studioLifeMovieLongformBridge.ts",
+    "functions/src/jobs/studioLifeMovieContract.ts"
+  ],
+  "actions": [
+    "create",
+    "status",
+    "cancel",
+    "playback",
+    "download",
+    "resume",
+    "assemble",
+    "delete-output"
+  ],
+  "budget": {
+    "maxDurationMs": 2700000,
+    "maxSegmentDurationMs": 15000,
+    "maxSegments": 180,
+    "maxSources": 128,
+    "maxTimelineItems": 360,
+    "maxAudioCues": 720,
+    "maxRequestBytes": 524288,
+    "maxChildSources": 12,
+    "maxChildTimelineItems": 12,
+    "maxChildAudioCues": 12
+  },
+  "payloadKeys": [
+    "schemaVersion",
+    "projectId",
+    "renderPlanDigest",
+    "sceneTruthReceiptRef",
+    "sceneTruthDigest",
+    "outputPrefix",
+    "width",
+    "height",
+    "fps",
+    "sources",
+    "timeline",
+    "audioCues",
+    "subtitleText",
+    "spatialRequired",
+    "publicReleaseAuthorized",
+    "providerGenerationAuthorized"
+  ],
+  "consentKeys": [
+    "purpose",
+    "policyVersion",
+    "decisionReceiptId"
+  ],
+  "rule": "Fixture records exact inspected Jobs schema/action/budget source. Real Jobs HMAC, consent, owner, segmentation, worker execution and consumer acceptance require their own tests and current protected runtime evidence. Refresh this snapshot when Jobs source authority changes.",
+  "segmentation": "Jobs greedy timeline-anchored ranges: append while end minus first start <=15000ms, gap <=15000ms and fewer than12 timelineitems; max180 ranges; source/audio budgets use those exact ranges."
 }

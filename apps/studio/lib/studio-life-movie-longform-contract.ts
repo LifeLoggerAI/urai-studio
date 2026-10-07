@@ -13,6 +13,9 @@ export const STUDIO_LONGFORM_JOBS_CONTRACT = {
   maxSources: 128,
   maxTimelineItems: 360,
   maxAudioCues: 720,
+  maxChildSources: 12,
+  maxChildTimelineItems: 12,
+  maxChildAudioCues: 12,
   maxRequestBytes: 512 * 1024,
   actions: ['create', 'status', 'cancel', 'playback', 'download', 'resume', 'assemble', 'delete-output'],
 } as const;
@@ -144,13 +147,25 @@ export function buildStudioLongformRequest(value: unknown, identity: { tenantId:
     if (typeof gainDb !== 'number' || !Number.isFinite(gainDb) || gainDb < -60 || gainDb > 12) fail('longform_invalid_audio_gain');
     return { sourceId, role: cue.role as JobsLifeMovieAudioCue['role'], startMs, endMs, sourceStartMs, gainDb };
   });
-  // Reject plans that would exceed any proven short child budget before dispatch.
-  for (let startMs = 0; startMs < totalMs; startMs += 15_000) {
-    const endMs = startMs + 15_000;
-    const items = timeline.filter((item) => item.startMs < endMs && item.endMs > startMs);
-    const cues = audioCues.filter((item) => item.startMs < endMs && item.endMs > startMs);
-    const ids = new Set([...items, ...cues].map((item) => item.sourceId));
-    if (items.length > 12 || cues.length > 12 || ids.size > 12) fail('longform_child_budget_exceeded');
+  // Mirror Jobs' timeline-anchored greedy ranges. Fixed 0/15-second windows
+  // cannot predict the real child when the first clip begins between windows.
+  const ranges: { startMs: number; endMs: number; items: JobsLifeMovieTimelineItem[] }[] = [];
+  let current: (typeof ranges)[number] | null = null;
+  for (const item of timeline) {
+    if (!current) { current = { startMs: item.startMs, endMs: item.endMs, items: [item] }; continue; }
+    const canAppend = item.endMs - current.startMs <= STUDIO_LONGFORM_JOBS_CONTRACT.maxSegmentDurationMs
+      && item.startMs - current.endMs <= STUDIO_LONGFORM_JOBS_CONTRACT.maxSegmentDurationMs
+      && current.items.length < STUDIO_LONGFORM_JOBS_CONTRACT.maxChildTimelineItems;
+    if (!canAppend) { ranges.push(current); current = { startMs: item.startMs, endMs: item.endMs, items: [item] }; }
+    else { current.items.push(item); current.endMs = item.endMs; }
+  }
+  if (current) ranges.push(current);
+  if (ranges.length > STUDIO_LONGFORM_JOBS_CONTRACT.maxSegments) fail('longform_segment_count_exceeded');
+  for (const range of ranges) {
+    const cues = audioCues.filter((cue) => cue.startMs < range.endMs && cue.endMs > range.startMs);
+    const ids = new Set([...range.items, ...cues].map((item) => item.sourceId));
+    if (cues.length > STUDIO_LONGFORM_JOBS_CONTRACT.maxChildAudioCues
+      || ids.size > STUDIO_LONGFORM_JOBS_CONTRACT.maxChildSources) fail('longform_child_budget_exceeded');
   }
   const subtitleText = body.subtitleText ?? '';
   if (typeof subtitleText !== 'string' || subtitleText.length > 8 * 1024 * 1024) fail('longform_invalid_subtitles');

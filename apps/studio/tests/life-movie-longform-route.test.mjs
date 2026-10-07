@@ -76,6 +76,20 @@ function createBody(clips = 3) {
     consent: { purpose: 'life-movie.render', policyVersion: 'synthetic-v1', decisionReceiptId: 'synthetic-decision' },
   };
 }
+function unalignedAudioBody(cueCount, distinctSources = false) {
+  const body = createBody(1);
+  body.timeline = [{ sourceId: 'clip-test', startMs: 5000, endMs: 15000 }, { sourceId: 'clip-test', startMs: 15000, endMs: 20000 }];
+  const sourceCount = distinctSources ? cueCount : 1;
+  for (let index = 0; index < sourceCount; index += 1) {
+    body.sources.push({ ...body.sources[0], id: `audio-${index}`, objectPath: `tenants/studio-test/audio/synthetic-${index}.wav`, mimeType: 'audio/wav' });
+  }
+  body.audioCues = Array.from({ length: cueCount }, (_, index) => ({
+    sourceId: `audio-${distinctSources ? index : 0}`, role: 'ambience',
+    startMs: index < Math.ceil(cueCount / 2) ? 5000 : 15000,
+    endMs: index < Math.ceil(cueCount / 2) ? 15000 : 20000,
+  }));
+  return body;
+}
 function request(body, { token = true, headers = {}, raw } = {}) {
   return new Request('https://studio.example.test/api/studio/video-factory/longform', {
     method: 'POST', headers: { ...(token ? { authorization: 'Bearer synthetic-user-token' } : {}), 'content-type': 'application/json', ...headers },
@@ -151,6 +165,29 @@ try {
   assert.equal(repeated.idempotencyKey, call.input.idempotencyKey);
   assert.equal(contract.buildStudioLongformRequest(createBody(180), { tenantId: 'studio-test', userId: 'user-test' }).payload.timeline.at(-1).endMs, 2_700_000);
   assert.throws(() => contract.buildStudioLongformRequest(createBody(181), { tenantId: 'studio-test', userId: 'user-test' }));
+
+  // Jobs starts this child at 5s, so both halves belong to one 5s–20s
+  // segment. Fixed 0s/15s preflight windows would wrongly admit both plans.
+  for (const body of [unalignedAudioBody(12, true), unalignedAudioBody(14)]) {
+    reset();
+    const rejected = await expectStatus(route, body, 400);
+    assert.equal(rejected.error.code, 'longform_child_budget_exceeded');
+    assert.equal(state.calls.length, 0);
+  }
+  for (const body of [unalignedAudioBody(11, true), unalignedAudioBody(12)]) {
+    reset(); await expectStatus(route, body, 202); assert.equal(state.calls.length, 1);
+  }
+  reset();
+  const dense = createBody(1);
+  dense.timeline = Array.from({ length: 13 }, (_, index) => ({ sourceId: 'clip-test', startMs: index * 100, endMs: (index + 1) * 100 }));
+  // Jobs splits at the 12-item child ceiling; the parent is admissible.
+  await expectStatus(route, dense, 202); assert.equal(state.calls.length, 1);
+  reset();
+  const excessiveSegments = structuredClone(dense);
+  excessiveSegments.timeline.push(...Array.from({ length: 179 }, (_, index) => ({ sourceId: 'clip-test', startMs: 1300 + index * 15_000, endMs: 1300 + (index + 1) * 15_000 })));
+  assert.ok(excessiveSegments.timeline.at(-1).endMs < 45 * 60 * 1000);
+  const countRejected = await expectStatus(route, excessiveSegments, 400);
+  assert.equal(countRejected.error.code, 'longform_segment_count_exceeded'); assert.equal(state.calls.length, 0);
 
   for (const change of [
     (body) => { body.userId = 'other-user'; },
