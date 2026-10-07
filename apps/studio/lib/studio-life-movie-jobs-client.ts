@@ -2,14 +2,28 @@ import 'server-only';
 
 import { readStudioLongformJson } from './studio-life-movie-longform-contract';
 
-export type StudioLifeMovieConsent = {
+export type StudioJobsRenderConsent = {
   purpose: 'life-movie.render';
   policyVersion: string;
   decisionReceiptId: string;
 };
 
+export function requireStudioJobsRenderConsent(value: unknown): StudioJobsRenderConsent {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('life_movie_invalid_render_consent');
+  const consent = value as Record<string, unknown>;
+  if (Object.keys(consent).length !== 3
+    || Object.keys(consent).some((key) => !['purpose', 'policyVersion', 'decisionReceiptId'].includes(key))
+    || consent.purpose !== 'life-movie.render' || typeof consent.policyVersion !== 'string'
+    || typeof consent.decisionReceiptId !== 'string') throw new Error('life_movie_invalid_render_consent');
+  const policyVersion = consent.policyVersion.trim(), decisionReceiptId = consent.decisionReceiptId.trim();
+  if (!policyVersion || policyVersion.length > 80 || !decisionReceiptId || decisionReceiptId.length > 160) {
+    throw new Error('life_movie_invalid_render_consent');
+  }
+  return { purpose: 'life-movie.render', policyVersion, decisionReceiptId };
+}
+
 export type StudioJobsBridgeAction =
-  | { action: 'create'; tenantId: string; userId: string; idempotencyKey: string; consent: StudioLifeMovieConsent; payload: Record<string, unknown> }
+  | { action: 'create'; tenantId: string; userId: string; idempotencyKey: string; consent: StudioJobsRenderConsent; payload: Record<string, unknown> }
   | { action: 'status' | 'cancel' | 'playback' | 'download' | 'delete-output'; tenantId: string; userId: string; jobId: string };
 
 export type StudioJobsBridgeStatus = {
@@ -100,9 +114,10 @@ export async function callStudioJobsBridge(
   const url = validateBridgeUrl(bridgeUrl());
   const token = bridgeToken();
   if (!token) throw new Error('bridge_token_missing');
+  const envelope = input.action === 'create' ? { ...input, consent: requireStudioJobsRenderConsent(input.consent) } : input;
 
   const timeoutMs = Math.max(1_000, Math.min(30_000, options.timeoutMs ?? DEFAULT_TIMEOUT_MS));
-  const encoded = JSON.stringify(input);
+  const encoded = JSON.stringify(envelope);
   if (Buffer.byteLength(encoded, 'utf8') > 512 * 1024) throw new Error('life_movie_request_too_large');
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);

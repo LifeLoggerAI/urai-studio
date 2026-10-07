@@ -8,7 +8,7 @@ import {
   type JobsLifeMovieSource,
   type JobsLifeMovieTimelineItem,
 } from '@/lib/studio-life-movie-jobs-bridge';
-import { callStudioJobsBridge, studioJobsBridgeStatus, type StudioLifeMovieConsent } from '@/lib/studio-life-movie-jobs-client';
+import { callStudioJobsBridge, requireStudioJobsRenderConsent, studioJobsBridgeStatus } from '@/lib/studio-life-movie-jobs-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,17 +27,6 @@ function authErrorResponse(auth: Awaited<ReturnType<typeof requireStudioLongform
 function record(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('life_movie_invalid_request');
   return value as Record<string, unknown>;
-}
-
-function renderConsent(value: unknown): StudioLifeMovieConsent {
-  const input = record(value);
-  if (Object.keys(input).some((key) => !['purpose', 'policyVersion', 'decisionReceiptId'].includes(key))
-    || input.purpose !== 'life-movie.render') throw new Error('life_movie_render_consent_required');
-  const text = (entry: unknown, max: number) => {
-    if (typeof entry !== 'string' || !entry.trim() || entry.length > max) throw new Error('life_movie_invalid_consent');
-    return entry.trim();
-  };
-  return { purpose: 'life-movie.render', policyVersion: text(input.policyVersion, 80), decisionReceiptId: text(input.decisionReceiptId, 160) };
 }
 
 export async function GET(request: Request) {
@@ -73,7 +62,7 @@ export async function POST(request: Request) {
     const body = record(await readStudioLongformJson(request, 512 * 1024));
     const allowedFields = ['projectId', 'sceneTruthReceiptRef', 'sceneTruthDigest', 'sources', 'timeline', 'audioCues', 'subtitleText', 'width', 'height', 'fps', 'consent'];
     if (Object.keys(body).some((key) => !allowedFields.includes(key))) throw new Error('life_movie_unknown_request_field');
-    const consent = renderConsent(body.consent);
+    const consent = requireStudioJobsRenderConsent(body.consent);
     const projectId = typeof body.projectId === 'string' ? body.projectId : '';
     const envelope = buildJobsLifeMovieEnvelope({
       tenantId: auth.tenantId,
