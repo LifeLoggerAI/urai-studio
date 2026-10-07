@@ -1,0 +1,7 @@
+{
+  "differentRecipeRejected": true,
+  "existingBytesPreserved": true,
+  "existingRecipeSha256": "b85d78b0ace9b67ae1f00f7a6f38f945f38adafe26496e60cc3f1fba19484559",
+  "schemaVersion": "urai-recipe-history-guard/1.0.0",
+  "scope": "SPECIFICATION_RECIPE_ONLY"
+}

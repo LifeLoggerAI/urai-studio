@@ -1,0 +1,32 @@
+{
+  "canonicalMappingsValidated": 12,
+  "coordinateTransformApplied": false,
+  "createdAt": "2026-10-07T00:38:42.828515Z",
+  "existingArtifactSetUnchanged": true,
+  "outputSetSha256": "2352d4cdd7aac5f9454d7b8080ba60d19987f9d75aca8a977c25a5ab82ea5d43",
+  "outputs": [
+    {
+      "bytes": 15241,
+      "path": "authority/pr154-source-binding.v1.json",
+      "sha256": "d463b070b7f291e8f7a9eea7e1e07f5497da3e167c315b04b08780b61d04e2ac"
+    },
+    {
+      "bytes": 3733,
+      "path": "authority/PR154_AUTHORITY_ADOPTION.md",
+      "sha256": "0c8f3b9e0652751fe7fc5444721c7b34ea96c2cb65f6370a5974c07e47b8c13a"
+    }
+  ],
+  "runtimeIntegrated": false,
+  "schemaVersion": "urai-world-source-adoption-receipt/1.0.0",
+  "sourceAuthority": {
+    "branch": "assets/generic-world-library-batch1-20261007",
+    "bytes": 8273,
+    "headSha": "38a07269009fc5a8b34946ecc0fa2a9566c4727a",
+    "path": "world-library/batch-01/generic-world-families.v1.json",
+    "pullRequest": 154,
+    "repository": "urai-studio",
+    "sha256": "a903eba314185da2985242248f3c81abd1c70b5a682740b1c8d9916afbe7699a",
+    "sourcePreservedUnchanged": true
+  },
+  "sourceSpecHashesVerified": true
+}

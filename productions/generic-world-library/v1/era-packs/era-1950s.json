@@ -1,0 +1,50 @@
+{
+  "compatibleRegionAxes": [
+    "us-tx-east",
+    "us-south-generic",
+    "region-adapter-required"
+  ],
+  "components": {
+    "appliances": "unbranded rounded enamel refrigerator/range briefs",
+    "architecture": "painted plaster, simple suburban shells, optional restrained trim",
+    "clothing": "later reference only: varied practical/occasion wardrobes; region and income editable",
+    "consumerObjects": [
+      "plain ceramic cups",
+      "unbranded kitchen canisters"
+    ],
+    "electronics": [
+      "dial radio",
+      "blank-screen cabinet television brief"
+    ],
+    "furniture": "wood storage, upholstered sofas, optional tubular chairs and laminate tops",
+    "lighting": "simple shaded lamps and domestic ceiling fixtures",
+    "palette": [
+      "warm neutral",
+      "optional restrained pastels",
+      "wood browns"
+    ],
+    "roadMarkings": "region-reviewed paint layout required",
+    "signage": "plain geometric sign panels; no real brand",
+    "vehicles": "unbranded mid-century sedan profile brief; mesh pending"
+  },
+  "generationStatus": "NO_ASSET_BYTES",
+  "historicalReconstruction": false,
+  "id": "era-1950s",
+  "license": "UNASSIGNED_PROJECT_AUTHORED_SPECIFICATION",
+  "provenance": {
+    "createdAt": "2026-10-07T00:16:23Z",
+    "externalAssets": [],
+    "source": "original generic design brief"
+  },
+  "schemaVersion": "urai-generic-world-spec/1.0.0",
+  "scope": "Creative modular brief; region, income, older retained objects and renovation dates vary",
+  "status": "SPECIFIED",
+  "truthClassification": "GENERIC",
+  "universalHistoricalClaim": false,
+  "variationRules": [
+    "Earlier objects may persist into later eras; do not require every object to match a single decade style",
+    "Income, region, institution and household taste can override palette choices",
+    "Exact personal wardrobe, vehicle or appliance requires authorized evidence"
+  ],
+  "version": "1.0.0"
+}
