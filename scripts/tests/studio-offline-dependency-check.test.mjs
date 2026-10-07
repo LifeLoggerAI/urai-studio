@@ -27,7 +27,7 @@ test('last_affected boundary is inclusive',()=>{const r=run({events:[{introduced
 test('later reintroduced interval remains vulnerable',()=>{const r=run({version:'2.0.0',events:[{introduced:'0'},{fixed:'1.0.0'},{introduced:'2.0.0'}]});assert.equal(r.status,1);assert.equal(r.report.findings.length,2);});
 test('withdrawn records cannot create active findings',()=>{const r=run({withdrawn:true});assert.equal(r.status,0);assert.equal(r.report.findings.length,0);});
 test('unknown severity on a matching record fails the gate',()=>{const r=run({severity:'UNKNOWN'});assert.equal(r.status,1);assert.equal(r.report.severityCounts.UNKNOWN,2);});
-test('unsupported npm advisory range fails closed without a clean report',()=>{const r=run({ranges:false});assert.notEqual(r.status,0);assert.equal(r.report,undefined);assert.match(r.stderr,/unmatchable npm advisory range/);});
+test('unsupported npm advisory range fails closed without a clean report',()=>{const r=run({ranges:false});assert.notEqual(r.status,0);assert.equal(r.report,undefined);assert.match(r.stderr,/unmatchable npm advisory range/);assert.match(r.stderr,/GHSA-fixture-range-boundaries/);assert.match(r.stderr,/@fixture\/example/);});
 test('diagnostic flag true records findings without acceptance, while false still fails',()=>{const diagnostic=run({extra:['--diagnostic-only=true']});assert.equal(diagnostic.status,0);assert.equal(diagnostic.report.findings.length,2);const accepted=run({extra:['--diagnostic-only=false']});assert.equal(accepted.status,1);});
 test('unknown diagnostic flag is refused',()=>{const r=run({extra:['--diagnostic-only=yes']});assert.notEqual(r.status,0);assert.equal(r.report,undefined);});
 

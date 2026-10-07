@@ -77,7 +77,13 @@ for await (const line of createInterface({input:createReadStream(args.catalog),c
   const severity=['LOW','MODERATE','MEDIUM','HIGH','CRITICAL'].includes(normalizedSeverity)
     ? normalizedSeverity==='MEDIUM' ? 'MODERATE' : normalizedSeverity : 'UNKNOWN';
   for (const item of relevant) for (const p of packages.filter(p=>p.name===item.package.name)) {
-    if (affected(p.version,item)) findings.push({...p,id:record.id,severity,summary:record.summary,fixedVersions:(item.ranges||[]).flatMap(r=>(r.events||[]).filter(e=>e.fixed).map(e=>e.fixed)),references:record.references});
+    let isAffected;
+    try { isAffected = affected(p.version,item); }
+    catch (error) {
+      const context=JSON.stringify({advisoryId:record.id,package:item.package.name,ranges:item.ranges,versions:item.versions});
+      throw new Error(error.message+'; public advisory context '+context.slice(0,8192));
+    }
+    if (isAffected) findings.push({...p,id:record.id,severity,summary:record.summary,fixedVersions:(item.ranges||[]).flatMap(r=>(r.events||[]).filter(e=>e.fixed).map(e=>e.fixed)),references:record.references});
   }
 }
 if (!catalogRecords) throw new Error('public advisory catalog required');
