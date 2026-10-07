@@ -7,7 +7,7 @@ import {
   type JobsLifeMovieSource,
   type JobsLifeMovieTimelineItem,
 } from '@/lib/studio-life-movie-jobs-bridge';
-import { callStudioJobsBridge, studioJobsBridgeStatus } from '@/lib/studio-life-movie-jobs-client';
+import { callStudioJobsBridge, requireStudioJobsRenderConsent, studioJobsBridgeStatus } from '@/lib/studio-life-movie-jobs-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,6 +59,7 @@ export async function POST(request: Request) {
   const projectId = typeof body.projectId === 'string' ? body.projectId : '';
 
   try {
+    const consent = requireStudioJobsRenderConsent(body.consent);
     const envelope = buildJobsLifeMovieEnvelope({
       tenantId: auth.tenantId,
       projectId,
@@ -77,6 +78,7 @@ export async function POST(request: Request) {
       action:'create',
       tenantId:auth.tenantId,
       userId:auth.uid,
+      consent,
       idempotencyKey:envelope.idempotencyKey,
       payload:envelope.payload as unknown as Record<string, unknown>,
     });
