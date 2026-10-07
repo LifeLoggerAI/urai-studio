@@ -6,15 +6,9 @@ service cloud.firestore {
     function ownsExisting() { return isSignedIn() && resource.data.uid == request.auth.uid; }
     function ownsIncoming() { return isSignedIn() && request.resource.data.uid == request.auth.uid; }
 
-    // Membership authority is provisioned by trusted servers, never by client SDKs.
-    // Bind the stored identity and tenant as well as the document path.
     function isStudioMember(studioId) {
       return isSignedIn()
-        && studioId is string
-        && exists(/databases/$(database)/documents/memberships/$(request.auth.uid + "_" + studioId))
-        && membershipDoc(studioId).data.uid == request.auth.uid
-        && membershipDoc(studioId).data.studioId == studioId
-        && membershipDoc(studioId).data.role in ["owner", "creator", "viewer"];
+        && exists(/databases/$(database)/documents/memberships/$(request.auth.uid + "_" + studioId));
     }
 
     function membershipDoc(studioId) {
@@ -33,61 +27,50 @@ service cloud.firestore {
     }
 
     match /memberships/{membershipId} {
-      allow read: if isSignedIn()
-        && resource.data.studioId is string
-        && membershipId == request.auth.uid + "_" + resource.data.studioId
-        && isStudioMember(resource.data.studioId);
-      allow create, update, delete: if false;
+      allow read: if isSignedIn() && membershipId.startsWith(request.auth.uid + "_");
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && membershipId.startsWith(request.auth.uid + "_");
     }
 
     function studioScoped() {
       return request.resource.data.studioId is string;
     }
 
-    function studioUpdateScoped() {
-      return isStudioMember(resource.data.studioId)
-        && request.resource.data.studioId == resource.data.studioId;
-    }
-
     match /clipRequests/{id} {
       allow read: if isStudioMember(resource.data.studioId);
       allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
-      allow update: if studioUpdateScoped();
+      allow update: if isStudioMember(resource.data.studioId);
       allow delete: if roleIs(resource.data.studioId, "owner");
     }
 
     match /jobs/{id} {
       allow read: if isStudioMember(resource.data.studioId);
       allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
-      allow update: if studioUpdateScoped();
+      allow update: if isStudioMember(resource.data.studioId);
       allow delete: if roleIs(resource.data.studioId, "owner");
     }
 
     match /jobRuns/{id} {
       allow read: if isStudioMember(resource.data.studioId);
-      allow create: if isStudioMember(request.resource.data.studioId);
-      allow update: if studioUpdateScoped();
+      allow create, update: if isStudioMember(request.resource.data.studioId);
       allow delete: if roleIs(resource.data.studioId, "owner");
     }
 
     match /assets/{id} {
       allow read: if isStudioMember(resource.data.studioId);
       allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
-      allow update: if studioUpdateScoped();
-      allow delete: if isStudioMember(resource.data.studioId);
+      allow update, delete: if isStudioMember(resource.data.studioId);
     }
 
     match /outputs/{id} {
       allow read: if isStudioMember(resource.data.studioId);
-      allow create: if isStudioMember(request.resource.data.studioId);
-      allow update: if studioUpdateScoped();
+      allow create, update: if isStudioMember(request.resource.data.studioId);
       allow delete: if roleIs(resource.data.studioId, "owner");
     }
 
     match /deadLetters/{id} {
       allow read: if isStudioMember(resource.data.studioId);
-      allow create: if isStudioMember(request.resource.data.studioId);
-      allow update: if studioUpdateScoped();
+      allow create, update: if isStudioMember(request.resource.data.studioId);
       allow delete: if roleIs(resource.data.studioId, "owner");
     }
 

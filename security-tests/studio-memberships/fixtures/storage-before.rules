@@ -4,17 +4,9 @@ service firebase.storage {
 
     function isSignedIn() { return request.auth != null; }
 
-    function membershipDoc(studioId) {
-      return firestore.get(/databases/(default)/documents/memberships/$(request.auth.uid + "_" + studioId));
-    }
-
     function isStudioMember(studioId) {
       return isSignedIn()
-        && studioId is string
-        && firestore.exists(/databases/(default)/documents/memberships/$(request.auth.uid + "_" + studioId))
-        && membershipDoc(studioId).data.uid == request.auth.uid
-        && membershipDoc(studioId).data.studioId == studioId
-        && membershipDoc(studioId).data.role in ["owner", "creator", "viewer"];
+        && exists(/databases/(default)/documents/memberships/$(request.auth.uid + "_" + studioId));
     }
 
     match /studios/{studioId}/uploads/{allPaths=**} {
