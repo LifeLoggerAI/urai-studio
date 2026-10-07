@@ -96,11 +96,12 @@ jobs:
           pnpm --dir functions build
       - name: Verify Studio release behavior
         run: pnpm release:check
-      - name: Require admitted lock bytes and no high or critical findings
+      - name: Require admitted lock bytes and no unmitigated high or critical findings
         run: |
           test "$(git rev-parse HEAD)" = "$EXACT_SOURCE_SHA"
           test -z "$(git status --porcelain --untracked-files=all)"
-          node scripts/studio-offline-dependency-check.mjs --pnpm-lock=pnpm-lock.yaml --npm-lock=functions/package-lock.json --catalog=dependency-evidence/public/public-osv-npm.jsonl --output=dependency-evidence/accepted-match.json --source-sha="$EXACT_SOURCE_SHA"
+          node scripts/studio-offline-dependency-check.mjs --pnpm-lock=pnpm-lock.yaml --npm-lock=functions/package-lock.json --catalog=dependency-evidence/public/public-osv-npm.jsonl --output=dependency-evidence/accepted-match.json --source-sha="$EXACT_SOURCE_SHA" --diagnostic-only=true
+          node scripts/studio-dependency-mitigation-gate.mjs --report=dependency-evidence/accepted-match.json --runtime-receipt=dependency-evidence/braces-installed-runtime.json --provenance=patches/braces-3.0.3-provenance.json --output=dependency-evidence/local-mitigation-acceptance.json --source-sha="$EXACT_SOURCE_SHA" --workflow-run-id="$GITHUB_RUN_ID"
       - name: Retain exact source and dependency receipts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
