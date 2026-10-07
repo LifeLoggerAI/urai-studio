@@ -1,14 +1,17 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { readSubmissionResult } from '@/lib/public-submission-response';
 
 export function WaitlistForm() {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage('');
+    setHasError(false);
     setIsSubmitting(true);
 
     const form = event.currentTarget;
@@ -19,6 +22,7 @@ export function WaitlistForm() {
 
     if (!email.includes('@')) {
       setIsSubmitting(false);
+      setHasError(true);
       setMessage('Enter a valid email address.');
       return;
     }
@@ -30,18 +34,21 @@ export function WaitlistForm() {
         body: JSON.stringify({ email, interest, website }),
       });
 
-      const result = await response.json().catch(() => ({ error: 'Unable to read the server response.' }));
-      setMessage(result.message || result.error || 'Thanks. You are on the list.');
-      if (response.ok) form.reset();
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Unable to join the waitlist right now.');
+      const body = await response.json().catch(() => null);
+      const result = readSubmissionResult(response.ok, body);
+      setHasError(!result.saved);
+      setMessage(result.message);
+      if (result.saved) form.reset();
+    } catch {
+      setHasError(true);
+      setMessage('We could not confirm that you joined the waitlist. Your form has been kept so you can retry.');
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <form onSubmit={submit} className="card form-card">
+    <form onSubmit={submit} className="card form-card" aria-describedby="waitlist-status">
       <label>
         Email
         <input name="email" type="email" autoComplete="email" required />
@@ -67,7 +74,7 @@ export function WaitlistForm() {
         {isSubmitting ? 'Joining...' : 'Join waitlist'}
       </button>
 
-      <p className="form-status" role="status" aria-live="polite">
+      <p id="waitlist-status" className="form-status" role={hasError ? 'alert' : 'status'}>
         {message}
       </p>
     </form>
