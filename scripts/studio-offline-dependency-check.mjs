@@ -5,9 +5,18 @@ import { createInterface } from 'node:readline';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 const semver = createRequire(import.meta.url)('semver');
-const args = Object.fromEntries(process.argv.slice(2).map(arg => { const at = arg.indexOf('='); if (at < 1) throw new Error('named arguments required'); return [arg.slice(0, at), arg.slice(at + 1)]; }));
+const args = {};
+const allowed = new Set(['--pnpm-lock','--npm-lock','--catalog','--output','--source-sha','--diagnostic-only']);
+for (const arg of process.argv.slice(2)) {
+  const at = arg.indexOf('='); if (at < 1) throw new Error('named arguments required');
+  const key=arg.slice(0,at); if (!allowed.has(key)) throw new Error('unknown argument '+key);
+  const name=key.slice(2); if (Object.hasOwn(args,name)) throw new Error('duplicate argument '+key);
+  args[name]=arg.slice(at+1);
+}
 for (const key of ['pnpm-lock','npm-lock','catalog','output','source-sha']) if (!args[key]) throw new Error('missing ' + key);
 if (!/^[0-9a-f]{40}$/.test(args['source-sha'])) throw new Error('exact source SHA required');
+if (Object.hasOwn(args,'diagnostic-only') && !['true','false'].includes(args['diagnostic-only'])) throw new Error('diagnostic flag must be true or false');
+const diagnosticOnly = args['diagnostic-only'] === 'true';
 const packages = [];
 let active = false;
 for (const line of (await readFile(args['pnpm-lock'],'utf8')).split('\n')) {
@@ -21,6 +30,8 @@ for (const line of (await readFile(args['pnpm-lock'],'utf8')).split('\n')) {
   if (!semver.valid(version)) throw new Error('unsupported resolved version ' + key);
   packages.push({lock:'pnpm',name,version,key});
 }
+const pnpmOccurrences=packages.length;
+if (!pnpmOccurrences) throw new Error('pnpm resolved packages required');
 const npm = JSON.parse(await readFile(args['npm-lock'],'utf8'));
 if (!npm.packages || ![2,3].includes(npm.lockfileVersion)) throw new Error('supported npm lock required');
 for (const [key,value] of Object.entries(npm.packages)) {
@@ -29,7 +40,8 @@ for (const [key,value] of Object.entries(npm.packages)) {
   if (!semver.valid(value.version)) throw new Error('unsupported npm resolved version ' + key);
   packages.push({lock:'npm-functions',name,version:value.version,key});
 }
-if (!packages.length) throw new Error('resolved lock packages required');
+const npmOccurrences=packages.length-pnpmOccurrences;
+if (!npmOccurrences) throw new Error('npm Functions resolved packages required');
 const names = new Set(packages.map(p=>p.name));
 function affected(version, item) {
   if (item.versions?.includes(version)) return true;
@@ -60,15 +72,18 @@ for await (const line of createInterface({input:createReadStream(args.catalog),c
   const relevant = (record.affected || []).filter(a=>a.package?.ecosystem==='npm' && names.has(a.package.name));
   if (!relevant.length) continue;
   matchedRecords.push(record);
-  const severity = record.database_specific?.severity || 'UNKNOWN';
+  const rawSeverity=record.database_specific?.severity;
+  const normalizedSeverity=typeof rawSeverity==='string' ? rawSeverity.trim().toUpperCase() : 'UNKNOWN';
+  const severity=['LOW','MODERATE','MEDIUM','HIGH','CRITICAL'].includes(normalizedSeverity)
+    ? normalizedSeverity==='MEDIUM' ? 'MODERATE' : normalizedSeverity : 'UNKNOWN';
   for (const item of relevant) for (const p of packages.filter(p=>p.name===item.package.name)) {
     if (affected(p.version,item)) findings.push({...p,id:record.id,severity,summary:record.summary,fixedVersions:(item.ranges||[]).flatMap(r=>(r.events||[]).filter(e=>e.fixed).map(e=>e.fixed)),references:record.references});
   }
 }
 if (!catalogRecords) throw new Error('public advisory catalog required');
 const severityCounts = findings.reduce((all,f)=>({...all,[f.severity]:(all[f.severity]||0)+1}),{});
-const report = {schemaVersion:'urai-studio-offline-dependency-check-v1',sourceSha:args['source-sha'],measurement:'LOCAL_RESOLVED_LOCK_MATCH_AGAINST_PUBLIC_OSV_NPM_CATALOG',privateGraphTransmitted:false,catalogSha256:hash.digest('hex'),catalogRecords,resolvedLockOccurrences:packages.length,uniqueResolvedPackages:new Set(packages.map(p=>p.name+'@'+p.version)).size,matchedPublicAdvisoryRecords:matchedRecords.length,severityCounts,findings};
+const report = {schemaVersion:'urai-studio-offline-dependency-check-v1',sourceSha:args['source-sha'],measurement:'LOCAL_RESOLVED_LOCK_MATCH_AGAINST_PUBLIC_OSV_NPM_CATALOG',privateGraphTransmitted:false,catalogSha256:hash.digest('hex'),catalogRecords,resolvedLockOccurrences:packages.length,scopeOccurrences:{pnpm:pnpmOccurrences,npmFunctions:npmOccurrences},uniqueResolvedPackages:new Set(packages.map(p=>p.name+'@'+p.version)).size,matchedPublicAdvisoryRecords:matchedRecords.length,severityCounts,findings};
 await writeFile(args.output,JSON.stringify(report,null,2)+'\n');
 await writeFile(args.output+'.public-records.json',JSON.stringify(matchedRecords,null,2)+'\n');
 console.log(JSON.stringify({sourceSha:report.sourceSha,catalogRecords,resolvedLockOccurrences:packages.length,severityCounts}));
-if (!args['diagnostic-only'] && findings.some(f=>['HIGH','CRITICAL','UNKNOWN'].includes(f.severity))) process.exitCode=1;
+if (!diagnosticOnly && findings.some(f=>['HIGH','CRITICAL','UNKNOWN'].includes(f.severity))) process.exitCode=1;

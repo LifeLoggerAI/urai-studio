@@ -64,6 +64,8 @@ jobs:
           printf '%s\n' "$EXACT_SOURCE_SHA" > dependency-evidence/source-sha.txt
       - name: Install resolved dependencies without audit disclosure
         run: pnpm install --frozen-lockfile
+      - name: Test fail-closed local advisory matching
+        run: node --test scripts/tests/studio-offline-dependency-check.test.mjs
       - name: Download only the public advisory catalog
         run: python3 scripts/studio-public-advisory-catalog.py --output-directory dependency-evidence/public
       - name: Match original locks locally for diagnostic comparison
@@ -78,7 +80,9 @@ jobs:
         run: pnpm release:check
       - name: Require admitted lock bytes and no high or critical findings
         run: |
-          git diff --exit-code -- pnpm-lock.yaml functions/package-lock.json
+          test "$(git rev-parse HEAD)" = "$EXACT_SOURCE_SHA"
+          git diff --exit-code
+          test -z "$(git ls-files --others --exclude-standard)"
           node scripts/studio-offline-dependency-check.mjs --pnpm-lock=pnpm-lock.yaml --npm-lock=functions/package-lock.json --catalog=dependency-evidence/public/public-osv-npm.jsonl --output=dependency-evidence/accepted-match.json --source-sha="$EXACT_SOURCE_SHA"
       - name: Retain exact source and dependency receipts
         if: always()
