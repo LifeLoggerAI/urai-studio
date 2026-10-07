@@ -11,7 +11,7 @@ function run({version='1.0.0',events=[{introduced:'0'},{fixed:'1.0.1'}],severity
  const dir=mkdtempSync(join(tmpdir(),'studio-offline-advisory-'));
  try{
   const lock=join(dir,'pnpm.yaml'),npm=join(dir,'npm.json'),catalog=join(dir,'public.jsonl'),out=join(dir,'report.json');
-  writeFileSync(lock,"lockfileVersion: '9.0'\npackages:\n  '@fixture/example@"+version+"':\n    resolution: {}\nsnapshots:\n  '@fixture/example@"+version+"(unrelated@4.0.0)':\n    dependencies: {}\n");
+  writeFileSync(lock,"lockfileVersion: '9.0'\npackages:\n  '@fixture/example@"+version+"':\n    resolution:\n      integrity: fixture\n    peerDependencies:\n      unrelated: '^4.0.0'\nsnapshots:\n  '@fixture/example@"+version+"(unrelated@4.0.0)':\n    dependencies: {}\n");
   if(pnpmEmpty) writeFileSync(lock,"lockfileVersion: '9.0'\nimporters:\n  .: {}\n");
   writeFileSync(npm,JSON.stringify({lockfileVersion:3,packages:npmEmpty ? {} : {'':{name:'local-fixture'},'node_modules/parent/node_modules/@fixture/example':{version}}}));
   const record={id:'GHSA-fixture-range-boundaries',database_specific:{severity},affected:[{package:{ecosystem:'npm',name:'@fixture/example'},ranges:[{type:ranges?'SEMVER':'GIT',events}]}],...(withdrawn?{withdrawn:'2026-10-07T00:00:00Z'}:{})};

@@ -23,7 +23,7 @@ for (const line of (await readFile(args['pnpm-lock'],'utf8')).split('\n')) {
   if (line === 'packages:') { active = true; continue; }
   if (active && /^\S/.test(line)) active = false;
   if (!active) continue;
-  const match = /^ {2}(.+):\s*$/.exec(line); if (!match) continue;
+  const match = /^ {2}(\S.+):\s*$/.exec(line); if (!match) continue;
   const key = match[1].replace(/^['"]|['"]$/g,'');
   const separator = key.lastIndexOf('@'); if (separator < 1) throw new Error('unsupported lock key ' + key);
   const name = key.slice(0,separator), version = key.slice(separator+1);

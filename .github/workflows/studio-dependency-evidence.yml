@@ -12,6 +12,8 @@ on:
       - 'packages/types/package.json'
       - 'scripts/studio-offline-dependency-check.mjs'
       - 'scripts/studio-public-advisory-catalog.py'
+      - 'scripts/studio-dependency-evidence-export.mjs'
+      - 'scripts/tests/studio-offline-dependency-check.test.mjs'
       - '.github/workflows/studio-dependency-evidence.yml'
 permissions:
   contents: read
@@ -62,6 +64,8 @@ jobs:
           cp functions/package-lock.json dependency-evidence/functions-package-lock.json
           sha256sum dependency-evidence/pnpm-lock.yaml dependency-evidence/functions-package-lock.json > dependency-evidence/resolved-locks.sha256
           printf '%s\n' "$EXACT_SOURCE_SHA" > dependency-evidence/source-sha.txt
+      - name: Retain bounded lock readback in authenticated job diagnostics
+        run: node scripts/studio-dependency-evidence-export.mjs pnpm-lock.yaml functions/package-lock.json
       - name: Install resolved dependencies without audit disclosure
         run: pnpm install --frozen-lockfile
       - name: Test fail-closed local advisory matching
@@ -72,6 +76,8 @@ jobs:
         run: node scripts/studio-offline-dependency-check.mjs --pnpm-lock=dependency-evidence/original/pnpm-lock.yaml --npm-lock=dependency-evidence/original/functions-package-lock.json --catalog=dependency-evidence/public/public-osv-npm.jsonl --output=dependency-evidence/original-match.json --source-sha="$EXACT_SOURCE_SHA" --diagnostic-only=true
       - name: Match resolved locks locally without transmitting graph
         run: node scripts/studio-offline-dependency-check.mjs --pnpm-lock=pnpm-lock.yaml --npm-lock=functions/package-lock.json --catalog=dependency-evidence/public/public-osv-npm.jsonl --output=dependency-evidence/resolved-match.json --source-sha="$EXACT_SOURCE_SHA" --diagnostic-only=true
+      - name: Retain bounded local match readback in authenticated job diagnostics
+        run: node scripts/studio-dependency-evidence-export.mjs dependency-evidence/original-match.json dependency-evidence/resolved-match.json
       - name: Build and typecheck Functions compatibility
         run: |
           pnpm --dir functions typecheck
@@ -81,8 +87,7 @@ jobs:
       - name: Require admitted lock bytes and no high or critical findings
         run: |
           test "$(git rev-parse HEAD)" = "$EXACT_SOURCE_SHA"
-          git diff --exit-code
-          test -z "$(git ls-files --others --exclude-standard)"
+          test -z "$(git status --porcelain --untracked-files=all)"
           node scripts/studio-offline-dependency-check.mjs --pnpm-lock=pnpm-lock.yaml --npm-lock=functions/package-lock.json --catalog=dependency-evidence/public/public-osv-npm.jsonl --output=dependency-evidence/accepted-match.json --source-sha="$EXACT_SOURCE_SHA"
       - name: Retain exact source and dependency receipts
         if: always()
