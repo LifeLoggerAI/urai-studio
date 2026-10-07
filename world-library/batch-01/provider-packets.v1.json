@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "urai-generic-world-provider-packets-v1",
+  "sourceAuthority": {
+    "studioIssue": 153,
+    "studioSpecCommit": "38a07269009fc5a8b34946ecc0fa2a9566c4727a",
+    "providerRegistryDriveId": "1yl9SfuyGoHKw8jV53h5VXpHJy5VPHoVXRy_5DXpsJ-A",
+    "providerRegistryObserved": "2026-10-06",
+    "rule": "Provider output is challenger evidence only until normalized, technically validated, rights/provenance verified, literally reviewed, promoted, runtime-bound, live-read back, and receipted."
+  },
+  "executionBoundary": {
+    "spendAuthorized": false,
+    "apiAuthVerified": {
+      "meshy": false,
+      "tripo": false
+    },
+    "allowNetworkGeneration": false,
+    "nextAction": "Authenticated provider/API inspection and zero/minimal-cost readiness call; generation only after auth state and expected cost are known."
+  },
+  "defaults": {
+    "truthClass": "GENERIC",
+    "people": "none",
+    "branding": "none",
+    "text": "no legible branded text",
+    "style": "photoreal physically plausible ordinary real-world environment; no sci-fi; no fantasy glow; no AI-mush; human-scale architecture",
+    "outputs": [
+      "GLB",
+      "PBR textures",
+      "source provenance",
+      "generation metadata"
+    ],
+    "providers": [
+      "meshy",
+      "tripo"
+    ],
+    "providerMode": "challenger-bakeoff"
+  },
+  "packets": [
+    {
+      "id": "gw-etx-living-room-1960s-1970s-v1",
+      "prompt": "Photoreal generic East Texas suburban living room spanning late 1960s to 1970s cues: modest-to-middle-income one-story home, believable drywall or wood-panel variants, period sofa/chairs, table lamps, curtains, carpet or resilient flooring variants, family-use wear, uncluttered first-person navigation, no family photos, no logos, no identifiable address, no people."
+    },
+    {
+      "id": "gw-etx-kitchen-dining-1970s-1980s-v1",
+      "prompt": "Photoreal generic East Texas family kitchen and dining room with 1970s-1980s variants: practical cabinetry, laminate counters, period appliances without branding, vinyl/tile floors, dining table, warm domestic lighting, realistic wear, accessible circulation, no people, no personal photos or names."
+    },
+    {
+      "id": "gw-etx-small-town-street-v1",
+      "prompt": "Photoreal generic small-town East Texas residential street: modest detached homes, mature trees, utility poles, driveways, ditches/curbs as regional variants, believable asphalt and lawns, period-adjustable vehicles as optional unbranded props, safe walkable sightlines, no real address or business names."
+    },
+    {
+      "id": "gw-school-classroom-hall-v1",
+      "prompt": "Photoreal generic American school classroom connected to hallway, era-adjustable 1960s-2000s: desks, chalkboard/whiteboard variants, institutional floors, lockers where era-appropriate, fluorescent/daylight lighting, no school logos, no student names or people, clear accessible circulation."
+    },
+    {
+      "id": "gw-church-sanctuary-fellowship-v1",
+      "prompt": "Photoreal respectful generic small-town church sanctuary and fellowship hall, 1950s-1990s variants: pews/chairs, simple pulpit, windows, modest social hall tables and kitchen-service area, denominationally neutral by default, no real congregation branding, no people, clear exits."
+    },
+    {
+      "id": "gw-hospital-room-corridor-v1",
+      "prompt": "Photoreal generic hospital patient room connected to corridor with era-adjustable 1960s-2000s equipment and finishes, no real hospital branding, no readable patient data, no people, believable medical architecture, uncluttered accessible navigation and clear egress."
+    },
+    {
+      "id": "gw-college-dorm-campus-v1",
+      "prompt": "Photoreal generic college dorm room and residence-hall corridor, 1970s-2000s variants: twin bed, desk, storage, period electronics as unbranded props, durable institutional finishes, no university marks, no people or personal identity artifacts."
+    },
+    {
+      "id": "gw-military-admin-ops-v1",
+      "prompt": "Photoreal generic U.S.-style military administrative/operations interior, 1960s-1990s variants: desks, secure-looking but non-sensitive generic equipment, institutional finishes, period communications-console silhouettes without classified or real system detail, no insignia, names, documents or people."
+    },
+    {
+      "id": "gw-lake-dock-shoreline-v1",
+      "prompt": "Photoreal generic East Texas-style lake shoreline and wooden dock, era-neutral base with 1960s-2020s dressing variants: believable water, vegetation, weathered timber, bank transition, safe walkable dock proportions, no named lake signage, boats optional and unbranded, no people."
+    },
+    {
+      "id": "gw-backyard-workshop-v1",
+      "prompt": "Photoreal generic East Texas backyard with detached garage/workshop: lawn, fence variants, driveway/pad, workbench/tool silhouettes, storage, weathered materials, era-adjustable 1960s-2000s props, no brands, plates, address markers or people."
+    },
+    {
+      "id": "gw-diner-cafe-v1",
+      "prompt": "Photoreal generic American diner/cafe interior, 1950s-1990s variants: booths/tables, counter, service area, believable kitchen glimpse, period material/color variants, no real restaurant branding or menu trademarks, no people, accessible aisles."
+    },
+    {
+      "id": "gw-motel-walkway-v1",
+      "prompt": "Photoreal generic roadside motel room connected to exterior walkway, 1960s-1990s variants: ordinary furnishings, bathroom threshold, exterior doors/windows, railing and parking edge, no motel brand, room-number personalization deferred, no people, safe first-person circulation."
+    }
+  ]
+}
