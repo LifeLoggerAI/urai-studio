@@ -13,6 +13,8 @@ on:
       - 'scripts/studio-offline-dependency-check.mjs'
       - 'scripts/studio-public-advisory-catalog.py'
       - 'scripts/studio-dependency-evidence-export.mjs'
+      - 'scripts/studio-functions-runtime-check.cjs'
+      - 'scripts/tests/studio-sharp-compatibility.test.mjs'
       - 'scripts/tests/studio-offline-dependency-check.test.mjs'
       - '.github/workflows/studio-dependency-evidence.yml'
 permissions:
@@ -80,6 +82,8 @@ jobs:
         run: node scripts/studio-offline-dependency-check.mjs --pnpm-lock=pnpm-lock.yaml --npm-lock=functions/package-lock.json --catalog=dependency-evidence/public/public-osv-npm.jsonl --output=dependency-evidence/resolved-match.json --source-sha="$EXACT_SOURCE_SHA" --diagnostic-only=true
       - name: Retain bounded local match readback in authenticated job diagnostics
         run: node scripts/studio-dependency-evidence-export.mjs dependency-evidence/original-match.json dependency-evidence/resolved-match.json
+      - name: Verify patched image codec compatibility
+        run: node --test scripts/tests/studio-sharp-compatibility.test.mjs
       - name: Build and typecheck Functions compatibility
         run: |
           pnpm --dir functions typecheck
@@ -105,3 +109,45 @@ jobs:
             dependency-evidence/*.sha256
             dependency-evidence/original/**
             dependency-evidence/public/public-catalog-receipt.json
+
+  npm-functions:
+    name: Clean npm Functions compilation and local SDK linkage
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      EXACT_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      GCLOUD_PROJECT: urai-studio-ci
+      FIREBASE_CONFIG: '{"projectId":"urai-studio-ci","storageBucket":"urai-studio-ci.appspot.com"}'
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Require exact clean source
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXACT_SOURCE_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Setup declared Node20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+      - name: Install exact npm deployment lock without audit disclosure
+        run: npm --prefix functions ci --no-audit --no-fund
+      - name: Compile and link actual installed Functions SDK
+        run: |
+          npm --prefix functions run typecheck
+          npm --prefix functions run build
+          node scripts/studio-functions-runtime-check.cjs
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Retain compiled Functions and exact runtime receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: urai-studio-npm-functions-${{ github.event.pull_request.head.sha || github.sha }}
+          retention-days: 30
+          path: |
+            dependency-evidence/npm-functions-runtime.json
+            functions/lib/**
+            functions/package.json
+            functions/package-lock.json
