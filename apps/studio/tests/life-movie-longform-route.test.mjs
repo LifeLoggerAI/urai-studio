@@ -217,6 +217,14 @@ try {
   reset(); await expectStatus(route, createBody(), 400, { raw: '[' }); assert.equal(state.calls.length, 0);
   reset(); await expectStatus(route, createBody(), 413, { raw: 'x'.repeat(512 * 1024 + 1) }); assert.equal(state.calls.length, 0);
   reset(); await expectStatus(route, createBody(), 413, { headers: { 'content-length': String(512 * 1024 + 1) } });
+  reset();
+  const nearLimit = createBody(1);
+  nearLimit.subtitleText = '';
+  const callerBytes = Buffer.byteLength(JSON.stringify(nearLimit), 'utf8');
+  nearLimit.subtitleText = 'x'.repeat(512 * 1024 - 1 - callerBytes);
+  assert.equal(Buffer.byteLength(JSON.stringify(nearLimit), 'utf8'), 512 * 1024 - 1);
+  const encodedRejection = await expectStatus(route, nearLimit, 413);
+  assert.equal(encodedRejection.error.code, 'longform_request_too_large'); assert.equal(state.calls.length, 0);
 
   for (const action of ['status', 'cancel', 'playback', 'download', 'resume', 'assemble', 'delete-output']) {
     reset(); const planId = `lmp_${'b'.repeat(20)}`;

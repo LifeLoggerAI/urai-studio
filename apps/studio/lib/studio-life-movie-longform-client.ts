@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { StudioLongformError, readStudioLongformJson, type StudioLongformRequest } from './studio-life-movie-longform-contract';
+import { StudioLongformError, readStudioLongformJson, STUDIO_LONGFORM_JOBS_CONTRACT, type StudioLongformRequest } from './studio-life-movie-longform-contract';
 
 function validateUrl(raw: string): URL {
   let url;
@@ -33,12 +33,18 @@ export async function callStudioLongformBridge(input: StudioLongformRequest): Pr
   if (!status.dispatchAvailable) throw new StudioLongformError(status.reason || 'longform_bridge_unavailable', 503);
   const url = validateUrl(String(process.env.URAI_JOBS_LONGFORM_BRIDGE_URL || '').trim());
   const token = String(process.env.URAI_STUDIO_JOBS_BRIDGE_TOKEN || '').trim();
+  const encoded = JSON.stringify(input);
+  // Server-owned identity, digests and flags add bytes to the caller's body.
+  // Apply Jobs' bound to the actual transmitted UTF-8 envelope as well.
+  if (Buffer.byteLength(encoded, 'utf8') > STUDIO_LONGFORM_JOBS_CONTRACT.maxRequestBytes) {
+    throw new StudioLongformError('longform_request_too_large', 413);
+  }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 15_000);
   try {
     const response = await fetch(url, {
       method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json', accept: 'application/json' },
-      cache: 'no-store', signal: controller.signal, body: JSON.stringify(input),
+      cache: 'no-store', signal: controller.signal, body: encoded,
     });
     let body;
     try { body = await readStudioLongformJson(response, 2 * 1024 * 1024); }
