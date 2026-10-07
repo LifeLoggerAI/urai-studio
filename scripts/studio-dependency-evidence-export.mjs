@@ -1,7 +1,7 @@
 
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-const allowed=new Set(['pnpm-lock.yaml','functions/package-lock.json','dependency-evidence/original-match.json','dependency-evidence/resolved-match.json','dependency-evidence/accepted-match.json']);
+const allowed=new Set(['pnpm-lock.yaml','functions/package-lock.json','dependency-evidence/original-match.json','dependency-evidence/resolved-match.json','dependency-evidence/accepted-match.json','dependency-evidence/braces-installed-runtime.json','dependency-evidence/npm-functions-runtime.json']);
 for(const path of process.argv.slice(2)){
  if(!allowed.has(path))throw new Error('evidence export path refused');
  const bytes=await readFile(path);if(bytes.length>2*1024*1024)throw new Error('evidence export byte budget');

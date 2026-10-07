@@ -78,6 +78,9 @@
       "uuid@^13": "13.0.1",
       "baseline-browser-mapping@^2": "2.11.0",
       "sharp@^0.34": "0.35.5"
+    },
+    "patchedDependencies": {
+      "braces@3.0.3": "patches/braces-3.0.3-security.patch"
     }
   }
 }

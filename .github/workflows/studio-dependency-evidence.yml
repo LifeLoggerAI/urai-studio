@@ -15,6 +15,8 @@ on:
       - 'scripts/studio-dependency-evidence-export.mjs'
       - 'scripts/studio-functions-runtime-check.cjs'
       - 'scripts/tests/studio-sharp-compatibility.test.mjs'
+      - 'scripts/tests/studio-braces-mitigation.test.cjs'
+      - 'patches/**'
       - 'scripts/tests/studio-offline-dependency-check.test.mjs'
       - '.github/workflows/studio-dependency-evidence.yml'
 permissions:
@@ -74,6 +76,10 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Test fail-closed local advisory matching
         run: node --test scripts/tests/studio-offline-dependency-check.test.mjs
+      - name: Verify committed patch and actual installed braces consumers
+        run: |
+          node --test scripts/tests/studio-braces-mitigation.test.cjs
+          node scripts/studio-dependency-evidence-export.mjs dependency-evidence/braces-installed-runtime.json
       - name: Download only the public advisory catalog
         run: python3 scripts/studio-public-advisory-catalog.py --output-directory dependency-evidence/public
       - name: Match original locks locally for diagnostic comparison
@@ -139,6 +145,7 @@ jobs:
           npm --prefix functions run typecheck
           npm --prefix functions run build
           node scripts/studio-functions-runtime-check.cjs
+          node scripts/studio-dependency-evidence-export.mjs dependency-evidence/npm-functions-runtime.json
           test -z "$(git status --porcelain --untracked-files=all)"
       - name: Retain compiled Functions and exact runtime receipt
         if: always()
