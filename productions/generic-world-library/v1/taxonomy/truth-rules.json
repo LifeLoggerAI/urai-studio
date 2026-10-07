@@ -1,0 +1,21 @@
+{
+  "allowedStates": [
+    "GENERIC",
+    "INTERPRETIVE",
+    "RECORDED SOURCE TRUTH",
+    "SPATIALLY RECONSTRUCTABLE",
+    "UNKNOWN"
+  ],
+  "catalogDefault": "GENERIC",
+  "generatedPlaceIsAutobiographicalTruth": false,
+  "hybridRule": "Preserve truth class per component. A recorded insert does not promote its generic shell or generic props to recorded truth.",
+  "noAutomaticTruthPromotion": true,
+  "personalizationRequires": [
+    "authorized evidence reference",
+    "consent scope",
+    "source truth class",
+    "alignment receipt",
+    "reviewed person/place association"
+  ],
+  "realNamesAddressesFacesVoicesInThisCatalog": false
+}

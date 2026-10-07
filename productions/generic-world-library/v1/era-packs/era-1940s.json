@@ -1,0 +1,50 @@
+{
+  "compatibleRegionAxes": [
+    "us-tx-east",
+    "us-south-generic",
+    "region-adapter-required"
+  ],
+  "components": {
+    "appliances": "enamel cabinets and separately reviewed period appliance silhouettes",
+    "architecture": "simple painted plaster or timber interiors; dimensions remain configurable",
+    "clothing": "generic later character reference brief: restrained woven fabrics; no likeness or uniform insignia",
+    "consumerObjects": [
+      "plain ceramics",
+      "wooden storage",
+      "analogue clock"
+    ],
+    "electronics": [
+      "unbranded dial-radio enclosure"
+    ],
+    "furniture": "plain solid-wood profiles, upholstered chairs, restrained joinery",
+    "lighting": "opaque shades and simple ceiling fixtures",
+    "palette": [
+      "warm off-white",
+      "wood browns",
+      "muted fabric colors"
+    ],
+    "roadMarkings": "sparse generic road context; exact markings require regional source",
+    "signage": "plain painted lettering guides with no generated brand text",
+    "vehicles": "unbranded rounded-body silhouette brief; licensed or generated mesh pending"
+  },
+  "generationStatus": "NO_ASSET_BYTES",
+  "historicalReconstruction": false,
+  "id": "era-1940s",
+  "license": "UNASSIGNED_PROJECT_AUTHORED_SPECIFICATION",
+  "provenance": {
+    "createdAt": "2026-10-07T00:16:23Z",
+    "externalAssets": [],
+    "source": "original generic design brief"
+  },
+  "schemaVersion": "urai-generic-world-spec/1.0.0",
+  "scope": "Creative modular brief; region, income, older retained objects and renovation dates vary",
+  "status": "SPECIFIED",
+  "truthClassification": "GENERIC",
+  "universalHistoricalClaim": false,
+  "variationRules": [
+    "Earlier objects may persist into later eras; do not require every object to match a single decade style",
+    "Income, region, institution and household taste can override palette choices",
+    "Exact personal wardrobe, vehicle or appliance requires authorized evidence"
+  ],
+  "version": "1.0.0"
+}

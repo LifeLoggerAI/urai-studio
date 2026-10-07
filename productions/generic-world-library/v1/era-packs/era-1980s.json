@@ -1,0 +1,51 @@
+{
+  "compatibleRegionAxes": [
+    "us-tx-east",
+    "us-south-generic",
+    "region-adapter-required"
+  ],
+  "components": {
+    "appliances": "unbranded squared enamel appliance profiles",
+    "architecture": "ordinary painted walls with optional subdued patterned wallcovering",
+    "clothing": "later character brief only: conservative and expressive variants without universal style claim",
+    "consumerObjects": [
+      "blank folders",
+      "plain storage bins",
+      "generic dishware"
+    ],
+    "electronics": [
+      "corded push-button telephone",
+      "inactive CRT enclosure"
+    ],
+    "furniture": "wood/laminate storage, cloth sofas, utilitarian institutional desks",
+    "lighting": "shaded lamps and diffuse ceiling fixtures",
+    "palette": [
+      "warm neutrals",
+      "muted blue/green",
+      "wood finishes"
+    ],
+    "roadMarkings": "regional source review needed",
+    "signage": "plain printed panels; no recognizable logo layout",
+    "vehicles": "unbranded angular compact/sedan brief"
+  },
+  "generationStatus": "NO_ASSET_BYTES",
+  "historicalReconstruction": false,
+  "id": "era-1980s",
+  "license": "UNASSIGNED_PROJECT_AUTHORED_SPECIFICATION",
+  "provenance": {
+    "createdAt": "2026-10-07T00:16:23Z",
+    "externalAssets": [],
+    "source": "original generic design brief"
+  },
+  "schemaVersion": "urai-generic-world-spec/1.0.0",
+  "scope": "Creative modular brief; region, income, older retained objects and renovation dates vary",
+  "status": "SPECIFIED",
+  "truthClassification": "GENERIC",
+  "universalHistoricalClaim": false,
+  "variationRules": [
+    "Earlier objects may persist into later eras; do not require every object to match a single decade style",
+    "Income, region, institution and household taste can override palette choices",
+    "Exact personal wardrobe, vehicle or appliance requires authorized evidence"
+  ],
+  "version": "1.0.0"
+}
