@@ -45,6 +45,7 @@ export async function callStudioLongformBridge(input: StudioLongformRequest): Pr
     const response = await fetch(url, {
       method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json', accept: 'application/json' },
       cache: 'no-store', signal: controller.signal, body: encoded,
+      redirect: 'error',
     });
     let body;
     try { body = await readStudioLongformJson(response, 2 * 1024 * 1024); }
@@ -61,3 +62,4 @@ export async function callStudioLongformBridge(input: StudioLongformRequest): Pr
     throw new StudioLongformError(error instanceof Error && error.name === 'AbortError' ? 'longform_bridge_timeout' : 'longform_bridge_unavailable', error instanceof Error && error.name === 'AbortError' ? 504 : 502);
   } finally { clearTimeout(timer); }
 }
+

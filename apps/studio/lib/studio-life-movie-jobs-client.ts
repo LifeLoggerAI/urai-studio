@@ -1,7 +1,15 @@
 import 'server-only';
 
+import { readStudioLongformJson } from './studio-life-movie-longform-contract';
+
+export type StudioLifeMovieConsent = {
+  purpose: 'life-movie.render';
+  policyVersion: string;
+  decisionReceiptId: string;
+};
+
 export type StudioJobsBridgeAction =
-  | { action: 'create'; tenantId: string; userId: string; idempotencyKey: string; payload: Record<string, unknown> }
+  | { action: 'create'; tenantId: string; userId: string; idempotencyKey: string; consent: StudioLifeMovieConsent; payload: Record<string, unknown> }
   | { action: 'status' | 'cancel' | 'playback' | 'download' | 'delete-output'; tenantId: string; userId: string; jobId: string };
 
 export type StudioJobsBridgeStatus = {
@@ -94,6 +102,8 @@ export async function callStudioJobsBridge(
   if (!token) throw new Error('bridge_token_missing');
 
   const timeoutMs = Math.max(1_000, Math.min(30_000, options.timeoutMs ?? DEFAULT_TIMEOUT_MS));
+  const encoded = JSON.stringify(input);
+  if (Buffer.byteLength(encoded, 'utf8') > 512 * 1024) throw new Error('life_movie_request_too_large');
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -106,17 +116,21 @@ export async function callStudioJobsBridge(
         accept: 'application/json',
       },
       cache: 'no-store',
+      // Private plans and the bridge credential are bound to the configured
+      // endpoint. A redirect must never replay them to another endpoint.
+      redirect: 'error',
       signal: controller.signal,
-      body: JSON.stringify(input),
+      body: encoded,
     });
 
-    const body = await response.json().catch(() => null);
+    const body = await readStudioLongformJson(response, 2 * 1024 * 1024).catch(() => null);
     if (!body || typeof body !== 'object' || Array.isArray(body)) {
       throw new Error('jobs_bridge_invalid_response');
     }
 
     if (!response.ok || (body as Record<string, unknown>).ok !== true) {
       const code = typeof (body as Record<string, unknown>).error === 'string'
+        && /^[a-z0-9_]{1,120}$/.test(String((body as Record<string, unknown>).error))
         ? String((body as Record<string, unknown>).error)
         : `jobs_bridge_http_${response.status}`;
       throw new Error(code);
@@ -130,3 +144,4 @@ export async function callStudioJobsBridge(
     clearTimeout(timer);
   }
 }
+

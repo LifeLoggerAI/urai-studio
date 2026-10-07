@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 
-import { requireStudioAuth } from '@/lib/studio-auth';
+import { requireStudioLongformAuth } from '@/lib/studio-life-movie-longform-auth';
+import { readStudioLongformJson, StudioLongformError } from '@/lib/studio-life-movie-longform-contract';
 import {
   buildJobsLifeMovieEnvelope,
   type JobsLifeMovieAudioCue,
   type JobsLifeMovieSource,
   type JobsLifeMovieTimelineItem,
 } from '@/lib/studio-life-movie-jobs-bridge';
-import { callStudioJobsBridge, studioJobsBridgeStatus } from '@/lib/studio-life-movie-jobs-client';
+import { callStudioJobsBridge, studioJobsBridgeStatus, type StudioLifeMovieConsent } from '@/lib/studio-life-movie-jobs-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,19 +16,32 @@ function json(body: Record<string, unknown>, status = 200) {
   return NextResponse.json(body, { status, headers: { 'Cache-Control': 'no-store, max-age=0' } });
 }
 
-function authErrorResponse(auth: Awaited<ReturnType<typeof requireStudioAuth>>) {
+function authErrorResponse(auth: Awaited<ReturnType<typeof requireStudioLongformAuth>>) {
   return json(
     { ok:false, status:auth.error?.code ?? 'unauthorized', error:auth.error, authMode:auth.authMode },
-    auth.error?.code === 'studio_membership_lookup_failed' ? 503 : auth.error?.code === 'studio_edit_role_required' ? 403 : 401,
+    auth.error?.code === 'longform_edit_authority_unavailable' ? 503
+      : ['longform_edit_role_required', 'longform_tenant_binding_required'].includes(auth.error?.code || '') ? 403 : 401,
   );
 }
 
 function record(value: unknown): Record<string, unknown> {
-  return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('life_movie_invalid_request');
+  return value as Record<string, unknown>;
+}
+
+function renderConsent(value: unknown): StudioLifeMovieConsent {
+  const input = record(value);
+  if (Object.keys(input).some((key) => !['purpose', 'policyVersion', 'decisionReceiptId'].includes(key))
+    || input.purpose !== 'life-movie.render') throw new Error('life_movie_render_consent_required');
+  const text = (entry: unknown, max: number) => {
+    if (typeof entry !== 'string' || !entry.trim() || entry.length > max) throw new Error('life_movie_invalid_consent');
+    return entry.trim();
+  };
+  return { purpose: 'life-movie.render', policyVersion: text(input.policyVersion, 80), decisionReceiptId: text(input.decisionReceiptId, 160) };
 }
 
 export async function GET(request: Request) {
-  const auth = await requireStudioAuth(request);
+  const auth = await requireStudioLongformAuth(request);
   if (!auth.ok) return authErrorResponse(auth);
 
   return json({
@@ -41,7 +55,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const auth = await requireStudioAuth(request);
+  const auth = await requireStudioLongformAuth(request);
   if (!auth.ok) return authErrorResponse(auth);
 
   const status = studioJobsBridgeStatus();
@@ -55,10 +69,12 @@ export async function POST(request: Request) {
     }, 503);
   }
 
-  const body = record(await request.json().catch(() => null));
-  const projectId = typeof body.projectId === 'string' ? body.projectId : '';
-
   try {
+    const body = record(await readStudioLongformJson(request, 512 * 1024));
+    const allowedFields = ['projectId', 'sceneTruthReceiptRef', 'sceneTruthDigest', 'sources', 'timeline', 'audioCues', 'subtitleText', 'width', 'height', 'fps', 'consent'];
+    if (Object.keys(body).some((key) => !allowedFields.includes(key))) throw new Error('life_movie_unknown_request_field');
+    const consent = renderConsent(body.consent);
+    const projectId = typeof body.projectId === 'string' ? body.projectId : '';
     const envelope = buildJobsLifeMovieEnvelope({
       tenantId: auth.tenantId,
       projectId,
@@ -78,6 +94,7 @@ export async function POST(request: Request) {
       tenantId:auth.tenantId,
       userId:auth.uid,
       idempotencyKey:envelope.idempotencyKey,
+      consent,
       payload:envelope.payload as unknown as Record<string, unknown>,
     });
 
@@ -99,12 +116,16 @@ export async function POST(request: Request) {
       result,
     }, 202);
   } catch (error) {
-    const code = error instanceof Error ? error.message : 'life_movie_jobs_dispatch_failed';
+    const rawCode = error instanceof StudioLongformError ? error.code : error instanceof Error ? error.message : 'life_movie_jobs_dispatch_failed';
+    const code = /^[a-z0-9_]{1,120}$/.test(rawCode) ? rawCode : 'life_movie_jobs_dispatch_failed';
     return json({
       ok:false,
       status:'dispatch-rejected',
       tenantId:auth.tenantId,
       error:{ code, message:'Life Movie dispatch did not complete.' },
-    }, code === 'jobs_bridge_timeout' ? 504 : 400);
+    }, code === 'jobs_bridge_timeout' ? 504
+      : code === 'life_movie_request_too_large' ? 413
+      : error instanceof StudioLongformError ? error.status : 400);
   }
 }
+

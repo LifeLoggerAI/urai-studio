@@ -17,7 +17,7 @@ assert.ok(client.includes("jobs_bridge_timeout"));
 assert.equal(client.includes('NEXT_PUBLIC_URAI_STUDIO_JOBS_BRIDGE_TOKEN'), false);
 assert.equal(client.includes('console.log(token'), false);
 
-assert.ok(route.includes('requireStudioAuth(request)'));
+assert.ok(route.includes('requireStudioLongformAuth(request)'));
 assert.ok(route.includes("status:'dispatch-unavailable'"));
 assert.ok(route.includes("action:'create'"));
 assert.ok(route.includes('tenantId:auth.tenantId'));
@@ -32,3 +32,4 @@ assert.ok(route.includes('providerGenerationAuthorized:false'));
 assert.ok(route.includes("executionAuthority:'urai-jobs'"));
 
 console.log('Life Movie Jobs dispatcher contract passed');
+
