@@ -7,7 +7,7 @@ historical evidence of that source. They do not accept the current release owner
 The workflow now uses frozen dependencies and proves the Studio source is clean
 after installation and build, before diagnostic output generation. It captures
 the freshly read Spatial #1636 owner at
-`ab33bbacd09c28bcf7354bf8a8897a67e46a72a4`. A dependency-free guard freshly reads
+`613df7e1915274ae50e1883e61ad9dac7c53ec3f`. A dependency-free guard freshly reads
 that exact GitHub owner before capture and after both MP4 compositions. A moved, closed, forked or
 unavailable owner fails the diagnostic workflow. The clone and route deployment
 fingerprints must match the configured exact SHA. Artifact names include Studio
