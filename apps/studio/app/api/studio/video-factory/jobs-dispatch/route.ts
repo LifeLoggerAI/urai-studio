@@ -20,7 +20,7 @@ function authErrorResponse(auth: Awaited<ReturnType<typeof requireStudioLongform
   return json(
     { ok:false, status:auth.error?.code ?? 'unauthorized', error:auth.error, authMode:auth.authMode },
     auth.error?.code === 'longform_edit_authority_unavailable' ? 503
-      : ['longform_edit_role_required', 'longform_tenant_binding_required'].includes(auth.error?.code || '') ? 403 : 401,
+      : ['longform_edit_role_required', 'longform_tenant_binding_required', 'longform_current_owner_deletion_fence'].includes(auth.error?.code || '') ? 403 : 401,
   );
 }
 

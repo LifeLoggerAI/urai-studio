@@ -1,4 +1,5 @@
 import 'server-only';
+import { createHash } from 'node:crypto';
 
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { requireStudioAuth, type StudioAuthContext } from '@/lib/studio-auth';
@@ -41,8 +42,22 @@ export async function requireStudioLongformAuth(request: Request): Promise<Studi
     if (!user || user.uid !== auth.uid || user.disabled === true || !['owner', 'admin'].includes(String(user.role))) {
       return denied(auth, 'longform_edit_role_required');
     }
+    const fenceId = createHash('sha256').update(`urai-studio-data-rights:${auth.uid}`).digest('hex');
+    const fenceSnapshot = await adminDb.doc(`studioDataRightsOwnerFences/${fenceId}`).get();
+    const fence = fenceSnapshot.exists ? fenceSnapshot.data() : null;
+    if (fenceSnapshot.exists && (!fence || fence.uid !== auth.uid || fence.active !== false || fence.permanent !== false)) {
+      return denied(auth, 'longform_current_owner_deletion_fence');
+    }
   } catch {
     return denied(auth, 'longform_edit_authority_unavailable');
+  }
+
+  try {
+    const current = await adminAuth.verifyIdToken(token, true);
+    const currentTenant = typeof current.tenantId === 'string' ? current.tenantId : current.studioId;
+    if (current.uid !== auth.uid || currentTenant !== auth.tenantId) return denied(auth, 'longform_tenant_binding_required');
+  } catch {
+    return denied(auth, 'longform_verified_identity_required');
   }
 
   return auth;

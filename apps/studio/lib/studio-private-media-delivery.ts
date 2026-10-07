@@ -45,12 +45,15 @@ function configuration(bridge: 'short' | 'longform') {
 
 /** Identity is server-owned. Descriptors never grant access; every bounded read
  * repeats current revoked-token/edit-role/tenant authority and provisioning. */
-export async function deliverStudioPrivateMedia(args: { value: unknown; identity: Identity; request: Request; authorize: () => Promise<Authority> }): Promise<Response> {
+export async function deliverStudioPrivateMedia(args: { value: unknown; identity: Identity; request: Request; authorize: () => Promise<Authority>; operationDeadline?: number }): Promise<Response> {
   const { bridge, delivery } = parseStudioPrivateMedia(args.value);
-  const snapshot = configuration(bridge), expires = Math.min(delivery.expiresAt, Date.now() + 55_000);
+  const operationDeadline = args.operationDeadline ?? Date.now() + 50_000;
+  if (!Number.isSafeInteger(operationDeadline) || operationDeadline <= Date.now() || operationDeadline > Date.now() + 50_000) fail();
+  const snapshot = configuration(bridge), expires = Math.min(delivery.expiresAt, operationDeadline);
   const controller = new AbortController();
   let stopped = false;
   const timer = setTimeout(() => { controller.abort(); cleanup(); void reader?.cancel().catch(() => {}); }, Math.max(1, expires - Date.now()));
+  timer.unref?.();
   const abort = () => controller.abort();
   args.request.signal.addEventListener('abort', abort, { once: true });
   const cleanup = () => { if (stopped) return; stopped = true; clearTimeout(timer); args.request.signal.removeEventListener('abort', abort); };
@@ -67,7 +70,7 @@ export async function deliverStudioPrivateMedia(args: { value: unknown; identity
     const response = await fetch(snapshot.url, { method: 'POST', headers: { authorization: `Bearer ${snapshot.token}`,
       'content-type': 'application/json', accept: delivery.kind === 'mp4' ? 'video/mp4' : 'application/x-subrip' },
       body: JSON.stringify({ ...delivery, tenantId: args.identity.tenantId, userId: args.identity.uid }),
-      cache: 'no-store', redirect: 'error', signal: controller.signal });
+      cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer', redirect: 'error', signal: controller.signal });
     await check();
     const mime = delivery.kind === 'mp4' ? 'video/mp4' : 'application/x-subrip';
     const length = response.headers.get('content-length');

@@ -12,7 +12,7 @@ function json(body: Record<string, unknown>, status = 200) {
 function authError(auth: Awaited<ReturnType<typeof requireStudioLongformAuth>>) {
   const code = auth.error?.code || 'unauthorized';
   return json({ ok: false, error: { code, message: 'Verified Studio long-form edit authority is required.' } },
-    code === 'longform_edit_authority_unavailable' ? 503 : ['longform_edit_role_required', 'longform_tenant_binding_required'].includes(code) ? 403 : 401);
+    code === 'longform_edit_authority_unavailable' ? 503 : ['longform_edit_role_required', 'longform_tenant_binding_required', 'longform_current_owner_deletion_fence'].includes(code) ? 403 : 401);
 }
 
 export async function GET(request: Request) {

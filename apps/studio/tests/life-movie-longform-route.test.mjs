@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as nodeModule from 'node:module';
+import { createHash } from 'node:crypto';
 
 // Compile the actual checked-in handlers. Next/Firebase/network boundaries are
 // mocked; authorization, validation, bounded body reading and dispatch are real.
@@ -20,7 +21,7 @@ const previousEnv = Object.fromEntries(envKeys.map((name) => [name, process.env[
 const state = {
   decoded: { uid: 'user-test', tenantId: 'studio-test' },
   user: { uid: 'user-test', role: 'owner', disabled: false },
-  authFailure: false, revoked: false, lookupFailure: false, exists: true,
+  authFailure: false, revoked: false, lookupFailure: false, exists: true, fenceExists: false, fence: null,
   checks: [], paths: [], calls: [], response: { ok: true, planId: `lmp_${'a'.repeat(20)}` }, status: 200,
 };
 globalThis[key] = state;
@@ -34,6 +35,7 @@ export const adminAuth = { async verifyIdToken(token, revokedCheck) {
 } };
 export const adminDb = { doc(path) { state.paths.push(path); return { async get() {
   if(state.lookupFailure) throw new Error('test-lookup-failed');
+  if(path.startsWith('studioDataRightsOwnerFences/'))return {exists:state.fenceExists,data:()=>state.fence};
   return { exists: state.exists, data: () => state.user };
 } }; } };
 `);
@@ -53,6 +55,7 @@ function reset() {
   state.decoded = { uid: 'user-test', tenantId: 'studio-test' };
   state.user = { uid: 'user-test', role: 'owner', disabled: false };
   state.authFailure = false; state.revoked = false; state.lookupFailure = false; state.exists = true;
+  state.fenceExists = false; state.fence = {uid:'user-test',active:false,permanent:false};
   state.checks = []; state.paths = []; state.calls = [];
   state.status = 200; state.response = { ok: true, planId: `lmp_${'a'.repeat(20)}` };
   process.env.NODE_ENV = 'production';
@@ -129,6 +132,10 @@ try {
   await expectStatus(route, createBody(), 403);
   reset(); state.lookupFailure = true;
   await expectStatus(route, createBody(), 503);
+  for(const change of [()=>{state.fence.active=true;},()=>{state.fence.permanent=true;},()=>{state.fence.uid='foreign-owner';}]) {
+    reset();state.fenceExists=true;change();await expectStatus(route,createBody(),403);assert.equal(state.calls.length,0);
+  }
+  reset();state.fenceExists=true;await expectStatus(route,createBody(),202);assert.equal(state.calls.length,1);
   reset(); delete process.env.URAI_STUDIO_LONGFORM_DISPATCH_ENABLED;
   const disabled = await expectStatus(route, createBody(), 503);
   assert.equal(disabled.error.code, 'longform_dispatch_disabled'); assert.equal(state.calls.length, 0);
@@ -160,7 +167,8 @@ try {
   assert.equal(call.input.payload.timeline.at(-1).endMs, 45_000);
   assert.equal(call.input.payload.outputPrefix, 'tenants/studio-test/life-movies/project-test/');
   assert.match(call.input.payload.renderPlanDigest, /^[a-f0-9]{64}$/);
-  assert.ok(state.paths.every((path) => path === 'studioUsers/user-test'));
+  assert.deepEqual([...new Set(state.paths)].sort(), ['studioUsers/user-test',
+    `studioDataRightsOwnerFences/${createHash('sha256').update('urai-studio-data-rights:user-test').digest('hex')}`].sort());
   const repeated = contract.buildStudioLongformRequest(createBody(), { tenantId: 'studio-test', userId: 'user-test' });
   assert.equal(repeated.idempotencyKey, call.input.idempotencyKey);
   assert.equal(contract.buildStudioLongformRequest(createBody(180), { tenantId: 'studio-test', userId: 'user-test' }).payload.timeline.at(-1).endMs, 2_700_000);

@@ -1,0 +1,46 @@
+name: Studio authenticated data-rights emulator
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: studio-data-rights-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  loaded-private-export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      URAI_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+      GCLOUD_PROJECT: demo-urai-studio
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+        with:
+          version: '9.7.0'
+      - name: Install Java 21
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-21-jre-headless
+          java -version
+      - name: Exact frozen dependency graph and compiled handlers
+        run: |
+          test "$(git rev-parse HEAD)" = "$URAI_EXACT_HEAD"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          pnpm install --frozen-lockfile
+          pnpm --dir functions build
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Actual creator, HTTP delivery, withdrawal and Storage deny
+        run: >-
+          npx --yes firebase-tools@15.24.0 emulators:exec
+          --project demo-urai-studio --config firebase.data-rights-emulator.json
+          --only auth,firestore,storage,functions
+          "node scripts/studio-data-rights-emulator-e2e.mjs"

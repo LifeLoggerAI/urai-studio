@@ -11,14 +11,14 @@ function loadSource(path, adminDb = null) {
   const compiled = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
-  const module = { exports: {} };
+  const fixtureModule = { exports: {} };
   vm.runInNewContext(compiled, {
-    module,
-    exports: module.exports,
+    module: fixtureModule,
+    exports: fixtureModule.exports,
     require: (name) => name === '@/lib/firebase-admin' ? { adminDb } : require(name),
     process: { env: { NODE_ENV: 'production' } },
   });
-  return module.exports;
+  return fixtureModule.exports;
 }
 
 function makeDatabase({ failCommit = false, failQuery = false, failWrite = false, duplicate = false } = {}) {

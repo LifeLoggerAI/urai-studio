@@ -207,6 +207,22 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    match /studioDataRightsOwnerFences/{id} {
+      allow read, write: if false;
+    }
+
+    match /studioDataRightsMaintenance/{id} {
+      allow read, write: if false;
+    }
+
+    match /consentRecords/{id} {
+      allow read, write: if false;
+    }
+
+    match /privacyDeletionTombstones/{id} {
+      allow read, write: if false;
+    }
+
     // Public forms are written only through trusted server routes using Firebase Admin.
     // Client SDK access is denied to prevent scraping, enumeration, or direct writes.
     match /waitlist/{id} {

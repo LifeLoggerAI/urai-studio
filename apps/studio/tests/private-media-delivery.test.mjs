@@ -15,7 +15,9 @@ const source=name=>compile(fs.readFileSync(new URL(`../${name}`,import.meta.url)
 const admin=uri(`const state=globalThis[Symbol.for('urai.studio.private-media-route')];
 export const firebaseAdminStatus={mode:'synthetic'};
 export const adminAuth={async verifyIdToken(token,checkRevoked){state.checks.push(checkRevoked);if(state.revoked&&checkRevoked)throw Error('synthetic revoked');return {...state.decoded};}};
-export const adminDb={doc(){return{async get(){return{exists:true,data:()=>({...state.user})};}}}};`);
+export const adminDb={doc(path){return{async get(){
+if(path.startsWith('studioDataRightsOwnerFences/'))return{exists:state.fenceExists,data:()=>({...state.fence})};
+return{exists:true,data:()=>({...state.user})};}}}};`);
 const auth=uri(source('lib/studio-auth.ts').replaceAll('@/lib/firebase-admin',admin));
 const edit=uri(source('lib/studio-life-movie-longform-auth.ts').replaceAll('server-only',uri('export {};'))
   .replaceAll('@/lib/firebase-admin',admin).replaceAll('@/lib/studio-auth',auth));
@@ -34,6 +36,7 @@ function body(bridge = 'short') { return { bridge, delivery: { schemaVersion:'ur
 function reset() {
   authority={ok:true,...identity};calls=[];process.env.NODE_ENV='production';
   routeState.decoded={...identity};routeState.user={uid:identity.uid,role:'owner',disabled:false};routeState.revoked=false;routeState.checks=[];
+  routeState.fenceExists=false;routeState.fence={uid:identity.uid,active:false,permanent:false};
   process.env.URAI_STUDIO_JOBS_DISPATCH_ENABLED='true';process.env.URAI_STUDIO_LONGFORM_DISPATCH_ENABLED='true';
   process.env.URAI_JOBS_BRIDGE_URL='https://synthetic-short.invalid/bridge';process.env.URAI_JOBS_LONGFORM_BRIDGE_URL='https://synthetic-long.invalid/bridge';
   process.env.URAI_STUDIO_JOBS_BRIDGE_TOKEN='synthetic-private-bridge-token';
