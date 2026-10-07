@@ -31,7 +31,7 @@ jobs:
     timeout-minutes: 30
     env:
       URAI_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
-      URAI_SPATIAL_EXPECTED_SHA: 68883fdd8a8ee9587fa0d978546ee0c332d45f32
+      URAI_SPATIAL_EXPECTED_SHA: ab33bbacd09c28bcf7354bf8a8897a67e46a72a4
     steps:
       - name: Checkout exact event source
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
