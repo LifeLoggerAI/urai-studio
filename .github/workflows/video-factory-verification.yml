@@ -29,6 +29,9 @@ jobs:
   verify-video-factory:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      URAI_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+      URAI_SPATIAL_EXPECTED_SHA: 68883fdd8a8ee9587fa0d978546ee0c332d45f32
     steps:
       - name: Checkout exact event source
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -53,8 +56,13 @@ jobs:
         with:
           version: '9.7.0'
 
-      - name: Install
-        run: pnpm install --no-frozen-lockfile
+      - name: Install exact dependency graph
+        run: pnpm install --frozen-lockfile
+
+      - name: Prove install preserved exact source
+        run: |
+          test "$(git rev-parse HEAD)" = "$URAI_EXACT_HEAD"
+          test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Test
         run: pnpm --filter studio test
@@ -64,6 +72,18 @@ jobs:
 
       - name: Build
         run: pnpm --filter studio build
+
+      - name: Prove Studio build preserved exact source
+        run: |
+          test "$(git rev-parse HEAD)" = "$URAI_EXACT_HEAD"
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Bind current Spatial owner before capture
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p _audit/20260623_urai_studio_video_factory/source-authority
+          node scripts/studio-video-spatial-owner.mjs > _audit/20260623_urai_studio_video_factory/source-authority/current-source-before.json
 
       - name: Install browser for route capture
         run: pnpm --filter studio exec playwright install chromium
@@ -90,7 +110,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           repository: LifeLoggerAI/urai-spatial
-          ref: ff6f3df71a18b7ac6a2e5b7872b2fd0e802dbe3b
+          ref: ${{ env.URAI_SPATIAL_EXPECTED_SHA }}
           path: spatial-source
           persist-credentials: false
           fetch-depth: 1
@@ -104,12 +124,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git -C spatial-source rev-parse HEAD)" = "ff6f3df71a18b7ac6a2e5b7872b2fd0e802dbe3b"
+          test "$(git -C spatial-source rev-parse HEAD)" = "$URAI_SPATIAL_EXPECTED_SHA"
           test -z "$(git -C spatial-source status --porcelain --untracked-files=all)"
           corepack prepare pnpm@10.0.0 --activate
           cd spatial-source
           pnpm install --frozen-lockfile
-          NEXT_PUBLIC_URAI_BUILD_SHA=ff6f3df71a18b7ac6a2e5b7872b2fd0e802dbe3b           URAI_LOCATION_MAP_ACCEPTANCE_FIXTURES=1           URAI_FIREBASE_STATIC_EXPORT=true           pnpm build:static
+          NEXT_PUBLIC_URAI_BUILD_SHA="$URAI_SPATIAL_EXPECTED_SHA" \
+            URAI_LOCATION_MAP_ACCEPTANCE_FIXTURES=1 \
+            URAI_FIREBASE_STATIC_EXPORT=true pnpm build:static
           test -z "$(git status --porcelain --untracked-files=all)"
           cd ..
 
@@ -144,8 +166,12 @@ jobs:
       - name: Capture exact Spatial route evidence
         env:
           SPATIAL_BASE_URL: http://127.0.0.1:4173
-          URAI_SPATIAL_EXPECTED_SHA: ff6f3df71a18b7ac6a2e5b7872b2fd0e802dbe3b
         run: pnpm run video-factory:capture
+
+      - name: Revalidate current Spatial owner after capture
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/studio-video-spatial-owner.mjs > _audit/20260623_urai_studio_video_factory/source-authority/current-source-after.json
 
       - name: Compose and verify playable diagnostic MP4
         env:
@@ -166,7 +192,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: urai-studio-video-factory-evidence
+          name: urai-studio-video-${{ github.event.pull_request.head.sha || github.sha }}-${{ env.URAI_SPATIAL_EXPECTED_SHA }}-${{ github.run_id }}
           path: |
             _audit/20260623_urai_studio_video_factory/**
             /tmp/urai-studio-dev.log
+
