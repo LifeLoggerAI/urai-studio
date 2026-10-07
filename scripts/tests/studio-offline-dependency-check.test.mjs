@@ -7,14 +7,14 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 const checker=fileURLToPath(new URL('../studio-offline-dependency-check.mjs',import.meta.url));
-function run({version='1.0.0',events=[{introduced:'0'},{fixed:'1.0.1'}],severity='HIGH',withdrawn=false,extra=[],ranges=true,pnpmEmpty=false,npmEmpty=false}={}){
+function run({version='1.0.0',events=[{introduced:'0'},{fixed:'1.0.1'}],severity='HIGH',withdrawn=false,extra=[],ranges=true,rangeType=null,pnpmEmpty=false,npmEmpty=false}={}){
  const dir=mkdtempSync(join(tmpdir(),'studio-offline-advisory-'));
  try{
   const lock=join(dir,'pnpm.yaml'),npm=join(dir,'npm.json'),catalog=join(dir,'public.jsonl'),out=join(dir,'report.json');
   writeFileSync(lock,"lockfileVersion: '9.0'\npackages:\n  '@fixture/example@"+version+"':\n    resolution:\n      integrity: fixture\n    peerDependencies:\n      unrelated: '^4.0.0'\nsnapshots:\n  '@fixture/example@"+version+"(unrelated@4.0.0)':\n    dependencies: {}\n");
   if(pnpmEmpty) writeFileSync(lock,"lockfileVersion: '9.0'\nimporters:\n  .: {}\n");
   writeFileSync(npm,JSON.stringify({lockfileVersion:3,packages:npmEmpty ? {} : {'':{name:'local-fixture'},'node_modules/parent/node_modules/@fixture/example':{version}}}));
-  const record={id:'GHSA-fixture-range-boundaries',database_specific:{severity},affected:[{package:{ecosystem:'npm',name:'@fixture/example'},ranges:[{type:ranges?'SEMVER':'GIT',events}]}],...(withdrawn?{withdrawn:'2026-10-07T00:00:00Z'}:{})};
+  const record={id:'GHSA-fixture-range-boundaries',database_specific:{severity},affected:[{package:{ecosystem:'npm',name:'@fixture/example'},ranges:[{type:rangeType||(ranges?'SEMVER':'GIT'),events}]}],...(withdrawn?{withdrawn:'2026-10-07T00:00:00Z'}:{})};
   writeFileSync(catalog,JSON.stringify(record)+'\n');
   const child=spawnSync(process.execPath,[checker,'--pnpm-lock='+lock,'--npm-lock='+npm,'--catalog='+catalog,'--output='+out,'--source-sha=854477d80b1a7aa718edb60d1ed4c1cf22dbed9d',...extra],{encoding:'utf8'});
   let report;try{report=JSON.parse(readFileSync(out,'utf8'));}catch{}
@@ -35,3 +35,13 @@ test('mixed-case known severity is normalized and still blocks admission',()=>{c
 test('unknown string and non-string severity fail closed',()=>{for(const severity of ['SAFE',{value:'LOW'},12,null]){const r=run({severity});assert.equal(r.status,1);assert.equal(r.report.severityCounts.UNKNOWN,2);}});
 test('both lock scopes must contain resolved packages',()=>{for(const empty of [{pnpmEmpty:true},{npmEmpty:true}]){const r=run(empty);assert.notEqual(r.status,0);assert.equal(r.report,undefined);assert.match(r.stderr,/resolved packages required/);}});
 test('unknown and duplicate CLI arguments are refused',()=>{for(const extra of [['--unrecognized=true'],['--diagnostic-only=true','--diagnostic-only=false']]){const r=run({extra});assert.notEqual(r.status,0);assert.equal(r.report,undefined);assert.match(r.stderr,/unknown argument|duplicate argument/);}});
+
+test('npm ecosystem numeric shorthand uses its full lower boundary',()=>{const below=run({rangeType:'ECOSYSTEM',version:'12.9.9',events:[{introduced:'13.0'},{fixed:'14.2.30'}]});assert.equal(below.status,0);const included=run({rangeType:'ECOSYSTEM',version:'13.0.0',events:[{introduced:'13.0'},{fixed:'14.2.30'}]});assert.equal(included.status,1);});
+test('ecosystem boundaries refuse arbitrary version coercion',()=>{for(const introduced of ['prefix13.0suffix','13.x','13.0.1.2']){const r=run({rangeType:'ECOSYSTEM',events:[{introduced},{fixed:'14.2.30'}]});assert.notEqual(r.status,0);assert.equal(r.report,undefined);assert.match(r.stderr,/invalid advisory boundary/);}});
+test('semver ranges do not accept ecosystem numeric shorthand',()=>{const r=run({events:[{introduced:'1.0'},{fixed:'1.0.1'}]});assert.notEqual(r.status,0);assert.equal(r.report,undefined);});
+test('wildcard limits allow an open affected timeline',()=>{const r=run({version:'2.0.0',events:[{limit:'*'},{introduced:'0'}]});assert.equal(r.status,1);assert.equal(r.report.findings.length,2);});
+test('multiple OSV limits are independent caps rather than timeline closures',()=>{const r=run({version:'2.0.0',events:[{introduced:'0'},{limit:'1.5.0'},{limit:'3.0.0'}]});assert.equal(r.status,1);const end=run({version:'3.0.0',events:[{introduced:'0'},{limit:'1.5.0'},{limit:'3.0.0'}]});assert.equal(end.status,0);});
+test('limits do not reactivate a fixed interval',()=>{const r=run({version:'2.0.0',events:[{introduced:'0'},{fixed:'1.0.1'},{limit:'3.0.0'}]});assert.equal(r.status,0);});
+test('range status follows version order even if events are unsorted',()=>{const r=run({version:'2.0.0',events:[{fixed:'3.0.0'},{introduced:'2.0.0'},{fixed:'1.0.1'},{introduced:'0'}]});assert.equal(r.status,1);});
+test('invalid or multiple event keys fail closed',()=>{for(const event of [{introduced:'0',fixed:'2.0.0'},{other:'1.0.0'},{introduced:13}]){const r=run({events:[event]});assert.notEqual(r.status,0);assert.equal(r.report,undefined);}});
+test('reports bind both exact source and both lock byte hashes',()=>{const r=run({version:'1.0.1'});assert.equal(r.report.lockSourceSha,r.report.sourceSha);assert.match(r.report.lockSha256.pnpm,/^[0-9a-f]{64}$/);assert.match(r.report.lockSha256.npmFunctions,/^[0-9a-f]{64}$/);});

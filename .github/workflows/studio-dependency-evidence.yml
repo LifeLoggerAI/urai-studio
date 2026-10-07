@@ -40,6 +40,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+          fetch-depth: 0
       - name: Require exact clean source
         run: |
           test "$(git rev-parse HEAD)" = "$EXACT_SOURCE_SHA"
@@ -56,8 +57,9 @@ jobs:
       - name: Preserve original locks and resolve supported public packages
         run: |
           mkdir -p dependency-evidence/original
-          cp pnpm-lock.yaml dependency-evidence/original/pnpm-lock.yaml
-          cp functions/package-lock.json dependency-evidence/original/functions-package-lock.json
+          git show 854477d80b1a7aa718edb60d1ed4c1cf22dbed9d:pnpm-lock.yaml > dependency-evidence/original/pnpm-lock.yaml
+          git show 854477d80b1a7aa718edb60d1ed4c1cf22dbed9d:functions/package-lock.json > dependency-evidence/original/functions-package-lock.json
+          printf '%s\n' 854477d80b1a7aa718edb60d1ed4c1cf22dbed9d > dependency-evidence/original/lock-source-sha.txt
           pnpm install --lockfile-only --ignore-scripts
           npm --prefix functions install --package-lock-only --ignore-scripts --no-audit --no-fund
           cp pnpm-lock.yaml dependency-evidence/pnpm-lock.yaml
@@ -73,7 +75,7 @@ jobs:
       - name: Download only the public advisory catalog
         run: python3 scripts/studio-public-advisory-catalog.py --output-directory dependency-evidence/public
       - name: Match original locks locally for diagnostic comparison
-        run: node scripts/studio-offline-dependency-check.mjs --pnpm-lock=dependency-evidence/original/pnpm-lock.yaml --npm-lock=dependency-evidence/original/functions-package-lock.json --catalog=dependency-evidence/public/public-osv-npm.jsonl --output=dependency-evidence/original-match.json --source-sha="$EXACT_SOURCE_SHA" --diagnostic-only=true
+        run: node scripts/studio-offline-dependency-check.mjs --pnpm-lock=dependency-evidence/original/pnpm-lock.yaml --npm-lock=dependency-evidence/original/functions-package-lock.json --catalog=dependency-evidence/public/public-osv-npm.jsonl --output=dependency-evidence/original-match.json --lock-source-sha=854477d80b1a7aa718edb60d1ed4c1cf22dbed9d --source-sha="$EXACT_SOURCE_SHA" --diagnostic-only=true
       - name: Match resolved locks locally without transmitting graph
         run: node scripts/studio-offline-dependency-check.mjs --pnpm-lock=pnpm-lock.yaml --npm-lock=functions/package-lock.json --catalog=dependency-evidence/public/public-osv-npm.jsonl --output=dependency-evidence/resolved-match.json --source-sha="$EXACT_SOURCE_SHA" --diagnostic-only=true
       - name: Retain bounded local match readback in authenticated job diagnostics
