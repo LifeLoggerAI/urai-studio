@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { assertCurrentSpatialOwner, verifyCurrentSpatialOwner } from '../../../scripts/studio-video-spatial-owner.mjs';
 
-const spatialSha = '68883fdd8a8ee9587fa0d978546ee0c332d45f32', studioSha = '77364c6e17a30633d870c5604410a37ac1fc27b3';
+const spatialSha = '68883fdd8a8ee9587fa0d978546ee0c332d45f32', studioSha = '1'.repeat(40);
 const fixture = () => ({ number: 1636, state: 'open', merged: false,
   base: { repo: { full_name: 'LifeLoggerAI/urai-spatial' } },
   head: { sha: spatialSha, repo: { full_name: 'LifeLoggerAI/urai-spatial' } } });
@@ -44,9 +44,21 @@ for (const fake of [
   cases++;
 }
 const workflow = fs.readFileSync(new URL('../../../.github/workflows/video-factory-verification.yml', import.meta.url), 'utf8');
+let streamChunks = 0, streamCancelled = false;
+await assert.rejects(verifyCurrentSpatialOwner({ expectedSha: spatialSha, studioSha,
+  fetchImpl: async () => new Response(new ReadableStream({
+    pull(controller) { streamChunks++; controller.enqueue(new Uint8Array(131_072)); },
+    cancel() { streamCancelled = true; },
+  }, { highWaterMark: 0 })) }), /response_invalid/);
+assert.equal(streamCancelled, true); assert.equal(streamChunks, 9); cases++;
+await assert.rejects(verifyCurrentSpatialOwner({ expectedSha: spatialSha, studioSha,
+  fetchImpl: async () => new Response(new ReadableStream({
+    start(controller) { controller.error(new Error('private upstream details')); },
+  })) }), error => error.message === 'spatial_current_owner_response_invalid'); cases++;
 assert.ok(workflow.includes('pnpm install --frozen-lockfile')); assert.ok(!workflow.includes('--no-frozen-lockfile'));
 assert.ok(workflow.includes('Prove install preserved exact source')); assert.ok(workflow.includes('Prove Studio build preserved exact source'));
 assert.ok(workflow.includes('Bind current Spatial owner before capture')); assert.ok(workflow.includes('Revalidate current Spatial owner after capture'));
+assert.ok(workflow.indexOf('Revalidate current Spatial owner after capture') > workflow.indexOf('Compose and verify semantic-ready motion MP4'));
 assert.equal((workflow.match(/studio-video-spatial-owner\.mjs/g) || []).length, 2);
 assert.ok(workflow.includes('ref: ${{ env.URAI_SPATIAL_EXPECTED_SHA }}')); assert.ok(workflow.includes(spatialSha));
 assert.ok(!workflow.includes('ff6f3df71a18b7ac6a2e5b7872b2fd0e802dbe3b'));

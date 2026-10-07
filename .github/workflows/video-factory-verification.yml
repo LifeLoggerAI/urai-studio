@@ -168,11 +168,6 @@ jobs:
           SPATIAL_BASE_URL: http://127.0.0.1:4173
         run: pnpm run video-factory:capture
 
-      - name: Revalidate current Spatial owner after capture
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: node scripts/studio-video-spatial-owner.mjs > _audit/20260623_urai_studio_video_factory/source-authority/current-source-after.json
-
       - name: Compose and verify playable diagnostic MP4
         env:
           URAI_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -187,6 +182,11 @@ jobs:
         env:
           URAI_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
         run: pnpm run video-factory:compose-motion
+
+      - name: Revalidate current Spatial owner after capture
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/studio-video-spatial-owner.mjs > _audit/20260623_urai_studio_video_factory/source-authority/current-source-after.json
 
       - name: Upload Video Factory evidence
         if: always()

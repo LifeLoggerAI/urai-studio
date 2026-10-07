@@ -21,14 +21,33 @@ export async function verifyCurrentSpatialOwner({ expectedSha, studioSha, token 
   if (!exactSha.test(String(expectedSha || '')) || !exactSha.test(String(studioSha || ''))) {
     throw new Error('video_exact_source_invalid');
   }
+  const signal = AbortSignal.timeout(10_000);
   const response = await fetchImpl(`https://api.github.com/repos/${spatialRepository}/pulls/${spatialOwnerPr}`, {
-    method: 'GET', redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(10_000),
+    method: 'GET', redirect: 'error', cache: 'no-store', signal,
     headers: { accept: 'application/vnd.github+json', 'x-github-api-version': '2022-11-28',
       ...(token ? { authorization: `Bearer ${token}` } : {}) },
   }).catch(() => { throw new Error('spatial_current_owner_read_unavailable'); });
   if (!response.ok) throw new Error('spatial_current_owner_read_unavailable');
-  const body = await response.text().catch(() => { throw new Error('spatial_current_owner_response_invalid'); });
-  if (Buffer.byteLength(body, 'utf8') > 1_048_576) throw new Error('spatial_current_owner_response_invalid');
+  let body;
+  try {
+    if (!response.body) throw new Error();
+    const reader = response.body.getReader(), chunks = [];
+    let bytes = 0;
+    const abort = () => { reader.cancel().catch(() => {}); };
+    signal.addEventListener('abort', abort, { once: true });
+    try {
+      while (true) {
+        if (signal.aborted) throw new Error();
+        const next = await reader.read();
+        if (signal.aborted) throw new Error();
+        if (next.done) break;
+        bytes += next.value.byteLength;
+        if (bytes > 1_048_576) { await reader.cancel(); throw new Error(); }
+        chunks.push(next.value);
+      }
+      body = Buffer.concat(chunks, bytes).toString('utf8');
+    } finally { signal.removeEventListener('abort', abort); reader.releaseLock(); }
+  } catch { throw new Error('spatial_current_owner_response_invalid'); }
   let pr;
   try { pr = JSON.parse(body); } catch { throw new Error('spatial_current_owner_response_invalid'); }
   return {
