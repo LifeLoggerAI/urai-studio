@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { after, before, test } from 'node:test';
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
 import { doc, getDoc, setDoc, updateDoc, deleteDoc, deleteField } from 'firebase/firestore';
@@ -174,4 +175,40 @@ test('trusted-server membership removal revokes subsequent document and Storage 
   });
   await assertFails(getDoc(doc(ctx('revocable').firestore(), 'studios/studio-a')));
   await assertFails(getBytes(ref(ctx('revocable').storage(), 'studios/studio-a/uploads/source.txt')));
+});
+
+const ownerFenceId = uid => createHash('sha256').update(`urai-studio-data-rights:${uid}`).digest('hex');
+for (const state of ['active', 'permanent']) test(`self-owned upload ${state} fence blocks create, replacement and delete`, async () => {
+  const uid = `synthetic-storage-${state}-fence`, path = `user-uploads/${uid}/studio/original.txt`;
+  await env.withSecurityRulesDisabled(async admin => {
+    await uploadBytes(ref(admin.storage(), path), new Uint8Array([65, 66, 67]));
+    await setDoc(doc(admin.firestore(), `studioDataRightsOwnerFences/${ownerFenceId(uid)}`), {
+      uid, requestId: 'synthetic-original-deletion-request', active: state === 'active', permanent: state === 'permanent',
+    });
+  });
+  const own = ctx(uid).storage();
+  await assertSucceeds(getBytes(ref(own, path)));
+  await assertFails(uploadBytes(ref(own, `user-uploads/${uid}/studio/forbidden-new.txt`), new Uint8Array([1])));
+  await assertFails(uploadBytes(ref(own, path), new Uint8Array([1])));
+  await assertFails(deleteObject(ref(own, path)));
+  await env.withSecurityRulesDisabled(async admin => assert.deepEqual(Array.from(await getBytes(ref(admin.storage(), path))), [65, 66, 67]));
+});
+test('cancelled nonpermanent owner fence retains compatible self-owned upload writes', async () => {
+  const uid = 'synthetic-storage-cancelled-fence';
+  await env.withSecurityRulesDisabled(async admin => setDoc(doc(admin.firestore(), `studioDataRightsOwnerFences/${ownerFenceId(uid)}`), {
+    uid, requestId: 'synthetic-original-deletion-request', active: false, permanent: false,
+  }));
+  const path = ref(ctx(uid).storage(), `user-uploads/${uid}/studio/compatible.txt`);
+  await assertSucceeds(uploadBytes(path, new Uint8Array([1])));
+  await assertSucceeds(deleteObject(path));
+});
+test('canonical active privacy marker defeats an inactive Studio upload fence', async () => {
+  const uid = 'synthetic-storage-canonical-deletion';
+  await env.withSecurityRulesDisabled(async admin => {
+    await setDoc(doc(admin.firestore(), `studioDataRightsOwnerFences/${ownerFenceId(uid)}`), {
+      uid, requestId: 'synthetic-original-deletion-request', active: false, permanent: false,
+    });
+    await setDoc(doc(admin.firestore(), `privacyDeletionTombstones/${uid}`), { uid, active: true });
+  });
+  await assertFails(uploadBytes(ref(ctx(uid).storage(), `user-uploads/${uid}/studio/forbidden-new.txt`), new Uint8Array([1])));
 });
