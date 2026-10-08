@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import * as admin from "firebase-admin";
 import { HttpsError, onCall, onRequest, type CallableRequest } from "firebase-functions/v2/https";
 import { Readable } from "node:stream";
@@ -70,6 +70,20 @@ function requireAdmin(request: CallableRequest<unknown>): AuthenticatedRequest {
     throw new HttpsError("permission-denied", "Admin authorization is required.");
   }
   return authenticated;
+}
+
+// Custom-claim removal does not itself invalidate an already-issued token.
+// Pin both the current credential and the provider's current account claims.
+async function requireCurrentDeletionAdmin(request: CallableRequest<unknown>) {
+  const actor = requireAdmin(request);
+  await requireCurrentExportActor(request);
+  let current;
+  try { current = await admin.auth().getUser(actor.auth.uid); }
+  catch { throw new HttpsError("unauthenticated", "Current Studio deletion authentication is required."); }
+  if (current.disabled || current.customClaims?.admin !== true) {
+    throw new HttpsError("permission-denied", "Current Studio deletion admin authorization is required.");
+  }
+  return actor;
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -430,13 +444,16 @@ export const setStudioDataDeletionLegalHold = onCall(async (request) => {
 });
 
 async function ownedRefs(uid: string) {
-  const result = new Map<string, { ref: admin.firestore.DocumentReference; collection: string; deletion: "delete" | "anonymize" }>();
+  const result = new Map<string, { ref: admin.firestore.DocumentReference; collection: string;
+    deletion: "delete" | "anonymize"; ownerFields: readonly OwnerField[]; version: admin.firestore.Timestamp }>();
   const profileRef = db().collection("users").doc(uid);
   const profile = await profileRef.get();
-  if (profile.exists) result.set(profileRef.path, { ref: profileRef, collection: "users", deletion: "delete" });
+  if (profile.exists && profile.updateTime) result.set(profileRef.path, { ref: profileRef, collection: "users",
+    deletion: "delete", ownerFields: [], version: profile.updateTime });
   for (const spec of STUDIO_COLLECTIONS) {
     for (const doc of await queryOwned(spec, uid)) {
-      result.set(doc.ref.path, { ref: doc.ref, collection: spec.collection, deletion: spec.deletion });
+      result.set(doc.ref.path, { ref: doc.ref, collection: spec.collection, deletion: spec.deletion,
+        ownerFields: spec.ownerFields, version: doc.updateTime });
     }
   }
   return [...result.values()].sort((left, right) => left.ref.path.localeCompare(right.ref.path));
@@ -445,7 +462,9 @@ async function ownedRefs(uid: string) {
 /** Invalidate delivery before touching Storage, and delete only an observed,
  * checksum-bound generation in this owner's exact private package namespace.
  * An uncertain preparation intent stays durable for later reconciliation. */
-async function purgeStudioExportPackage(requestId: string, expectedUid?: string) {
+async function purgeStudioExportPackage(requestId: string, expectedUid?: string,
+  checkpoint?: (transaction?: admin.firestore.Transaction) => Promise<void>) {
+  await checkpoint?.();
   const ref = requestRef(requestId);
   const before = (await ref.get()).data();
   const uid = String(before?.uid || "");
@@ -457,11 +476,28 @@ async function purgeStudioExportPackage(requestId: string, expectedUid?: string)
   const hasReceipt = receipt.objectPath === objectPath && /^[a-f0-9]{64}$/.test(String(receipt.checksum || ""));
   if (!hasReceipt && before.privatePackageIntent !== objectPath) return { deleted: 0, pending: 1 };
   const basis = sha256(JSON.stringify(before));
+  const cleanupAttemptToken = randomUUID();
   await db().runTransaction(async transaction => {
+    await checkpoint?.(transaction);
     const current = (await transaction.get(ref)).data();
     if (!current || sha256(JSON.stringify(current)) !== basis) throw new HttpsError("failed-precondition", "Studio package cleanup authority changed.");
-    transaction.set(ref, { status: "package_purge_pending", cleanupStartedAt: admin.firestore.FieldValue.serverTimestamp(),
+    transaction.set(ref, { status: "package_purge_pending", packageCleanupAttemptToken: cleanupAttemptToken, cleanupStartedAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+  });
+  const currentCleanup = async (transaction: admin.firestore.Transaction) => {
+    await checkpoint?.(transaction);
+    const current = (await transaction.get(ref)).data();
+    if (current?.uid !== uid || current.type !== "export" || current.status !== "package_purge_pending"
+      || current.packageCleanupAttemptToken !== cleanupAttemptToken
+      || JSON.stringify(current.packageReceipt ?? null) !== JSON.stringify(before.packageReceipt ?? null)
+      || current.privatePackageIntent !== before.privatePackageIntent) {
+      throw new HttpsError("failed-precondition", "Studio package cleanup attempt or generation authority changed.");
+    }
+    return current;
+  };
+  const finishCleanup = async (fields: Record<string, unknown>) => db().runTransaction(async transaction => {
+    await currentCleanup(transaction);
+    transaction.set(ref, fields, { merge: true });
   });
   const knownGeneration = /^[1-9][0-9]*$/.test(String(receipt.generation || "")) ? String(receipt.generation) : undefined;
   const object = admin.storage().bucket().file(objectPath, knownGeneration ? { generation: knownGeneration } : undefined);
@@ -470,11 +506,11 @@ async function purgeStudioExportPackage(requestId: string, expectedUid?: string)
   catch (error) {
     if ((error as { code?: number }).code !== 404 || !hasReceipt) return { deleted: 0, pending: 1 };
     // A completed receipt cannot later publish another immutable generation.
-    await ref.set({ status: "package_purged", packageReceipt: admin.firestore.FieldValue.delete(),
+    await finishCleanup({ status: "package_purged", packageReceipt: admin.firestore.FieldValue.delete(),
       privatePackageIntent: admin.firestore.FieldValue.delete(), packagePurgeReceipt: {
         scope: "exact_studio_export_generation", objectPathHash: sha256(objectPath), generation: knownGeneration ?? null,
         checksum: receipt.checksum, observedAbsent: true, completedAt: nowIso(), globalErasureVerified: false,
-      }, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      }, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
     return { deleted: 0, pending: 0 };
   }
   const generation = String(metadata.generation || ""), bytes = Number(metadata.size), tags = asRecord(metadata.metadata);
@@ -486,18 +522,18 @@ async function purgeStudioExportPackage(requestId: string, expectedUid?: string)
   const pinned = admin.storage().bucket().file(objectPath, { generation });
   const [body] = await pinned.download();
   if (body.length !== bytes || sha256(body) !== tags.checksum) return { deleted: 0, pending: 1 };
-  const current = (await ref.get()).data();
-  if (current?.uid !== uid || current.type !== "export" || current.status !== "package_purge_pending") return { deleted: 0, pending: 1 };
+  await db().runTransaction(currentCleanup);
+  await checkpoint?.();
   await pinned.delete({ ignoreNotFound: true, ifGenerationMatch: generation });
-  await ref.set({ status: "package_purged", packageReceipt: admin.firestore.FieldValue.delete(),
+  await finishCleanup({ status: "package_purged", packageReceipt: admin.firestore.FieldValue.delete(),
     privatePackageIntent: admin.firestore.FieldValue.delete(), packagePurgeReceipt: {
       scope: "exact_studio_export_generation", objectPathHash: sha256(objectPath), generation, checksum: tags.checksum,
       bytes, completedAt: nowIso(), globalErasureVerified: false,
-    }, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    }, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
   return { deleted: 1, pending: 0 };
 }
 
-async function purgeOwnedStudioExportPackages(uid: string) {
+async function purgeOwnedStudioExportPackages(uid: string, checkpoint?: (transaction?: admin.firestore.Transaction) => Promise<void>) {
   let cursor: admin.firestore.QueryDocumentSnapshot | undefined, deleted = 0, pending = 0;
   for (;;) {
     let query = db().collection("studioDataRightsRequests").where("uid", "==", uid)
@@ -506,7 +542,7 @@ async function purgeOwnedStudioExportPackages(uid: string) {
     const snapshot = await query.get();
     for (const document of snapshot.docs) {
       if (document.data().type !== "export") continue;
-      try { const result = await purgeStudioExportPackage(document.id, uid); deleted += result.deleted; pending += result.pending; }
+      try { const result = await purgeStudioExportPackage(document.id, uid, checkpoint); deleted += result.deleted; pending += result.pending; }
       catch { pending++; }
     }
     if (snapshot.size < PAGE_SIZE) break;
@@ -589,7 +625,7 @@ export const reconcileStudioDataExportPackages = onSchedule({ schedule: "every 1
 });
 
 export const executeStudioDataDeletion = onCall(async (request) => {
-  const actor = requireAdmin(request);
+  const actor = await requireCurrentDeletionAdmin(request);
   const data = asRecord(request.data);
   const requestId = requiredString(data.requestId, "requestId");
   const ref = requestRef(requestId);
@@ -619,6 +655,8 @@ export const executeStudioDataDeletion = onCall(async (request) => {
   const backupGeneration = /^[1-9][0-9]*$/.test(String(backup?.generation || "")) ? String(backup?.generation) : undefined;
   const backupBytes = await assertVerifiedPackage(objectPath, backupChecksum, backupGeneration);
 
+  const executionAttemptToken = randomUUID(), executionLeaseExpiresAt = Date.now() + 15 * 60 * 1000;
+  await requireCurrentDeletionAdmin(request);
   await db().runTransaction(async transaction => {
     const current = (await transaction.get(ref)).data(), fenceRef = studioOwnerFence(uid);
     const fence = (await transaction.get(fenceRef)).data();
@@ -630,33 +668,68 @@ export const executeStudioDataDeletion = onCall(async (request) => {
       || (fence && (fence.uid !== uid || fence.requestId !== requestId))) {
       throw new HttpsError("failed-precondition", "Current Studio deletion authority changed during backup verification.");
     }
+    await requireCurrentDeletionAdmin(request);
     transaction.set(fenceRef, { uid, requestId, active: true, permanent: true,
       updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
-    transaction.set(ref, { status: "executing", executionStartedAt: admin.firestore.FieldValue.serverTimestamp(),
+    transaction.set(ref, { status: "executing", executionAttemptToken, executionLeaseExpiresAt, executionStartedAt: admin.firestore.FieldValue.serverTimestamp(),
       executedByHash: subjectHash(actor.auth.uid), updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
   });
 
+  const currentExecution = async (transaction: admin.firestore.Transaction) => {
+    const current = (await transaction.get(ref)).data();
+    const fence = (await transaction.get(studioOwnerFence(uid))).data();
+    if (current?.uid !== uid || current.type !== "delete" || current.status !== "executing"
+      || current.executionAttemptToken !== executionAttemptToken || current.executionLeaseExpiresAt !== executionLeaseExpiresAt
+      || Date.now() >= executionLeaseExpiresAt || current.executedByHash !== subjectHash(actor.auth.uid)
+      || current.legalHold === true || current.backupReceipt?.objectPath !== objectPath
+      || current.backupReceipt?.checksum !== backupChecksum || current.backupReceipt?.generation !== backup?.generation
+      || fence?.uid !== uid || fence.requestId !== requestId || fence.active !== true || fence.permanent !== true) {
+      throw new HttpsError("failed-precondition", "Current Studio deletion execution authority changed.");
+    }
+    await requireCurrentDeletionAdmin(request);
+  };
+  const checkpoint = async (transaction?: admin.firestore.Transaction) => {
+    if (transaction) await currentExecution(transaction); else await db().runTransaction(currentExecution);
+  };
+
   const entries = await ownedRefs(uid);
-  const privatePackageCleanup = await purgeOwnedStudioExportPackages(uid);
+  await checkpoint();
+  const privatePackageCleanup = await purgeOwnedStudioExportPackages(uid, checkpoint);
+  await checkpoint();
   const counts: Record<string, { deleted: number; anonymized: number }> = {};
   for (let offset = 0; offset < entries.length; offset += 400) {
-    const batch = db().batch();
-    for (const entry of entries.slice(offset, offset + 400)) {
-      counts[entry.collection] ??= { deleted: 0, anonymized: 0 };
-      if (entry.deletion === "anonymize") {
-        batch.set(entry.ref, {
-          schemaVersion: "urai-studio-anonymized-audit-v1",
-          subjectHash: subjectHash(uid),
-          eventRetainedForAudit: true,
-          anonymizedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        counts[entry.collection].anonymized += 1;
-      } else {
-        batch.delete(entry.ref);
-        counts[entry.collection].deleted += 1;
+    const committed = await db().runTransaction(async transaction => {
+      await currentExecution(transaction);
+      const targets = [];
+      for (const entry of entries.slice(offset, offset + 400)) {
+        const current = await transaction.get(entry.ref);
+        if (!current.exists) continue;
+        const fields = current.data()!;
+        const owned = entry.collection === "users" ? entry.ref.path === `users/${uid}`
+          && (!fields.uid || fields.uid === uid) && (!fields.userId || fields.userId === uid)
+          : entry.ownerFields.some(field => fields[field] === uid)
+            && entry.ownerFields.every(field => !fields[field] || fields[field] === uid);
+        if (!owned || !current.updateTime?.isEqual(entry.version)) {
+          throw new HttpsError("failed-precondition", "Studio deletion target ownership or exact version changed.");
+        }
+        targets.push({ entry, version: current.updateTime });
       }
+      // A revoked credential or role during the awaited target reads must stop
+      // the same atomic batch. Firestore protects request/fence/target reads.
+      await requireCurrentDeletionAdmin(request);
+      for (const { entry, version } of targets) {
+        if (entry.deletion === "anonymize") transaction.set(entry.ref, {
+          schemaVersion: "urai-studio-anonymized-audit-v1", subjectHash: subjectHash(uid),
+          eventRetainedForAudit: true, anonymizedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        else transaction.delete(entry.ref, { lastUpdateTime: version });
+      }
+      return targets.map(({ entry }) => ({ collection: entry.collection, deletion: entry.deletion }));
+    });
+    for (const entry of committed) {
+      counts[entry.collection] ??= { deleted: 0, anonymized: 0 };
+      counts[entry.collection][entry.deletion === "anonymize" ? "anonymized" : "deleted"]++;
     }
-    await batch.commit();
   }
 
   const completedAt = nowIso();
@@ -683,13 +756,16 @@ export const executeStudioDataDeletion = onCall(async (request) => {
     globalErasureVerified: false,
   };
 
-  await ref.set({
+  await db().runTransaction(async transaction => {
+    await currentExecution(transaction);
+    transaction.set(ref, {
     status: "completed",
     purgeReceipt,
     completedAt,
     uid: admin.firestore.FieldValue.delete(),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   }, { merge: true });
+  });
   await writeAudit({
     requestId,
     actorUid: actor.auth.uid,
@@ -897,3 +973,4 @@ export const STUDIO_DATA_RIGHTS_SOURCE_CONTRACT = {
   firebaseAuthDeletionOwnedBy: "central-privacy",
   productionExecutionClaimed: false,
 } as const;
+

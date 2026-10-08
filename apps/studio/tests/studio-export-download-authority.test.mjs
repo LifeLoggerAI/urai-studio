@@ -6,7 +6,7 @@ import { createRequire } from 'node:module';
 import { Writable } from 'node:stream';
 const require = createRequire(new URL('../../../functions/package.json', import.meta.url));
 const ts = require('typescript'), uid = 'synthetic-owner', projectId = 'demo-urai-studio';
-const source = fs.readFileSync(new URL('../../../functions/src/data-rights.ts', import.meta.url), 'utf8');
+const source = fs.readFileSync(process.env.STUDIO_DELETION_SOURCE || new URL('../../../functions/src/data-rights.ts', import.meta.url), 'utf8');
 const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 class Response extends Writable {
@@ -17,27 +17,36 @@ class Response extends Writable {
   _write(chunk, _encoding, callback) { this.headersSent = true; this.chunks.push(Buffer.from(chunk)); this.onChunk?.(this.chunks.length); callback(); }
 }
 function harness() {
-  const documents = new Map(), objects = new Map(), state = { now: Date.now(), sequence: 0, revoked: false, signs: 0, onDownload: null, onSave: null, onTransaction: null, verifyCalls: 0, firestoreReads: 0, storageReads: 0 };
+  const documents = new Map(), objects = new Map(), state = { now: Date.now(), sequence: 0, revoked: false, signs: 0, onDownload: null, onSave: null, onTransaction: null, onBeforeTransactionCommit: null, onTransactionRead: null, adminRole: true, disabled: false, verifyCalls: 0, firestoreReads: 0, storageReads: 0 };
   class FixtureDate extends Date { constructor(...args) { super(...(args.length ? args : [state.now])); } static now() { return state.now; } }
   const fieldDelete = '__DELETE__', fieldServer = '__TIMESTAMP__';
   function patch(path, value, merge) { const out = merge ? structuredClone(documents.get(path) || {}) : {};
     for (const [key, entry] of Object.entries(value)) { if (entry === fieldDelete) delete out[key]; else out[key] = entry === fieldServer ? new Date(state.now).toISOString() : structuredClone(entry); }
     documents.set(path, out); }
-  const snapshot = ref => ({ ref, id: ref.id, exists: documents.has(ref.path), data: () => structuredClone(documents.get(ref.path)) });
+  const versions = new Map(); let clock = 0;
+  function version(path) { const fingerprint = JSON.stringify(documents.get(path));
+    const before = versions.get(path); if (!before || before.fingerprint !== fingerprint) versions.set(path, { fingerprint, clock: ++clock });
+    const stamp = versions.get(path).clock; return { seconds: stamp, nanoseconds: 0, isEqual: other => other?.seconds === stamp && other?.nanoseconds === 0 }; }
+  const snapshot = ref => { const value = structuredClone(documents.get(ref.path));
+    return { ref, id: ref.id, exists: documents.has(ref.path), updateTime: version(ref.path), data: () => structuredClone(value) }; };
   const reference = path => ({ path, id: path.split('/').at(-1), get: async () => snapshot(reference(path)),
     set: async (value, options) => patch(path, value, options?.merge), collection: child => collection(`${path}/${child}`) });
-  function collection(name) { const filters = [];
+  function collection(name) { const filters = []; let max = Infinity, cursor = null;
     const query = { doc: id => reference(`${name}/${id || `synthetic_request_${++state.sequence}`}`),
-      where(field, op, value) { filters.push([field, op, value]); return this; }, orderBy() { return this; }, limit() { return this; }, startAfter() { return this; },
+      where(field, op, value) { filters.push([field, op, value]); return this; }, orderBy() { return this; }, limit(value) { max = value; return this; }, startAfter(value) { cursor = value?.id ?? value; return this; },
       async get() { const docs = [...documents].filter(([key, value]) => key.startsWith(`${name}/`) && key.split('/').length === name.split('/').length + 1
-        && filters.every(([field, op, expected]) => op === '==' && value[field] === expected)).map(([key]) => snapshot(reference(key)));
+        && (!cursor || key.split('/').at(-1) > cursor) && filters.every(([field, op, expected]) => op === '==' && value[field] === expected)).sort(([a], [b]) => a.localeCompare(b)).slice(0, max).map(([key]) => snapshot(reference(key)));
         return { docs, size: docs.length }; } };
     return query;
   }
-  const db = { collection, async runTransaction(callback) { const writes = [];
-    const tx = { get: async ref => { state.firestoreReads++; return snapshot(ref); }, create: (ref, value) => writes.push(() => { assert.equal(documents.has(ref.path), false); patch(ref.path, value, false); }),
+  const db = { collection, async runTransaction(callback) { const writes = [], reads = new Map();
+    const tx = { get: async ref => { state.firestoreReads++; const result = snapshot(ref); reads.set(ref.path, result.updateTime);
+        await state.onTransactionRead?.(ref.path); return result; },
+      delete: (ref, precondition) => writes.push(() => { if (precondition?.lastUpdateTime) assert.equal(precondition.lastUpdateTime.isEqual(version(ref.path)), true); documents.delete(ref.path); }), create: (ref, value) => writes.push(() => { assert.equal(documents.has(ref.path), false); patch(ref.path, value, false); }),
       set: (ref, value, options) => writes.push(() => patch(ref.path, value, options?.merge)), update: (ref, value) => writes.push(() => patch(ref.path, value, true)) };
-    const result = await callback(tx); for (const write of writes) write(); await state.onTransaction?.(); return result; }, batch() {
+    const result = await callback(tx); await state.onBeforeTransactionCommit?.(reads, writes);
+    for (const [path, stamp] of reads) if (!stamp.isEqual(version(path))) throw Object.assign(new Error('synthetic transaction read conflict'), { code: 'aborted' });
+    for (const write of writes) write(); await state.onTransaction?.(); return result; }, batch() {
       const writes = []; return { delete: ref => writes.push(() => documents.delete(ref.path)),
         set: (ref, value) => writes.push(() => patch(ref.path, value, false)), async commit() { for (const write of writes) write(); } };
     } };
@@ -58,7 +67,7 @@ function harness() {
   }) }) };
   const admin = { firestore, storage: () => storage, app: () => ({ options: { projectId } }),
     auth: () => ({ async verifyIdToken(token, revoked) { state.verifyCalls++; assert.equal(revoked, true);
-      if (token !== 'synthetic-current-token' || state.revoked) throw new Error('private credential details'); return { uid }; } }) };
+      if (token !== 'synthetic-current-token' || state.revoked) throw new Error('private credential details'); return { uid, admin: state.adminRole }; }, async getUser(userId) { assert.equal(userId, uid); return { uid, disabled: state.disabled, customClaims: { admin: state.adminRole } }; } }) };
   class HttpsError extends Error { constructor(code, message) { super(message); this.code = code; } }
   const exports = {};
   vm.runInNewContext(output, { exports, Buffer, Date: FixtureDate, URL, AbortController, setTimeout, clearTimeout,
@@ -235,4 +244,69 @@ for (const revokeAtTransaction of [3, 4]) {
   await assert.rejects(h.callable('executeStudioDataDeletion', { requestId: deletion.requestId }, true));
   assert.equal(h.documents.has(`users/${uid}`), true); cases++;
 }
-console.log(`[PASS] ${cases} actual Studio export callable/HTTP/Storage cases; canonical consent, receipt/generation, deletion fences, withdrawal across awaits and ongoing streams; Storage signing/provider calls=0`);
+let negativeFailures = 0;
+for (const reason of ['foreign-owner', 'same-owner-version', 'cancelled', 'subject', 'legal-hold', 'owner-fence', 'foreign-attempt', 'token', 'admin-role', 'disabled-admin']) {
+  const h = harness(), descriptor = await h.prepare();
+  const target = `studioScenes/synthetic-deletion-target`;
+  h.documents.set(target, { uid, preserved: 'synthetic source data' });
+  const deletion = await h.callable('requestStudioDataDeletion'); h.state.now += 8 * 24 * 60 * 60 * 1000;
+  const requestPath = `studioDataRightsRequests/${deletion.requestId}`;
+  const exportPath = h.documents.get(`studioDataRightsRequests/${descriptor.requestId}`).packageReceipt.objectPath;
+  h.state.onDownload = async path => { if (path !== exportPath) return; h.state.onDownload = null;
+    if (reason === 'foreign-owner') h.documents.get(target).uid = 'synthetic-foreign-owner';
+    if (reason === 'same-owner-version') h.documents.get(target).preserved = 'synthetic corrected source';
+    if (reason === 'cancelled') h.documents.get(requestPath).status = 'cancelled';
+    if (reason === 'subject') h.documents.get(requestPath).uid = 'synthetic-foreign-owner';
+    if (reason === 'legal-hold') h.documents.get(requestPath).legalHold = true;
+    if (reason === 'owner-fence') h.documents.get(`studioDataRightsOwnerFences/${hash(`urai-studio-data-rights:${uid}`)}`).active = false;
+    if (reason === 'foreign-attempt') h.documents.get(requestPath).executionAttemptToken = 'synthetic-successor';
+    if (reason === 'token') h.state.revoked = true;
+    if (reason === 'admin-role') h.state.adminRole = false;
+    if (reason === 'disabled-admin') h.state.disabled = true;
+  };
+  try {
+    await assert.rejects(h.callable('executeStudioDataDeletion', { requestId: deletion.requestId }, true));
+    assert.equal(h.documents.has(target), true); assert.equal(h.documents.has(`users/${uid}`), true);
+    assert.notEqual(h.documents.get(requestPath).status, 'completed');
+    if (!['foreign-owner', 'same-owner-version'].includes(reason)) assert.equal(h.objects.has(exportPath), true, 'withdrawn destructive authority must preserve the not-yet-deleted generation'); cases++;
+    console.log(`[PASS] deletion authority after awaited package read: ${reason}`);
+  } catch (error) { negativeFailures++; console.log(`[FAIL] deletion authority after awaited package read: ${reason}: ${error.message}`); }
+}
+for (const reason of ['foreign-owner-before-commit', 'same-owner-before-commit', 'foreign-owner-after-target-read', 'role-after-target-read', 'completion-authority']) {
+  const h = harness(), target = `studioScenes/synthetic-atomic-target`;
+  h.documents.set(target, { uid, preserved: 'synthetic source data' });
+  const deletion = await h.callable('requestStudioDataDeletion'); h.state.now += 8 * 24 * 60 * 60 * 1000;
+  const requestPath = `studioDataRightsRequests/${deletion.requestId}`;
+  if (reason.includes('before-commit')) h.state.onBeforeTransactionCommit = async (reads, writes) => {
+    if (!reads.has(target) || !writes.length) return; h.state.onBeforeTransactionCommit = null;
+    if (reason === 'foreign-owner-before-commit') h.documents.get(target).uid = 'synthetic-foreign-owner';
+    else h.documents.get(target).preserved = 'synthetic corrected source';
+  };
+  if (reason.includes('after-target-read')) h.state.onTransactionRead = async path => {
+    if (path !== target) return; h.state.onTransactionRead = null;
+    if (reason === 'role-after-target-read') h.state.adminRole = false;
+    else h.documents.get(target).uid = 'synthetic-foreign-owner';
+  };
+  if (reason === 'completion-authority') h.state.onTransaction = async () => {
+    if (h.documents.has(target)) return; h.state.onTransaction = null;
+    h.documents.get(requestPath).status = 'cancelled';
+  };
+  try {
+    await assert.rejects(h.callable('executeStudioDataDeletion', { requestId: deletion.requestId }, true));
+    if (reason !== 'completion-authority') { assert.equal(h.documents.has(target), true); assert.equal(h.documents.has(`users/${uid}`), true); }
+    assert.notEqual(h.documents.get(requestPath).status, 'completed'); cases++;
+    console.log(`[PASS] atomic deletion authority: ${reason}`);
+  } catch (error) { negativeFailures++; console.log(`[FAIL] atomic deletion authority: ${reason}: ${error.message}`); }
+}
+{
+  const h = harness();
+  for (let index = 0; index < 902; index++) h.documents.set(`studioScenes/synthetic_${String(index).padStart(4, '0')}`, { uid });
+  const deletion = await h.callable('requestStudioDataDeletion'); h.state.now += 8 * 24 * 60 * 60 * 1000;
+  const result = await h.callable('executeStudioDataDeletion', { requestId: deletion.requestId }, true);
+  assert.equal(result.purgeReceipt.counts.studioScenes.deleted, 902); assert.equal(result.purgeReceipt.counts.users.deleted, 1);
+  assert.equal([...h.documents.keys()].some(path => path.startsWith('studioScenes/')), false); cases++;
+}
+console.log(JSON.stringify({ kind: 'actual-Studio-handler-source-with-explicit-Firebase-adapters', node: process.version,
+  typescript: ts.version, passed: cases, failed: negativeFailures, loadedFunctions: false, deployedRuntime: false,
+  storageSigning: 0, providerCalls: 0 }));
+if (negativeFailures) process.exitCode = 1;
