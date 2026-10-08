@@ -1,3 +1,23 @@
+# Current Storage Rules supplement — 2026-10-08
+
+Parent Studio PR159 `ac7cc4572ef8b4c4c620decba50deaf2c8a0babf` retains the seven-path write-fence source and the three working, unfrozen Spatial `38cc23fa2706dd6444e0b980f42f074191d865cf` defaults. This two-path correction changes the existing membership fixture and this evidence note; Rules, production handlers, budgets, privacy authority and provider controls remain unchanged.
+
+The registered Storage fixture initially used `Array.from(await getBytes(...))`. The Firebase client returns an ArrayBuffer, so that expression produced an empty array without inspecting its bytes. The correction uses `Array.from(new Uint8Array(await getBytes(...)))` and preserves the exact expected original bytes `[65, 66, 67]`. It removes no assertion and changes no expected denial or permission.
+
+The real full46-case membership/Storage baseline completed at03:08:39.306–03:08:53.842Z with44PASS/2FAIL/0SKIP. Both failing cases were the malformed ArrayBuffer inspection after all deletion authorization checks; the actual active/permanent fences already denied new uploads, replacement and deletion. The corrected full46-case fixture completed at03:13:08.900–03:13:20.596Z with46PASS/0FAIL/0SKIP, test duration6.810s and CLI exit0. It includes valid and malformed memberships, cross-tenant denials, trusted membership removal, existing upload/generated/public compatibility, active/permanent deletion fences, cancellation and canonical active marker precedence. Corrected fixture Git blob `ebbe9cbcbc3b8354ed2cbccc74018f2cda0f88ea`, SHA256 `0505c44762b6cdc0d2647a149fb377eab43a80c30b4b54353d47ea5c8555ee8c`.
+
+This used actual Firestore and Storage emulators, verified official JDK21.0.12.1+1, Firestore JAR1.22.0 SHA256 `9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c`, Storage Rules runtime1.1.3 SHA256 `0cd52db6f6271d62078f805220706377c849220b73bd68aa27078d977df9c900`, cached CLI15.32.1, real Firebase client12.13.0 and Node22.23.3. Both JVM heaps were capped at192MiB, CLI at192MiB and test at128MiB. The fixed demo project was `demo-urai-studio-memberships` on loopback ports18080/19199, with a private synthetic-only temporary directory. Both tracked JVMs and descendants closed at03:13:20.596Z; all five leased ports were closed. No Functions, production/cloud writes, provider calls, spend or private media were involved.
+
+The declared native fixture graph is Firebase12.19.0 and rules-unit-testing5.0.2. Those exact packages were unavailable locally. A scratch-only explicit test-environment adapter follows the official SDK's loopback Rules-loading, synthetic token, owner-only seeding and cleanup protocols while executing every registered test assertion with the actual cached Firebase client and real emulators. It accepts only real Rules permission-denial codes. This is bounded real Rules evidence, not acceptance of the declared native dependency graph. No frozen root SDK file, Rules result, Firestore registry or original expected bytes were substituted.
+
+Earlier attempts are retained as failures: a VM execution realm failed the client before Rules evaluation; CLI15.32.1 forced its ProxyAgent onto loopback Firestore reads, then its Storage runtime mapped SocketError to NOT_FOUND; a subsequent shared temporary directory run terminated on an ENOENT denied-upload cleanup. The final fixed-demo emulator child removed proxy variables only for local routing and isolated its synthetic temporary directory. The false missing-document results are not counted as privacy proof.
+
+Current combined native CI, declared graph evaluation, loaded Functions deletion/retention integration, deployed IAM/project/Rules and independent review remain required. This evidence does not revoke existing signed credentials, certify private capture/media, accept a successor Spatial SHA or establish Golden Master.
+
+## Retained historical Rules preparation and exact77-case proof
+
+The record below is the prior source-preparation state and dated Firestore-only proof. Its unchanged Rules/test leaf identities remain useful evidence; its then-unexecuted Storage statement is superseded only by the scoped actual result above. It does not approve the current combined component or any successor source.
+
 # Studio client deletion-fence Rules proof — 2026-10-08
 
 Component parent: Studio PR159 `62edb07e6276273ffcd9048d457bb6f2ce8b5020`, tree `9f7def2c702420f7156d812b5816a5ac57e67d70`. This seven-path source child preserves the independent original-plan deletion, atomic completion correction, private-provider fences and working Spatial bindings. It grants no main merge, deployment, paid provider call or release approval.

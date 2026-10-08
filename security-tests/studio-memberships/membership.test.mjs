@@ -191,7 +191,7 @@ for (const state of ['active', 'permanent']) test(`self-owned upload ${state} fe
   await assertFails(uploadBytes(ref(own, `user-uploads/${uid}/studio/forbidden-new.txt`), new Uint8Array([1])));
   await assertFails(uploadBytes(ref(own, path), new Uint8Array([1])));
   await assertFails(deleteObject(ref(own, path)));
-  await env.withSecurityRulesDisabled(async admin => assert.deepEqual(Array.from(await getBytes(ref(admin.storage(), path))), [65, 66, 67]));
+  await env.withSecurityRulesDisabled(async admin => assert.deepEqual(Array.from(new Uint8Array(await getBytes(ref(admin.storage(), path)))), [65, 66, 67]));
 });
 test('cancelled nonpermanent owner fence retains compatible self-owned upload writes', async () => {
   const uid = 'synthetic-storage-cancelled-fence';
