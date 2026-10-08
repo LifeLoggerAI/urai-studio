@@ -273,9 +273,9 @@ async function writeAudit(event: {
   subjectUid: string;
   action: string;
   detail?: Record<string, unknown>;
-}) {
-  const ref = db().collection("studioDataRightsAudit").doc();
-  await ref.set({
+}, transaction?: admin.firestore.Transaction, auditId?: string) {
+  const ref = auditId ? db().collection("studioDataRightsAudit").doc(auditId) : db().collection("studioDataRightsAudit").doc();
+  const record = {
     schemaVersion: DATA_RIGHTS_SCHEMA_VERSION,
     auditId: ref.id,
     requestId: event.requestId,
@@ -284,7 +284,9 @@ async function writeAudit(event: {
     action: event.action,
     detail: event.detail ?? {},
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
+  };
+  if (transaction) transaction.create(ref, record);
+  else await ref.set(record);
 }
 
 export const requestStudioDataExport = onCall({ timeoutSeconds: 120, memory: "256MiB" }, async (request) => {
@@ -520,7 +522,8 @@ function readStudioDeletionPlan(body: Buffer, uid: string, requestId: string, ex
   return { hash: String(expectedHash), targets };
 }
 
-function readStudioDeletionProgress(value: unknown, targetCount: number): DeletionProgress {
+function readStudioDeletionProgress(value: unknown, targets: readonly DeletionTarget[]): DeletionProgress {
+  const targetCount = targets.length;
   if (value === undefined) return { schemaVersion: DELETION_PROGRESS_SCHEMA, nextTargetIndex: 0, counts: {} };
   const progress = asRecord(value), counts = asRecord(progress.counts);
   if (progress.schemaVersion !== DELETION_PROGRESS_SCHEMA || !Number.isSafeInteger(progress.nextTargetIndex)
@@ -529,17 +532,29 @@ function readStudioDeletionProgress(value: unknown, targetCount: number): Deleti
     throw new HttpsError("failed-precondition", "Studio deletion continuation checkpoint is invalid.");
   }
   let counted = 0;
+  const originalPrefix = new Map<string, { total: number; deletion: "delete" | "anonymize" }>();
+  for (const target of targets.slice(0, Number(progress.nextTargetIndex))) {
+    const expected = originalPrefix.get(target.collection) || { total: 0, deletion: target.deletion };
+    expected.total++; originalPrefix.set(target.collection, expected);
+  }
   for (const [collection, entry] of Object.entries(counts)) {
     if (collection !== "users" && !STUDIO_COLLECTIONS.some(spec => spec.collection === collection)) throw new HttpsError("failed-precondition", "Studio deletion continuation collection is invalid.");
     const count = asRecord(entry);
+    const expected = originalPrefix.get(collection);
+    if (!expected || (expected.deletion === "delete" ? count.anonymized !== 0 : count.deleted !== 0)) {
+      throw new HttpsError("failed-precondition", "Studio deletion counts differ from the original target policy.");
+    }
     if (Object.keys(count).some(key => !["deleted", "anonymized", "observedAbsent"].includes(key))) throw new HttpsError("failed-precondition", "Studio deletion continuation count fields are invalid.");
+    let collectionCounted = 0;
     for (const key of ["deleted", "anonymized", "observedAbsent"]) {
       const amount = count[key] ?? (key === "observedAbsent" ? 0 : undefined);
       if (!Number.isSafeInteger(amount) || Number(amount) < 0) throw new HttpsError("failed-precondition", "Studio deletion continuation counts are invalid.");
       counted += Number(amount);
+      collectionCounted += Number(amount);
     }
+    if (collectionCounted !== expected.total) throw new HttpsError("failed-precondition", "Studio deletion counts differ from the original target prefix.");
   }
-  if (counted !== progress.nextTargetIndex) throw new HttpsError("failed-precondition", "Studio deletion continuation counts do not bind its cursor.");
+  if (counted !== progress.nextTargetIndex || Object.keys(counts).length !== originalPrefix.size) throw new HttpsError("failed-precondition", "Studio deletion continuation counts do not bind its cursor.");
   return { schemaVersion: DELETION_PROGRESS_SCHEMA, nextTargetIndex: Number(progress.nextTargetIndex), counts: counts as DeletionCounts };
 }
 
@@ -732,6 +747,9 @@ export const executeStudioDataDeletion = onCall({ timeoutSeconds: 540, memory: "
   if (!Number.isFinite(Date.parse(String(value.restoreUntil))) || Date.now() < Date.parse(String(value.restoreUntil))) {
     throw new HttpsError("failed-precondition", "Deletion restore window is still active.");
   }
+  if (!Number.isFinite(Date.parse(String(value.purgeAfter)))) {
+    throw new HttpsError("failed-precondition", "Studio deletion backup retention authority is invalid.");
+  }
   const backup = asRecord(value.backupReceipt), objectPath = String(backup.objectPath || ""), backupChecksum = String(backup.checksum || "");
   const backupGeneration = String(backup.generation || "");
   if (objectPath !== privateObjectPath(uid, requestId) || !/^[a-f0-9]{64}$/.test(backupChecksum)
@@ -753,7 +771,7 @@ export const executeStudioDataDeletion = onCall({ timeoutSeconds: 540, memory: "
     if (current?.uid !== uid || current.type !== "delete"
       || current.subjectHash !== subjectHash(uid)
       || !["pending_restore_window", "executing", "execution_retryable", "execution_continuation_required"].includes(String(current.status))
-      || current.legalHold === true || current.restoreUntil !== value.restoreUntil || Date.now() < Date.parse(String(current.restoreUntil))
+      || current.legalHold === true || current.restoreUntil !== value.restoreUntil || current.purgeAfter !== value.purgeAfter || Date.now() < Date.parse(String(current.restoreUntil))
       || current.backupReceipt?.objectPath !== objectPath || current.backupReceipt?.checksum !== backupChecksum
       || current.backupReceipt?.generation !== backupGeneration || current.backupReceipt?.deletionPlanHash !== plan.hash
       || current.backupReceipt?.deletionPlanSchemaVersion !== DELETION_PLAN_SCHEMA || current.backupReceipt?.deletionTargetCount !== plan.targets.length
@@ -773,7 +791,7 @@ export const executeStudioDataDeletion = onCall({ timeoutSeconds: 540, memory: "
     if (failures >= DELETION_FAILURE_LIMIT || continuations >= DELETION_CONTINUATION_LIMIT) {
       throw new HttpsError("resource-exhausted", "Studio deletion retry or continuation budget requires reconciliation.");
     }
-    const retained = readStudioDeletionProgress(current.deletionProgress, plan.targets.length);
+    const retained = readStudioDeletionProgress(current.deletionProgress, plan.targets);
     await requireCurrentDeletionAdmin(request);
     transaction.set(fenceRef, { uid, requestId, active: true, permanent: true, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
     transaction.set(ref, { status: "executing", executionAttemptToken, executionLeaseExpiresAt,
@@ -787,14 +805,14 @@ export const executeStudioDataDeletion = onCall({ timeoutSeconds: 540, memory: "
   const currentExecution = async (transaction: admin.firestore.Transaction) => {
     const current = (await transaction.get(ref)).data(), fence = (await transaction.get(studioOwnerFence(uid))).data();
     if (current?.uid !== uid || current.type !== "delete" || current.status !== "executing"
-      || current.subjectHash !== subjectHash(uid) || current.restoreUntil !== value.restoreUntil
+      || current.subjectHash !== subjectHash(uid) || current.restoreUntil !== value.restoreUntil || current.purgeAfter !== value.purgeAfter
       || current.executionAttemptToken !== executionAttemptToken || current.executionLeaseExpiresAt !== executionLeaseExpiresAt
       || Date.now() >= executionLeaseExpiresAt || current.executedByHash !== subjectHash(actor.auth.uid) || current.legalHold === true
       || current.backupReceipt?.objectPath !== objectPath || current.backupReceipt?.checksum !== backupChecksum
       || current.backupReceipt?.generation !== backupGeneration || current.backupReceipt?.deletionPlanHash !== plan.hash
       || current.backupReceipt?.deletionPlanSchemaVersion !== DELETION_PLAN_SCHEMA || current.backupReceipt?.deletionTargetCount !== plan.targets.length
       || current.deletionPlanHash !== plan.hash || current.deletionTargetCount !== plan.targets.length
-      || stableStudioDigest(readStudioDeletionProgress(current.deletionProgress, plan.targets.length)) !== stableStudioDigest(progress)
+      || stableStudioDigest(readStudioDeletionProgress(current.deletionProgress, plan.targets)) !== stableStudioDigest(progress)
       || fence?.uid !== uid || fence.requestId !== requestId || fence.active !== true || fence.permanent !== true) {
       throw new HttpsError("failed-precondition", "Current Studio deletion execution or continuation authority changed.");
     }
@@ -877,18 +895,24 @@ export const executeStudioDataDeletion = onCall({ timeoutSeconds: 540, memory: "
         }
         }
       }
+      // A profile absent from the original backup is still an owned residual;
+      // this read also makes a concurrent profile insertion conflict atomically.
+      if ((await transaction.get(db().collection("users").doc(uid))).exists) {
+        throw new HttpsError("failed-precondition", "Studio deletion has a residual or newly admitted profile.");
+      }
       for (const spec of STUDIO_COLLECTIONS) for (const field of spec.ownerFields) {
         if ((await transaction.get(db().collection(spec.collection).where(field, "==", uid).limit(1))).size) {
           throw new HttpsError("failed-precondition", "Studio deletion has newly admitted owned records.");
         }
       }
       await requireCurrentDeletionAdmin(request);
+      await writeAudit({ requestId, actorUid: actor.auth.uid, subjectUid: uid, action: "studio_data_deletion_completed",
+        detail: { purgeReceiptId: purgeReceipt.receiptId, purgeChecksum: purgeReceipt.checksum, deletionPlanHash: plan.hash, counts } },
+        transaction, `studio_deletion_completed_${sha256(JSON.stringify({ requestId, deletionPlanHash: plan.hash }))}`);
       transaction.set(ref, { status: "completed", purgeReceipt, purgeReceiptDigest: stableStudioDigest(purgeReceipt), completedAt,
         executionAttemptToken: admin.firestore.FieldValue.delete(), executionLeaseExpiresAt: 0,
         uid: admin.firestore.FieldValue.delete(), updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
     });
-    await writeAudit({ requestId, actorUid: actor.auth.uid, subjectUid: uid, action: "studio_data_deletion_completed",
-      detail: { purgeReceiptId: purgeReceipt.receiptId, purgeChecksum: purgeReceipt.checksum, deletionPlanHash: plan.hash, counts } });
     await requireCurrentDeletionAdmin(request);
     return { ok: true, requestId, status: "completed", purgeReceipt, replay: false };
   } catch (error) {

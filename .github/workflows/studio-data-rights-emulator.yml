@@ -39,6 +39,8 @@ jobs:
           pnpm --dir functions build
           test -z "$(git status --porcelain --untracked-files=all)"
       - name: Actual source export/deletion/continuation authority cases
+        env:
+          STUDIO_DELETION_COMPILED: functions/lib/data-rights.js
         run: node apps/studio/tests/studio-export-download-authority.test.mjs
       - name: Actual creator, HTTP delivery, withdrawal, original-plan deletion and Storage deny
         run: >-
