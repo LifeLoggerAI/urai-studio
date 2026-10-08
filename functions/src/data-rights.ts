@@ -24,6 +24,11 @@ const PAGE_SIZE = 200;
 const EXPORT_MAX_BYTES = 16 * 1024 * 1024;
 const EXPORT_DOWNLOAD_TTL_MS = 5 * 60 * 1000;
 const EXPORT_PACKAGE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const DELETION_PLAN_SCHEMA = "urai-studio-deletion-plan-v1";
+const DELETION_PROGRESS_SCHEMA = "urai-studio-deletion-progress-v1";
+const DELETION_BATCH_PAGES = 20;
+const DELETION_FAILURE_LIMIT = 3;
+const DELETION_CONTINUATION_LIMIT = 64;
 // Matches the current canonical urai-privacy data.export C7 decision contract.
 const EXPORT_CONSENT_POLICY_VERSION = "1.0.0";
 
@@ -103,6 +108,13 @@ function sha256(value: string | Buffer) {
   return createHash("sha256").update(value).digest("hex");
 }
 
+function stableStudioDigest(value: unknown) {
+  const canonical = (entry: any): string => Array.isArray(entry) ? "[" + entry.map(canonical).join(",") + "]"
+    : entry && typeof entry === "object" ? "{" + Object.entries(entry).sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, child]) => JSON.stringify(key) + ":" + canonical(child)).join(",") + "}" : JSON.stringify(entry);
+  return sha256(canonical(value));
+}
+
 function subjectHash(uid: string) {
   return sha256(`urai-studio-data-rights:${uid}`);
 }
@@ -150,24 +162,34 @@ async function queryOwned(spec: StudioCollectionSpec, uid: string) {
   return [...found.values()].sort((left, right) => left.ref.path.localeCompare(right.ref.path));
 }
 
-async function collectOwnedRecords(uid: string) {
-  const records: Array<{ path: string; collection: string; data: unknown }> = [];
+async function collectOwnedRecords(uid: string, deletionIdentity = false) {
+  const records: Array<{ path: string; collection: string; data: unknown;
+    version?: { seconds: number; nanoseconds: number }; deletion?: "delete" | "anonymize" }> = [];
   const profile = await db().collection("users").doc(uid).get();
   if (profile.exists) {
+    if ((profile.data()?.uid !== undefined && profile.data()?.uid !== uid) || (profile.data()?.userId !== undefined && profile.data()?.userId !== uid)) {
+      throw new HttpsError("failed-precondition", "Studio profile ownership is inconsistent.");
+    }
     records.push({
       path: profile.ref.path,
       collection: "users",
       data: normalizeForJson(profile.data()),
+      ...(deletionIdentity ? { version: { seconds: profile.updateTime!.seconds, nanoseconds: profile.updateTime!.nanoseconds }, deletion: "delete" as const } : {}),
     });
   }
 
   for (const spec of STUDIO_COLLECTIONS) {
     const documents = await queryOwned(spec, uid);
     for (const document of documents) {
+      if (!spec.ownerFields.some(field => document.data()[field] === uid)
+        || spec.ownerFields.some(field => document.data()[field] !== undefined && document.data()[field] !== uid)) {
+        throw new HttpsError("failed-precondition", "Studio record ownership is inconsistent.");
+      }
       records.push({
         path: document.ref.path,
         collection: spec.collection,
         data: normalizeForJson(document.data()),
+        ...(deletionIdentity ? { version: { seconds: document.updateTime.seconds, nanoseconds: document.updateTime.nanoseconds }, deletion: spec.deletion } : {}),
       });
     }
   }
@@ -177,7 +199,10 @@ async function collectOwnedRecords(uid: string) {
 
 async function writePrivatePackage(uid: string, requestId: string, kind: "export" | "deletion-backup", checkpoint?: () => Promise<void>) {
   await checkpoint?.();
-  const records = await collectOwnedRecords(uid);
+  const records = await collectOwnedRecords(uid, kind === "deletion-backup");
+  const deletionPlan = kind === "deletion-backup" ? { schemaVersion: DELETION_PLAN_SCHEMA, requestId,
+    subjectHash: subjectHash(uid), targets: records.map(({ path, collection, deletion, version }) => ({ path, collection, deletion, version })) } : null;
+  const deletionPlanHash = deletionPlan ? sha256(JSON.stringify(deletionPlan)) : null;
   const generatedAt = nowIso();
   const payload = {
     schemaVersion: DATA_RIGHTS_SCHEMA_VERSION,
@@ -186,6 +211,7 @@ async function writePrivatePackage(uid: string, requestId: string, kind: "export
     generatedAt,
     recordCount: records.length,
     records,
+    ...(deletionPlan ? { deletionPlan } : {}),
   };
   const body = Buffer.from(JSON.stringify(payload));
   if (body.length > EXPORT_MAX_BYTES) throw new HttpsError("resource-exhausted", "Studio data package exceeds the bounded export size.");
@@ -211,7 +237,8 @@ async function writePrivatePackage(uid: string, requestId: string, kind: "export
   const generation = String(metadata.generation || "");
   if (!/^[1-9][0-9]*$/.test(generation)) throw new HttpsError("unavailable", "Studio data package identity is unavailable.");
   await checkpoint?.();
-  return { generatedAt, recordCount: records.length, checksum, objectPath, bytes: body.length, generation };
+  return { generatedAt, recordCount: records.length, checksum, objectPath, bytes: body.length, generation,
+    ...(deletionPlan ? { deletionPlanSchemaVersion: DELETION_PLAN_SCHEMA, deletionPlanHash, deletionTargetCount: records.length } : {}) };
 }
 
 async function assertVerifiedPackage(objectPath: string, expectedChecksum: string, generation?: string) {
@@ -225,7 +252,7 @@ async function assertVerifiedPackage(objectPath: string, expectedChecksum: strin
   if (body.length !== size || actual !== expectedChecksum) {
     throw new HttpsError("failed-precondition", "Deletion backup checksum mismatch.");
   }
-  return body.length;
+  return { bytes: body.length, body };
 }
 
 function requestRef(requestId: string) {
@@ -328,7 +355,7 @@ export const requestStudioDataExport = onCall({ timeoutSeconds: 120, memory: "25
 });
 
 export const requestStudioDataDeletion = onCall(async (request) => {
-  const uid = requireAuth(request).auth.uid;
+  const uid = await requireCurrentExportActor(request);
   const requestId = db().collection("studioDataRightsRequests").doc().id;
   const requestedAt = Date.now();
   const restoreUntil = new Date(requestedAt + RESTORE_WINDOW_MS).toISOString();
@@ -336,6 +363,7 @@ export const requestStudioDataDeletion = onCall(async (request) => {
   await db().runTransaction(async transaction => {
     const fence = (await transaction.get(studioOwnerFence(uid))).data();
     if (fence?.active === true || fence?.permanent === true) throw new HttpsError("failed-precondition", "A Studio deletion fence is already active.");
+    await requireCurrentExportActor(request);
     transaction.set(studioOwnerFence(uid), { uid, requestId, active: true, permanent: false,
       updatedAt: admin.firestore.FieldValue.serverTimestamp() });
     transaction.create(requestRef(requestId), { schemaVersion: DATA_RIGHTS_SCHEMA_VERSION, requestId, uid,
@@ -343,15 +371,28 @@ export const requestStudioDataDeletion = onCall(async (request) => {
       restoreUntil, purgeAfter, privatePackageIntent: privateObjectPath(uid, requestId),
       createdAt: admin.firestore.FieldValue.serverTimestamp(), updatedAt: admin.firestore.FieldValue.serverTimestamp() });
   });
-  const packageReceipt = await writePrivatePackage(uid, requestId, "deletion-backup");
+  const preparationCheckpoint = async () => {
+    await requireCurrentExportActor(request);
+    await db().runTransaction(async transaction => {
+      const current = (await transaction.get(requestRef(requestId))).data();
+      const fence = (await transaction.get(studioOwnerFence(uid))).data();
+      if (current?.uid !== uid || current.status !== "preparing_deletion_backup" || current.legalHold === true
+        || fence?.uid !== uid || fence.requestId !== requestId || fence.active !== true || fence.permanent !== false) {
+        throw new HttpsError("failed-precondition", "Studio deletion preparation authority changed.");
+      }
+      await requireCurrentExportActor(request);
+    });
+  };
+  const packageReceipt = await writePrivatePackage(uid, requestId, "deletion-backup", preparationCheckpoint);
 
   await db().runTransaction(async transaction => {
     const current = (await transaction.get(requestRef(requestId))).data();
     const fence = (await transaction.get(studioOwnerFence(uid))).data();
-    if (current?.uid !== uid || current.status !== "preparing_deletion_backup" || fence?.uid !== uid
+    if (current?.uid !== uid || current.status !== "preparing_deletion_backup" || current.legalHold === true || fence?.uid !== uid
       || fence.requestId !== requestId || fence.active !== true || fence.permanent !== false) {
       throw new HttpsError("failed-precondition", "Studio deletion preparation authority changed.");
     }
+    await requireCurrentExportActor(request);
     transaction.set(requestRef(requestId), {
     schemaVersion: DATA_RIGHTS_SCHEMA_VERSION,
     requestId,
@@ -387,7 +428,7 @@ export const requestStudioDataDeletion = onCall(async (request) => {
 });
 
 export const cancelStudioDataDeletion = onCall(async (request) => {
-  const uid = requireAuth(request).auth.uid;
+  const uid = await requireCurrentExportActor(request);
   const data = asRecord(request.data);
   const requestId = requiredString(data.requestId, "requestId");
   await db().runTransaction(async transaction => {
@@ -399,6 +440,7 @@ export const cancelStudioDataDeletion = onCall(async (request) => {
     const restoreUntilMs = Date.parse(String(value.restoreUntil));
     if (!Number.isFinite(restoreUntilMs) || Date.now() > restoreUntilMs) throw new HttpsError("failed-precondition", "Deletion restore window has expired.");
     if (fence && (fence.uid !== uid || fence.requestId !== requestId || fence.permanent === true)) throw new HttpsError("failed-precondition", "Studio deletion fence changed.");
+    await requireCurrentExportActor(request);
     transaction.set(ref, { status: "cancelled", cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
     if (fence) transaction.set(fenceRef, { active: false, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
@@ -413,7 +455,7 @@ export const cancelStudioDataDeletion = onCall(async (request) => {
 });
 
 export const setStudioDataDeletionLegalHold = onCall(async (request) => {
-  const actor = requireAdmin(request);
+  const actor = await requireCurrentDeletionAdmin(request);
   const data = asRecord(request.data);
   const requestId = requiredString(data.requestId, "requestId");
   const active = data.active === true;
@@ -425,6 +467,7 @@ export const setStudioDataDeletionLegalHold = onCall(async (request) => {
     if (value.status === "executing" || ["purging", "purged"].includes(String(value.backupPurgeState))) {
       throw new HttpsError("failed-precondition", "Studio destructive execution has already been admitted.");
     }
+    await requireCurrentDeletionAdmin(request);
     transaction.set(ref, {
     legalHold: active,
     legalHoldReason: reason,
@@ -443,20 +486,61 @@ export const setStudioDataDeletionLegalHold = onCall(async (request) => {
   return { ok: true, requestId, legalHold: active };
 });
 
-async function ownedRefs(uid: string) {
-  const result = new Map<string, { ref: admin.firestore.DocumentReference; collection: string;
-    deletion: "delete" | "anonymize"; ownerFields: readonly OwnerField[]; version: admin.firestore.Timestamp }>();
-  const profileRef = db().collection("users").doc(uid);
-  const profile = await profileRef.get();
-  if (profile.exists && profile.updateTime) result.set(profileRef.path, { ref: profileRef, collection: "users",
-    deletion: "delete", ownerFields: [], version: profile.updateTime });
-  for (const spec of STUDIO_COLLECTIONS) {
-    for (const doc of await queryOwned(spec, uid)) {
-      result.set(doc.ref.path, { ref: doc.ref, collection: spec.collection, deletion: spec.deletion,
-        ownerFields: spec.ownerFields, version: doc.updateTime });
+type DeletionTarget = { path: string; collection: string; deletion: "delete" | "anonymize";
+  version: { seconds: number; nanoseconds: number } };
+type DeletionCounts = Record<string, { deleted: number; anonymized: number; observedAbsent?: number }>;
+type DeletionProgress = { schemaVersion: string; nextTargetIndex: number; counts: DeletionCounts };
+
+function readStudioDeletionPlan(body: Buffer, uid: string, requestId: string, expectedHash: unknown) {
+  let payload;
+  try { payload = JSON.parse(body.toString("utf8")); } catch { throw new HttpsError("failed-precondition", "Studio deletion backup plan is invalid."); }
+  const plan = asRecord(payload.deletionPlan);
+  if (payload.schemaVersion !== DATA_RIGHTS_SCHEMA_VERSION || payload.kind !== "deletion-backup"
+    || payload.subjectHash !== subjectHash(uid) || plan.schemaVersion !== DELETION_PLAN_SCHEMA
+    || plan.requestId !== requestId || plan.subjectHash !== subjectHash(uid) || !Array.isArray(plan.targets)
+    || !/^[a-f0-9]{64}$/.test(String(expectedHash || "")) || sha256(JSON.stringify(plan)) !== expectedHash) {
+    throw new HttpsError("failed-precondition", "Studio deletion requires its original verified versioned backup plan.");
+  }
+  const seen = new Set<string>(), targets: DeletionTarget[] = [];
+  for (const entry of plan.targets) {
+    const target = asRecord(entry), version = asRecord(target.version), path = String(target.path || ""), collection = String(target.collection || "");
+    const spec = STUDIO_COLLECTIONS.find(spec => spec.collection === collection), parts = path.split("/");
+    if (parts.length !== 2 || !parts[1] || parts[0] !== collection || seen.has(path)
+      || (collection === "users" ? path !== `users/${uid}` || target.deletion !== "delete" : !spec || target.deletion !== spec.deletion)
+      || !Number.isSafeInteger(version.seconds) || !Number.isSafeInteger(version.nanoseconds)
+      || Number(version.nanoseconds) < 0 || Number(version.nanoseconds) >= 1000000000) {
+      throw new HttpsError("failed-precondition", "Studio deletion backup target identity is invalid.");
+    }
+    seen.add(path); targets.push({ path, collection, deletion: target.deletion as "delete" | "anonymize",
+      version: { seconds: Number(version.seconds), nanoseconds: Number(version.nanoseconds) } });
+  }
+  if (targets.some((target, index) => index > 0 && targets[index - 1].path.localeCompare(target.path) >= 0)) {
+    throw new HttpsError("failed-precondition", "Studio deletion backup plan order is invalid.");
+  }
+  return { hash: String(expectedHash), targets };
+}
+
+function readStudioDeletionProgress(value: unknown, targetCount: number): DeletionProgress {
+  if (value === undefined) return { schemaVersion: DELETION_PROGRESS_SCHEMA, nextTargetIndex: 0, counts: {} };
+  const progress = asRecord(value), counts = asRecord(progress.counts);
+  if (progress.schemaVersion !== DELETION_PROGRESS_SCHEMA || !Number.isSafeInteger(progress.nextTargetIndex)
+    || Object.keys(progress).some(key => !["schemaVersion", "nextTargetIndex", "counts"].includes(key))
+    || Number(progress.nextTargetIndex) < 0 || Number(progress.nextTargetIndex) > targetCount) {
+    throw new HttpsError("failed-precondition", "Studio deletion continuation checkpoint is invalid.");
+  }
+  let counted = 0;
+  for (const [collection, entry] of Object.entries(counts)) {
+    if (collection !== "users" && !STUDIO_COLLECTIONS.some(spec => spec.collection === collection)) throw new HttpsError("failed-precondition", "Studio deletion continuation collection is invalid.");
+    const count = asRecord(entry);
+    if (Object.keys(count).some(key => !["deleted", "anonymized", "observedAbsent"].includes(key))) throw new HttpsError("failed-precondition", "Studio deletion continuation count fields are invalid.");
+    for (const key of ["deleted", "anonymized", "observedAbsent"]) {
+      const amount = count[key] ?? (key === "observedAbsent" ? 0 : undefined);
+      if (!Number.isSafeInteger(amount) || Number(amount) < 0) throw new HttpsError("failed-precondition", "Studio deletion continuation counts are invalid.");
+      counted += Number(amount);
     }
   }
-  return [...result.values()].sort((left, right) => left.ref.path.localeCompare(right.ref.path));
+  if (counted !== progress.nextTargetIndex) throw new HttpsError("failed-precondition", "Studio deletion continuation counts do not bind its cursor.");
+  return { schemaVersion: DELETION_PROGRESS_SCHEMA, nextTargetIndex: Number(progress.nextTargetIndex), counts: counts as DeletionCounts };
 }
 
 /** Invalidate delivery before touching Storage, and delete only an observed,
@@ -624,157 +708,203 @@ export const reconcileStudioDataExportPackages = onSchedule({ schedule: "every 1
     updatedAt: admin.firestore.FieldValue.serverTimestamp() });
 });
 
-export const executeStudioDataDeletion = onCall(async (request) => {
+export const executeStudioDataDeletion = onCall({ timeoutSeconds: 540, memory: "256MiB" }, async request => {
   const actor = await requireCurrentDeletionAdmin(request);
-  const data = asRecord(request.data);
-  const requestId = requiredString(data.requestId, "requestId");
-  const ref = requestRef(requestId);
-
-  const snapshot = await ref.get();
-  if (!snapshot.exists || snapshot.data()?.type !== "delete") {
-    throw new HttpsError("not-found", "Deletion request is unavailable.");
+  const requestId = requiredString(asRecord(request.data).requestId, "requestId"), ref = requestRef(requestId);
+  const snapshot = await ref.get(), value = snapshot.data();
+  if (!snapshot.exists || value?.type !== "delete") throw new HttpsError("not-found", "Deletion request is unavailable.");
+  if (value.status === "completed") {
+    const receipt = asRecord(value.purgeReceipt);
+    if (receipt.schemaVersion !== DELETION_PLAN_SCHEMA || receipt.subjectHash !== value.subjectHash
+      || receipt.deletionPlanHash !== value.deletionPlanHash || receipt.requestId !== requestId
+      || !/^[a-f0-9]{64}$/.test(String(value.deletionPlanHash || ""))
+      || value.purgeReceiptDigest !== stableStudioDigest(receipt)) {
+      throw new HttpsError("failed-precondition", "Retained Studio deletion receipt requires reconciliation.");
+    }
+    await requireCurrentDeletionAdmin(request);
+    return { ok: true, requestId, status: "completed", purgeReceipt: receipt, replay: true };
   }
-  const value = snapshot.data()!;
   const uid = String(value.uid || "");
-  if (!uid) throw new HttpsError("failed-precondition", "Deletion request has no subject.");
-  if (value.status !== "pending_restore_window") {
+  if (!uid || !["pending_restore_window", "executing", "execution_retryable", "execution_continuation_required"].includes(String(value.status))) {
     throw new HttpsError("failed-precondition", "Deletion request is not executable in its current state.");
   }
-  if (value.legalHold === true) {
-    throw new HttpsError("failed-precondition", "Deletion request is blocked by an active legal hold.");
-  }
-  if (Date.now() < Date.parse(String(value.restoreUntil))) {
+  if (value.legalHold === true) throw new HttpsError("failed-precondition", "Deletion request is blocked by an active legal hold.");
+  if (!Number.isFinite(Date.parse(String(value.restoreUntil))) || Date.now() < Date.parse(String(value.restoreUntil))) {
     throw new HttpsError("failed-precondition", "Deletion restore window is still active.");
   }
-  const backup = value.backupReceipt as Record<string, unknown> | undefined;
-  const objectPath = typeof backup?.objectPath === "string" ? backup.objectPath : "";
-  const backupChecksum = typeof backup?.checksum === "string" ? backup.checksum : "";
-  if (objectPath !== privateObjectPath(uid, requestId) || !/^[a-f0-9]{64}$/.test(backupChecksum)) {
-    throw new HttpsError("failed-precondition", "Deletion request lacks a verified backup receipt.");
+  const backup = asRecord(value.backupReceipt), objectPath = String(backup.objectPath || ""), backupChecksum = String(backup.checksum || "");
+  const backupGeneration = String(backup.generation || "");
+  if (objectPath !== privateObjectPath(uid, requestId) || !/^[a-f0-9]{64}$/.test(backupChecksum)
+    || !/^[1-9][0-9]*$/.test(backupGeneration) || backup.deletionPlanSchemaVersion !== DELETION_PLAN_SCHEMA) {
+    throw new HttpsError("failed-precondition", "Deletion requires a fresh governed backup with its original versioned plan.");
   }
-  const backupGeneration = /^[1-9][0-9]*$/.test(String(backup?.generation || "")) ? String(backup?.generation) : undefined;
-  const backupBytes = await assertVerifiedPackage(objectPath, backupChecksum, backupGeneration);
-
+  const verified = await assertVerifiedPackage(objectPath, backupChecksum, backupGeneration), backupBytes = verified.bytes;
+  const plan = readStudioDeletionPlan(verified.body, uid, requestId, backup.deletionPlanHash);
+  if (backup.deletionTargetCount !== plan.targets.length) throw new HttpsError("failed-precondition", "Studio deletion backup target count changed.");
   const executionAttemptToken = randomUUID(), executionLeaseExpiresAt = Date.now() + 15 * 60 * 1000;
+  const counter = (entry: unknown) => {
+    if (entry === undefined) return 0;
+    if (!Number.isSafeInteger(entry) || Number(entry) < 0) throw new HttpsError("failed-precondition", "Studio deletion retry budget is invalid.");
+    return Number(entry);
+  };
   await requireCurrentDeletionAdmin(request);
-  await db().runTransaction(async transaction => {
-    const current = (await transaction.get(ref)).data(), fenceRef = studioOwnerFence(uid);
-    const fence = (await transaction.get(fenceRef)).data();
-    if (current?.uid !== uid || current.type !== "delete" || current.status !== "pending_restore_window"
-      || current.legalHold === true || !Number.isFinite(Date.parse(String(current.restoreUntil)))
-      || Date.now() < Date.parse(String(current.restoreUntil)) || current.backupReceipt?.objectPath !== objectPath
-      || current.backupReceipt?.checksum !== backupChecksum
-      || current.backupReceipt?.generation !== backup?.generation
-      || (fence && (fence.uid !== uid || fence.requestId !== requestId))) {
+  let progress = await db().runTransaction(async transaction => {
+    const current = (await transaction.get(ref)).data(), fenceRef = studioOwnerFence(uid), fence = (await transaction.get(fenceRef)).data();
+    if (current?.uid !== uid || current.type !== "delete"
+      || current.subjectHash !== subjectHash(uid)
+      || !["pending_restore_window", "executing", "execution_retryable", "execution_continuation_required"].includes(String(current.status))
+      || current.legalHold === true || current.restoreUntil !== value.restoreUntil || Date.now() < Date.parse(String(current.restoreUntil))
+      || current.backupReceipt?.objectPath !== objectPath || current.backupReceipt?.checksum !== backupChecksum
+      || current.backupReceipt?.generation !== backupGeneration || current.backupReceipt?.deletionPlanHash !== plan.hash
+      || current.backupReceipt?.deletionPlanSchemaVersion !== DELETION_PLAN_SCHEMA || current.backupReceipt?.deletionTargetCount !== plan.targets.length
+      || (current.deletionPlanHash !== undefined && current.deletionPlanHash !== plan.hash)
+      || fence?.uid !== uid || fence.requestId !== requestId || fence.active !== true
+      || (current.status !== "pending_restore_window" && fence.permanent !== true)) {
       throw new HttpsError("failed-precondition", "Current Studio deletion authority changed during backup verification.");
     }
+    const interrupted = current.status === "executing";
+    if (interrupted && (!Number.isSafeInteger(current.executionLeaseExpiresAt) || current.executionLeaseExpiresAt > Date.now())) {
+      throw new HttpsError("unavailable", "The exact Studio deletion attempt is still in progress.");
+    }
+    if (current.status !== "pending_restore_window" && current.deletionPlanHash !== plan.hash) {
+      throw new HttpsError("failed-precondition", "Studio interruption lacks its original bound deletion plan.");
+    }
+    const failures = counter(current.deletionFailureAttempts) + (interrupted ? 1 : 0), continuations = counter(current.deletionContinuationDeliveries);
+    if (failures >= DELETION_FAILURE_LIMIT || continuations >= DELETION_CONTINUATION_LIMIT) {
+      throw new HttpsError("resource-exhausted", "Studio deletion retry or continuation budget requires reconciliation.");
+    }
+    const retained = readStudioDeletionProgress(current.deletionProgress, plan.targets.length);
     await requireCurrentDeletionAdmin(request);
-    transaction.set(fenceRef, { uid, requestId, active: true, permanent: true,
+    transaction.set(fenceRef, { uid, requestId, active: true, permanent: true, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    transaction.set(ref, { status: "executing", executionAttemptToken, executionLeaseExpiresAt,
+      deletionPlanHash: plan.hash, deletionTargetCount: plan.targets.length, deletionProgress: retained,
+      deletionFailureAttempts: failures, deletionContinuationDeliveries: continuations,
+      executionAttemptNumber: counter(current.executionAttemptNumber) + 1,
+      executionStartedAt: admin.firestore.FieldValue.serverTimestamp(), executedByHash: subjectHash(actor.auth.uid),
       updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
-    transaction.set(ref, { status: "executing", executionAttemptToken, executionLeaseExpiresAt, executionStartedAt: admin.firestore.FieldValue.serverTimestamp(),
-      executedByHash: subjectHash(actor.auth.uid), updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    return retained;
   });
-
   const currentExecution = async (transaction: admin.firestore.Transaction) => {
-    const current = (await transaction.get(ref)).data();
-    const fence = (await transaction.get(studioOwnerFence(uid))).data();
+    const current = (await transaction.get(ref)).data(), fence = (await transaction.get(studioOwnerFence(uid))).data();
     if (current?.uid !== uid || current.type !== "delete" || current.status !== "executing"
+      || current.subjectHash !== subjectHash(uid) || current.restoreUntil !== value.restoreUntil
       || current.executionAttemptToken !== executionAttemptToken || current.executionLeaseExpiresAt !== executionLeaseExpiresAt
-      || Date.now() >= executionLeaseExpiresAt || current.executedByHash !== subjectHash(actor.auth.uid)
-      || current.legalHold === true || current.backupReceipt?.objectPath !== objectPath
-      || current.backupReceipt?.checksum !== backupChecksum || current.backupReceipt?.generation !== backup?.generation
+      || Date.now() >= executionLeaseExpiresAt || current.executedByHash !== subjectHash(actor.auth.uid) || current.legalHold === true
+      || current.backupReceipt?.objectPath !== objectPath || current.backupReceipt?.checksum !== backupChecksum
+      || current.backupReceipt?.generation !== backupGeneration || current.backupReceipt?.deletionPlanHash !== plan.hash
+      || current.backupReceipt?.deletionPlanSchemaVersion !== DELETION_PLAN_SCHEMA || current.backupReceipt?.deletionTargetCount !== plan.targets.length
+      || current.deletionPlanHash !== plan.hash || current.deletionTargetCount !== plan.targets.length
+      || stableStudioDigest(readStudioDeletionProgress(current.deletionProgress, plan.targets.length)) !== stableStudioDigest(progress)
       || fence?.uid !== uid || fence.requestId !== requestId || fence.active !== true || fence.permanent !== true) {
-      throw new HttpsError("failed-precondition", "Current Studio deletion execution authority changed.");
+      throw new HttpsError("failed-precondition", "Current Studio deletion execution or continuation authority changed.");
     }
     await requireCurrentDeletionAdmin(request);
+    return current;
   };
-  const checkpoint = async (transaction?: admin.firestore.Transaction) => {
-    if (transaction) await currentExecution(transaction); else await db().runTransaction(currentExecution);
-  };
-
-  const entries = await ownedRefs(uid);
-  await checkpoint();
-  const privatePackageCleanup = await purgeOwnedStudioExportPackages(uid, checkpoint);
-  await checkpoint();
-  const counts: Record<string, { deleted: number; anonymized: number }> = {};
-  for (let offset = 0; offset < entries.length; offset += 400) {
-    const committed = await db().runTransaction(async transaction => {
-      await currentExecution(transaction);
-      const targets = [];
-      for (const entry of entries.slice(offset, offset + 400)) {
-        const current = await transaction.get(entry.ref);
-        if (!current.exists) continue;
-        const fields = current.data()!;
-        const owned = entry.collection === "users" ? entry.ref.path === `users/${uid}`
-          && (!fields.uid || fields.uid === uid) && (!fields.userId || fields.userId === uid)
-          : entry.ownerFields.some(field => fields[field] === uid)
-            && entry.ownerFields.every(field => !fields[field] || fields[field] === uid);
-        if (!owned || !current.updateTime?.isEqual(entry.version)) {
-          throw new HttpsError("failed-precondition", "Studio deletion target ownership or exact version changed.");
-        }
-        targets.push({ entry, version: current.updateTime });
-      }
-      // A revoked credential or role during the awaited target reads must stop
-      // the same atomic batch. Firestore protects request/fence/target reads.
-      await requireCurrentDeletionAdmin(request);
-      for (const { entry, version } of targets) {
-        if (entry.deletion === "anonymize") transaction.set(entry.ref, {
-          schemaVersion: "urai-studio-anonymized-audit-v1", subjectHash: subjectHash(uid),
-          eventRetainedForAudit: true, anonymizedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        else transaction.delete(entry.ref, { lastUpdateTime: version });
-      }
-      return targets.map(({ entry }) => ({ collection: entry.collection, deletion: entry.deletion }));
+  const checkpoint = async (transaction?: admin.firestore.Transaction) => { if (transaction) await currentExecution(transaction); else await db().runTransaction(currentExecution); };
+  const continueExecution = async (reason: string) => {
+    await db().runTransaction(async transaction => {
+      const current = await currentExecution(transaction);
+      transaction.set(ref, { status: "execution_continuation_required", executionLeaseExpiresAt: 0,
+        executionAttemptToken: admin.firestore.FieldValue.delete(), deletionContinuationReason: reason,
+        deletionContinuationDeliveries: counter(current.deletionContinuationDeliveries) + 1,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
     });
-    for (const entry of committed) {
-      counts[entry.collection] ??= { deleted: 0, anonymized: 0 };
-      counts[entry.collection][entry.deletion === "anonymize" ? "anonymized" : "deleted"]++;
-    }
-  }
-
-  const completedAt = nowIso();
-  const receiptBasis = JSON.stringify({
-    schemaVersion: DATA_RIGHTS_SCHEMA_VERSION,
-    requestId,
-    subjectHash: subjectHash(uid),
-    backupChecksum,
-    counts,
-    privatePackageCleanup,
-    scope: "owned_studio_firestore_records_and_known_export_generations",
-    globalErasureVerified: false,
-    completedAt,
-  });
-  const purgeReceipt = {
-    receiptId: `studio_purge_${sha256(receiptBasis).slice(0, 32)}`,
-    checksum: sha256(receiptBasis),
-    completedAt,
-    backupChecksum,
-    backupBytes,
-    counts,
-    privatePackageCleanup,
-    scope: "owned_studio_firestore_records_and_known_export_generations",
-    globalErasureVerified: false,
+    return { ok: true, requestId, status: "execution_continuation_required", progress, globalErasureVerified: false };
   };
-
-  await db().runTransaction(async transaction => {
-    await currentExecution(transaction);
-    transaction.set(ref, {
-    status: "completed",
-    purgeReceipt,
-    completedAt,
-    uid: admin.firestore.FieldValue.delete(),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  }, { merge: true });
-  });
-  await writeAudit({
-    requestId,
-    actorUid: actor.auth.uid,
-    subjectUid: uid,
-    action: "studio_data_deletion_completed",
-    detail: { purgeReceiptId: purgeReceipt.receiptId, purgeChecksum: purgeReceipt.checksum, counts },
-  });
-
-  return { ok: true, requestId, status: "completed", purgeReceipt };
+  try {
+    await checkpoint();
+    const cleanup = await purgeOwnedStudioExportPackages(uid, checkpoint);
+    const privatePackageCleanup = await db().runTransaction(async transaction => {
+      const current = await currentExecution(transaction), prior = asRecord(current.deletionPrivatePackageCleanup);
+      const retained = { ...cleanup, deleted: Number(prior.deleted || 0) + cleanup.deleted };
+      transaction.set(ref, { deletionPrivatePackageCleanup: retained }, { merge: true }); return retained;
+    });
+    if (privatePackageCleanup.pending) return await continueExecution("exact_export_generation_cleanup_pending");
+    for (let page = 0; page < DELETION_BATCH_PAGES && progress.nextTargetIndex < plan.targets.length; page++) {
+      const next = await db().runTransaction(async transaction => {
+        await currentExecution(transaction);
+        const slice = plan.targets.slice(progress.nextTargetIndex, progress.nextTargetIndex + 400), targets = [];
+        const counts: DeletionCounts = JSON.parse(JSON.stringify(progress.counts));
+        const snapshots = await transaction.getAll(...slice.map(entry => db().doc(entry.path)));
+        for (const [index, entry] of slice.entries()) {
+          const current = snapshots[index];
+          counts[entry.collection] ??= { deleted: 0, anonymized: 0 };
+          if (!current.exists) { counts[entry.collection].observedAbsent = (counts[entry.collection].observedAbsent || 0) + 1; continue; }
+          const fields = current.data()!, spec = STUDIO_COLLECTIONS.find(spec => spec.collection === entry.collection);
+          const owned = entry.collection === "users" ? entry.path === `users/${uid}` && (!fields.uid || fields.uid === uid) && (!fields.userId || fields.userId === uid)
+            : !!spec && spec.ownerFields.some(field => fields[field] === uid) && spec.ownerFields.every(field => !fields[field] || fields[field] === uid);
+          if (!owned || !current.updateTime?.isEqual(new admin.firestore.Timestamp(entry.version.seconds, entry.version.nanoseconds))) {
+            throw new HttpsError("failed-precondition", "Studio deletion original target ownership or exact version changed.");
+          }
+          targets.push({ entry, current }); counts[entry.collection][entry.deletion === "anonymize" ? "anonymized" : "deleted"]++;
+        }
+        await requireCurrentDeletionAdmin(request);
+        for (const { entry, current } of targets) {
+          if (entry.deletion === "anonymize") transaction.set(current.ref, { schemaVersion: "urai-studio-anonymized-audit-v1",
+            subjectHash: subjectHash(uid), eventRetainedForAudit: true, anonymizedAt: admin.firestore.FieldValue.serverTimestamp() });
+          else transaction.delete(current.ref, { lastUpdateTime: current.updateTime! });
+        }
+        const next = { schemaVersion: DELETION_PROGRESS_SCHEMA, nextTargetIndex: progress.nextTargetIndex + slice.length, counts };
+        transaction.set(ref, { deletionProgress: next, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        return next;
+      });
+      progress = next;
+    }
+    if (progress.nextTargetIndex < plan.targets.length) return await continueExecution("bounded_original_target_plan_remaining");
+    const completedAt = nowIso(), counts = progress.counts;
+    const receiptBasis = JSON.stringify({ schemaVersion: DELETION_PLAN_SCHEMA, requestId, subjectHash: subjectHash(uid),
+      deletionPlanHash: plan.hash, backupChecksum, counts, privatePackageCleanup,
+      scope: "owned_studio_firestore_records_and_known_export_generations", globalErasureVerified: false, completedAt });
+    const purgeReceipt = { schemaVersion: DELETION_PLAN_SCHEMA, requestId, subjectHash: subjectHash(uid), deletionPlanHash: plan.hash,
+      receiptId: `studio_purge_${sha256(receiptBasis).slice(0, 32)}`, checksum: sha256(receiptBasis), completedAt,
+      backupChecksum, backupBytes, counts, privatePackageCleanup, scope: "owned_studio_firestore_records_and_known_export_generations", globalErasureVerified: false };
+    // Every original target participates in the completion transaction. Normal
+    // late writers must also honor the permanent owner fence; a residual or new
+    // owned row cannot become a success receipt.
+    await db().runTransaction(async transaction => {
+      await currentExecution(transaction);
+      for (let offset = 0; offset < plan.targets.length; offset += 400) {
+        const entries = plan.targets.slice(offset, offset + 400), snapshots = await transaction.getAll(...entries.map(entry => db().doc(entry.path)));
+        for (const [index, entry] of entries.entries()) {
+        const current = snapshots[index];
+        if (!current.exists) continue;
+        const data = current.data()!;
+        if (entry.deletion !== "anonymize" || data.schemaVersion !== "urai-studio-anonymized-audit-v1"
+          || data.subjectHash !== subjectHash(uid) || data.eventRetainedForAudit !== true
+          || Object.keys(data).some(key => !["schemaVersion", "subjectHash", "eventRetainedForAudit", "anonymizedAt"].includes(key))) {
+          throw new HttpsError("failed-precondition", "Studio original target has a residual or restored version.");
+        }
+        }
+      }
+      for (const spec of STUDIO_COLLECTIONS) for (const field of spec.ownerFields) {
+        if ((await transaction.get(db().collection(spec.collection).where(field, "==", uid).limit(1))).size) {
+          throw new HttpsError("failed-precondition", "Studio deletion has newly admitted owned records.");
+        }
+      }
+      await requireCurrentDeletionAdmin(request);
+      transaction.set(ref, { status: "completed", purgeReceipt, purgeReceiptDigest: stableStudioDigest(purgeReceipt), completedAt,
+        executionAttemptToken: admin.firestore.FieldValue.delete(), executionLeaseExpiresAt: 0,
+        uid: admin.firestore.FieldValue.delete(), updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    });
+    await writeAudit({ requestId, actorUid: actor.auth.uid, subjectUid: uid, action: "studio_data_deletion_completed",
+      detail: { purgeReceiptId: purgeReceipt.receiptId, purgeChecksum: purgeReceipt.checksum, deletionPlanHash: plan.hash, counts } });
+    await requireCurrentDeletionAdmin(request);
+    return { ok: true, requestId, status: "completed", purgeReceipt, replay: false };
+  } catch (error) {
+    // Never rewrite a changed operation or a successor. Keep the transactionally
+    // committed original cursor/counts so ambiguous commits and interruption are
+    // recoverable without collecting a new target list.
+    await db().runTransaction(async transaction => {
+      const current = (await transaction.get(ref)).data();
+      if (current?.uid !== uid || current.status !== "executing" || current.executionAttemptToken !== executionAttemptToken
+        || current.deletionPlanHash !== plan.hash || current.backupReceipt?.checksum !== backupChecksum) return;
+      transaction.set(ref, { status: "execution_retryable", executionAttemptToken: admin.firestore.FieldValue.delete(),
+        executionLeaseExpiresAt: 0, deletionFailureAttempts: counter(current.deletionFailureAttempts) + 1,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    });
+    throw error;
+  }
 });
 
 export const getStudioDataRightsRequest = onCall(async (request) => {

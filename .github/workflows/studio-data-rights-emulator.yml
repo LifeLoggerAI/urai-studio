@@ -38,9 +38,12 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm --dir functions build
           test -z "$(git status --porcelain --untracked-files=all)"
-      - name: Actual creator, HTTP delivery, withdrawal and Storage deny
+      - name: Actual source export/deletion/continuation authority cases
+        run: node apps/studio/tests/studio-export-download-authority.test.mjs
+      - name: Actual creator, HTTP delivery, withdrawal, original-plan deletion and Storage deny
         run: >-
           npx --yes firebase-tools@15.24.0 emulators:exec
           --project demo-urai-studio --config firebase.data-rights-emulator.json
           --only auth,firestore,storage,functions
           "node scripts/studio-data-rights-emulator-e2e.mjs"
+
