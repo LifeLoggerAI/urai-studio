@@ -7,7 +7,9 @@ import { Writable } from 'node:stream';
 const require = createRequire(new URL('../../../functions/package.json', import.meta.url));
 const ts = require('typescript'), uid = 'synthetic-owner', projectId = 'demo-urai-studio';
 const source = fs.readFileSync(process.env.STUDIO_DELETION_SOURCE || new URL('../../../functions/src/data-rights.ts', import.meta.url), 'utf8');
-const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+const output = process.env.STUDIO_DELETION_COMPILED
+  ? fs.readFileSync(process.env.STUDIO_DELETION_COMPILED, 'utf8')
+  : ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 class Response extends Writable {
   constructor(onChunk) { super(); this.chunks = []; this.headers = {}; this.statusCode = 200; this.headersSent = false; this.onChunk = onChunk; this.on('error', () => {}); }
@@ -398,7 +400,7 @@ continuation('already absent original target is acknowledged without fabricating
 });
 continuation('late owned insertion conflicts with transactional completion emptiness reads', async () => {
   const f = await preparedDeletion(1); let inserted = false;
-  f.h.state.onBeforeTransactionCommit = async (reads, writes) => { if (inserted || !reads.has(f.path) || writes.length !== 1 || f.h.documents.has(scene(0)) || f.h.documents.has(`users/${uid}`)) return;
+  f.h.state.onBeforeTransactionCommit = async (reads, writes) => { if (inserted || !reads.has(f.path) || ![1, 2].includes(writes.length) || f.h.documents.has(scene(0)) || f.h.documents.has(`users/${uid}`)) return;
     inserted = true; f.h.documents.set('studioScenes/phantom_late_writer', { uid, private: 'Synthetic late owner bytes' });
   };
   await assert.rejects(f.execute()); assert.equal(inserted, true); assert.equal(f.h.documents.has('studioScenes/phantom_late_writer'), true);
@@ -439,9 +441,55 @@ for (const reason of ['subject', 'restore-window', 'backup-count']) continuation
   await assert.rejects(f.execute()); assert.equal(changed, true);
   assert.equal(f.h.documents.has(scene(0)), true); assert.equal(f.h.documents.get(f.path).deletionProgress.nextTargetIndex, 0);
 });
+continuation('lost completion acknowledgement retains exactly one atomic completion audit', async () => {
+  const f = await preparedDeletion(1); let interrupted = false;
+  f.h.state.onTransaction = async () => { if (interrupted || f.h.documents.get(f.path).status !== 'completed') return;
+    interrupted = true; throw new Error('Synthetic lost completion commit acknowledgement');
+  };
+  await assert.rejects(f.execute()); assert.equal(interrupted, true);
+  const receipt = f.h.documents.get(f.path).purgeReceipt;
+  const audits = () => [...f.h.documents.values()].filter(value => value.requestId === f.deletion.requestId && value.action === 'studio_data_deletion_completed');
+  assert.equal(audits().length, 1); assert.equal(audits()[0].detail.purgeReceiptId, receipt.receiptId);
+  assert.equal(audits()[0].detail.purgeChecksum, receipt.checksum);
+  const replay = await f.execute(); assert.equal(replay.replay, true); assert.equal(replay.purgeReceipt.receiptId, receipt.receiptId);
+  assert.equal(audits().length, 1);
+});
+for (const timing of ['after-target-commit', 'before-completion-commit']) continuation(`profile absent from original plan cannot become a completed residual: ${timing}`, async () => {
+  const h = harness(); h.documents.delete(`users/${uid}`); h.documents.set(scene(0), { uid, private: 'Synthetic original scene without a profile' });
+  const deletion = await h.callable('requestStudioDataDeletion'), path = `studioDataRightsRequests/${deletion.requestId}`;
+  h.state.now += 8 * 24 * 60 * 60 * 1000; let inserted = false;
+  const insert = () => { inserted = true; h.documents.set(`users/${uid}`, { uid, private: 'Synthetic late profile preserved' }); };
+  if (timing === 'after-target-commit') h.state.onTransaction = async () => {
+    if (!inserted && !h.documents.has(scene(0))) insert();
+  };
+  else h.state.onBeforeTransactionCommit = async (reads, writes) => {
+    if (!inserted && reads.has(path) && [1, 2].includes(writes.length) && h.documents.get(path).deletionProgress?.nextTargetIndex === 1) insert();
+  };
+  await assert.rejects(h.callable('executeStudioDataDeletion', { requestId: deletion.requestId }, true));
+  assert.equal(inserted, true); assert.equal(h.documents.get(`users/${uid}`).private, 'Synthetic late profile preserved');
+  assert.notEqual(h.documents.get(path).status, 'completed');
+});
+continuation('admitted backup retention drift cannot erase an original target', async () => {
+  const f = await preparedDeletion(1); let changed = false;
+  f.h.state.onTransaction = async () => { const record = f.h.documents.get(f.path);
+    if (changed || record.status !== 'executing') return; changed = true;
+    record.purgeAfter = new Date(f.h.state.now + 60 * 24 * 60 * 60 * 1000).toISOString();
+  };
+  await assert.rejects(f.execute()); assert.equal(changed, true); assert.equal(f.h.documents.has(scene(0)), true);
+  assert.equal(f.h.documents.get(f.path).deletionProgress.nextTargetIndex, 0);
+});
+for (const reason of ['collection', 'deletion-policy']) continuation(`retained cursor counts must bind the exact original prefix: ${reason}`, async () => {
+  const f = await preparedDeletion(); let interrupted = false;
+  f.h.state.onTransaction = async () => { if (interrupted || f.h.documents.has(scene(0))) return; interrupted = true; throw new Error('Synthetic interrupted prefix'); };
+  await assert.rejects(f.execute()); const current = f.h.documents.get(f.path);
+  assert.equal(current.deletionProgress.nextTargetIndex, 400);
+  current.deletionProgress.counts = reason === 'collection' ? { users: { deleted: 400, anonymized: 0 } } : { studioScenes: { deleted: 0, anonymized: 400 } };
+  await assert.rejects(f.execute()); assert.equal(f.h.documents.has(scene(500)), true);
+  assert.equal(f.h.documents.get(f.path).deletionProgress.nextTargetIndex, 400); assert.notEqual(f.h.documents.get(f.path).status, 'completed');
+});
 for (const entry of continuationCases) { try { await entry.callback(); cases++; console.log(`[PASS] Studio original-plan recovery: ${entry.name}`); }
   catch (error) { negativeFailures++; console.log(`[FAIL] Studio original-plan recovery: ${entry.name}: ${error.message}`); } }
 console.log(JSON.stringify({ kind: 'actual-Studio-handler-source-with-explicit-Firebase-adapters', node: process.version,
-  typescript: ts.version, passed: cases, failed: negativeFailures, loadedFunctions: false, deployedRuntime: false,
+  typescript: ts.version, compiledModule: Boolean(process.env.STUDIO_DELETION_COMPILED), passed: cases, failed: negativeFailures, loadedFunctions: false, deployedRuntime: false,
   storageSigning: 0, providerCalls: 0 }));
 if (negativeFailures) process.exitCode = 1;
