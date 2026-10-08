@@ -6,6 +6,11 @@ concurrency:
 
 on:
   workflow_dispatch:
+    inputs:
+      spatial_source_sha:
+        description: Exact current Spatial PR 1636 source for diagnostic capture; no approval or deployment authority
+        required: false
+        type: string
   pull_request:
     paths:
       - 'apps/studio/**'
@@ -31,7 +36,7 @@ jobs:
     timeout-minutes: 30
     env:
       URAI_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
-      URAI_SPATIAL_EXPECTED_SHA: b17bbaae3de841871f89f48b514887ab8203661d
+      URAI_SPATIAL_EXPECTED_SHA: ${{ inputs.spatial_source_sha || 'eea9ae1a46cd180a99da2c53bb159ead91626121' }}
     steps:
       - name: Checkout exact event source
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
