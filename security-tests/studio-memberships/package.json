@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "pretest": "node prepare-emulators.mjs",
-    "test": "firebase emulators:exec --config firebase.json --project demo-urai-studio-memberships --only firestore,storage \"node --test --test-concurrency=1 baseline-exploit.test.mjs membership.test.mjs\""
+    "test": "firebase emulators:exec --config firebase.json --project demo-urai-studio-memberships --only firestore,storage \"node --test --test-concurrency=1 baseline-exploit.test.mjs membership.test.mjs deletion-fence.test.mjs\""
   },
   "overrides": {
     "@grpc/grpc-js": "1.14.5",
