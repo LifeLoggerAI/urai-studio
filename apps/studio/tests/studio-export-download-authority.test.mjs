@@ -80,6 +80,8 @@ function harness() {
   const exports = {};
   vm.runInNewContext(output, { exports, Buffer, Date: FixtureDate, URL, AbortController, setTimeout, clearTimeout,
     process: { env: {} }, require(name) { if (name === 'firebase-admin') return admin;
+      if (name === 'firebase-admin/firestore') return { FieldValue: firestore.FieldValue, FieldPath: firestore.FieldPath,
+        Timestamp: firestore.Timestamp, GeoPoint: firestore.GeoPoint, DocumentReference: firestore.DocumentReference };
       if (name === 'firebase-functions/v2/https') return { HttpsError, onCall: (options, callback) => callback || options, onRequest: (_options, callback) => callback };
       if (name === 'firebase-functions/v2/scheduler') return { onSchedule: (_options, callback) => callback };
       return require(name); } });
