@@ -83,7 +83,7 @@ async function waitForSemanticReady(page, route) {
       return 'passport-disclosed-demo-ready';
 
     case '/status':
-      await page.locator('[data-testid="urai-final-status-control-room"]').waitFor({ state: 'visible', timeout: 30_000 });
+      await page.locator('[data-testid="urai-final-status-control-room"]:visible').waitFor({ state: 'visible', timeout: 30_000 });
       return 'status-control-room-ready';
 
     default:
