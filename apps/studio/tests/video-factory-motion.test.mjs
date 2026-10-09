@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
+import { readyTailWindow } from '../../../scripts/studio-video-ready-tail.mjs';
 
 const factory = fs.readFileSync(new URL('../lib/studio-video-factory.ts', import.meta.url), 'utf8');
 const capture = fs.readFileSync(new URL('../../../scripts/studio-video-route-capture.mjs', import.meta.url), 'utf8');
@@ -181,6 +182,110 @@ test('Retained Status selection requires the visible control room', async () => 
 });
 
 console.log('video factory semantic motion contract passed');
+
+test('Encoded Home tail does not treat the real push wall offset as video time', () => {
+  // Exact retained push11645522201: wall readiness39.09s was followed by a
+  // forming veil in the incorrectly trimmed MP4. The source is71.8s long.
+  const window = readyTailWindow({ sourceDurationSeconds: 71.8, usedDurationSeconds: 8,
+    recordedReadySeconds: 10, semanticReadinessSampleCount: 41,
+    recordingReadinessBasis: 'continuous-immediate-semantic-polls', semanticState: 'home-spatial-ready',
+    semanticStateAtRecordingEnd: 'home-spatial-ready' });
+  assert.ok(Math.abs(window.startSeconds - 63.3) < 1e-9);
+  assert.ok(window.startSeconds > 39.09 + 8);
+  assert.equal(window.literalPixelAccepted, false);
+  assert.equal(window.endGuardSeconds, 0.5);
+});
+
+test('Guarded tail supports the retained PR Home and shorter route shots', () => {
+  for (const [source, shot] of [[69.8, 8], [12.2, 5], [13.8, 4], [18.08, 6], [12.76, 4], [12.44, 3]]) {
+    const window = readyTailWindow({ sourceDurationSeconds: source, usedDurationSeconds: shot,
+      recordedReadySeconds: 10, semanticReadinessSampleCount: 41,
+    recordingReadinessBasis: 'continuous-immediate-semantic-polls', semanticState: 'route-ready', semanticStateAtRecordingEnd: 'route-ready' });
+    assert.equal(window.durationSeconds, shot);
+    assert.ok(Math.abs(window.endSeconds - (source - 0.5)) < 1e-9);
+    assert.ok(window.startSeconds >= 0);
+  }
+});
+
+test('Encoded tail refuses missing final readiness and insufficient guarded recording', () => {
+  const valid = { sourceDurationSeconds: 71.8, usedDurationSeconds: 8,
+    recordedReadySeconds: 10, semanticReadinessSampleCount: 41,
+    recordingReadinessBasis: 'continuous-immediate-semantic-polls', semanticState: 'home-spatial-ready', semanticStateAtRecordingEnd: 'home-spatial-ready' };
+  for (const semanticStateAtRecordingEnd of [null, undefined, '', 'home-forming']) {
+    assert.throws(() => readyTailWindow({ ...valid, semanticStateAtRecordingEnd }), /missing_or_changed_final_route_readiness/);
+  }
+  for (const recordedReadySeconds of [2, 8, 9.99]) {
+    assert.throws(() => readyTailWindow({ ...valid, recordedReadySeconds }), /insufficient_guarded_ready_tail/);
+  }
+  for (const sourceDurationSeconds of [NaN, Infinity, -1, 0]) {
+    assert.throws(() => readyTailWindow({ ...valid, sourceDurationSeconds }), /invalid_encoded_ready_tail_duration/);
+  }
+  assert.throws(() => readyTailWindow({ ...valid, sourceDurationSeconds: 8 }), /insufficient_guarded_ready_tail/);
+});
+
+test('Final Home revalidation refuses an outer loading veil with its short deadline', async () => {
+  const page = { waitForFunction: async (predicate, argument, options) => {
+    assert.equal(argument, null);
+    assert.equal(options.timeout, 1_000);
+    assert.equal(predicate(), false);
+    throw new Error('synthetic_final_home_not_ready');
+  } };
+  await assert.rejects(actualReadiness(homeDom({ loading: true }))(page, '/home', 1_000), /synthetic_final_home_not_ready/);
+});
+
+assert.match(composer, /trim=start=\$\{window\.startSeconds\.toFixed\(3\)\}/);
+assert.doesNotMatch(composer, /trim=start=\$\{readyOffset/);
+assert.match(capture, /recordSemanticReadyInterval\(page, route, semanticState, recordSeconds\)/);
+assert.match(capture, /semanticStateAtRecordingEnd = await assertSemanticReadyNow\(page, route\)/);
+assert.match(capture, /spatial_source_changed_during_recording/);
+
+function actualReadyRecorder(document, clock) {
+  return vm.runInNewContext(`${readinessSource}\nrecordSemanticReadyInterval;`, { document, URL, Date: { now: () => clock.ms } });
+}
+
+test('Actual recorder samples the exact readiness predicate throughout ten seconds', async () => {
+  const clock = { ms: 0 };
+  let observations = 0;
+  const page = { evaluate: async (predicate) => { observations++; return predicate(); },
+    waitForTimeout: async (ms) => { clock.ms += ms; } };
+  const result = await actualReadyRecorder(homeDom(), clock)(page, '/home', 'home-spatial-ready', 10);
+  assert.equal(observations, 41);
+  assert.equal(result.recordedReadySeconds, 10);
+  assert.equal(result.semanticReadinessSampleCount, 41);
+  assert.equal(result.semanticStateAtRecordingEnd, 'home-spatial-ready');
+});
+
+test('Actual recorder immediately rejects a transient Home veil without waiting for recovery', async () => {
+  const clock = { ms: 0 };
+  let current = homeDom();
+  let observations = 0;
+  const document = { querySelector: (selector) => current.querySelector(selector) };
+  const page = { evaluate: async (predicate) => { observations++; return predicate(); },
+    waitForTimeout: async (ms) => { clock.ms += ms; if (clock.ms === 750) current = homeDom({ loading: true }); } };
+  await assert.rejects(actualReadyRecorder(document, clock)(page, '/home', 'home-spatial-ready', 10), /route_lost_semantic_readiness/);
+  assert.equal(clock.ms, 750);
+  assert.equal(observations, 4);
+});
+
+test('Actual recorder rejects a veil first appearing at the final observation', async () => {
+  const clock = { ms: 0 };
+  let current = homeDom();
+  const document = { querySelector: (selector) => current.querySelector(selector) };
+  const page = { evaluate: async (predicate) => predicate(),
+    waitForTimeout: async (ms) => { clock.ms += ms; if (clock.ms === 10_000) current = homeDom({ loading: true }); } };
+  await assert.rejects(actualReadyRecorder(document, clock)(page, '/home', 'home-spatial-ready', 10), /route_lost_semantic_readiness/);
+  assert.equal(clock.ms, 10_000);
+});
+
+test('Encoded tail refuses unqualified or missing continuous recording observations', () => {
+  const valid = { sourceDurationSeconds: 71.8, usedDurationSeconds: 8, recordedReadySeconds: 10,
+    semanticState: 'home-spatial-ready', semanticStateAtRecordingEnd: 'home-spatial-ready',
+    semanticReadinessSampleCount: 41, recordingReadinessBasis: 'continuous-immediate-semantic-polls' };
+  for (const semanticReadinessSampleCount of [undefined, 0, 1, 2.5]) {
+    assert.throws(() => readyTailWindow({ ...valid, semanticReadinessSampleCount }), /missing_continuous_recording_readiness/);
+  }
+  assert.throws(() => readyTailWindow({ ...valid, recordingReadinessBasis: 'final-check-only' }), /missing_continuous_recording_readiness/);
+});
 
 const replaySelector = '[data-testid="cinematic-replay-client"][data-replay-spatial-owner="r3f-immersive-memory-field"]';
 function replayDom({ mediaStatus = 'ready', mediaReady = 'true', webglState = 'ready', statusPanel = false,
