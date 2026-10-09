@@ -155,7 +155,8 @@ for (const [route, selector, attributes, state] of [
   ['/focus?memoryId=quiet-reset&manifestId=replay-recovery-thread&demo=1', '[data-testid="urai-final-focus-chamber"]',
     { 'data-memory-status': 'demo', 'data-memory-id': 'demo:quiet-reset', 'data-manifest-id': 'replay-recovery-thread' }, 'focus-disclosed-demo-ready'],
   ['/replay?memoryId=quiet-reset&manifestId=replay-recovery-thread&demo=1', '[data-testid="cinematic-replay-client"][data-replay-spatial-owner="r3f-immersive-memory-field"]',
-    { 'data-memory-status': 'demo', 'data-memory-id': 'demo:quiet-reset', 'data-manifest-id': 'replay-recovery-thread' }, 'replay-disclosed-demo-ready'],
+    { 'data-memory-status': 'demo', 'data-memory-id': 'demo:quiet-reset', 'data-manifest-id': 'replay-recovery-thread',
+      'data-webgl-state': 'ready', 'data-replay-media-status': 'ready', 'data-replay-media-ready': 'true' }, 'replay-disclosed-demo-ready'],
   ['/passport/?demo=1', 'main[data-route-owner="passport-ownership-vault"]',
     { 'data-passport-source': 'demo' }, 'passport-disclosed-demo-ready'],
 ]) {
@@ -180,3 +181,81 @@ test('Retained Status selection requires the visible control room', async () => 
 });
 
 console.log('video factory semantic motion contract passed');
+
+const replaySelector = '[data-testid="cinematic-replay-client"][data-replay-spatial-owner="r3f-immersive-memory-field"]';
+function replayDom({ mediaStatus = 'ready', mediaReady = 'true', webglState = 'ready', statusPanel = false,
+  memoryStatus = 'demo', memoryId = 'demo:quiet-reset', manifestId = 'replay-recovery-thread',
+  width = 1280, height = 720, canvas = true, rootPresent = true } = {}) {
+  const attributes = { 'data-memory-status': memoryStatus, 'data-memory-id': memoryId,
+    'data-manifest-id': manifestId, 'data-webgl-state': webglState,
+    'data-replay-media-status': mediaStatus, 'data-replay-media-ready': mediaReady };
+  const root = { getAttribute: (name) => attributes[name] ?? null,
+    querySelector: (selector) => selector === 'canvas'
+      ? (canvas ? { getBoundingClientRect: () => ({ width, height }) } : null)
+      : selector === '.replaySourceStatus' && statusPanel ? { role: 'status' } : null };
+  return { querySelector: (selector) => selector === replaySelector && rootPresent ? root : null };
+}
+
+for (const [name, options, ready] of [
+  ['decoded disclosed scene ready', {}, true],
+  ['canvas exists while demonstration texture loads', { mediaStatus: 'loading', mediaReady: 'false' }, false],
+  ['demonstration decode failed', { mediaStatus: 'error', mediaReady: 'false' }, false],
+  ['media buffers after readiness', { mediaStatus: 'buffering', mediaReady: 'false' }, false],
+  ['missing decoded-media status', { mediaStatus: null }, false],
+  ['missing decoded-media readiness', { mediaReady: null }, false],
+  ['ready status without decoded texture', { mediaReady: 'false' }, false],
+  ['decoded texture without ready status', { mediaStatus: 'loading' }, false],
+  ['ready markers while source status remains mounted', { statusPanel: true }, false],
+  ['WebGL context failed after canvas creation', { webglState: 'failed' }, false],
+  ['missing WebGL readiness', { webglState: null }, false],
+  ['wrong selected memory', { memoryId: 'demo:other-memory' }, false],
+  ['wrong manifest', { manifestId: 'other-manifest' }, false],
+  ['ordinary memory is not the disclosed demo', { memoryStatus: 'ready' }, false],
+  ['wrong or missing spatial owner', { rootPresent: false }, false],
+  ['missing rendered canvas', { canvas: false }, false],
+  ['undersized rendered canvas', { width: 239 }, false],
+]) {
+  test(`Replay semantic readiness: ${name}`, async () => {
+    let observed;
+    const page = { waitForFunction: async (predicate, argument, options) => {
+      assert.equal(argument, null);
+      assert.equal(options.timeout, 60_000);
+      assert.equal(options.polling, 100);
+      observed = predicate();
+      if (!observed) throw new Error('synthetic_poll_not_ready');
+    } };
+    const result = actualReadiness(replayDom(options))(page, '/replay?memoryId=quiet-reset&demo=1');
+    if (ready) assert.equal(await result, 'replay-disclosed-demo-ready');
+    else await assert.rejects(result, /synthetic_poll_not_ready/);
+    assert.equal(observed, ready);
+  });
+}
+
+test('Replay polling retains one original deadline until decoding and source status settle', async () => {
+  const states = [
+    { mediaStatus: 'loading', mediaReady: 'false', statusPanel: true },
+    { mediaStatus: 'ready', mediaReady: 'false', statusPanel: true },
+    { mediaStatus: 'ready', mediaReady: 'true', statusPanel: true },
+    { mediaStatus: 'ready', mediaReady: 'true', statusPanel: false },
+  ];
+  let current = replayDom(states[0]);
+  const observed = [];
+  let calls = 0;
+  const document = { querySelector: (selector) => current.querySelector(selector) };
+  const page = { waitForFunction: async (predicate, argument, options) => {
+    calls++;
+    assert.equal(argument, null);
+    assert.equal(options.timeout, 60_000);
+    assert.equal(options.polling, 100);
+    for (const state of states) {
+      current = replayDom(state);
+      const ready = predicate();
+      observed.push(ready);
+      if (ready) return;
+    }
+    throw new Error('synthetic_poll_not_ready');
+  } };
+  assert.equal(await actualReadiness(document)(page, '/replay/'), 'replay-disclosed-demo-ready');
+  assert.equal(calls, 1);
+  assert.deepEqual(observed, [false, false, false, true]);
+});

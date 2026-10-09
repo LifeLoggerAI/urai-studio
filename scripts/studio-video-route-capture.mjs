@@ -78,6 +78,10 @@ async function waitForSemanticReady(page, route) {
         return root?.getAttribute('data-memory-status') === 'demo'
           && root?.getAttribute('data-memory-id') === 'demo:quiet-reset'
           && root?.getAttribute('data-manifest-id') === 'replay-recovery-thread'
+          && root?.getAttribute('data-webgl-state') === 'ready'
+          && root?.getAttribute('data-replay-media-status') === 'ready'
+          && root?.getAttribute('data-replay-media-ready') === 'true'
+          && !root.querySelector('.replaySourceStatus')
           && Boolean(rect && rect.width >= 240 && rect.height >= 240);
       }, null, { timeout: 60_000, polling: 100 });
       return 'replay-disclosed-demo-ready';
