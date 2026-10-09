@@ -123,12 +123,19 @@ export function buildStudioLongformRequest(value: unknown, identity: { tenantId:
     } as JobsLifeMovieSource;
   });
   const timeline: JobsLifeMovieTimelineItem[] = array(body.timeline, 1, 360, 'longform_invalid_timeline').map((value) => {
-    const item = record(value, ['sourceId', 'startMs', 'endMs']);
+    const item = record(value, ['sourceId', 'startMs', 'endMs', 'sourceStartMs']);
     const sourceId = id(item.sourceId, 'longform_invalid_timeline_source');
     if (!sourceIds.has(sourceId)) fail('longform_unknown_timeline_source');
     const startMs = integer(item.startMs, 0, STUDIO_LONGFORM_JOBS_CONTRACT.maxDurationMs, 'longform_invalid_timeline_start');
     const endMs = integer(item.endMs, 1, STUDIO_LONGFORM_JOBS_CONTRACT.maxDurationMs, 'longform_invalid_timeline_end');
     if (endMs <= startMs || endMs - startMs > 15_000) fail('longform_pre_cut_source_required');
+    if (item.sourceStartMs !== undefined) {
+      const sourceStartMs = integer(item.sourceStartMs, 0, 45 * 60 * 1000, 'longform_invalid_timeline_source_start');
+      if (sources.find((source) => source.id === sourceId)!.mimeType.startsWith('image/') && sourceStartMs !== 0) {
+        fail('longform_image_source_start_must_be_zero');
+      }
+      return { sourceId, startMs, endMs, sourceStartMs };
+    }
     return { sourceId, startMs, endMs };
   }).sort((left, right) => left.startMs - right.startMs);
   if (timeline.some((item, index) => index > 0 && item.startMs < timeline[index - 1].endMs)) fail('longform_overlapping_timeline');
