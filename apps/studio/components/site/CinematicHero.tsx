@@ -16,8 +16,8 @@ export function CinematicHero() {
         <p className="eyebrow">URAI Studio · Cinematic AI systems</p>
         <h1 id="home-hero-heading">The cinematic operating system for memory, media, and spatial intelligence.</h1>
         <p className="hero-lede">
-          URAI Studio turns signals into scenes — transforming passive memory, emotional context, symbolic visuals,
-          motion, music, and spatial worlds into production-ready creative systems.
+          UrAi Studio brings memory, emotional context, symbolic visuals, motion, music, and spatial worlds
+          into a shared creative workspace. Available actions depend on each system&apos;s readiness.
         </p>
         <div className="cta-row" aria-label="Primary calls to action">
           <Link className="button button-primary" href="/contact">Start a Studio Project</Link>
@@ -31,7 +31,7 @@ export function CinematicHero() {
       <div className="hero-panel cinematic-panel" aria-label="URAI Studio living aura field">
         <AuraField />
         <div className="hero-panel-copy">
-          <span>Live studio spine</span>
+          <span>Studio system map</span>
           <strong>Studio · Asset Factory · Motion · Cinema · Spatial</strong>
         </div>
       </div>
