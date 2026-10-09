@@ -28,13 +28,20 @@ async function waitForSemanticReady(page, route) {
   switch (routePath(route)) {
     case '/home':
       await page.waitForFunction(() => {
-        const assetOwner = document.querySelector('.urai-asset-home-world[data-home-primary-owner="asset-driven"]');
+        const runtimeOwner = document.querySelector('.urai-home-spatial-runtime-layer');
+        if (runtimeOwner && (
+          runtimeOwner.getAttribute('data-home-assets-ready') !== 'true'
+          || runtimeOwner.getAttribute('data-webgl-ready') !== 'true'
+          || runtimeOwner.querySelector('.home-runtime-loading')
+        )) return false;
+        const homeOwner = runtimeOwner || document;
+        const assetOwner = homeOwner.querySelector('.urai-asset-home-world[data-home-primary-owner="asset-driven"]');
         if (assetOwner) {
           const rect = assetOwner.querySelector('canvas')?.getBoundingClientRect();
           return assetOwner.getAttribute('data-home-assets-ready') === 'true'
             && Boolean(rect && rect.width >= 240 && rect.height >= 240);
         }
-        const webglOwner = document.querySelector('.urai-final-home-world[data-home-spatial-renderer="webgl"]');
+        const webglOwner = homeOwner.querySelector('.urai-final-home-world[data-home-spatial-renderer="webgl"]');
         if (webglOwner) {
           const rect = webglOwner.querySelector('canvas')?.getBoundingClientRect();
           return webglOwner.getAttribute('data-home-ready') === 'true'

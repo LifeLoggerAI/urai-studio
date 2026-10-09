@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import test from 'node:test';
+import vm from 'node:vm';
 
 const factory = fs.readFileSync(new URL('../lib/studio-video-factory.ts', import.meta.url), 'utf8');
 const capture = fs.readFileSync(new URL('../../../scripts/studio-video-route-capture.mjs', import.meta.url), 'utf8');
@@ -58,5 +60,123 @@ for (const token of [
 
 assert.match(workflow, /Compose and verify semantic-ready motion MP4/);
 assert.match(workflow, /pnpm run video-factory:compose-motion/);
+
+// Execute the actual capture function without launching its CLI/browser. These
+// explicit DOM fixtures exercise readiness decisions, not encoded frame delivery.
+const readinessStart = capture.indexOf('function routePath(route)');
+const readinessEnd = capture.indexOf('\nconst source = await readFile(sourcePath');
+assert.ok(readinessStart >= 0 && readinessEnd > readinessStart);
+const readinessSource = capture.slice(readinessStart, readinessEnd);
+const homeRuntimeSelector = '.urai-home-spatial-runtime-layer';
+const assetHomeSelector = '.urai-asset-home-world[data-home-primary-owner="asset-driven"]';
+const webglHomeSelector = '.urai-final-home-world[data-home-spatial-renderer="webgl"]';
+
+function homeDom({ runtime = true, runtimeReady = 'true', webglReady = 'true', loading = false,
+  owner = 'asset', innerReady = 'true', width = 1280, height = 720, canvas = true, outsideRuntime = false } = {}) {
+  const canvasElement = canvas ? { getBoundingClientRect: () => ({ width, height }) } : null;
+  const inner = owner ? {
+    getAttribute: (name) => ({ 'data-home-assets-ready': innerReady, 'data-home-ready': innerReady })[name] ?? null,
+    querySelector: (selector) => selector === 'canvas' ? canvasElement : null,
+  } : null;
+  const findInner = (selector) => selector === (owner === 'asset' ? assetHomeSelector : webglHomeSelector) ? inner : null;
+  const outer = runtime ? {
+    getAttribute: (name) => ({ 'data-home-assets-ready': runtimeReady, 'data-webgl-ready': webglReady })[name] ?? null,
+    querySelector: (selector) => selector === '.home-runtime-loading'
+      ? (loading ? { role: 'status' } : null)
+      : (outsideRuntime ? null : findInner(selector)),
+  } : null;
+  return { querySelector: (selector) => selector === homeRuntimeSelector ? outer : findInner(selector) };
+}
+
+function actualReadiness(document) {
+  return vm.runInNewContext(`${readinessSource}\nwaitForSemanticReady;`, { document, URL });
+}
+
+for (const [name, options, ready] of [
+  ['inner ready while outer Home is loading', { runtimeReady: 'false', loading: true }, false],
+  ['outer ready but loading overlay still mounted', { loading: true }, false],
+  ['outer assets not ready without an overlay', { runtimeReady: 'false' }, false],
+  ['outer WebGL recovery', { webglReady: 'recovering' }, false],
+  ['outer WebGL failure', { webglReady: 'false' }, false],
+  ['missing outer readiness', { runtimeReady: null }, false],
+  ['ready inner scene outside the actual runtime owner', { outsideRuntime: true }, false],
+  ['ready current asset Home', {}, true],
+  ['unready inner asset scene', { innerReady: 'false' }, false],
+  ['missing Home scene', { owner: null }, false],
+  ['missing Home canvas', { canvas: false }, false],
+  ['undersized Home canvas width', { width: 239 }, false],
+  ['undersized Home canvas height', { height: 239 }, false],
+  ['legacy standalone asset Home', { runtime: false }, true],
+  ['legacy standalone WebGL Home', { runtime: false, owner: 'webgl' }, true],
+  ['unready legacy WebGL Home', { runtime: false, owner: 'webgl', innerReady: 'false' }, false],
+]) {
+  test(`Home semantic readiness: ${name}`, async () => {
+    let observed;
+    const page = { waitForFunction: async (predicate, argument, options) => {
+      assert.equal(argument, null);
+      assert.equal(options.timeout, 60_000);
+      assert.equal(options.polling, 100);
+      observed = predicate();
+      if (!observed) throw new Error('synthetic_poll_not_ready');
+    } };
+    const result = actualReadiness(homeDom(options))(page, '/home');
+    if (ready) assert.equal(await result, 'home-spatial-ready');
+    else await assert.rejects(result, /synthetic_poll_not_ready/);
+    assert.equal(observed, ready);
+  });
+}
+
+test('Home polling resolves only after the outer runtime and loading overlay settle', async () => {
+  const states = [
+    { innerReady: 'false', runtimeReady: 'false', loading: true },
+    { innerReady: 'true', runtimeReady: 'false', loading: true },
+    { innerReady: 'true', runtimeReady: 'true', loading: true },
+    { innerReady: 'true', runtimeReady: 'true', loading: false },
+  ];
+  let current = homeDom(states[0]);
+  const observed = [];
+  const document = { querySelector: (selector) => current.querySelector(selector) };
+  const page = { waitForFunction: async (predicate) => {
+    for (const state of states) {
+      current = homeDom(state);
+      const ready = predicate();
+      observed.push(ready);
+      if (ready) return;
+    }
+    throw new Error('synthetic_poll_not_ready');
+  } };
+  assert.equal(await actualReadiness(document)(page, '/home/'), 'home-spatial-ready');
+  assert.deepEqual(observed, [false, false, false, true]);
+});
+
+for (const [route, selector, attributes, state] of [
+  ['/life-map/?demo=1&manifestId=replay-recovery-thread&overview=1', '[data-testid="urai-true-3d-life-map"]',
+    { 'data-life-map-mode': 'overview' }, 'life-map-overview-ready'],
+  ['/focus?memoryId=quiet-reset&manifestId=replay-recovery-thread&demo=1', '[data-testid="urai-final-focus-chamber"]',
+    { 'data-memory-status': 'demo', 'data-memory-id': 'demo:quiet-reset', 'data-manifest-id': 'replay-recovery-thread' }, 'focus-disclosed-demo-ready'],
+  ['/replay?memoryId=quiet-reset&manifestId=replay-recovery-thread&demo=1', '[data-testid="cinematic-replay-client"][data-replay-spatial-owner="r3f-immersive-memory-field"]',
+    { 'data-memory-status': 'demo', 'data-memory-id': 'demo:quiet-reset', 'data-manifest-id': 'replay-recovery-thread' }, 'replay-disclosed-demo-ready'],
+  ['/passport/?demo=1', 'main[data-route-owner="passport-ownership-vault"]',
+    { 'data-passport-source': 'demo' }, 'passport-disclosed-demo-ready'],
+]) {
+  test(`Retained route semantics: ${state}`, async () => {
+    const root = { getAttribute: (name) => attributes[name] ?? null,
+      querySelector: (name) => name === 'canvas' ? { getBoundingClientRect: () => ({ width: 1280, height: 720 }) } : null };
+    const document = { querySelector: (name) => name === selector ? root : null };
+    const page = { waitForFunction: async (predicate) => { assert.equal(predicate(), true); } };
+    assert.equal(await actualReadiness(document)(page, route), state);
+  });
+}
+
+test('Retained Status selection requires the visible control room', async () => {
+  const page = { locator: (selector) => {
+    assert.equal(selector, '[data-testid="urai-final-status-control-room"]:visible');
+    return { waitFor: async (options) => {
+      assert.equal(options.state, 'visible');
+      assert.equal(options.timeout, 30_000);
+    } };
+  } };
+  assert.equal(await actualReadiness({ querySelector: () => null })(page, '/status'), 'status-control-room-ready');
+});
 
 console.log('video factory semantic motion contract passed');
