@@ -34,6 +34,7 @@ export type JobsLifeMovieTimelineItem = {
   sourceId: string;
   startMs: number;
   endMs: number;
+  sourceStartMs?: number;
 };
 
 export type JobsLifeMovieAudioCue = {
@@ -135,6 +136,14 @@ export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInpu
     const startMs = nonnegativeInteger(item.startMs, 'life_movie_invalid_timeline_start');
     const endMs = positiveInteger(item.endMs, 'life_movie_invalid_timeline_end');
     if (endMs <= startMs) fail('life_movie_invalid_timeline_duration');
+    if (item.sourceStartMs !== undefined) {
+      const sourceStartMs = nonnegativeInteger(item.sourceStartMs, 'life_movie_invalid_timeline_source_start');
+      if (sourceStartMs > 45 * 60 * 1000) fail('life_movie_invalid_timeline_source_start');
+      if (sources.find((source) => source.id === item.sourceId)!.mimeType.startsWith('image/') && sourceStartMs !== 0) {
+        fail('life_movie_image_source_start_must_be_zero');
+      }
+      return { sourceId:item.sourceId, startMs, endMs, sourceStartMs };
+    }
     return { sourceId:item.sourceId, startMs, endMs };
   }).sort((a,b) => a.startMs - b.startMs);
 
