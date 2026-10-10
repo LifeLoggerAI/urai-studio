@@ -107,8 +107,9 @@ try {
   else {
     assert.deepEqual(state.calls[0].input.consent, consent);
     assert.ok(state.checks.some((check) => check.revokedCheck === true));
-    assert.deepEqual(state.paths, ['studioUsers/synthetic-owner',
-      `studioDataRightsOwnerFences/${createHash('sha256').update('urai-studio-data-rights:synthetic-owner').digest('hex')}`]);
+    const authorityReads = ['studioUsers/synthetic-owner',
+      `studioDataRightsOwnerFences/${createHash('sha256').update('urai-studio-data-rights:synthetic-owner').digest('hex')}`];
+    assert.deepEqual(state.paths, [...authorityReads, ...authorityReads, ...authorityReads]);
   }
   cases++;
 
