@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as nodeModule from 'node:module';
-import { createHash } from 'node:crypto';
 
 // Compile the actual checked-in handlers. Next/Firebase/network boundaries are
 // mocked; authorization, validation, bounded body reading and dispatch are real.
