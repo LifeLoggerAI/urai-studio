@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { requireStudioLongformAuth } from '@/lib/studio-life-movie-longform-auth';
+import { requireStudioLongformAuth, refreshStudioLongformAuth } from '@/lib/studio-life-movie-longform-auth';
 import { readStudioLongformJson, StudioLongformError } from '@/lib/studio-life-movie-longform-contract';
 import {
   buildJobsLifeMovieEnvelope,
@@ -78,6 +78,8 @@ export async function POST(request: Request) {
       fps: typeof body.fps === 'number' ? body.fps as 24 | 25 | 30 | 50 | 60 : undefined,
     });
 
+    const dispatchAuth = await refreshStudioLongformAuth(request, auth);
+    if (!dispatchAuth.ok) return authErrorResponse(dispatchAuth);
     const result = await callStudioJobsBridge({
       action:'create',
       tenantId:auth.tenantId,
@@ -86,6 +88,8 @@ export async function POST(request: Request) {
       consent,
       payload:envelope.payload as unknown as Record<string, unknown>,
     });
+    const responseAuth = await refreshStudioLongformAuth(request, auth);
+    if (!responseAuth.ok) return authErrorResponse(responseAuth);
 
     return json({
       ok:true,

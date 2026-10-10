@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { requireStudioLongformAuth } from '@/lib/studio-life-movie-longform-auth';
+import { requireStudioLongformAuth, refreshStudioLongformAuth } from '@/lib/studio-life-movie-longform-auth';
 import { callStudioLongformBridge, studioLongformBridgeStatus } from '@/lib/studio-life-movie-longform-client';
 import { buildStudioLongformRequest, readStudioLongformJson, StudioLongformError, STUDIO_LONGFORM_JOBS_CONTRACT } from '@/lib/studio-life-movie-longform-contract';
 
@@ -29,7 +29,11 @@ export async function POST(request: Request) {
   try {
     const body = await readStudioLongformJson(request, STUDIO_LONGFORM_JOBS_CONTRACT.maxRequestBytes);
     const envelope = buildStudioLongformRequest(body, { tenantId: auth.tenantId, userId: auth.uid });
+    const dispatchAuth = await refreshStudioLongformAuth(request, auth);
+    if (!dispatchAuth.ok) return authError(dispatchAuth);
     const result = await callStudioLongformBridge(envelope);
+    const responseAuth = await refreshStudioLongformAuth(request, auth);
+    if (!responseAuth.ok) return authError(responseAuth);
     return json({ ok: true, action: envelope.action, tenantId: auth.tenantId, executionAuthority: 'urai-jobs', publicReleaseAuthorized: false, providerGenerationAuthorized: false, result }, envelope.action === 'create' || envelope.action === 'assemble' ? 202 : 200);
   } catch (error) {
     const code = error instanceof StudioLongformError ? error.code : 'longform_dispatch_failed';

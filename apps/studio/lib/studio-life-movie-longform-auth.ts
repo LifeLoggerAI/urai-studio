@@ -62,3 +62,13 @@ export async function requireStudioLongformAuth(request: Request): Promise<Studi
 
   return auth;
 }
+
+/** Recheck after awaited input/bridge work while retaining the original actor. */
+export async function refreshStudioLongformAuth(request: Request, expected: StudioAuthContext): Promise<StudioAuthContext> {
+  const current = await requireStudioLongformAuth(request);
+  if (!current.ok) return current;
+  if (current.uid !== expected.uid || current.tenantId !== expected.tenantId) {
+    return denied(current, 'longform_tenant_binding_required');
+  }
+  return current;
+}

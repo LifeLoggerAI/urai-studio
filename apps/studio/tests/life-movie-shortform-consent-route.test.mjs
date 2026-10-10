@@ -29,7 +29,8 @@ const authUrl = data(`export async function requireStudioAuth() {
   return { ok: state.authOk, uid: 'synthetic-owner', tenantId: 'synthetic-tenant', authMode: 'firebase_id_token',
     ...(state.authOk ? {} : { error: { code: 'unauthorized', message: 'synthetic-denial' } }) };
 }
-export const requireStudioLongformAuth = requireStudioAuth;`);
+export const requireStudioLongformAuth = requireStudioAuth;
+export const refreshStudioLongformAuth = requireStudioAuth;`);
 const contractUrl = data(compile(source('lib/studio-life-movie-longform-contract.ts')));
 const bridgeUrl = data(compile(source('lib/studio-life-movie-jobs-bridge.ts')));
 const clientUrl = data(compile(source('lib/studio-life-movie-jobs-client.ts')).replaceAll('server-only', data('export {};')).replaceAll('./studio-life-movie-longform-contract', contractUrl));
