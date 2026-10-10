@@ -1,0 +1,471 @@
+{
+  "composition": {
+    "architectureBrief": "Simple rectangular shell; one broad entry opening, two residential windows on the north wall, optional non-operational masonry fireplace on the east wall. Ceiling fan is optional and disabled in reduced-motion mode.",
+    "dressingRules": {
+      "empty": "Shell, openings, orientation landmark and required safety geometry only",
+      "light": "Specified furniture plus sparse neutral props on supporting surfaces; no real people",
+      "people": "Not generated in this lane; occupancy, character likeness, voices and animation require separate identity/consent authority",
+      "rich": "Add governed prop submodules within reserved placement envelopes; maintain clear route, readable exits and low visual stimulation"
+    },
+    "furniture": [
+      {
+        "anchorAllowed": true,
+        "collidable": true,
+        "dimensionsMeters": {
+          "depth": 0.92,
+          "height": 0.88,
+          "width": 2.3
+        },
+        "id": "sofa",
+        "label": "Unbranded three-seat sofa",
+        "materialIntent": "woven-cloth-warm",
+        "positionMeters": [
+          -2.2,
+          0,
+          -1.4
+        ],
+        "role": "furniture",
+        "yawDegrees": 0,
+        "zone": "living"
+      },
+      {
+        "anchorAllowed": true,
+        "collidable": true,
+        "dimensionsMeters": {
+          "depth": 0.9,
+          "height": 0.88,
+          "width": 0.82
+        },
+        "id": "armchair",
+        "label": "Upholstered chair",
+        "materialIntent": "woven-cloth-warm",
+        "positionMeters": [
+          2.35,
+          0,
+          -0.8
+        ],
+        "role": "furniture",
+        "yawDegrees": 0,
+        "zone": "living"
+      },
+      {
+        "anchorAllowed": true,
+        "collidable": true,
+        "dimensionsMeters": {
+          "depth": 0.45,
+          "height": 0.75,
+          "width": 1.35
+        },
+        "id": "sideboard",
+        "label": "Low wood storage cabinet",
+        "materialIntent": "wood-walnut-satin",
+        "positionMeters": [
+          2.65,
+          0,
+          1.7
+        ],
+        "role": "furniture",
+        "yawDegrees": 0,
+        "zone": "living"
+      },
+      {
+        "anchorAllowed": true,
+        "collidable": true,
+        "dimensionsMeters": {
+          "depth": 0.55,
+          "height": 0.56,
+          "width": 0.55
+        },
+        "id": "side-table",
+        "label": "Sofa side table",
+        "materialIntent": "wood-walnut-satin",
+        "positionMeters": [
+          -2.75,
+          0,
+          0.25
+        ],
+        "role": "furniture",
+        "yawDegrees": 0,
+        "zone": "living"
+      }
+    ],
+    "openings": [
+      {
+        "centerLocalMeters": [
+          0,
+          1.05,
+          2.9
+        ],
+        "clearWidthTargetMeters": 1.0,
+        "heightMeters": 2.1,
+        "id": "primary-entry",
+        "levelThreshold": true,
+        "nominalWidthMeters": 1.1,
+        "status": "SPECIFIED_NOT_GEOMETRY_VALIDATED",
+        "wall": "+Z",
+        "zone": "living"
+      }
+    ],
+    "propBriefs": [
+      "unlabelled framed landscape",
+      "blank photo placeholder",
+      "plain ceramic bowl",
+      "closed generic books",
+      "analogue clock without brand"
+    ],
+    "vegetationBriefs": [],
+    "zones": [
+      {
+        "dimensionsMeters": {
+          "depth": 5.8,
+          "height": 2.55,
+          "width": 7.2
+        },
+        "id": "living",
+        "kind": "interior",
+        "originMeters": [
+          0,
+          0,
+          0
+        ],
+        "purpose": "Domestic conversation and family-memory staging"
+      },
+      {
+        "dimensionsMeters": {
+          "depth": 2.4,
+          "height": 2.55,
+          "width": 2.2
+        },
+        "id": "entry",
+        "kind": "interior",
+        "originMeters": [
+          0,
+          0,
+          4.1
+        ],
+        "purpose": "Clear entry and orientation landmark"
+      }
+    ]
+  },
+  "dressingRule": "Specified furniture plus sparse neutral props on supporting surfaces; no real people",
+  "eraPack": {
+    "path": "era-packs/era-1970s.json",
+    "sha256": "de52ac36e2f91ff108506731bfa82842fa3c4c163b3527f0ab3adbe902c9420c"
+  },
+  "familyId": "gw-east-texas-living-room",
+  "id": "gw-east-texas-living-room@1.0.0+era-1970s.us-tx-east.light.mobile.calm.67e5583d0bf7",
+  "implementationStatus": "RECIPE_COMPILED_ONLY: no selection claims model/material/lighting changes have been built",
+  "lighting": {
+    "daylightCctKelvin": 5600,
+    "emotionalProfile": {
+      "cctDeltaKelvin": -150,
+      "exposureDeltaStops": 0,
+      "id": "calm",
+      "saturationScale": 0.94
+    },
+    "emotionalWeatherRef": "../taxonomy/emotional-weather.json",
+    "interiorFixtureCctKelvin": 3000,
+    "noStrobe": true,
+    "primary": "diffuse natural light plus restrained practical fixtures",
+    "reducedStimulation": {
+      "animatedWaterAmplitudeMeters": 0.015,
+      "exposureAdaptation": "slow optional, disableable",
+      "movingShadows": false,
+      "suddenLightning": false
+    },
+    "status": "CONFIGURATION_TARGET_NOT_RENDER_VALIDATED",
+    "targetIlluminanceLux": {
+      "navigation": 100,
+      "task": 250
+    },
+    "toneMappingIntent": "preserve midtone orientation and restrained highlights; no crushed blacks or blown window regions",
+    "weatherDrivenSaturation": false
+  },
+  "logicalKitIds": [
+    "kit:gw-east-texas-living-room-shell:v1",
+    "kit:door-interior-accessible-neutral:v1",
+    "kit:window-residential-neutral:v1",
+    "kit:baseboard-painted-neutral:v1",
+    "kit:gw-east-texas-living-room-sofa:v1",
+    "kit:gw-east-texas-living-room-armchair:v1",
+    "kit:gw-east-texas-living-room-sideboard:v1",
+    "kit:gw-east-texas-living-room-side-table:v1"
+  ],
+  "materialDefinitions": [
+    {
+      "description": "muted loop carpet",
+      "id": "mat:carpet-loop-muted:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "carpet-loop-muted",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "small loop normals with scale-correct repeat",
+        "metallic": 0,
+        "roughness": 0.94,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "clear glazing",
+      "id": "mat:glass-clear:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "glass-clear",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "transparent glTF fallback; transmission extension optional",
+        "metallic": 0,
+        "roughness": 0.12,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "warm low-chroma painted plaster",
+      "id": "mat:paint-warm-off-white:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "paint-warm-off-white",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "fine plaster grain",
+        "metallic": 0,
+        "roughness": 0.74,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "unbranded warm wood",
+      "id": "mat:wood-oak-satin:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "wood-oak-satin",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "grain direction follows joinery",
+        "metallic": 0,
+        "roughness": 0.52,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "unbranded brown wood veneer",
+      "id": "mat:wood-walnut-satin:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "wood-walnut-satin",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "directional grain; no baked specular highlight",
+        "metallic": 0,
+        "roughness": 0.47,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "warm neutral woven upholstery",
+      "id": "mat:woven-cloth-warm:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "woven-cloth-warm",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "thread normal; restrained pattern",
+        "metallic": 0,
+        "roughness": 0.9,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    }
+  ],
+  "navigation": {
+    "accessibleDefault": {
+      "doorsAutomaticOrFixedOpen": true,
+      "legalAccessibilityCertification": false,
+      "levelThreshold": true,
+      "seatedEyeHeightMeters": 1.2,
+      "stairsRequired": false,
+      "standingEyeHeightMeters": 1.65
+    },
+    "connections": [
+      {
+        "clearWidthMeters": 1.4,
+        "from": "living",
+        "status": "SPECIFIED_NOT_BAKED",
+        "stepHeightMeters": 0,
+        "to": "entry"
+      }
+    ],
+    "controls": {
+      "keyboard": true,
+      "noForcedVisibleHands": true,
+      "reducedMotion": true,
+      "snapTurnOptional": true,
+      "touch": true,
+      "uiTargetMinimumCssPixels": 48
+    },
+    "requiredBeforeIntegration": [
+      "baked navigation polygons",
+      "collision/navmesh consistency test",
+      "connected exit route",
+      "door-state traversal test",
+      "teleport valid/invalid surface tests",
+      "seated and standing camera clearance",
+      "device verification where claimed"
+    ],
+    "status": "DESIGN_REQUIREMENTS_ONLY_NOT_BAKED",
+    "targetClearRouteWidthMeters": 1.2,
+    "targetDoorClearWidthMeters": 1.0,
+    "targetTurningDiameterMeters": 1.5,
+    "xr": {
+      "edgeMarginMeters": 0.45,
+      "physicalDeviceVerified": false,
+      "safeTeleport": "Navmesh-constrained valid polygons; no water, roadway, dock edge, machinery or insert void destinations",
+      "teleportSpacingMeters": 1.5
+    },
+    "zones": [
+      {
+        "obstacleEnvelopes": [
+          "sofa",
+          "armchair",
+          "sideboard",
+          "side-table"
+        ],
+        "pathLocalMeters": [
+          [
+            0,
+            0,
+            2.55
+          ],
+          [
+            0,
+            0,
+            -2.55
+          ]
+        ],
+        "routeKind": "reserved-center-corridor",
+        "turningArea": {
+          "centerLocalMeters": [
+            0,
+            0,
+            0
+          ],
+          "diameterMeters": 1.5
+        },
+        "widthMeters": 1.8,
+        "zone": "living"
+      },
+      {
+        "obstacleEnvelopes": [],
+        "pathLocalMeters": [
+          [
+            0,
+            0,
+            0.85
+          ],
+          [
+            0,
+            0,
+            -0.85
+          ]
+        ],
+        "routeKind": "reserved-center-corridor",
+        "turningArea": {
+          "centerLocalMeters": [
+            0,
+            0,
+            0
+          ],
+          "diameterMeters": 1.5
+        },
+        "widthMeters": 1.6,
+        "zone": "entry"
+      }
+    ]
+  },
+  "outputsGenerated": [],
+  "performanceTarget": {
+    "drawCallsTarget": 85,
+    "maxSingleTextureEdge": 1024,
+    "targetFps": 30,
+    "textureMemoryMiBTarget": 96,
+    "visibleTriangleTarget": 120000
+  },
+  "personalization": {
+    "enabled": false,
+    "insertStatus": "UNBOUND",
+    "truthRule": "No generic component becomes autobiographical truth"
+  },
+  "providerExecuted": false,
+  "requiresBeforeAccepted": [
+    "asset realization bound to this recipe hash",
+    "realized geometry compared with source brief",
+    "asset machine QA",
+    "visual review",
+    "license receipt",
+    "runtime integration and device proof if claimed"
+  ],
+  "runtimeIntegrated": false,
+  "schemaVersion": "urai-generic-world-variant-recipe/1.0.0",
+  "seedSha256": "67e5583d0bf7f7a83cedf7f848b72b8cc88cff4f576c7574f406619d57898f81",
+  "selection": {
+    "dressing": "light",
+    "era": "era-1970s",
+    "finishLevel": "middle-maintained",
+    "lightingProfile": "calm",
+    "lod": "mobile",
+    "navigation": "accessible-level-default",
+    "region": "us-tx-east",
+    "season": "summer",
+    "timeOfDay": "afternoon",
+    "weather": "clear"
+  },
+  "sourceSpec": {
+    "path": "specs/gw-east-texas-living-room.json",
+    "sha256": "faa57ef86a9d1d5629aacf1ee6ad03280546a73e60d9b760f33ca726122b0857"
+  },
+  "status": "SPECIFIED",
+  "truthClassification": "GENERIC",
+  "version": "1.0.0"
+}

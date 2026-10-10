@@ -24,24 +24,31 @@ function routePath(route) {
   return new URL(route, 'https://urai.invalid').pathname.replace(/\/$/, '') || '/';
 }
 
-async function waitForSemanticReady(page, route) {
+async function waitForSemanticReady(page, route, timeoutMs = null) {
   switch (routePath(route)) {
     case '/home':
       await page.waitForFunction(() => {
-        const assetOwner = document.querySelector('.urai-asset-home-world[data-home-primary-owner="asset-driven"]');
+        const runtimeOwner = document.querySelector('.urai-home-spatial-runtime-layer');
+        if (runtimeOwner && (
+          runtimeOwner.getAttribute('data-home-assets-ready') !== 'true'
+          || runtimeOwner.getAttribute('data-webgl-ready') !== 'true'
+          || runtimeOwner.querySelector('.home-runtime-loading')
+        )) return false;
+        const homeOwner = runtimeOwner || document;
+        const assetOwner = homeOwner.querySelector('.urai-asset-home-world[data-home-primary-owner="asset-driven"]');
         if (assetOwner) {
           const rect = assetOwner.querySelector('canvas')?.getBoundingClientRect();
           return assetOwner.getAttribute('data-home-assets-ready') === 'true'
             && Boolean(rect && rect.width >= 240 && rect.height >= 240);
         }
-        const webglOwner = document.querySelector('.urai-final-home-world[data-home-spatial-renderer="webgl"]');
+        const webglOwner = homeOwner.querySelector('.urai-final-home-world[data-home-spatial-renderer="webgl"]');
         if (webglOwner) {
           const rect = webglOwner.querySelector('canvas')?.getBoundingClientRect();
           return webglOwner.getAttribute('data-home-ready') === 'true'
             && Boolean(rect && rect.width >= 240 && rect.height >= 240);
         }
         return false;
-      }, null, { timeout: 60_000, polling: 100 });
+      }, null, { timeout: timeoutMs ?? 60_000, polling: 100 });
       return 'home-spatial-ready';
 
     case '/life-map':
@@ -50,7 +57,7 @@ async function waitForSemanticReady(page, route) {
         const rect = root?.querySelector('canvas')?.getBoundingClientRect();
         return root?.getAttribute('data-life-map-mode') === 'overview'
           && Boolean(rect && rect.width >= 240 && rect.height >= 240);
-      }, null, { timeout: 60_000, polling: 100 });
+      }, null, { timeout: timeoutMs ?? 60_000, polling: 100 });
       return 'life-map-overview-ready';
 
     case '/focus':
@@ -61,7 +68,7 @@ async function waitForSemanticReady(page, route) {
           && root?.getAttribute('data-memory-id') === 'demo:quiet-reset'
           && root?.getAttribute('data-manifest-id') === 'replay-recovery-thread'
           && Boolean(rect && rect.width >= 240 && rect.height >= 240);
-      }, null, { timeout: 60_000, polling: 100 });
+      }, null, { timeout: timeoutMs ?? 60_000, polling: 100 });
       return 'focus-disclosed-demo-ready';
 
     case '/replay':
@@ -71,24 +78,61 @@ async function waitForSemanticReady(page, route) {
         return root?.getAttribute('data-memory-status') === 'demo'
           && root?.getAttribute('data-memory-id') === 'demo:quiet-reset'
           && root?.getAttribute('data-manifest-id') === 'replay-recovery-thread'
+          && root?.getAttribute('data-webgl-state') === 'ready'
+          && root?.getAttribute('data-replay-media-status') === 'ready'
+          && root?.getAttribute('data-replay-media-ready') === 'true'
+          && !root.querySelector('.replaySourceStatus')
           && Boolean(rect && rect.width >= 240 && rect.height >= 240);
-      }, null, { timeout: 60_000, polling: 100 });
+      }, null, { timeout: timeoutMs ?? 60_000, polling: 100 });
       return 'replay-disclosed-demo-ready';
 
     case '/passport':
       await page.waitForFunction(() => {
         const root = document.querySelector('main[data-route-owner="passport-ownership-vault"]');
         return root?.getAttribute('data-passport-source') === 'demo';
-      }, null, { timeout: 30_000, polling: 100 });
+      }, null, { timeout: timeoutMs ?? 30_000, polling: 100 });
       return 'passport-disclosed-demo-ready';
 
     case '/status':
-      await page.locator('[data-testid="urai-final-status-control-room"]').waitFor({ state: 'visible', timeout: 30_000 });
+      await page.locator('[data-testid="urai-final-status-control-room"]:visible').waitFor({ state: 'visible', timeout: timeoutMs ?? 30_000 });
       return 'status-control-room-ready';
 
     default:
       throw new Error(`video_factory_unknown_capture_route:${route}`);
   }
+}
+
+async function assertSemanticReadyNow(page, route) {
+  // Reuse the exact original route predicate, but fail on the first unready
+  // observation rather than polling until a veil or media failure recovers.
+  return waitForSemanticReady({
+    waitForFunction: async (predicate) => {
+      if (!await page.evaluate(predicate)) throw new Error(`route_lost_semantic_readiness:${route}`);
+    },
+    locator: (selector) => ({ waitFor: async () => {
+      if (!await page.locator(selector).isVisible()) throw new Error(`route_lost_semantic_readiness:${route}`);
+    } }),
+  }, route);
+}
+
+async function recordSemanticReadyInterval(page, route, semanticState, seconds) {
+  const started = Date.now();
+  let semanticReadinessSampleCount = 0;
+  let semanticStateAtRecordingEnd = null;
+  do {
+    semanticStateAtRecordingEnd = await assertSemanticReadyNow(page, route);
+    if (semanticStateAtRecordingEnd !== semanticState) throw new Error('route_semantics_changed_during_recording');
+    semanticReadinessSampleCount++;
+    const remaining = seconds * 1000 - (Date.now() - started);
+    if (remaining <= 0) break;
+    await page.waitForTimeout(Math.min(250, remaining));
+  } while (true);
+  return {
+    semanticStateAtRecordingEnd,
+    semanticReadinessSampleCount,
+    recordedReadySeconds: (Date.now() - started) / 1000,
+    recordingReadinessBasis: 'continuous-immediate-semantic-polls',
+  };
 }
 
 const source = await readFile(sourcePath, 'utf8');
@@ -123,6 +167,10 @@ for (const route of routes) {
   let motion = '';
   let semanticState = '';
   let semanticReadyOffsetSeconds = null;
+  let semanticStateAtRecordingEnd = null;
+  let recordedReadySeconds = null;
+  let semanticReadinessSampleCount = 0;
+  let recordingReadinessBasis = null;
   let deployedSha = null;
   let error = '';
 
@@ -156,7 +204,17 @@ for (const route of routes) {
 
     // Record the actual rendered route long enough to preserve native scene motion.
     // This is diagnostic product-capture evidence only, not final Life Movie footage.
-    await page.waitForTimeout(recordSeconds * 1000);
+    // The native recorder's encoded timestamps need not share this process's
+    // wall-clock origin. Retain the wall offset only as diagnostic metadata.
+    // Preserve immediate readiness observations throughout the bounded interval;
+    // any veil, decoded-media failure or source change makes capture fail.
+    const recording = await recordSemanticReadyInterval(page, route, semanticState, recordSeconds);
+    ({ semanticStateAtRecordingEnd, recordedReadySeconds, semanticReadinessSampleCount,
+      recordingReadinessBasis } = recording);
+    const finalSha = await page.locator('meta[name="urai-deployed-sha"]').getAttribute('content').catch(() => null);
+    if (finalSha !== deployedSha) throw new Error('spatial_source_changed_during_recording');
+    if (pageErrors.length) throw new Error(`page_errors:${pageErrors.join(' | ')}`);
+    if (consoleErrors.length) throw new Error(`console_errors:${consoleErrors.join(' | ')}`);
   } catch (caught) {
     error = caught instanceof Error ? caught.message : String(caught);
   } finally {
@@ -181,6 +239,10 @@ for (const route of routes) {
     motion,
     semanticState,
     semanticReadyOffsetSeconds,
+    semanticStateAtRecordingEnd,
+    recordedReadySeconds,
+    semanticReadinessSampleCount,
+    recordingReadinessBasis,
     deployedSha,
     expectedSpatialSha,
     consoleErrors,

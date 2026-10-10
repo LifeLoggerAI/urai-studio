@@ -14,14 +14,14 @@
     "smoke": "cd ../.. && HOST=${HOST:-http://127.0.0.1:3000} bash scripts/smoke.sh"
   },
   "dependencies": {
-    "firebase": "^10.14.1",
-    "firebase-admin": "^13.6.0",
-    "next": "16.1.6",
+    "firebase": "12.19.0",
+    "firebase-admin": "13.10.0",
+    "next": "16.3.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "stripe": "^17.0.0",
     "uuid": "^13.0.0",
-    "sharp": "0.33.5"
+    "sharp": "0.35.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.1",
@@ -33,7 +33,7 @@
     "autoprefixer": "^10.4.24",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
+    "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
     "typescript": "^5"
   },

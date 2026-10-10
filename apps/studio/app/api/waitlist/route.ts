@@ -11,7 +11,7 @@ type WaitlistResponse = {
   ok: boolean;
   persisted?: boolean;
   duplicate?: boolean;
-  error?: 'bot_rejected' | 'invalid_email' | 'persistence_unavailable' | 'invalid_json';
+  error?: 'bot_rejected' | 'invalid_email' | 'persistence_unavailable' | 'persistence_failed' | 'invalid_json';
   message?: string;
 };
 
@@ -71,29 +71,38 @@ export async function POST(req: Request) {
     );
   }
 
-  const existing = await adminDb.collection('waitlist').where('email', '==', email).limit(1).get();
+  try {
+    const existing = await adminDb.collection('waitlist').where('email', '==', email).limit(1).get();
 
-  if (!existing.empty) {
+    if (!existing.empty) {
+      return json({
+        ok: true,
+        persisted: true,
+        duplicate: true,
+        message: 'Already on the URAI Studio waitlist.',
+      });
+    }
+
+    await adminDb.collection('waitlist').add({
+      email,
+      name,
+      interest,
+      source: 'urai-studio',
+      createdAt: new Date().toISOString(),
+    });
+
     return json({
       ok: true,
       persisted: true,
-      duplicate: true,
-      message: 'Already on the URAI Studio waitlist.',
+      duplicate: false,
+      message: 'Thanks. You are on the URAI Studio waitlist.',
     });
+  } catch {
+    return json({
+      ok: false,
+      persisted: false,
+      error: 'persistence_failed',
+      message: 'We could not confirm that you joined the waitlist. Your form has been kept so you can retry.',
+    }, 503);
   }
-
-  await adminDb.collection('waitlist').add({
-    email,
-    name,
-    interest,
-    source: 'urai-studio',
-    createdAt: new Date().toISOString(),
-  });
-
-  return json({
-    ok: true,
-    persisted: true,
-    duplicate: false,
-    message: 'Thanks. You are on the URAI Studio waitlist.',
-  });
 }

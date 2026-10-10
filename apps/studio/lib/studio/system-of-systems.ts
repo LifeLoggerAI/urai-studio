@@ -218,10 +218,10 @@ export const uraiSystemNodes: UraiSystemNode[] = [
 ];
 
 export const proofPoints = [
-  'Core website live',
-  'System contracts available',
-  'Firebase connected',
-  'Privacy contract available',
-  'Export formats ready',
-  'Studio actions partially enabled',
+  'Public shell online',
+  'System contract routes defined',
+  'Firebase readiness surfaced',
+  'Privacy contract defined',
+  'Export formats defined',
+  'Studio actions feature-gated',
 ];

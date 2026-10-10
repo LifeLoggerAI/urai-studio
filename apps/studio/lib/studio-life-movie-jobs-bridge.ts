@@ -13,6 +13,10 @@ const SOURCE_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const RECEIPT_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const BUCKET = /^[a-z0-9][a-z0-9._-]+[a-z0-9]$/;
 const SAFE_PROJECT = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
+const SOURCE_FIELDS = ['id', 'bucket', 'objectPath', 'mimeType', 'provenance', 'sourceRefs', 'consentRef', 'ownerOrRightsRef'];
+const MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime', 'video/webm', 'audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/x-wav', 'audio/webm', 'audio/ogg']);
+const PROVENANCE = new Set(['original-source', 'user-provided-fact', 'verified-metadata', 'user-recorded-memory', 'inferred', 'reconstructed', 'generated', 'artistic-interpretation', 'unknown']);
+const AUDIO_ROLES = new Set(['narration', 'dialogue', 'music', 'ambience', 'foley', 'effects']);
 
 export type JobsLifeMovieSource = {
   id: string;
@@ -34,6 +38,7 @@ export type JobsLifeMovieTimelineItem = {
   sourceId: string;
   startMs: number;
   endMs: number;
+  sourceStartMs?: number;
 };
 
 export type JobsLifeMovieAudioCue = {
@@ -69,6 +74,8 @@ function safeSegment(value: string, code: string) {
 }
 
 function safeObjectPath(value: string, code: string) {
+  if (typeof value !== 'string') fail(code);
+  value = value.trim();
   if (!value || value.startsWith('/') || value.includes('..') || value.includes('\\') || Buffer.byteLength(value, 'utf8') > 1024) fail(code);
   return value;
 }
@@ -90,6 +97,27 @@ function canonicalJson(value: unknown): string {
     return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`).join(',')}}`;
   }
   return JSON.stringify(value);
+}
+
+// Match Jobs' ordinary SRT admission before binding or dispatching the plan.
+function assertSubtitleTimeline(value: string, durationMs: number) {
+  const normalized = value.replace(/\r\n?/g, '\n').trim();
+  if (!normalized) return;
+  const parseTime = (input: string) => {
+    const match = /^(\d{2}):(\d{2}):(\d{2}),(\d{3})$/.exec(input);
+    if (!match || Number(match[2]) > 59 || Number(match[3]) > 59) fail('life_movie_subtitle_invalid');
+    return (((Number(match[1]) * 60 + Number(match[2])) * 60 + Number(match[3])) * 1000) + Number(match[4]);
+  };
+  for (const block of normalized.split(/\n{2,}/)) {
+    const lines = block.split('\n');
+    const timingIndex = lines[0]?.includes('-->') ? 0 : 1;
+    const match = /^(\d{2}:\d{2}:\d{2},\d{3})\s+-->\s+(\d{2}:\d{2}:\d{2},\d{3})(?:\s+.*)?$/.exec(String(lines[timingIndex] || '').trim());
+    if (!match || !lines.slice(timingIndex + 1).join('\n').trim()) fail('life_movie_subtitle_invalid');
+    const startMs = parseTime(match[1]);
+    const endMs = parseTime(match[2]);
+    if (endMs <= startMs) fail('life_movie_subtitle_invalid');
+    if (endMs > durationMs) fail('life_movie_subtitle_outside_timeline');
+  }
 }
 
 export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInput) {
@@ -119,15 +147,21 @@ export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInpu
   const allowedSourcePrefixes = [`studios/${tenantId}/`, `tenants/${tenantId}/`];
   const sourceIds = new Set<string>();
   const sources = input.sources.map((source) => {
-    if (!SOURCE_ID.test(source.id) || sourceIds.has(source.id)) fail('life_movie_invalid_source_id');
+    if (!source || typeof source !== 'object' || Array.isArray(source)) fail('life_movie_invalid_sources');
+    if (Object.keys(source).some((key) => !SOURCE_FIELDS.includes(key))) fail('life_movie_unknown_source_field');
+    if (typeof source.id !== 'string' || !SOURCE_ID.test(source.id) || sourceIds.has(source.id)) fail('life_movie_invalid_source_id');
     sourceIds.add(source.id);
-    if (!BUCKET.test(source.bucket)) fail('life_movie_invalid_bucket');
+    if (typeof source.bucket !== 'string' || source.bucket.length > 255 || !BUCKET.test(source.bucket)) fail('life_movie_invalid_bucket');
     const objectPath = safeObjectPath(source.objectPath, 'life_movie_invalid_source_path');
     if (!allowedSourcePrefixes.some((prefix) => objectPath.startsWith(prefix))) fail('life_movie_source_outside_tenant');
     if (!Array.isArray(source.sourceRefs) || source.sourceRefs.length < 1 || source.sourceRefs.length > 32 || source.sourceRefs.some((ref) => typeof ref !== 'string' || !ref.trim() || ref.length > 512)) fail('life_movie_invalid_source_refs');
-    if (!RECEIPT_ID.test(source.consentRef)) fail('life_movie_invalid_consent_ref');
-    if (!RECEIPT_ID.test(source.ownerOrRightsRef)) fail('life_movie_invalid_rights_ref');
-    return { ...source, objectPath };
+    if (!MIME.has(source.mimeType)) fail('life_movie_invalid_source_mime');
+    if (!PROVENANCE.has(source.provenance)) fail('life_movie_invalid_source_provenance');
+    if (typeof source.consentRef !== 'string' || !RECEIPT_ID.test(source.consentRef)) fail('life_movie_invalid_consent_ref');
+    if (typeof source.ownerOrRightsRef !== 'string' || !RECEIPT_ID.test(source.ownerOrRightsRef)) fail('life_movie_invalid_rights_ref');
+    // Jobs trims these fields before persisting the worker payload. Bind those
+    // same bytes and detach the caller's array before computing the digest.
+    return { ...source, objectPath, sourceRefs: source.sourceRefs.map((ref) => ref.trim()) };
   });
 
   const timeline = [...input.timeline].map((item) => {
@@ -135,6 +169,14 @@ export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInpu
     const startMs = nonnegativeInteger(item.startMs, 'life_movie_invalid_timeline_start');
     const endMs = positiveInteger(item.endMs, 'life_movie_invalid_timeline_end');
     if (endMs <= startMs) fail('life_movie_invalid_timeline_duration');
+    if (item.sourceStartMs !== undefined) {
+      const sourceStartMs = nonnegativeInteger(item.sourceStartMs, 'life_movie_invalid_timeline_source_start');
+      if (sourceStartMs > 45 * 60 * 1000) fail('life_movie_invalid_timeline_source_start');
+      if (sources.find((source) => source.id === item.sourceId)!.mimeType.startsWith('image/') && sourceStartMs !== 0) {
+        fail('life_movie_image_source_start_must_be_zero');
+      }
+      return { sourceId:item.sourceId, startMs, endMs, sourceStartMs };
+    }
     return { sourceId:item.sourceId, startMs, endMs };
   }).sort((a,b) => a.startMs - b.startMs);
 
@@ -146,6 +188,7 @@ export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInpu
   if (width * height * fps * totalTimelineMs / 1000 > LIFE_MOVIE_JOBS_BRIDGE_BUDGET.maxPixelFrames) fail('life_movie_pixel_frame_budget_exceeded');
 
   const normalizedAudio = audioCues.map((cue) => {
+    if (!AUDIO_ROLES.has(cue.role)) fail('life_movie_invalid_audio_role');
     if (!sourceIds.has(cue.sourceId)) fail('life_movie_unknown_audio_source');
     const source = sources.find((candidate) => candidate.id === cue.sourceId)!;
     if (!source.mimeType.startsWith('audio/') && !source.mimeType.startsWith('video/')) fail('life_movie_audio_source_not_audio_capable');
@@ -160,6 +203,7 @@ export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInpu
 
   const subtitleText = input.subtitleText ?? '';
   if (Buffer.byteLength(subtitleText,'utf8') > 2 * 1024 * 1024) fail('life_movie_subtitles_too_large');
+  assertSubtitleTimeline(subtitleText, totalTimelineMs);
 
   const outputPrefix = `tenants/${tenantId}/life-movies/${projectId}/`;
   const plan = { projectId, sceneTruthReceiptRef, sceneTruthDigest, outputPrefix, width, height, fps, sources, timeline, audioCues:normalizedAudio, subtitleText };

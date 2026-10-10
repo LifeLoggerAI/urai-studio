@@ -1,0 +1,448 @@
+{
+  "composition": {
+    "architectureBrief": "Window on north wall, generous entry, visible clear floor beside bed. Child-bedroom and bunk packages remain separately reviewed variants.",
+    "dressingRules": {
+      "empty": "Shell, openings, orientation landmark and required safety geometry only",
+      "light": "Specified furniture plus sparse neutral props on supporting surfaces; no real people",
+      "people": "Not generated in this lane; occupancy, character likeness, voices and animation require separate identity/consent authority",
+      "rich": "Add governed prop submodules within reserved placement envelopes; maintain clear route, readable exits and low visual stimulation"
+    },
+    "furniture": [
+      {
+        "anchorAllowed": true,
+        "collidable": true,
+        "dimensionsMeters": {
+          "depth": 2.05,
+          "height": 0.6,
+          "width": 1.55
+        },
+        "id": "bed",
+        "label": "Generic double bed",
+        "materialIntent": "woven-cloth-cool",
+        "positionMeters": [
+          -1.85,
+          0,
+          -0.75
+        ],
+        "role": "furniture",
+        "yawDegrees": 0,
+        "zone": "bedroom"
+      },
+      {
+        "anchorAllowed": true,
+        "collidable": true,
+        "dimensionsMeters": {
+          "depth": 0.5,
+          "height": 0.85,
+          "width": 1.35
+        },
+        "id": "dresser",
+        "label": "Low dresser",
+        "materialIntent": "wood-oak-satin",
+        "positionMeters": [
+          2.1,
+          0,
+          -1.2
+        ],
+        "role": "furniture",
+        "yawDegrees": 0,
+        "zone": "bedroom"
+      },
+      {
+        "anchorAllowed": true,
+        "collidable": true,
+        "dimensionsMeters": {
+          "depth": 0.8,
+          "height": 0.9,
+          "width": 0.8
+        },
+        "id": "chair",
+        "label": "Reading chair",
+        "materialIntent": "woven-cloth-warm",
+        "positionMeters": [
+          2.05,
+          0,
+          1.3
+        ],
+        "role": "furniture",
+        "yawDegrees": 0,
+        "zone": "bedroom"
+      }
+    ],
+    "openings": [
+      {
+        "centerLocalMeters": [
+          0,
+          1.05,
+          2.7
+        ],
+        "clearWidthTargetMeters": 1.0,
+        "heightMeters": 2.1,
+        "id": "primary-entry",
+        "levelThreshold": true,
+        "nominalWidthMeters": 1.1,
+        "status": "SPECIFIED_NOT_GEOMETRY_VALIDATED",
+        "wall": "+Z",
+        "zone": "bedroom"
+      }
+    ],
+    "propBriefs": [
+      "blank frame",
+      "closed book",
+      "plain bed linen",
+      "unbranded bedside lamp"
+    ],
+    "vegetationBriefs": [],
+    "zones": [
+      {
+        "dimensionsMeters": {
+          "depth": 5.4,
+          "height": 2.6,
+          "width": 6.4
+        },
+        "id": "bedroom",
+        "kind": "interior",
+        "originMeters": [
+          0,
+          0,
+          0
+        ],
+        "purpose": "Quiet domestic scene"
+      },
+      {
+        "dimensionsMeters": {
+          "depth": 2.2,
+          "height": 2.6,
+          "width": 2
+        },
+        "id": "entry",
+        "kind": "interior",
+        "originMeters": [
+          0,
+          0,
+          3.8
+        ],
+        "purpose": "Clear return landmark"
+      }
+    ]
+  },
+  "dressingRule": "Specified furniture plus sparse neutral props on supporting surfaces; no real people",
+  "eraPack": {
+    "path": "era-packs/era-2020s.json",
+    "sha256": "a350e922efdedfcf4b1f757b0639dc8d68ab5c85f2042fdd1c18561a0964ea05"
+  },
+  "familyId": "gw-bedroom-era",
+  "id": "gw-bedroom-era@1.0.0+era-2020s.us-tx-east.light.mobile.hopeful.98a586d69d8e",
+  "implementationStatus": "RECIPE_COMPILED_ONLY: no selection claims model/material/lighting changes have been built",
+  "lighting": {
+    "daylightCctKelvin": 5600,
+    "emotionalProfile": {
+      "cctDeltaKelvin": -120,
+      "exposureDeltaStops": 0.1,
+      "id": "hopeful",
+      "saturationScale": 1.02
+    },
+    "emotionalWeatherRef": "../taxonomy/emotional-weather.json",
+    "interiorFixtureCctKelvin": 3000,
+    "noStrobe": true,
+    "primary": "diffuse natural light plus restrained practical fixtures",
+    "reducedStimulation": {
+      "animatedWaterAmplitudeMeters": 0.015,
+      "exposureAdaptation": "slow optional, disableable",
+      "movingShadows": false,
+      "suddenLightning": false
+    },
+    "status": "CONFIGURATION_TARGET_NOT_RENDER_VALIDATED",
+    "targetIlluminanceLux": {
+      "navigation": 100,
+      "task": 250
+    },
+    "toneMappingIntent": "preserve midtone orientation and restrained highlights; no crushed blacks or blown window regions",
+    "weatherDrivenSaturation": false
+  },
+  "logicalKitIds": [
+    "kit:gw-bedroom-era-shell:v1",
+    "kit:door-interior-accessible-neutral:v1",
+    "kit:window-residential-neutral:v1",
+    "kit:baseboard-painted-neutral:v1",
+    "kit:gw-bedroom-era-bed:v1",
+    "kit:gw-bedroom-era-dresser:v1",
+    "kit:gw-bedroom-era-chair:v1"
+  ],
+  "materialDefinitions": [
+    {
+      "description": "muted loop carpet",
+      "id": "mat:carpet-loop-muted:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "carpet-loop-muted",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "small loop normals with scale-correct repeat",
+        "metallic": 0,
+        "roughness": 0.94,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "clear glazing",
+      "id": "mat:glass-clear:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "glass-clear",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "transparent glTF fallback; transmission extension optional",
+        "metallic": 0,
+        "roughness": 0.12,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "warm low-chroma painted plaster",
+      "id": "mat:paint-warm-off-white:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "paint-warm-off-white",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "fine plaster grain",
+        "metallic": 0,
+        "roughness": 0.74,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "unbranded warm wood",
+      "id": "mat:wood-oak-satin:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "wood-oak-satin",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "grain direction follows joinery",
+        "metallic": 0,
+        "roughness": 0.52,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "cool neutral textile",
+      "id": "mat:woven-cloth-cool:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "woven-cloth-cool",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "woven normal at physical scale",
+        "metallic": 0,
+        "roughness": 0.9,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "warm neutral woven upholstery",
+      "id": "mat:woven-cloth-warm:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "woven-cloth-warm",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "thread normal; restrained pattern",
+        "metallic": 0,
+        "roughness": 0.9,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    }
+  ],
+  "navigation": {
+    "accessibleDefault": {
+      "doorsAutomaticOrFixedOpen": true,
+      "legalAccessibilityCertification": false,
+      "levelThreshold": true,
+      "seatedEyeHeightMeters": 1.2,
+      "stairsRequired": false,
+      "standingEyeHeightMeters": 1.65
+    },
+    "connections": [
+      {
+        "clearWidthMeters": 1.4,
+        "from": "bedroom",
+        "status": "SPECIFIED_NOT_BAKED",
+        "stepHeightMeters": 0,
+        "to": "entry"
+      }
+    ],
+    "controls": {
+      "keyboard": true,
+      "noForcedVisibleHands": true,
+      "reducedMotion": true,
+      "snapTurnOptional": true,
+      "touch": true,
+      "uiTargetMinimumCssPixels": 48
+    },
+    "requiredBeforeIntegration": [
+      "baked navigation polygons",
+      "collision/navmesh consistency test",
+      "connected exit route",
+      "door-state traversal test",
+      "teleport valid/invalid surface tests",
+      "seated and standing camera clearance",
+      "device verification where claimed"
+    ],
+    "status": "DESIGN_REQUIREMENTS_ONLY_NOT_BAKED",
+    "targetClearRouteWidthMeters": 1.2,
+    "targetDoorClearWidthMeters": 1.0,
+    "targetTurningDiameterMeters": 1.5,
+    "xr": {
+      "edgeMarginMeters": 0.45,
+      "physicalDeviceVerified": false,
+      "safeTeleport": "Navmesh-constrained valid polygons; no water, roadway, dock edge, machinery or insert void destinations",
+      "teleportSpacingMeters": 1.5
+    },
+    "zones": [
+      {
+        "obstacleEnvelopes": [
+          "bed",
+          "dresser",
+          "chair"
+        ],
+        "pathLocalMeters": [
+          [
+            0,
+            0,
+            2.35
+          ],
+          [
+            0,
+            0,
+            -2.35
+          ]
+        ],
+        "routeKind": "reserved-center-corridor",
+        "turningArea": {
+          "centerLocalMeters": [
+            0,
+            0,
+            0
+          ],
+          "diameterMeters": 1.5
+        },
+        "widthMeters": 1.8,
+        "zone": "bedroom"
+      },
+      {
+        "obstacleEnvelopes": [],
+        "pathLocalMeters": [
+          [
+            0,
+            0,
+            0.7500000000000001
+          ],
+          [
+            0,
+            0,
+            -0.7500000000000001
+          ]
+        ],
+        "routeKind": "reserved-center-corridor",
+        "turningArea": {
+          "centerLocalMeters": [
+            0,
+            0,
+            0
+          ],
+          "diameterMeters": 1.5
+        },
+        "widthMeters": 1.4,
+        "zone": "entry"
+      }
+    ]
+  },
+  "outputsGenerated": [],
+  "performanceTarget": {
+    "drawCallsTarget": 85,
+    "maxSingleTextureEdge": 1024,
+    "targetFps": 30,
+    "textureMemoryMiBTarget": 96,
+    "visibleTriangleTarget": 120000
+  },
+  "personalization": {
+    "enabled": false,
+    "insertStatus": "UNBOUND",
+    "truthRule": "No generic component becomes autobiographical truth"
+  },
+  "providerExecuted": false,
+  "requiresBeforeAccepted": [
+    "asset realization bound to this recipe hash",
+    "realized geometry compared with source brief",
+    "asset machine QA",
+    "visual review",
+    "license receipt",
+    "runtime integration and device proof if claimed"
+  ],
+  "runtimeIntegrated": false,
+  "schemaVersion": "urai-generic-world-variant-recipe/1.0.0",
+  "seedSha256": "98a586d69d8e8d98cf18422336404e17f98c80c284124f9faf19f4501e40f81b",
+  "selection": {
+    "dressing": "light",
+    "era": "era-2020s",
+    "finishLevel": "middle-maintained",
+    "lightingProfile": "hopeful",
+    "lod": "mobile",
+    "navigation": "accessible-level-default",
+    "region": "us-tx-east",
+    "season": "summer",
+    "timeOfDay": "afternoon",
+    "weather": "clear"
+  },
+  "sourceSpec": {
+    "path": "specs/gw-bedroom-era.json",
+    "sha256": "5e1cc357f63a41d719e5f1e982d4ba8e57beabd5346d9bf1b2c741e77fb6c496"
+  },
+  "status": "SPECIFIED",
+  "truthClassification": "GENERIC",
+  "version": "1.0.0"
+}

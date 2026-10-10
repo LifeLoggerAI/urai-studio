@@ -1,0 +1,215 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function ownsExisting() { return isSignedIn() && resource.data.uid == request.auth.uid; }
+    function ownsIncoming() { return isSignedIn() && request.resource.data.uid == request.auth.uid; }
+
+    function isStudioMember(studioId) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/memberships/$(request.auth.uid + "_" + studioId));
+    }
+
+    function membershipDoc(studioId) {
+      return get(/databases/$(database)/documents/memberships/$(request.auth.uid + "_" + studioId));
+    }
+
+    function roleIs(studioId, role) {
+      return isStudioMember(studioId)
+        && membershipDoc(studioId).data.role == role;
+    }
+
+    match /studios/{studioId} {
+      allow read: if isStudioMember(studioId);
+      allow create: if isSignedIn();
+      allow update, delete: if roleIs(studioId, "owner");
+    }
+
+    match /memberships/{membershipId} {
+      allow read: if isSignedIn() && membershipId.startsWith(request.auth.uid + "_");
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && membershipId.startsWith(request.auth.uid + "_");
+    }
+
+    function studioScoped() {
+      return request.resource.data.studioId is string;
+    }
+
+    match /clipRequests/{id} {
+      allow read: if isStudioMember(resource.data.studioId);
+      allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
+      allow update: if isStudioMember(resource.data.studioId);
+      allow delete: if roleIs(resource.data.studioId, "owner");
+    }
+
+    match /jobs/{id} {
+      allow read: if isStudioMember(resource.data.studioId);
+      allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
+      allow update: if isStudioMember(resource.data.studioId);
+      allow delete: if roleIs(resource.data.studioId, "owner");
+    }
+
+    match /jobRuns/{id} {
+      allow read: if isStudioMember(resource.data.studioId);
+      allow create, update: if isStudioMember(request.resource.data.studioId);
+      allow delete: if roleIs(resource.data.studioId, "owner");
+    }
+
+    match /assets/{id} {
+      allow read: if isStudioMember(resource.data.studioId);
+      allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
+      allow update, delete: if isStudioMember(resource.data.studioId);
+    }
+
+    match /outputs/{id} {
+      allow read: if isStudioMember(resource.data.studioId);
+      allow create, update: if isStudioMember(request.resource.data.studioId);
+      allow delete: if roleIs(resource.data.studioId, "owner");
+    }
+
+    match /deadLetters/{id} {
+      allow read: if isStudioMember(resource.data.studioId);
+      allow create, update: if isStudioMember(request.resource.data.studioId);
+      allow delete: if roleIs(resource.data.studioId, "owner");
+    }
+
+    match /auditLogs/{id} {
+      allow read: if isStudioMember(resource.data.studioId);
+      allow create: if isStudioMember(request.resource.data.studioId);
+      allow update, delete: if false;
+    }
+
+    match /users/{uid} {
+      allow read, create, update: if isSignedIn() && uid == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // Legacy client-owned Studio documents. These remain uid-scoped for old clients.
+    match /studioProjects/{id} {
+      allow read, update, delete: if ownsExisting();
+      allow create: if ownsIncoming();
+    }
+
+    match /studioScenes/{id} {
+      allow read, update, delete: if ownsExisting();
+      allow create: if ownsIncoming();
+    }
+
+    match /studioAssets/{id} {
+      allow read: if (resource.data.isPublic == true) || ownsExisting();
+      allow create: if ownsIncoming();
+      allow update, delete: if ownsExisting();
+    }
+
+    match /assetJobs/{id} {
+      allow read, update, delete: if ownsExisting();
+      allow create: if ownsIncoming();
+    }
+
+    match /assetCollections/{id} {
+      allow read: if (resource.data.isPublic == true) || ownsExisting();
+      allow create: if ownsIncoming();
+      allow update, delete: if ownsExisting();
+    }
+
+    match /studioScrolls/{id} {
+      allow read, update, delete: if ownsExisting();
+      allow create: if ownsIncoming();
+    }
+
+    match /narratorScripts/{id} {
+      allow read, update, delete: if ownsExisting();
+      allow create: if ownsIncoming();
+    }
+
+    match /subtitles/{id} {
+      allow read, update, delete: if ownsExisting();
+      allow create: if ownsIncoming();
+    }
+
+    match /voiceoverJobs/{id} {
+      allow read, update, delete: if ownsExisting();
+      allow create: if ownsIncoming();
+    }
+
+    match /exportJobs/{id} {
+      allow read, update, delete: if ownsExisting();
+      allow create: if ownsIncoming();
+    }
+
+    match /studioEvents/{id} {
+      allow read: if ownsExisting();
+      allow create: if ownsIncoming();
+      allow update, delete: if false;
+    }
+
+    match /catalogs/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /remoteConfigMirror/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /xrSessions/{id} {
+      allow read, update, delete: if ownsExisting();
+      allow create: if ownsIncoming();
+    }
+
+    match /vrSessions/{id} {
+      allow read, update, delete: if ownsExisting();
+      allow create: if ownsIncoming();
+    }
+
+    // Runtime system-contract collections are written only by trusted server/API routes
+    // through Firebase Admin. Client SDK access is denied until tenant membership claims
+    // and end-user private dashboards are fully wired and audited.
+    match /studioBriefs/{id} {
+      allow read, write: if false;
+    }
+
+    match /studioJobs/{id} {
+      allow read, write: if false;
+    }
+
+    match /studioExports/{id} {
+      allow read, write: if false;
+    }
+
+    // Studio data-rights control-plane records are server-owned. End users access
+    // them only through authenticated callables that enforce ownership, restore
+    // windows, legal holds, backup verification, and audit receipts.
+    match /studioDataRightsRequests/{id} {
+      allow read, write: if false;
+    }
+
+    match /studioDataRightsAudit/{id} {
+      allow read, write: if false;
+    }
+
+    // Public forms are written only through trusted server routes using Firebase Admin.
+    // Client SDK access is denied to prevent scraping, enumeration, or direct writes.
+    match /waitlist/{id} {
+      allow read, write: if false;
+    }
+
+    match /contactMessages/{id} {
+      allow read, write: if false;
+    }
+
+    match /contactRequests/{id} {
+      allow read, write: if false;
+    }
+
+    match /projectRequests/{id} {
+      allow read, write: if false;
+    }
+
+    match /integrationRequests/{id} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "changesTruthState": false,
+  "notDiagnosis": true,
+  "notNarrativeEvidence": true,
+  "profiles": [
+    {
+      "cctDeltaKelvin": 0,
+      "exposureDeltaStops": 0,
+      "id": "neutral",
+      "saturationScale": 1
+    },
+    {
+      "cctDeltaKelvin": -150,
+      "exposureDeltaStops": 0,
+      "id": "calm",
+      "saturationScale": 0.94
+    },
+    {
+      "cctDeltaKelvin": -100,
+      "exposureDeltaStops": -0.08,
+      "id": "reflective",
+      "saturationScale": 0.92
+    },
+    {
+      "cctDeltaKelvin": 100,
+      "exposureDeltaStops": 0.08,
+      "id": "energized",
+      "saturationScale": 1.03
+    },
+    {
+      "cctDeltaKelvin": -100,
+      "exposureDeltaStops": -0.1,
+      "id": "heavy",
+      "saturationScale": 0.9
+    },
+    {
+      "cctDeltaKelvin": 80,
+      "exposureDeltaStops": -0.04,
+      "id": "uncertain",
+      "saturationScale": 0.94
+    },
+    {
+      "cctDeltaKelvin": -120,
+      "exposureDeltaStops": 0.1,
+      "id": "hopeful",
+      "saturationScale": 1.02
+    }
+  ],
+  "safety": {
+    "animatedExposure": "optional and disableable",
+    "exitVisibilityRequired": true,
+    "lowStimulationOverride": "neutral, no motion, no transient audio, sparse dressing",
+    "minimumNavigationLuxTarget": 80,
+    "strobe": false,
+    "suddenLightning": false
+  },
+  "schemaVersion": "urai-generic-world-spec/1.0.0",
+  "version": "1.0.0"
+}

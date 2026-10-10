@@ -1,0 +1,244 @@
+{
+  "assetGenerationOccurred": false,
+  "createdAt": "2026-10-07T00:16:23Z",
+  "immutableIntent": "Versioned files; publish by immutable git commit or archived package before authority use",
+  "inputs": [
+    {
+      "bytes": 86487,
+      "path": "build_catalog.py",
+      "sha256": "f0ba6cf7b2499e8f2544be3675077fd7a4aa27018e4a72f3cdb60f7951cc3e47"
+    },
+    {
+      "bytes": 4139,
+      "path": "schema/world-spec.schema.json",
+      "sha256": "4255e6e78b3959260aff058baa4306a85c9b6c3e236b3837d5ce0cdad15a0352"
+    }
+  ],
+  "outputSetSha256": "fa768563f4f88c0a6a39b0741f3f21de8d796c5702096beb07d10f5b0a95e303",
+  "outputs": [
+    {
+      "bytes": 13397,
+      "path": "catalog.json",
+      "sha256": "74b26af8bf67d28653065887b25e6df68cf03076deb2a881a84136cb4b22a8a1"
+    },
+    {
+      "bytes": 1984,
+      "path": "era-packs/era-1940s.json",
+      "sha256": "b5e4f8795629d1c61a322f80a29a46ec7121d01d0e77fd32d489699caed1dd9d"
+    },
+    {
+      "bytes": 1920,
+      "path": "era-packs/era-1950s.json",
+      "sha256": "8c2b5015bf8fa9bd07cfd11af9dff8395e2900633cab4b51475b3668797cf615"
+    },
+    {
+      "bytes": 1931,
+      "path": "era-packs/era-1960s.json",
+      "sha256": "a7f1ab4310c0c887f522bcc845d08ff5e1d6185f6eace786388dab9841f9b22e"
+    },
+    {
+      "bytes": 1945,
+      "path": "era-packs/era-1970s.json",
+      "sha256": "de52ac36e2f91ff108506731bfa82842fa3c4c163b3527f0ab3adbe902c9420c"
+    },
+    {
+      "bytes": 1897,
+      "path": "era-packs/era-1980s.json",
+      "sha256": "ea1b64323a05490ab5fff85209cf98edaf1bb7eac261de3fe44cc028e95b63d5"
+    },
+    {
+      "bytes": 1879,
+      "path": "era-packs/era-1990s.json",
+      "sha256": "ac00a6ebb427b3cf24b4709f730d98f7ea0aa31fbcf4e41dd421f707786f657d"
+    },
+    {
+      "bytes": 1873,
+      "path": "era-packs/era-2000s.json",
+      "sha256": "1032a4f465a997061c5e1e4341dc1e18b54988f86a4f75b57f204bc59fb4cfba"
+    },
+    {
+      "bytes": 1890,
+      "path": "era-packs/era-2010s.json",
+      "sha256": "19429beb7788c1802422869af049fa40624d7baecad4a4bfad681f5b9eee9623"
+    },
+    {
+      "bytes": 2000,
+      "path": "era-packs/era-2020s.json",
+      "sha256": "a350e922efdedfcf4b1f757b0639dc8d68ab5c85f2042fdd1c18561a0964ea05"
+    },
+    {
+      "bytes": 38544,
+      "path": "specs/gw-airport-concourse.json",
+      "sha256": "594fdc25053fca03788e5bd09f18711fcbdc5dd75e9672a3715d6c2f19d9ddcb"
+    },
+    {
+      "bytes": 36724,
+      "path": "specs/gw-apartment-living.json",
+      "sha256": "be1d87488467924f4a870d71df43c1d78f2b701d780327d184b102cf89320f0a"
+    },
+    {
+      "bytes": 40801,
+      "path": "specs/gw-backyard-garage-workshop.json",
+      "sha256": "e1447787a6305e9f5351fd893026a7fb6954dedefcc59742e7d23b619fdae34d"
+    },
+    {
+      "bytes": 32582,
+      "path": "specs/gw-beach-boardwalk.json",
+      "sha256": "c427c724409d1346c7bd521cb6a26e260824e2ab2ae8de152a0f843475a77e48"
+    },
+    {
+      "bytes": 37469,
+      "path": "specs/gw-bedroom-era.json",
+      "sha256": "5e1cc357f63a41d719e5f1e982d4ba8e57beabd5346d9bf1b2c741e77fb6c496"
+    },
+    {
+      "bytes": 34290,
+      "path": "specs/gw-cemetery.json",
+      "sha256": "411ac6db194fce1f7476d53ef9bfa27ffe33e1d057b82c1394988e320912705c"
+    },
+    {
+      "bytes": 40379,
+      "path": "specs/gw-church-sanctuary-fellowship.json",
+      "sha256": "3f00153258a34f902d5237b9dc5917bf79081596ae0ff5c8c3ab1fc4260a0b48"
+    },
+    {
+      "bytes": 38634,
+      "path": "specs/gw-clinic-waiting-room.json",
+      "sha256": "306dfda86046a954415a5936a4a8d6913c45b7e4a064fcb14717c6f0804dbab0"
+    },
+    {
+      "bytes": 40045,
+      "path": "specs/gw-college-dorm-campus.json",
+      "sha256": "3f8b52efe5f435f688c0ce29111fb6f1c3686d9ef67e8f161723c34875ea531a"
+    },
+    {
+      "bytes": 37670,
+      "path": "specs/gw-courthouse-public-hall.json",
+      "sha256": "604cc513d720caa358a55e78a378d993838cd80e885a08b9ce9b95932c19d962"
+    },
+    {
+      "bytes": 38698,
+      "path": "specs/gw-diner-cafe.json",
+      "sha256": "974021af1b7d57ea01219027abf813b576d6ef094b02538dd36c01c43e507f15"
+    },
+    {
+      "bytes": 40138,
+      "path": "specs/gw-east-texas-living-room.json",
+      "sha256": "faa57ef86a9d1d5629aacf1ee6ad03280546a73e60d9b760f33ca726122b0857"
+    },
+    {
+      "bytes": 40213,
+      "path": "specs/gw-east-texas-residential-street.json",
+      "sha256": "19b70ac77b1c62b6bc5efbcf0f775a465796174e6e9856f08d7576ba23591815"
+    },
+    {
+      "bytes": 36530,
+      "path": "specs/gw-factory-floor.json",
+      "sha256": "9b2feb2aafbe95d7bdf6ebe1018581316a7f3daf3b2e6f1fe046719babdbd431"
+    },
+    {
+      "bytes": 42435,
+      "path": "specs/gw-family-kitchen-dining.json",
+      "sha256": "14dd8392b2b9589f4d6d6145ff065e160003df31bd4e27cbde48cf7ad46a3037"
+    },
+    {
+      "bytes": 34339,
+      "path": "specs/gw-forest-trail.json",
+      "sha256": "631cf458f8e06f074f29d46e1fd19a0144f2ac9c1b0bbe9ae7edc1d6c46ec4b0"
+    },
+    {
+      "bytes": 32691,
+      "path": "specs/gw-gas-station.json",
+      "sha256": "fdac334d879acdf17fd7c541ac77e1c14dbe9a3e24e9debfd978b4a3e31e3a16"
+    },
+    {
+      "bytes": 37668,
+      "path": "specs/gw-grocery-store.json",
+      "sha256": "a8a7382bde860263e0a7e8e86cc86f0345a5000adc50f549cdb45bf3a6231510"
+    },
+    {
+      "bytes": 40014,
+      "path": "specs/gw-hospital-room-corridor.json",
+      "sha256": "882565ad9641d9df900d64a86ee685e13bf5c5b5fbafb7df386c1580db1bf3fa"
+    },
+    {
+      "bytes": 38662,
+      "path": "specs/gw-lake-dock-shoreline.json",
+      "sha256": "436f75fa4b110036b0e82708d8a6e79bf019c0c3de6280b5f8e50fedebd481ce"
+    },
+    {
+      "bytes": 41296,
+      "path": "specs/gw-military-admin-operations.json",
+      "sha256": "64754f87113e68c7b2b4ee729b8ea4e1161963f070efd181428d55561466c992"
+    },
+    {
+      "bytes": 38652,
+      "path": "specs/gw-military-barracks.json",
+      "sha256": "04ac8f734291497b091cd67d07ad02d93728af396e3bdf73b7f092db7c9ec48e"
+    },
+    {
+      "bytes": 38053,
+      "path": "specs/gw-motel-room-walkway.json",
+      "sha256": "ba6c87fbf8bfc9421428699852d759e4a49c79203c9b18819c9982ee12b57ab8"
+    },
+    {
+      "bytes": 38340,
+      "path": "specs/gw-office-workplace.json",
+      "sha256": "73e6887aac79b33f9e0df93cb701985fcaac9d62f86720e78c9688022dd30688"
+    },
+    {
+      "bytes": 35558,
+      "path": "specs/gw-park-playground.json",
+      "sha256": "e3708cd946acc6f4cdbfd14f9435d49f679c19224265d79f8ef7fb97b3843a40"
+    },
+    {
+      "bytes": 42939,
+      "path": "specs/gw-rural-house-porch.json",
+      "sha256": "a120bd15740676e7ff286bed1efdf88936bd4382b1d6638f859b5a1c8ea466d8"
+    },
+    {
+      "bytes": 35564,
+      "path": "specs/gw-rural-road.json",
+      "sha256": "23c7e89379a543794b73a82faca52756b9380b3da5088d56b6ce45b6a4849297"
+    },
+    {
+      "bytes": 42093,
+      "path": "specs/gw-school-classroom-hallway.json",
+      "sha256": "1ca5e0ac9db50cce43872e1debaac1a66c3197baa1538f7d51a24ef0e10c3e11"
+    },
+    {
+      "bytes": 36305,
+      "path": "specs/gw-warehouse.json",
+      "sha256": "25dce089395052787b26dccbddff761fa6bc3118e0b84fe365f54436ae874bb6"
+    },
+    {
+      "bytes": 411,
+      "path": "taxonomy/coordinate-convention.json",
+      "sha256": "78bbc0e30066acd83cae228c8b7713c4280a9259b8605726fae2c71bd4ee7175"
+    },
+    {
+      "bytes": 1364,
+      "path": "taxonomy/emotional-weather.json",
+      "sha256": "3bb058f17ebe4fc61083c72df03cbb2e58fdbb9865c83947dcfddbfac9e00554"
+    },
+    {
+      "bytes": 1809,
+      "path": "taxonomy/regions.json",
+      "sha256": "700062dde5b398fd7ddedd00502f023046fefd3a346739d930e5ffffeb02f71a"
+    },
+    {
+      "bytes": 642,
+      "path": "taxonomy/truth-rules.json",
+      "sha256": "3f4aaacfa9fbccd5178d72bb96a0b4f9f75e801db26cbc8ff5f7284e56ae415e"
+    },
+    {
+      "bytes": 3477,
+      "path": "taxonomy/variant-axes.json",
+      "sha256": "2fd3315093ff481b81b631e9a06c3a4ffb6be2036869e4a7fb3b82f41fe3cb8e"
+    }
+  ],
+  "providerSpend": 0,
+  "receiptKind": "SOURCE_SPECIFICATION_HASHES",
+  "schemaVersion": "urai-spec-receipt/1.0.0",
+  "truthClassification": "GENERIC"
+}

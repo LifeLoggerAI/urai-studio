@@ -42,12 +42,45 @@
     "@types/node": "^20.12.12",
     "prettier": "^3.2.5",
     "typescript": "^5.4.5",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "semver": "^7.7.3"
   },
   "pnpm": {
     "overrides": {
       "react": "^19.0.0",
-      "react-dom": "^19.0.0"
+      "react-dom": "^19.0.0",
+      "minimatch@^9": "9.0.7",
+      "minimatch@^3": "3.1.4",
+      "flatted@^3": "3.4.2",
+      "js-yaml@^4": "4.3.2",
+      "nanoid@^3": "3.3.18",
+      "ajv@^6": "6.14.0",
+      "protobufjs@^7": "7.6.6",
+      "brace-expansion@^1": "1.1.21",
+      "brace-expansion@^2": "2.1.7",
+      "picomatch@^2": "2.3.2",
+      "picomatch@^4": "4.0.4",
+      "qs@^6": "6.16.0",
+      "@babel/core@^7": "7.29.6",
+      "@grpc/grpc-js@^1": "1.14.5",
+      "source-map-js@^1": "1.2.2",
+      "postcss@^8": "8.5.23",
+      "browserslist@^4": "4.28.7",
+      "@fastify/busboy@^3": "3.2.2",
+      "form-data@^2": "2.5.6",
+      "proxy-addr@^2": "2.0.8",
+      "websocket-driver@^0.7": "0.7.5",
+      "rollup@^4": "4.59.0",
+      "@humanfs/node@^0.16": "0.16.8",
+      "@protobufjs/utf8@^1": "1.1.1",
+      "@tootallnate/once@^2": "2.0.1",
+      "uuid@^9": "11.1.1",
+      "uuid@^13": "13.0.1",
+      "baseline-browser-mapping@^2": "2.11.0",
+      "sharp@^0.34": "0.35.5"
+    },
+    "patchedDependencies": {
+      "braces@3.0.3": "patches/braces-3.0.3-security.patch"
     }
   }
 }

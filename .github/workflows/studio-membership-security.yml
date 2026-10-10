@@ -1,0 +1,88 @@
+name: Studio Membership Security
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'firestore.rules'
+      - 'storage.rules'
+      - 'security-tests/studio-memberships/**'
+      - '.github/workflows/studio-membership-security.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'firestore.rules'
+      - 'storage.rules'
+      - 'security-tests/studio-memberships/**'
+      - '.github/workflows/studio-membership-security.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: studio-membership-security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rules-emulator:
+    name: Studio membership and tenant rules emulators
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: 'true'
+    defaults:
+      run:
+        working-directory: security-tests/studio-memberships
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: security-tests/studio-memberships/package-lock.json
+      - name: Setup Java for emulators
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install isolated frozen test dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Record source and tooling
+        run: |
+          mkdir -p artifacts
+          git rev-parse HEAD > artifacts/source.sha
+          node --version > artifacts/node-version.txt
+          java -version 2> artifacts/java-version.txt
+          ./node_modules/.bin/firebase --version > artifacts/firebase-tools-version.txt
+          sha256sum ../../firestore.rules ../../storage.rules package.json package-lock.json fixtures/*.rules > artifacts/source-files.sha256
+      - name: Reproduce baseline and verify actual patched rules
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee artifacts/emulator.log
+      - name: Audit isolated test dependencies and retain result
+        if: always()
+        run: |
+          set +e
+          npm audit --json > artifacts/npm-audit.json
+          audit_status=$?
+          printf '%s\n' "$audit_status" > artifacts/npm-audit.exit-code
+          test -s artifacts/npm-audit.json
+          exit "$audit_status"
+      - name: Hash retained receipts
+        if: always()
+        run: |
+          find artifacts -maxdepth 1 -type f ! -name receipts.sha256 -print0 | sort -z | xargs -0 sha256sum > artifacts/receipts.sha256
+      - name: Retain scoped emulator proof
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: studio-membership-rules-${{ github.event.pull_request.head.sha || github.sha }}
+          path: security-tests/studio-memberships/artifacts/
+          if-no-files-found: error
+          retention-days: 30

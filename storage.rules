@@ -4,9 +4,38 @@ service firebase.storage {
 
     function isSignedIn() { return request.auth != null; }
 
+    function canonicalDeletionAllowsMutation(path, uid) {
+      let marker = firestore.get(path).data;
+      let keys = marker.keys();
+      return marker.uid == uid
+        && !keys.hasAny(["deletionPlanningLeaseToken", "deletionPlanningLeaseUntil",
+          "deletionPlanningLeaseRequestId", "deletionPlanningLeaseOperation", "deletionPlanningLeaseBy"])
+        && ((("active" in marker) && marker.active == false)
+          || (!("active" in marker) && keys.hasOnly(["uid", "updatedAt"]) && marker.updatedAt is timestamp));
+    }
+
+    function canMutateStudioOwner(uid) {
+      let fenceId = hashing.sha256("urai-studio-data-rights:" + uid).toHexString().lower();
+      let fencePath = /databases/(default)/documents/studioDataRightsOwnerFences/$(fenceId);
+      let deletionPath = /databases/(default)/documents/privacyDeletionTombstones/$(uid);
+      return isSignedIn() && request.auth.uid == uid
+        && (!firestore.exists(fencePath) || (firestore.get(fencePath).data.uid == uid
+          && firestore.get(fencePath).data.requestId is string && firestore.get(fencePath).data.requestId.size() > 0
+          && firestore.get(fencePath).data.active == false && firestore.get(fencePath).data.permanent == false))
+        && (!firestore.exists(deletionPath) || canonicalDeletionAllowsMutation(deletionPath, uid));
+    }
+
+    function membershipDoc(studioId) {
+      return firestore.get(/databases/(default)/documents/memberships/$(request.auth.uid + "_" + studioId));
+    }
+
     function isStudioMember(studioId) {
       return isSignedIn()
-        && exists(/databases/(default)/documents/memberships/$(request.auth.uid + "_" + studioId));
+        && studioId is string
+        && firestore.exists(/databases/(default)/documents/memberships/$(request.auth.uid + "_" + studioId))
+        && membershipDoc(studioId).data.uid == request.auth.uid
+        && membershipDoc(studioId).data.studioId == studioId
+        && membershipDoc(studioId).data.role in ["owner", "creator", "viewer"];
     }
 
     match /studios/{studioId}/uploads/{allPaths=**} {
@@ -18,7 +47,8 @@ service firebase.storage {
     }
 
     match /user-uploads/{uid}/studio/{allPaths=**} {
-      allow read, write: if isSignedIn() && request.auth.uid == uid;
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow write: if canMutateStudioOwner(uid);
     }
 
     match /generated/{uid}/studio/{allPaths=**} {
