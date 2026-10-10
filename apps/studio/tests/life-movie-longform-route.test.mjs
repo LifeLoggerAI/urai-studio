@@ -218,6 +218,8 @@ try {
     (body) => { body.timeline[0].endMs = 15_001; },
     (body) => { body.timeline[1].startMs = 1; },
     (body) => { body.timeline[0].sourceId = 'unknown-source'; },
+    (body) => { body.subtitleText = 'Synthetic plain caption'; },
+    (body) => { body.subtitleText = '1\n00:00:00,900 --> 00:00:00,100\nSynthetic caption'; },
   ]) {
     reset(); const body = createBody(); change(body);
     await expectStatus(route, body, 400); assert.equal(state.calls.length, 0);
@@ -227,9 +229,9 @@ try {
   reset(); await expectStatus(route, createBody(), 413, { headers: { 'content-length': String(512 * 1024 + 1) } });
   reset();
   const nearLimit = createBody(1);
-  nearLimit.subtitleText = '';
+  nearLimit.subtitleText = '1\n00:00:00,000 --> 00:00:00,900\n';
   const callerBytes = Buffer.byteLength(JSON.stringify(nearLimit), 'utf8');
-  nearLimit.subtitleText = 'x'.repeat(512 * 1024 - 1 - callerBytes);
+  nearLimit.subtitleText += 'x'.repeat(512 * 1024 - 1 - callerBytes);
   assert.equal(Buffer.byteLength(JSON.stringify(nearLimit), 'utf8'), 512 * 1024 - 1);
   const encodedRejection = await expectStatus(route, nearLimit, 413);
   assert.equal(encodedRejection.error.code, 'longform_request_too_large'); assert.equal(state.calls.length, 0);

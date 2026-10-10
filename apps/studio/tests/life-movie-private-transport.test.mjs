@@ -60,7 +60,7 @@ function body() {
     sceneTruthReceiptRef: `str_${'a'.repeat(20)}_${'b'.repeat(8)}_${'c'.repeat(43)}`, sceneTruthDigest: 'd'.repeat(64),
     sources: [{ id: 'synthetic-clip', bucket: 'synthetic-bucket', objectPath: 'tenants/synthetic-tenant/clips/source.mp4',
       mimeType: 'video/mp4', provenance: 'user-recorded-memory', sourceRefs: ['synthetic-source'], consentRef: 'synthetic-consent', ownerOrRightsRef: 'synthetic-rights' }],
-    timeline: [{ sourceId: 'synthetic-clip', startMs: 0, endMs: 1000 }], subtitleText: 'Synthetic private caption' };
+    timeline: [{ sourceId: 'synthetic-clip', startMs: 0, endMs: 1000 }], subtitleText: '1\n00:00:00,000 --> 00:00:00,900\nSynthetic private caption' };
 }
 function reset() {
   state.calls = []; state.checks = []; state.paths = [];
@@ -140,6 +140,8 @@ try {
       (value) => { value.consent.decisionReceiptId = 'x'.repeat(161); }, (value) => { value.consent.granted = true; },
       (value) => { value.userId = 'foreign-owner'; }, (value) => { value.tenantId = 'foreign-tenant'; },
       (value) => { value.publicReleaseAuthorized = true; }, (value) => { value.providerGenerationAuthorized = true; },
+      (value) => { value.subtitleText = 'Synthetic plain caption'; },
+      (value) => { value.subtitleText = '1\n00:00:00,900 --> 00:00:01,001\nSynthetic caption'; },
     ]) {
       reset(); const value = body(); change(value); const denied = await route.POST(request(value));
       assert.equal(denied.status, 400); assert.equal(state.calls.length, 0); cases++;

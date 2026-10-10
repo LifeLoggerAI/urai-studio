@@ -71,6 +71,24 @@ function canonical(value: unknown): string {
   return result;
 }
 
+// Jobs clips valid SRT cues into child ranges; reject syntax it cannot parse.
+function assertSubtitleSyntax(value: string) {
+  const normalized = value.replace(/\r\n?/g, '\n').trim();
+  if (!normalized) return;
+  const parseTime = (input: string) => {
+    const match = /^(\d{2}):(\d{2}):(\d{2}),(\d{3})$/.exec(input);
+    if (!match || Number(match[2]) > 59 || Number(match[3]) > 59) fail('longform_invalid_subtitles');
+    return (((Number(match[1]) * 60 + Number(match[2])) * 60 + Number(match[3])) * 1000) + Number(match[4]);
+  };
+  for (const block of normalized.split(/\n{2,}/)) {
+    const lines = block.split('\n');
+    const timingIndex = lines[0]?.includes('-->') ? 0 : 1;
+    const match = /^(\d{2}:\d{2}:\d{2},\d{3})\s+-->\s+(\d{2}:\d{2}:\d{2},\d{3})(?:\s+.*)?$/.exec(String(lines[timingIndex] || '').trim());
+    if (!match || !lines.slice(timingIndex + 1).join('\n').trim()) fail('longform_invalid_subtitles');
+    if (parseTime(match[2]) <= parseTime(match[1])) fail('longform_invalid_subtitles');
+  }
+}
+
 export type StudioLongformPlanAction = 'status' | 'cancel' | 'playback' | 'download' | 'resume' | 'assemble' | 'delete-output';
 export type StudioLongformRequest =
   | { action: 'create'; tenantId: string; userId: string; idempotencyKey: string; consent: { purpose: 'life-movie.render'; policyVersion: string; decisionReceiptId: string }; payload: Record<string, unknown> }
@@ -176,6 +194,7 @@ export function buildStudioLongformRequest(value: unknown, identity: { tenantId:
   }
   const subtitleText = body.subtitleText ?? '';
   if (typeof subtitleText !== 'string' || subtitleText.length > 8 * 1024 * 1024) fail('longform_invalid_subtitles');
+  assertSubtitleSyntax(subtitleText);
   const plan = { projectId, sceneTruthReceiptRef, sceneTruthDigest, outputPrefix: `tenants/${tenantId}/life-movies/${projectId}/`, width, height, fps, sources, timeline, audioCues, subtitleText };
   const renderPlanDigest = createHash('sha256').update(canonical(plan)).digest('hex');
   return {

@@ -99,6 +99,27 @@ function canonicalJson(value: unknown): string {
   return JSON.stringify(value);
 }
 
+// Match Jobs' ordinary SRT admission before binding or dispatching the plan.
+function assertSubtitleTimeline(value: string, durationMs: number) {
+  const normalized = value.replace(/\r\n?/g, '\n').trim();
+  if (!normalized) return;
+  const parseTime = (input: string) => {
+    const match = /^(\d{2}):(\d{2}):(\d{2}),(\d{3})$/.exec(input);
+    if (!match || Number(match[2]) > 59 || Number(match[3]) > 59) fail('life_movie_subtitle_invalid');
+    return (((Number(match[1]) * 60 + Number(match[2])) * 60 + Number(match[3])) * 1000) + Number(match[4]);
+  };
+  for (const block of normalized.split(/\n{2,}/)) {
+    const lines = block.split('\n');
+    const timingIndex = lines[0]?.includes('-->') ? 0 : 1;
+    const match = /^(\d{2}:\d{2}:\d{2},\d{3})\s+-->\s+(\d{2}:\d{2}:\d{2},\d{3})(?:\s+.*)?$/.exec(String(lines[timingIndex] || '').trim());
+    if (!match || !lines.slice(timingIndex + 1).join('\n').trim()) fail('life_movie_subtitle_invalid');
+    const startMs = parseTime(match[1]);
+    const endMs = parseTime(match[2]);
+    if (endMs <= startMs) fail('life_movie_subtitle_invalid');
+    if (endMs > durationMs) fail('life_movie_subtitle_outside_timeline');
+  }
+}
+
 export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInput) {
   const tenantId = safeSegment(input.tenantId, 'life_movie_invalid_tenant');
   const projectId = safeSegment(input.projectId, 'life_movie_invalid_project');
@@ -182,6 +203,7 @@ export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInpu
 
   const subtitleText = input.subtitleText ?? '';
   if (Buffer.byteLength(subtitleText,'utf8') > 2 * 1024 * 1024) fail('life_movie_subtitles_too_large');
+  assertSubtitleTimeline(subtitleText, totalTimelineMs);
 
   const outputPrefix = `tenants/${tenantId}/life-movies/${projectId}/`;
   const plan = { projectId, sceneTruthReceiptRef, sceneTruthDigest, outputPrefix, width, height, fps, sources, timeline, audioCues:normalizedAudio, subtitleText };
