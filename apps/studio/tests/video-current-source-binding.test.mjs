@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { assertCurrentSpatialOwner, verifyCurrentSpatialOwner } from '../../../scripts/studio-video-spatial-owner.mjs';
 
-const spatialSha = '87aace28b25aa89f5c54c54e30ef78a413df64de', studioSha = '1'.repeat(40);
+const spatialSha = '7e794e56d14fabdad0e1d238f3833678d25fe47c', studioSha = '1'.repeat(40);
 const fixture = () => ({ number: 1636, state: 'open', merged: false,
   base: { repo: { full_name: 'LifeLoggerAI/urai-spatial' } },
   head: { sha: spatialSha, repo: { full_name: 'LifeLoggerAI/urai-spatial' } } });
