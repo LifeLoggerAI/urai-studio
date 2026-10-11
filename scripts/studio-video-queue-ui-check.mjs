@@ -30,7 +30,7 @@ let server, browser, mock;
 const sockets = new Set(), mockCounts = { headers: 0, body: 0 };
 const cases = [], videos = [], pageErrors = [];
 const receipt = { schemaVersion: 'urai-studio-queue-ui-v1', sourceSha, fingerprints, dirtySources,
-  transport: 'synthetic-local-queue-responses', providerCalls: 0, persistedJobs: 0, privateAcceptance: false,
+  transport: 'synthetic-local-queue-responses', recordingCapture: {allPixelCamerasUseSeparateContexts:true,visibleStateHoldMs:600}, providerCalls: 0, persistedJobs: 0, privateAcceptance: false,
   deploymentAcceptance: false, deviceAcceptance: false, independentApproval: false, releaseAcceptance: false, cases, videos, pageErrors };
 const waitFor = async (condition, timeout = 20_000) => {
   const end = Date.now() + timeout;
@@ -84,8 +84,7 @@ try {
   browser = await chromium.launch({ ...(executablePath ? { executablePath } : {}), headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'] });
   receipt.browser = { version: await browser.version(), executableOverride: Boolean(executablePath), physicalDevice: false };
   for (const profile of profiles) {
-    const context = await browser.newContext({ viewport: profile.viewport, reducedMotion: profile.reducedMotion,
-      recordVideo: { dir: path.join(evidenceDir, 'videos'), size: profile.viewport } });
+    const context = await browser.newContext({ viewport: profile.viewport, reducedMotion: profile.reducedMotion });
     const page = await context.newPage(); page.setDefaultTimeout(10_000); page.setDefaultNavigationTimeout(20_000);
     page.on('pageerror', error => pageErrors.push({ profile: profile.name, message: error.message }));
     let fixture, requests = 0;
@@ -118,7 +117,6 @@ try {
       await panel.screenshot({ path: path.join(evidenceDir, screenshot), animations: 'disabled', timeout: 10_000 });
       cases.push({ profile: profile.name, name: fixture.name, requests, result: await status.innerText(), dimensions, screenshot });
     }
-    await page.screenshot({ path: path.join(evidenceDir, `${profile.name}-full-route.png`), fullPage: true, animations: 'disabled', timeout: 10_000 });
     // Use native HTTP streams and virtual browser time to prove the 15s deadline
     // covers both headers and a valid JSON body that never reaches EOF.
     await page.clock.install();
@@ -146,7 +144,15 @@ try {
     await waitFor(async () => /job_synthetic_001/.test(await panel.getByRole('status').innerText()), 10_000);
     assert.equal(requests, 1);
     cases.push({ profile: profile.name, name: 'rapid-double-activation', requests, result: await panel.getByRole('status').innerText() });
-    const video = page.video(); await context.close(); videos.push({ profile: profile.name, path: path.relative(evidenceDir, await video.path()) });
+    await context.close();
+    // Screenshot clips and full-page cameras both affect native screencast
+    // metrics. Pixel cameras and recording cameras must own separate targets.
+    const pictureContext=await browser.newContext({viewport:profile.viewport,reducedMotion:profile.reducedMotion});
+    const picture=await pictureContext.newPage();
+    await picture.goto(new URL('/studio/video-factory/',baseUrl).toString(),{waitUntil:'domcontentloaded',timeout:20_000});
+    await waitFor(()=>picture.locator('[data-video-factory-queue="replay-teaser"]').getByRole('button').isEnabled(),10_000);
+    await picture.screenshot({path:path.join(evidenceDir,`${profile.name}-full-route.png`),fullPage:true,animations:'disabled',timeout:10_000});
+    await pictureContext.close();
     const serverContext=await browser.newContext({viewport:profile.viewport,javaScriptEnabled:false,reducedMotion:profile.reducedMotion});
     const serverPage=await serverContext.newPage();
     const serverResponse=await serverPage.goto(new URL('/studio/video-factory/',baseUrl).toString(),{waitUntil:'domcontentloaded',timeout:20_000});
@@ -158,6 +164,43 @@ try {
     if(visible)await serverPanel.screenshot({path:path.join(evidenceDir,serverScreenshot),animations:'disabled',timeout:10_000});
     cases.push({profile:profile.name,name:'server-rendered-action-disabled',javaScriptEnabled:false,buttonDisabled:true,visible,nativeDom:true,...(visible?{screenshot:serverScreenshot}:{})});
     await serverContext.close();
+    const recordingContext=await browser.newContext({viewport:profile.viewport,reducedMotion:profile.reducedMotion,
+      recordVideo:{dir:path.join(evidenceDir,'videos'),size:profile.viewport}});
+    const recording=await recordingContext.newPage();recording.setDefaultTimeout(10_000);recording.setDefaultNavigationTimeout(20_000);
+    recording.on('pageerror',error=>pageErrors.push({profile:profile.name,recording:true,message:error.message}));
+    let recordedFixture, recordedRequests=0; const transitions=[];
+    await recording.route(/\/api\/studio\/video-factory\/?$/,async route=>{
+      recordedRequests++;
+      assert.equal(route.request().method(),'POST');
+      assert.equal(route.request().postDataJSON().templateId,'urai-replay-teaser-v1');
+      if(recordedFixture.timeout){await route.continue({url:`${mockOrigin}/${recordedFixture.timeout}`});return;}
+      await route.fulfill({status:recordedFixture.status,contentType:'application/json',body:recordedFixture.body??JSON.stringify(recordedFixture.payload)});
+    });
+    await recording.goto(new URL('/studio/video-factory/',baseUrl).toString(),{waitUntil:'domcontentloaded'});
+    const recordingPanel=recording.locator('[data-video-factory-queue="replay-teaser"]');
+    const recordingButton=recordingPanel.getByRole('button');const recordingStatus=recordingPanel.getByRole('status');
+    await waitFor(()=>recordingButton.isEnabled(),10_000);
+    await recordingButton.scrollIntoViewIfNeeded();
+    for(recordedFixture of fixtures){
+      recordedRequests=0;await recordingButton.click();
+      await waitFor(async()=>recordedFixture.expected.test(await recordingStatus.innerText()),10_000);
+      assert.equal(recordedRequests,1);assert.equal(await recordingButton.isEnabled(),true);
+      transitions.push({name:recordedFixture.name,result:await recordingStatus.innerText(),requests:recordedRequests});
+      await recording.waitForTimeout(600);
+    }
+    await recording.clock.install();
+    for(const timeout of ['headers','body']){
+      recordedFixture={timeout};recordedRequests=0;const before=mockCounts[timeout];
+      await recordingButton.click();await waitFor(()=>mockCounts[timeout]===before+1);
+      await recording.clock.runFor(15_001);
+      await waitFor(async()=>/timed out/.test(await recordingStatus.innerText()),10_000);
+      assert.equal(recordedRequests,1);assert.equal(await recordingButton.isEnabled(),true);
+      transitions.push({name:`timeout-${timeout}`,result:await recordingStatus.innerText(),requests:recordedRequests,nativeHttpStream:true,browserClockElapsedMs:15_001});
+      await recording.clock.resume();await recording.waitForTimeout(600);
+    }
+    assert.equal(transitions.length,9);
+    const video=recording.video();await recordingContext.close();
+    videos.push({profile:profile.name,path:path.relative(evidenceDir,await video.path()),transitions,pixelCamerasInRecordingContext:false});
   }
   assert.equal(cases.length, 44); assert.deepEqual(pageErrors, []);
   delete receipt.activeCase; receipt.status = 'passed';
