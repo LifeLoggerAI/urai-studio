@@ -138,7 +138,7 @@ export async function callStudioJobsBridge(
       body: encoded,
     });
 
-    const body = await readStudioLongformJson(response, 2 * 1024 * 1024).catch(() => null);
+    const body = await readStudioLongformJson(response, 2 * 1024 * 1024, controller.signal).catch(() => null);
     if (!body || typeof body !== 'object' || Array.isArray(body)) {
       throw new Error('jobs_bridge_invalid_response');
     }
@@ -153,7 +153,9 @@ export async function callStudioJobsBridge(
 
     return body as Record<string, unknown>;
   } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') throw new Error('jobs_bridge_timeout');
+    // Body parsing converts stream errors into a safe JSON failure. The same
+    // deadline still owns that phase, so retain timeout recovery after headers.
+    if (controller.signal.aborted || (error instanceof Error && error.name === 'AbortError')) throw new Error('jobs_bridge_timeout');
     throw error;
   } finally {
     clearTimeout(timer);

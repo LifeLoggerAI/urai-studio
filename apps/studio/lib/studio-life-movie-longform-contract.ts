@@ -203,16 +203,22 @@ export function buildStudioLongformRequest(value: unknown, identity: { tenantId:
   };
 }
 
-export async function readStudioLongformJson(message: Request | Response, maxBytes: number): Promise<unknown> {
+export async function readStudioLongformJson(message: Request | Response, maxBytes: number, signal?: AbortSignal): Promise<unknown> {
   const length = Number(message.headers.get('content-length'));
   if (Number.isFinite(length) && length > maxBytes) throw new StudioLongformError('longform_request_too_large', 413);
   if (!message.body) fail('longform_invalid_request');
   const reader = message.body.getReader();
+  // Cancel the owned reader as well as fetch. A response whose headers have
+  // arrived must not keep a pending read alive beyond the bridge deadline.
+  const abortRead = () => { void reader.cancel().catch(() => undefined); };
+  if (signal?.aborted) abortRead();
+  else signal?.addEventListener('abort', abortRead, { once: true });
   const chunks: Uint8Array[] = [];
   let size = 0;
   try {
     while (true) {
       const { value, done } = await reader.read();
+      if (signal?.aborted) throw new StudioLongformError('longform_request_aborted', 499);
       if (done) break;
       size += value.byteLength;
       if (size > maxBytes) { await reader.cancel(); throw new StudioLongformError('longform_request_too_large', 413); }
@@ -225,5 +231,5 @@ export async function readStudioLongformJson(message: Request | Response, maxByt
   } catch (error) {
     if (error instanceof StudioLongformError) throw error;
     throw new StudioLongformError('longform_invalid_json');
-  } finally { reader.releaseLock(); }
+  } finally { signal?.removeEventListener('abort', abortRead); reader.releaseLock(); }
 }

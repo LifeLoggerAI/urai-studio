@@ -48,7 +48,7 @@ export async function callStudioLongformBridge(input: StudioLongformRequest): Pr
       redirect: 'error',
     });
     let body;
-    try { body = await readStudioLongformJson(response, 2 * 1024 * 1024); }
+    try { body = await readStudioLongformJson(response, 2 * 1024 * 1024, controller.signal); }
     catch { throw new StudioLongformError('longform_bridge_invalid_response', 502); }
     if (!body || typeof body !== 'object' || Array.isArray(body)) throw new StudioLongformError('longform_bridge_invalid_response', 502);
     const result = body as Record<string, unknown>;
@@ -58,6 +58,9 @@ export async function callStudioLongformBridge(input: StudioLongformRequest): Pr
     }
     return result;
   } catch (error) {
+    // The JSON reader hides transport details. Check the operation's deadline
+    // before that sanitized parsing failure becomes an invalid-response error.
+    if (controller.signal.aborted) throw new StudioLongformError('longform_bridge_timeout', 504);
     if (error instanceof StudioLongformError) throw error;
     throw new StudioLongformError(error instanceof Error && error.name === 'AbortError' ? 'longform_bridge_timeout' : 'longform_bridge_unavailable', error instanceof Error && error.name === 'AbortError' ? 504 : 502);
   } finally { clearTimeout(timer); }
