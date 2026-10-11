@@ -83,15 +83,18 @@ jobs:
           test "$(git rev-parse HEAD)" = "$URAI_EXACT_HEAD"
           test -z "$(git status --porcelain --untracked-files=all)"
 
+      - name: Install browser for route capture
+        run: pnpm --filter studio exec playwright install chromium
+
+      - name: Verify mounted production Studio queue behavior
+        run: node scripts/studio-video-queue-ui-check.mjs
+
       - name: Bind current Spatial owner before capture
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           mkdir -p _audit/20260623_urai_studio_video_factory/source-authority
           node scripts/studio-video-spatial-owner.mjs > _audit/20260623_urai_studio_video_factory/source-authority/current-source-before.json
-
-      - name: Install browser for route capture
-        run: pnpm --filter studio exec playwright install chromium
 
       - name: Start Studio server
         run: |
