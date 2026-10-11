@@ -173,6 +173,7 @@ for (const route of routes) {
   let recordingReadinessBasis = null;
   let deployedSha = null;
   let error = '';
+  let homeReadinessFailure = null;
 
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text());
@@ -217,6 +218,33 @@ for (const route of routes) {
     if (consoleErrors.length) throw new Error(`console_errors:${consoleErrors.join(' | ')}`);
   } catch (caught) {
     error = caught instanceof Error ? caught.message : String(caught);
+    // Preserve the semantic readiness gate. When Home never becomes ready,
+    // collect only non-sensitive renderer/geometry metadata for diagnosis.
+    if (routePath(route) === '/home' && error.includes('Timeout')) {
+      try {
+        homeReadinessFailure = await page.evaluate(() => {
+          const runtime = document.querySelector('.urai-home-spatial-runtime-layer');
+          const asset = runtime?.querySelector('.urai-asset-home-world[data-home-primary-owner="asset-driven"]');
+          const webgl = runtime?.querySelector('.urai-final-home-world[data-home-spatial-renderer="webgl"]');
+          const owner = asset || webgl;
+          const bounds = owner?.querySelector('canvas')?.getBoundingClientRect();
+          return {
+            runtimePresent: Boolean(runtime),
+            runtimeAssetsReady: runtime?.getAttribute('data-home-assets-ready') ?? null,
+            runtimeWebglReady: runtime?.getAttribute('data-webgl-ready') ?? null,
+            loadingPresent: Boolean(runtime?.querySelector('.home-runtime-loading')),
+            assetOwnerPresent: Boolean(asset),
+            assetReady: asset?.getAttribute('data-home-assets-ready') ?? null,
+            webglOwnerPresent: Boolean(webgl),
+            webglHomeReady: webgl?.getAttribute('data-home-ready') ?? null,
+            canvasWidth: bounds ? Math.round(bounds.width) : null,
+            canvasHeight: bounds ? Math.round(bounds.height) : null,
+          };
+        });
+      } catch (diagnosticError) {
+        homeReadinessFailure = { inspectionError: diagnosticError instanceof Error ? diagnosticError.message : String(diagnosticError) };
+      }
+    }
   } finally {
     await context.close();
     if (video) {
@@ -245,6 +273,7 @@ for (const route of routes) {
     recordingReadinessBasis,
     deployedSha,
     expectedSpatialSha,
+    homeReadinessFailure,
     consoleErrors,
     pageErrors,
     requestFailures,
