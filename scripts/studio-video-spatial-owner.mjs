@@ -17,10 +17,7 @@ export function assertCurrentSpatialOwner(pr, expectedSha) {
   return { repository: spatialRepository, prNumber: spatialOwnerPr, sourceSha: expectedSha };
 }
 
-export async function verifyCurrentSpatialOwner({ expectedSha, studioSha, token = '', fetchImpl = fetch } = {}) {
-  if (!exactSha.test(String(expectedSha || '')) || !exactSha.test(String(studioSha || ''))) {
-    throw new Error('video_exact_source_invalid');
-  }
+async function readCurrentSpatialPr({ token = '', fetchImpl = fetch } = {}) {
   const signal = AbortSignal.timeout(10_000);
   const response = await fetchImpl(`https://api.github.com/repos/${spatialRepository}/pulls/${spatialOwnerPr}`, {
     method: 'GET', redirect: 'error', cache: 'no-store', signal,
@@ -50,6 +47,19 @@ export async function verifyCurrentSpatialOwner({ expectedSha, studioSha, token 
   } catch { throw new Error('spatial_current_owner_response_invalid'); }
   let pr;
   try { pr = JSON.parse(body); } catch { throw new Error('spatial_current_owner_response_invalid'); }
+  return pr;
+}
+
+export async function resolveCurrentSpatialSource({ expectedSha = '', token = '', fetchImpl = fetch } = {}) {
+  const pr = await readCurrentSpatialPr({ token, fetchImpl });
+  return assertCurrentSpatialOwner(pr, expectedSha || pr?.head?.sha).sourceSha;
+}
+
+export async function verifyCurrentSpatialOwner({ expectedSha, studioSha, token = '', fetchImpl = fetch } = {}) {
+  if (!exactSha.test(String(expectedSha || '')) || !exactSha.test(String(studioSha || ''))) {
+    throw new Error('video_exact_source_invalid');
+  }
+  const pr = await readCurrentSpatialPr({ token, fetchImpl });
   return {
     schemaVersion: 'urai-studio-video-current-source-binding-v1',
     status: 'EXACT_CURRENT_SOURCE_BINDING_ONLY',
@@ -66,12 +76,20 @@ export async function verifyCurrentSpatialOwner({ expectedSha, studioSha, token 
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
   try {
-    const receipt = await verifyCurrentSpatialOwner({
-      expectedSha: process.env.URAI_SPATIAL_EXPECTED_SHA,
-      studioSha: process.env.URAI_EXACT_HEAD,
-      token: process.env.GITHUB_TOKEN,
-    });
-    process.stdout.write(JSON.stringify(receipt, null, 2) + '\n');
+    if (process.argv.includes('--resolve-source')) {
+      const sha = await resolveCurrentSpatialSource({
+        expectedSha: process.env.URAI_SPATIAL_EXPECTED_SHA || '',
+        token: process.env.GITHUB_TOKEN,
+      });
+      process.stdout.write(`URAI_SPATIAL_EXPECTED_SHA=${sha}\n`);
+    } else {
+      const receipt = await verifyCurrentSpatialOwner({
+        expectedSha: process.env.URAI_SPATIAL_EXPECTED_SHA,
+        studioSha: process.env.URAI_EXACT_HEAD,
+        token: process.env.GITHUB_TOKEN,
+      });
+      process.stdout.write(JSON.stringify(receipt, null, 2) + '\n');
+    }
   } catch (error) {
     process.stderr.write((error instanceof Error ? error.message : 'video_source_binding_failed') + '\n');
     process.exitCode = 1;

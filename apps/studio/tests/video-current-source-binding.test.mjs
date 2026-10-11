@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { assertCurrentSpatialOwner, verifyCurrentSpatialOwner } from '../../../scripts/studio-video-spatial-owner.mjs';
+import { assertCurrentSpatialOwner, resolveCurrentSpatialSource, verifyCurrentSpatialOwner } from '../../../scripts/studio-video-spatial-owner.mjs';
 
 const spatialSha = '7e794e56d14fabdad0e1d238f3833678d25fe47c', studioSha = '1'.repeat(40);
 const fixture = () => ({ number: 1636, state: 'open', merged: false,
@@ -31,7 +31,9 @@ assert.equal(receipt.studioSourceSha, studioSha); assert.equal(receipt.spatial.s
 for (const field of ['independentReviewAccepted', 'visualAccepted', 'deviceAccepted', 'productionVerified', 'goldenMaster']) assert.equal(receipt[field], false);
 assert.equal(JSON.stringify(receipt).includes('fictional-read-token'), false); cases++;
 await assert.rejects(verifyCurrentSpatialOwner({ expectedSha: spatialSha, studioSha: 'unknown', fetchImpl }), /exact_source_invalid/);
-assert.equal(calls, 1); cases++;
+assert.equal(await resolveCurrentSpatialSource({ token: 'fictional-read-token', fetchImpl }), spatialSha);
+await assert.rejects(resolveCurrentSpatialSource({ expectedSha: 'f'.repeat(40), token: 'fictional-read-token', fetchImpl }), /spatial_current_owner_source_changed/);
+assert.equal(calls, 3); cases += 2;
 for (const fake of [
   async () => new Response('forbidden', { status: 403 }),
   async () => { throw new Error('private token and response must never enter logs'); },
@@ -59,8 +61,13 @@ assert.ok(workflow.includes('pnpm install --frozen-lockfile')); assert.ok(!workf
 assert.ok(workflow.includes('Prove install preserved exact source')); assert.ok(workflow.includes('Prove Studio build preserved exact source'));
 assert.ok(workflow.includes('Bind current Spatial owner before capture')); assert.ok(workflow.includes('Revalidate current Spatial owner after capture'));
 assert.ok(workflow.indexOf('Revalidate current Spatial owner after capture') > workflow.indexOf('Compose and verify semantic-ready motion MP4'));
-assert.equal((workflow.match(/studio-video-spatial-owner\.mjs/g) || []).length, 2);
-assert.ok(workflow.includes('ref: ${{ env.URAI_SPATIAL_EXPECTED_SHA }}')); assert.ok(workflow.includes(spatialSha));
+assert.equal((workflow.match(/studio-video-spatial-owner\.mjs/g) || []).length, 3);
+assert.ok(workflow.includes('ref: ${{ env.URAI_SPATIAL_EXPECTED_SHA }}'));
+assert.ok(workflow.includes("URAI_SPATIAL_EXPECTED_SHA: ${{ inputs.spatial_source_sha || '' }}"));
+assert.ok(workflow.includes('Resolve and pin current Spatial controller source'));
+assert.ok(workflow.includes('node scripts/studio-video-spatial-owner.mjs --resolve-source >> "$GITHUB_ENV"'));
+assert.ok(workflow.indexOf('Resolve and pin current Spatial controller source') < workflow.indexOf('Bind current Spatial owner before capture'));
+assert.ok(!workflow.includes(spatialSha));
 assert.ok(!workflow.includes('ff6f3df71a18b7ac6a2e5b7872b2fd0e802dbe3b'));
 cases++;
 console.log(`[PASS] ${cases} exact current-owner/readback/source-boundary cases; no visual/device/production acceptance or provider calls`);

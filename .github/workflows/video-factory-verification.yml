@@ -36,7 +36,7 @@ jobs:
     timeout-minutes: 30
     env:
       URAI_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
-      URAI_SPATIAL_EXPECTED_SHA: ${{ inputs.spatial_source_sha || '7e794e56d14fabdad0e1d238f3833678d25fe47c' }}
+      URAI_SPATIAL_EXPECTED_SHA: ${{ inputs.spatial_source_sha || '' }}
     steps:
       - name: Checkout exact event source
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -88,6 +88,14 @@ jobs:
 
       - name: Verify mounted production Studio queue behavior
         run: node scripts/studio-video-queue-ui-check.mjs
+
+      - name: Resolve and pin current Spatial controller source
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/studio-video-spatial-owner.mjs --resolve-source >> "$GITHUB_ENV"
 
       - name: Bind current Spatial owner before capture
         env:
