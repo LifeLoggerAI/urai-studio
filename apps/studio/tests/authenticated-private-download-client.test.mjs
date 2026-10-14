@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 
 // Compile the actual clients, route, Firebase identity and server-owned role
 // checks. All identities and byte transports below are synthetic fixtures.
 const require = createRequire(import.meta.url), ts = require('typescript');
+const sha256 = value => createHash('sha256').update(value).digest('hex');
 const read = name => fs.readFileSync(new URL(`../${name}`, import.meta.url), 'utf8');
 const compile = source => ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
 const data = source => `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
@@ -42,7 +44,7 @@ function reset() {
   Date.now=oldNow;
   Object.assign(state, { userAvailable:true, tokenCalls:[], callables:[], calls:[], checks:[], paths:[], roleReads:0, revoked:false, exists:true, fenceExists:false, fence:{uid:'synthetic-owner',active:false,permanent:false}, onRoleRead:null, onTokenRead:null, onDescriptorRead:null,
     decoded:{uid:'synthetic-owner',tenantId:'synthetic-tenant'}, role:{uid:'synthetic-owner',role:'owner',disabled:false},
-    exportDescriptor:{requiresAuthorization:true,requestId:'synthetic-export',url:exportUrl()} });
+    exportDescriptor:{requiresAuthorization:true,requestId:'synthetic-export',url:exportUrl(),checksum:sha256('{"synthetic":true}')} });
   state.user={uid:'synthetic-owner',getIdToken:async force=>{state.tokenCalls.push(force);await state.onTokenRead?.();return 'synthetic-user-token';}};
   process.env.NODE_ENV='production'; process.env.URAI_STUDIO_JOBS_DISPATCH_ENABLED='true'; process.env.URAI_STUDIO_LONGFORM_DISPATCH_ENABLED='true';
   process.env.URAI_JOBS_BRIDGE_URL='https://jobs.example.test/studioLifeMovieBridge';
@@ -66,7 +68,7 @@ try {
   for(const change of [url=>url.replace('demo-urai-studio.cloudfunctions.net','foreign-project.cloudfunctions.net'),url=>url.replace('https:','http:'),
     url=>url.replace('/downloadStudioDataExport','/other'),url=>url.replace('.net/', '.net:4430/'),url=>url.replace('https://','https://user:password@'),
     url=>`${url}#private`,url=>`${url}&requestId=foreign`,url=>`${url}&redirect=https://foreign.example/`]) {
-    reset(); let tokens=0; await assert.rejects(exportClient.fetchAuthorizedStudioExport({url:change(exportUrl()),projectId:project,assertCurrentSession:()=>{},getIdToken:async()=>{tokens++;return 'synthetic-user-token';}}));
+    reset(); let tokens=0; await assert.rejects(exportClient.fetchAuthorizedStudioExport({url:change(exportUrl()),projectId:project,checksum:sha256('{"synthetic":true}'),assertCurrentSession:()=>{},getIdToken:async()=>{tokens++;return 'synthetic-user-token';}}));
     assert.equal(tokens,0); assert.equal(state.calls.length,0); cases++;
   }
   for(const change of [()=>{state.userAvailable=false;},()=>{state.exportDescriptor.requiresAuthorization=false;},()=>{state.exportDescriptor.requestId='foreign-request';}]) {
@@ -76,6 +78,21 @@ try {
   await assert.rejects(exportClient.downloadStudioDataExport('synthetic-export'));cases++;
   reset();globalThis.fetch=async()=>new Response('',{headers:{'Content-Type':'application/json'}});
   await assert.rejects(exportClient.downloadStudioDataExport('synthetic-export'));cases++;
+  // The server's current, authenticated export descriptor contains a byte
+  // checksum. Corruption or truncation must never become a downloadable Blob.
+  reset();state.exportDescriptor.checksum='f'.repeat(64);
+  await assert.rejects(exportClient.downloadStudioDataExport('synthetic-export'), /studio_export_download_unavailable/);cases++;
+  reset();delete state.exportDescriptor.checksum;
+  await assert.rejects(exportClient.downloadStudioDataExport('synthetic-export'), /studio_export_download_unavailable/);
+  assert.equal(state.tokenCalls.length,0);assert.equal(state.calls.length,0);cases++;
+  reset();globalThis.fetch=async()=>new Response('{"synthetic":false}',{headers:{'Content-Type':'application/json'}});
+  await assert.rejects(exportClient.downloadStudioDataExport('synthetic-export'), /studio_export_download_unavailable/);cases++;
+  for (const declared of ['100', '1', String(16*1024*1024+1), 'not-a-number']) {
+    reset();globalThis.fetch=async()=>new Response('{"synthetic":true}',{headers:{'Content-Type':'application/json','Content-Length':declared}});
+    await assert.rejects(exportClient.downloadStudioDataExport('synthetic-export'), /studio_export_download_unavailable/);cases++;
+  }
+  reset();globalThis.fetch=async()=>new Response('{"synthetic":true}',{headers:{'Content-Type':'application/json','Content-Length':String(Buffer.byteLength('{"synthetic":true}'))}});
+  assert.equal(await (await exportClient.downloadStudioDataExport('synthetic-export')).text(),'{"synthetic":true}');cases++;
   for(const form of ['short','long']) for(const kind of ['mp4','srt']) {
     reset();globalThis.fetch=async(url,options)=>{state.calls.push({url:String(url),options,input:JSON.parse(options.body)});
       return new Response('synthetic-private-bytes',{headers:{'Content-Type':kind==='mp4'?'video/mp4':'application/x-subrip'}});};
