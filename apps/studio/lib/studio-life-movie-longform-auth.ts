@@ -42,6 +42,16 @@ export async function requireStudioLongformAuth(request: Request): Promise<Studi
     if (!user || user.uid !== auth.uid || user.disabled === true || !['owner', 'admin'].includes(String(user.role))) {
       return denied(auth, 'longform_edit_role_required');
     }
+    // Server-provisioned tenant memberships are separate from the user-wide
+    // studioUsers role. Match the canonical Firestore Rules identity and tenant
+    // fields; a global owner/admin role cannot cross a studio boundary.
+    const memberSnapshot = await adminDb.doc(`memberships/${auth.uid}_${auth.tenantId}`).get();
+    const member = memberSnapshot.exists ? memberSnapshot.data() : null;
+    if (!member || member.uid !== auth.uid || member.studioId !== auth.tenantId
+      || !['owner', 'creator'].includes(String(member.role))
+      || member.disabled === true || member.revoked === true || member.active === false) {
+      return denied(auth, 'longform_tenant_membership_required');
+    }
     const fenceId = createHash('sha256').update(`urai-studio-data-rights:${auth.uid}`).digest('hex');
     const fenceSnapshot = await adminDb.doc(`studioDataRightsOwnerFences/${fenceId}`).get();
     const fence = fenceSnapshot.exists ? fenceSnapshot.data() : null;

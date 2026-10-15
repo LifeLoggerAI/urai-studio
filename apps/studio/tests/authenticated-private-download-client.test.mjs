@@ -27,6 +27,7 @@ const admin = data(`import {state} from '${fixture}';
 export const firebaseAdminStatus={mode:'synthetic-test-only'};
 export const adminAuth={async verifyIdToken(token,revoked){state.checks.push({token,revoked}); if(state.revoked||token!=='synthetic-user-token') throw new Error('synthetic private credential details'); return structuredClone(state.decoded);}};
 export const adminDb={doc(path){return {async get(){state.paths.push(path);
+  if(path.startsWith('memberships/'))return {exists:state.memberExists,data:()=>structuredClone(state.member)};
   if(path.startsWith('studioDataRightsOwnerFences/'))return {exists:state.fenceExists,data:()=>structuredClone(state.fence)};
   state.roleReads++;await state.onRoleRead?.();return {exists:state.exists,data:()=>structuredClone(state.role)};
 }};}};`);
@@ -43,7 +44,7 @@ const project = 'demo-urai-studio', exportUrl = () => `https://us-central1-${pro
 function reset() {
   Date.now=oldNow;
   Object.assign(state, { userAvailable:true, tokenCalls:[], callables:[], calls:[], checks:[], paths:[], roleReads:0, revoked:false, exists:true, fenceExists:false, fence:{uid:'synthetic-owner',active:false,permanent:false}, onRoleRead:null, onTokenRead:null, onDescriptorRead:null,
-    decoded:{uid:'synthetic-owner',tenantId:'synthetic-tenant'}, role:{uid:'synthetic-owner',role:'owner',disabled:false},
+    decoded:{uid:'synthetic-owner',tenantId:'synthetic-tenant'}, role:{uid:'synthetic-owner',role:'owner',disabled:false},memberExists:true,member:{uid:'synthetic-owner',studioId:'synthetic-tenant',role:'owner'},
     exportDescriptor:{requiresAuthorization:true,requestId:'synthetic-export',url:exportUrl(),checksum:sha256('{"synthetic":true}')} });
   state.user={uid:'synthetic-owner',getIdToken:async force=>{state.tokenCalls.push(force);await state.onTokenRead?.();return 'synthetic-user-token';}};
   process.env.NODE_ENV='production'; process.env.URAI_STUDIO_JOBS_DISPATCH_ENABLED='true'; process.env.URAI_STUDIO_LONGFORM_DISPATCH_ENABLED='true';

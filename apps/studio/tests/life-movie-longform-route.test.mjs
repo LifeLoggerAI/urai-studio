@@ -21,7 +21,9 @@ const previousEnv = Object.fromEntries(envKeys.map((name) => [name, process.env[
 const state = {
   decoded: { uid: 'user-test', tenantId: 'studio-test' },
   user: { uid: 'user-test', role: 'owner', disabled: false },
-  authFailure: false, revoked: false, lookupFailure: false, exists: true, fenceExists: false, fence: null,
+  authFailure: false, revoked: false, lookupFailure: false, exists: true,
+  memberExists: true, member: { uid: 'user-test', studioId: 'studio-test', role: 'owner' },
+  fenceExists: false, fence: null,
   checks: [], paths: [], calls: [], response: { ok: true, planId: `lmp_${'a'.repeat(20)}` }, status: 200,
 };
 globalThis[key] = state;
@@ -35,6 +37,7 @@ export const adminAuth = { async verifyIdToken(token, revokedCheck) {
 } };
 export const adminDb = { doc(path) { state.paths.push(path); return { async get() {
   if(state.lookupFailure) throw new Error('test-lookup-failed');
+  if(path.startsWith('memberships/'))return {exists:state.memberExists,data:()=>state.member};
   if(path.startsWith('studioDataRightsOwnerFences/'))return {exists:state.fenceExists,data:()=>state.fence};
   return { exists: state.exists, data: () => state.user };
 } }; } };
@@ -54,6 +57,8 @@ const routeUrl = data(compile(source('../app/api/studio/video-factory/longform/r
 function reset() {
   state.decoded = { uid: 'user-test', tenantId: 'studio-test' };
   state.user = { uid: 'user-test', role: 'owner', disabled: false };
+  state.memberExists = true;
+  state.member = { uid: 'user-test', studioId: 'studio-test', role: 'owner' };
   state.authFailure = false; state.revoked = false; state.lookupFailure = false; state.exists = true;
   state.fenceExists = false; state.fence = {uid:'user-test',active:false,permanent:false};
   state.checks = []; state.paths = []; state.calls = [];
@@ -132,6 +137,23 @@ try {
   await expectStatus(route, createBody(), 403);
   reset(); state.lookupFailure = true;
   await expectStatus(route, createBody(), 503);
+  for (const change of [
+    () => { state.memberExists = false; },
+    () => { state.member.uid = 'foreign-user'; },
+    () => { state.member.studioId = 'foreign-studio'; },
+    () => { state.member.role = 'viewer'; },
+    () => { state.member.disabled = true; },
+    () => { state.member.revoked = true; },
+    () => { state.member.active = false; },
+  ]) {
+    reset(); change();
+    const denied = await expectStatus(route, createBody(), 403);
+    assert.equal(denied.error.code, 'longform_tenant_membership_required');
+    assert.equal(state.calls.length, 0);
+  }
+  reset(); state.member.role = 'creator';
+  await expectStatus(route, createBody(), 202);
+  assert.equal(state.calls.length, 1);
   for(const change of [()=>{state.fence.active=true;},()=>{state.fence.permanent=true;},()=>{state.fence.uid='foreign-owner';}]) {
     reset();state.fenceExists=true;change();await expectStatus(route,createBody(),403);assert.equal(state.calls.length,0);
   }
@@ -168,6 +190,7 @@ try {
   assert.equal(call.input.payload.outputPrefix, 'tenants/studio-test/life-movies/project-test/');
   assert.match(call.input.payload.renderPlanDigest, /^[a-f0-9]{64}$/);
   assert.deepEqual([...new Set(state.paths)].sort(), ['studioUsers/user-test',
+    'memberships/user-test_studio-test',
     `studioDataRightsOwnerFences/${createHash('sha256').update('urai-studio-data-rights:user-test').digest('hex')}`].sort());
   const repeated = contract.buildStudioLongformRequest(createBody(), { tenantId: 'studio-test', userId: 'user-test' });
   assert.equal(repeated.idempotencyKey, call.input.idempotencyKey);

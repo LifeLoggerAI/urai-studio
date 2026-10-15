@@ -16,6 +16,7 @@ const admin=uri(`const state=globalThis[Symbol.for('urai.studio.private-media-ro
 export const firebaseAdminStatus={mode:'synthetic'};
 export const adminAuth={async verifyIdToken(token,checkRevoked){state.checks.push(checkRevoked);if(state.revoked&&checkRevoked)throw Error('synthetic revoked');return {...state.decoded};}};
 export const adminDb={doc(path){return{async get(){
+if(path.startsWith('memberships/'))return{exists:true,data:()=>({...state.member})};
 if(path.startsWith('studioDataRightsOwnerFences/'))return{exists:state.fenceExists,data:()=>({...state.fence})};
 return{exists:true,data:()=>({...state.user})};}}}};`);
 const auth=uri(source('lib/studio-auth.ts').replaceAll('@/lib/firebase-admin',admin));
@@ -35,7 +36,7 @@ function body(bridge = 'short') { return { bridge, delivery: { schemaVersion:'ur
   ...(bridge === 'short' ? {jobId:'synthetic_job_001'} : {planId:`lmp_${'a'.repeat(20)}`,artifact:'final'}) } }; }
 function reset() {
   authority={ok:true,...identity};calls=[];process.env.NODE_ENV='production';
-  routeState.decoded={...identity};routeState.user={uid:identity.uid,role:'owner',disabled:false};routeState.revoked=false;routeState.checks=[];
+  routeState.decoded={...identity};routeState.user={uid:identity.uid,role:'owner',disabled:false};routeState.member={uid:identity.uid,studioId:identity.tenantId,role:'owner'};routeState.revoked=false;routeState.checks=[];
   routeState.fenceExists=false;routeState.fence={uid:identity.uid,active:false,permanent:false};
   process.env.URAI_STUDIO_JOBS_DISPATCH_ENABLED='true';process.env.URAI_STUDIO_LONGFORM_DISPATCH_ENABLED='true';
   process.env.URAI_JOBS_BRIDGE_URL='https://synthetic-short.invalid/bridge';process.env.URAI_JOBS_LONGFORM_BRIDGE_URL='https://synthetic-long.invalid/bridge';

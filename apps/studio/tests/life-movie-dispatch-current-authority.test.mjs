@@ -20,7 +20,7 @@ const previousEnv = Object.fromEntries(envKeys.map((name) => [name, process.env[
 const state = {
   decoded: { uid: 'user-test', tenantId: 'studio-test' },
   user: { uid: 'user-test', role: 'owner', disabled: false },
-  authFailure: false, revoked: false, lookupFailure: false, exists: true, fenceExists: false, fence: null,
+  authFailure: false, revoked: false, lookupFailure: false, exists: true, memberExists:true, member:{uid:'user-test',studioId:'studio-test',role:'owner'}, fenceExists: false, fence: null,
   checks: [], paths: [], calls: [], response: { ok: true, planId: `lmp_${'a'.repeat(20)}` }, status: 200,
 };
 globalThis[key] = state;
@@ -34,6 +34,7 @@ export const adminAuth = { async verifyIdToken(token, revokedCheck) {
 } };
 export const adminDb = { doc(path) { state.paths.push(path); return { async get() {
   if(state.lookupFailure) throw new Error('test-lookup-failed');
+  if(path.startsWith('memberships/'))return {exists:state.memberExists,data:()=>state.member};
   if(path.startsWith('studioDataRightsOwnerFences/'))return {exists:state.fenceExists,data:()=>state.fence};
   return { exists: state.exists, data: () => state.user };
 } }; } };
@@ -53,6 +54,7 @@ const routeUrl = data(compile(source('../app/api/studio/video-factory/longform/r
 function reset() {
   state.decoded = { uid: 'user-test', tenantId: 'studio-test' };
   state.user = { uid: 'user-test', role: 'owner', disabled: false };
+  state.memberExists=true;state.member={uid:'user-test',studioId:'studio-test',role:'owner'};
   state.authFailure = false; state.revoked = false; state.lookupFailure = false; state.exists = true;
   state.fenceExists = false; state.fence = {uid:'user-test',active:false,permanent:false};
   state.checks = []; state.paths = []; state.calls = [];
@@ -101,6 +103,9 @@ function streamedRequest(body, change) {
 const mutations = [
   ['revoked token', () => { state.revoked = true; }, 401],
   ['offboarded edit role', () => { state.user.role = 'viewer'; }, 403],
+  ['removed tenant membership', () => { state.memberExists=false; }, 403],
+  ['foreign studio membership', () => { state.member.studioId='foreign'; }, 403],
+  ['viewer tenant membership', () => { state.member.role='viewer'; }, 403],
   ['disabled current member', () => { state.user.disabled = true; }, 403],
   ['removed current member', () => { state.exists = false; }, 403],
   ['reassigned tenant', () => { state.decoded.tenantId = 'other-tenant'; }, 403],

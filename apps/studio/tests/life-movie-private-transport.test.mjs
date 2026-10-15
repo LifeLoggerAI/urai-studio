@@ -29,7 +29,7 @@ const key = Symbol.for('urai.studio.private-transport-test');
 const previousState = globalThis[key], previousFetch = globalThis.fetch;
 const envKeys = ['NODE_ENV', 'URAI_STUDIO_JOBS_DISPATCH_ENABLED', 'URAI_STUDIO_LONGFORM_DISPATCH_ENABLED', 'URAI_JOBS_BRIDGE_URL', 'URAI_JOBS_LONGFORM_BRIDGE_URL', 'URAI_STUDIO_JOBS_BRIDGE_TOKEN'];
 const previousEnv = Object.fromEntries(envKeys.map((name) => [name, process.env[name]]));
-const state = globalThis[key] = { calls: [], checks: [], paths: [], decoded: {}, user: {}, revoked: false, exists: true, lookupFailure: false, fenceExists: false, fence: null };
+const state = globalThis[key] = { calls: [], checks: [], paths: [], decoded: {}, user: {}, member:{},memberExists:true,revoked: false, exists: true, lookupFailure: false, fenceExists: false, fence: null };
 const admin = data(`
 const state = globalThis[Symbol.for('urai.studio.private-transport-test')];
 export const firebaseAdminStatus = { mode: 'synthetic-test-only' };
@@ -40,6 +40,7 @@ export const adminAuth = { async verifyIdToken(token, revokedCheck) {
 } };
 export const adminDb = { doc(path) { state.paths.push(path); return { async get() {
   if (state.lookupFailure) throw new Error('synthetic unavailable authority');
+  if(path.startsWith('memberships/'))return {exists:state.memberExists,data:()=>structuredClone(state.member)};
   if(path.startsWith('studioDataRightsOwnerFences/'))return {exists:state.fenceExists,data:()=>state.fence};
   return { exists: state.exists, data: () => structuredClone(state.user) };
 } }; } };
@@ -66,6 +67,7 @@ function reset() {
   state.calls = []; state.checks = []; state.paths = [];
   state.decoded = { uid: 'synthetic-owner', tenantId: 'synthetic-tenant' };
   state.user = { uid: 'synthetic-owner', role: 'owner', disabled: false };
+  state.memberExists=true;state.member={uid:'synthetic-owner',studioId:'synthetic-tenant',role:'owner'};
   state.revoked = false; state.exists = true; state.lookupFailure = false;
   state.fenceExists=false;state.fence={uid:'synthetic-owner',active:false,permanent:false};
   process.env.NODE_ENV = 'production';
@@ -107,7 +109,7 @@ try {
   else {
     assert.deepEqual(state.calls[0].input.consent, consent);
     assert.ok(state.checks.some((check) => check.revokedCheck === true));
-    const authorityReads = ['studioUsers/synthetic-owner',
+    const authorityReads = ['studioUsers/synthetic-owner', 'memberships/synthetic-owner_synthetic-tenant',
       `studioDataRightsOwnerFences/${createHash('sha256').update('urai-studio-data-rights:synthetic-owner').digest('hex')}`];
     assert.deepEqual(state.paths, [...authorityReads, ...authorityReads, ...authorityReads]);
   }
