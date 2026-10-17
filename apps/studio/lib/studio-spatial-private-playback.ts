@@ -13,7 +13,7 @@ const int = (value: unknown) => typeof value === 'number' && Number.isSafeIntege
 
 export type AuthorizedMemoryPlan = Readonly<{
   ownerUid: string; memoryId: string; movieId: string; planId: string;
-  sceneTruthPacketId: string; sceneTruthDigest: string;
+  sceneTruthPacketId: unknown; sceneTruthDigest: string;
   renderPlanDigest: string; sceneTruthReceiptRef: string;
 }>;
 export type FinalPrivateAsset = Readonly<{
@@ -52,7 +52,7 @@ export function verifiedFinalSpatialAsset(
   if (!Array.isArray(playlist.segments) || playlist.segments.length < 1 ||
       playlist.segments.length > 256) fail();
   let priorEnd = 0;
-  const segments = playlist.segments.map((entry: unknown, i: number) => {
+  const segments = (playlist.segments as unknown[]).map((entry: unknown, i: number) => {
     const part = row(entry), video = row(part.video), captions = row(part.subtitles);
     if (part.index !== i || !int(part.startMs) || !int(part.endMs) ||
         Number(part.endMs) <= Number(part.startMs) ||
