@@ -65,6 +65,10 @@ export function assertSpatialLifeMovieBinding(input: {
       !Number.isSafeInteger(policy.revision) || Number(policy.revision) < 1 ||
       row(row(policy.domains).memory).mode !== 'granted' ||
       row(policy.enforcement).state !== 'fully-enforced') fail('spatial_consent_denied');
+  // Derived Life Movie processing also needs the canonical models domain.
+  // A memory-storage receipt alone is not processing authorization.
+  if (row(row(policy.domains).models).mode !== 'granted')
+    fail('spatial_processing_consent_denied');
   if (consent.uid !== input.spatialUid || consent.purpose !== 'memory.storage' ||
       consent.consentTier !== 'C1' || consent.policyVersion !== '1.0.0' ||
       consent.status !== 'granted' || !SHA.test(String(consent.receiptHash)) ||
@@ -142,6 +146,8 @@ export function assertSpatialLifeMovieBinding(input: {
     memoryId: input.memoryId, movieId: input.movieId,
     ownerUid: input.spatialUid, sceneTruthPacketId: packetId,
     sceneTruthDigest: scene.packetHash as string,
+    renderPlanDigest: plan.renderPlanDigest as string,
+    sceneTruthReceiptRef: jobsSource.sceneTruthReceiptRef as string,
   });
 }
 
