@@ -19,8 +19,8 @@ const load=(path,deps={})=>{
 };
 const hash=value=>createHash('sha256').update(value).digest('hex');
 const state={};
-const VIDEO=Buffer.from('Synthetic small video payload for handler transport, not a decodable film');
-const SRT=Buffer.from('1\n00:00:00,000 --> 00:00:00,900\nFictional memory caption\n');
+let VIDEO=Buffer.from('Synthetic small video payload for handler transport, not a decodable film');
+let SRT=Buffer.from('1\n00:00:00,000 --> 00:00:00,900\nFictional memory caption\n');
 const PLAN='lmp_'+('a'.repeat(20)),SCENE='a'.repeat(64),RENDER='b'.repeat(64);
 const TOKEN='a'.repeat(45)+'.'+'b'.repeat(45)+'.'+'c'.repeat(45);
 let bridgeUrl='';
@@ -301,6 +301,12 @@ try{
      const result=method==='OPTIONS'?await route.OPTIONS(testRequest):
        method==='POST'?await route.POST(testRequest):
        new Response(null,{status:405});
+     if(process.env.URAI_STUDIO_PROTECTED_BROWSER_LOOPBACK==='true'){
+       const kind=method==='POST'?JSON.parse(Buffer.concat(chunks).toString()).kind:null;
+       console.log('URAI_STUDIO_REAL_HANDLER_HTTP '+JSON.stringify({method,kind,status:result.status,
+         corsOriginAllowed:result.headers.get('access-control-allow-origin')===incoming.headers.origin,
+         contentLength:result.headers.get('content-length')}));
+     }
      outgoing.writeHead(result.status,Object.fromEntries(result.headers.entries()));
      outgoing.end(Buffer.from(await result.arrayBuffer()));
    }catch{
@@ -380,6 +386,32 @@ try{
 
  assert.ok(cases>=38);
  console.log('[PASS] '+cases+' actual source handler synthetic identity/media cases with native loopback Jobs HTTP; not Firebase emulator, browser, or cloud acceptance.');
+
+ // Optional CI-only server for the REAL original Spatial Replay Chromium client.
+ // Retain the actual exported POST/OPTIONS functions and all owner/consent/Jobs
+ // assertions. Only Firebase Admin and upstream Jobs remain synthetic fakes.
+ if(process.env.URAI_STUDIO_PROTECTED_BROWSER_LOOPBACK==='true'){
+   assert.equal(process.env.NODE_ENV,'development','private loopback proof must be nonproduction');
+   assert.ok(process.env.URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE,'missing isolated ready-file');
+   const video=fs.readFileSync(process.env.URAI_JOBS_SYNTH_MP4);
+   const captions=fs.readFileSync(process.env.URAI_JOBS_SYNTH_SRT);
+   assert.equal(hash(video),'c4ba548d480d7c71fb8e9efa496f1282bb833cdbb5303c868aa2a5e685c6fe91',
+     'real Jobs synthetic artifact hash must be pinned before serving');
+   assert.ok(captions.length>0 && captions.length<2*1024*1024);
+   assert.match(captions.toString(),/--> [0-9:,]+/);
+   VIDEO=video;SRT=captions;
+   reset();
+   process.env.URAI_STUDIO_SPATIAL_ALLOWED_ORIGINS='http://127.0.0.1:4173';
+   const endpoint='http://127.0.0.1:'+handlerServer.address().port;
+   fs.writeFileSync(process.env.URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE,
+     JSON.stringify({origin:endpoint,spatialOrigin:'http://127.0.0.1:4173',
+       mp4Sha256:hash(VIDEO),studioRoute:'actual-exported-handler',
+       firebase:'synthetic-admin-provider',jobs:'synthetic-owner-scoped-http'})+'\n');
+   console.log('URAI_STUDIO_REAL_HANDLER_READY '+endpoint);
+   await new Promise(resolve=>{
+     process.once('SIGTERM',resolve);process.once('SIGINT',resolve);
+   });
+ }
 } finally{
  if(handlerServer)await new Promise(resolve=>handlerServer.close(resolve));
  if(server)await new Promise(resolve=>server.close(resolve));
