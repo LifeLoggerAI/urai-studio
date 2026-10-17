@@ -21,7 +21,8 @@ const hash=value=>createHash('sha256').update(value).digest('hex');
 const state={};
 let VIDEO=Buffer.from('Synthetic small video payload for handler transport, not a decodable film');
 let SRT=Buffer.from('1\n00:00:00,000 --> 00:00:00,900\nFictional memory caption\n');
-const PLAN='lmp_'+('a'.repeat(20)),SCENE='a'.repeat(64),RENDER='b'.repeat(64);
+let PLAN='lmp_'+('a'.repeat(20));
+const SCENE='a'.repeat(64),RENDER='b'.repeat(64);
 const TOKEN='a'.repeat(45)+'.'+'b'.repeat(45)+'.'+'c'.repeat(45);
 let bridgeUrl='';
 const savedEnv=Object.fromEntries(['NODE_ENV','URAI_STUDIO_SPATIAL_PRIVATE_DELIVERY_ENABLED',
@@ -32,7 +33,7 @@ const savedEnv=Object.fromEntries(['NODE_ENV','URAI_STUDIO_SPATIAL_PRIVATE_DELIV
 const studioAdmin={
  firebaseAdminStatus:{mode:'synthetic-test-only'},
  adminAuth:{async verifyIdToken(token){
-   if(token!=='studio-token-a'||state.studioRevoked||state.studioUnavailable)throw Error('studio-auth-failed');
+   if(!(['studio-token-a',...(process.env.URAI_STUDIO_PROTECTED_BROWSER_LOOPBACK==='true'?['synthetic-studio-token-a']:[])].includes(token))||state.studioRevoked||state.studioUnavailable)throw Error('studio-auth-failed');
    return {uid:state.studioUid,tenantId:state.studioTenant};
  }},
  adminDb:{doc(path){return{async get(){
@@ -53,7 +54,7 @@ const appSdk={
  getApps:()=>[spatialApp],initializeApp:()=>spatialApp
 };
 const spatialAuthSdk={getAuth:()=>({async verifyIdToken(token,checkRevoked){
- if(!checkRevoked||token!==TOKEN||state.spatialRevoked||state.spatialUnavailable)
+ if(!checkRevoked||!(token===TOKEN||(process.env.URAI_STUDIO_PROTECTED_BROWSER_LOOPBACK==='true'&&token==='synthetic-sdk-token'))||state.spatialRevoked||state.spatialUnavailable)
    throw Error('spatial-auth-failed');
  return{uid:state.spatialUid,sub:state.spatialUid,aud:state.spatialAudience,
    iss:'https://securetoken.google.com/urai-4dc1d'};
@@ -401,6 +402,22 @@ try{
    assert.match(captions.toString(),/--> [0-9:,]+/);
    VIDEO=video;SRT=captions;
    reset();
+   // Only the explicit local-browser test aligns fictionally provisioned
+   // identities with the original Spatial Chromium fixture. Production link,
+   // tenant, ownership, consent, Jobs and provenance functions are unchanged.
+   PLAN='lmp_'+('a'.repeat(24));
+   const mapId=value=>value.replaceAll('spatial-a','synthetic-owner')
+     .replaceAll('memory-a','synthetic-receipt-memory')
+     .replaceAll('movie-a','synthetic-movie');
+   const mapped={};
+   for(const [docPath,docValue] of Object.entries(state.docs))
+     mapped[mapId(docPath)]=JSON.parse(mapId(JSON.stringify(docValue)));
+   state.docs=mapped;
+   state.spatialUid='synthetic-owner';
+   state.linkId=link.studioSpatialLinkId('studio-a','tenant-a','synthetic-owner');
+   state.link={...state.link,spatialUid:'synthetic-owner'};
+   assert.equal(state.docs['users/synthetic-owner/memories/synthetic-receipt-memory'].ownerId,'synthetic-owner');
+   assert.equal(state.docs['users/synthetic-owner/lifeMovies/synthetic-movie'].ownerId,'synthetic-owner');
    process.env.URAI_STUDIO_SPATIAL_ALLOWED_ORIGINS='http://127.0.0.1:4173';
    const endpoint='http://127.0.0.1:'+handlerServer.address().port;
    fs.writeFileSync(process.env.URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE,
