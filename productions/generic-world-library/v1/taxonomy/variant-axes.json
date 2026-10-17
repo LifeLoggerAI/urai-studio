@@ -1,0 +1,148 @@
+{
+  "axes": {
+    "dressing": [
+      "empty",
+      "light",
+      "rich"
+    ],
+    "era": [
+      "era-1940s",
+      "era-1950s",
+      "era-1960s",
+      "era-1970s",
+      "era-1980s",
+      "era-1990s",
+      "era-2000s",
+      "era-2010s",
+      "era-2020s"
+    ],
+    "finishLevel": [
+      "basic-maintained",
+      "modest-worn",
+      "middle-maintained",
+      "institutional-practical"
+    ],
+    "furniturePackage": [
+      "era-neutral",
+      "era-adapter-reviewed",
+      "personal-substitution-governed"
+    ],
+    "lightingProfile": [
+      "neutral",
+      "calm",
+      "reflective",
+      "energized",
+      "heavy",
+      "uncertain",
+      "hopeful"
+    ],
+    "navigation": [
+      "accessible-level-default",
+      "alternate-geometry-reviewed"
+    ],
+    "propPackage": [
+      "none",
+      "neutral-light",
+      "neutral-rich",
+      "personal-evidence-governed"
+    ],
+    "region": [
+      "us-tx-east",
+      "us-south-generic",
+      "us-coastal-generic",
+      "region-adapter-required"
+    ],
+    "season": [
+      "spring",
+      "summer",
+      "autumn",
+      "winter"
+    ],
+    "signage": [
+      "none",
+      "blank",
+      "neutral-authored-text-after-review"
+    ],
+    "tier": [
+      "mobile",
+      "desktop",
+      "xr"
+    ],
+    "timeOfDay": [
+      "dawn",
+      "morning",
+      "midday",
+      "afternoon",
+      "dusk",
+      "night"
+    ],
+    "vegetation": [
+      "none",
+      "region-profile-neutral",
+      "region-adapter-reviewed"
+    ],
+    "vehicles": [
+      "none",
+      "unbranded-era-slot-reviewed"
+    ],
+    "weather": [
+      "clear",
+      "overcast",
+      "light-rain",
+      "dry-haze"
+    ]
+  },
+  "compatibilityRules": [
+    {
+      "requires": "regional/climatic applicability and no slippery-looking accessible route without clear alternate",
+      "when": {
+        "variant.weather": "light-rain"
+      }
+    },
+    {
+      "requires": "illuminated exit landmark and stable exposure; no pitch-black navigation",
+      "when": {
+        "variant.timeOfDay": "night"
+      }
+    },
+    {
+      "requires": "same clear route and low-stimulation switch; no people introduced",
+      "when": {
+        "variant.dressing": "rich"
+      }
+    },
+    {
+      "requires": "reviewed region pack before asset acceptance",
+      "when": {
+        "variant.region": "region-adapter-required"
+      }
+    },
+    {
+      "requires": "evidence/consent gate and component-level truth receipts",
+      "when": {
+        "variant.furniturePackage": "personal-substitution-governed"
+      }
+    },
+    {
+      "requires": "new collision/navmesh and reachable-exit QA",
+      "when": {
+        "variant.navigation": "alternate-geometry-reviewed"
+      }
+    }
+  ],
+  "id": "urai-generic-world-variant-axes",
+  "identifier": {
+    "familyPattern": "gw-{slug}",
+    "receiptPattern": "sha256:{digest}",
+    "successors": "New spec/version and new output hashes; never overwrite accepted output history",
+    "variantPattern": "{family}@{version}+{era}.{region}.{dressing}.{tier}.{lighting}.{seed12}"
+  },
+  "schemaVersion": "urai-generic-world-spec/1.0.0",
+  "seedPolicy": {
+    "algorithm": "SHA-256 of canonical familyId/version/axis-selection/specSha256",
+    "floatingRandomnessAllowed": false
+  },
+  "truthClassification": "GENERIC",
+  "unimplementedAxisCombinations": "Specs define controlled choices. This catalog does not pretend every Cartesian combination is generated or accepted.",
+  "version": "1.0.0"
+}

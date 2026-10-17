@@ -1,6 +1,7 @@
 'use client';
 
 import { type FormEvent, useState } from 'react';
+import { readSubmissionResult } from '@/lib/public-submission-response';
 
 type ContactState = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -44,13 +45,14 @@ export function ContactForm() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const result = await response.json();
-      setState(response.ok ? 'success' : 'error');
-      setMessage(result.message || result.error?.message || 'Your request was received.');
-      if (response.ok) form.reset();
+      const body = await response.json().catch(() => null);
+      const result = readSubmissionResult(response.ok, body);
+      setState(result.saved ? 'success' : 'error');
+      setMessage(result.message);
+      if (result.saved) form.reset();
     } catch {
       setState('error');
-      setMessage('The project intake endpoint is not reachable in this runtime. Retry after deployment or email URAI Studio directly.');
+      setMessage('We could not confirm that your request was saved. Your form has been kept so you can retry.');
     }
   }
 

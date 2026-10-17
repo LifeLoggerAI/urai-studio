@@ -434,6 +434,22 @@ else
   echo "[OK] /api/studio/exports invalid project -> 400"
 fi
 
+private_media_body="$(mktemp)"
+private_media_headers="$(mktemp)"
+private_media_status="$(
+  curl -sS --max-time 20 -o "$private_media_body" -D "$private_media_headers" -w "%{http_code}" \
+    -H 'content-type: application/json' -d '{}' \
+    "${HOST}/api/studio/video-factory/private-media/"
+)" || fail "unauthenticated private media request failed"
+[ "$private_media_status" = "403" ] || fail "unauthenticated private media returned $private_media_status, expected 403 without redirect"
+node - "$private_media_body" "$private_media_headers" <<'JS'
+const assert = require('node:assert/strict'), fs = require('node:fs');
+assert.deepEqual(JSON.parse(fs.readFileSync(process.argv[2], 'utf8')), { ok: false, error: 'private_media_verified_authority_required' });
+assert.match(fs.readFileSync(process.argv[3], 'utf8'), /cache-control:.*no-store/i);
+JS
+rm -f "$private_media_body" "$private_media_headers"
+echo "[OK] /api/studio/video-factory/private-media/ unauthenticated -> 403 without redirect"
+
 rm -f /tmp/urai-smoke-waitlist /tmp/urai-smoke-contact /tmp/urai-smoke-job /tmp/urai-smoke-export
 
 echo "[PASS] URAI Studio smoke completed against ${HOST}"

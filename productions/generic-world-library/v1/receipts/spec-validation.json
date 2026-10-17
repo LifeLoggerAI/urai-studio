@@ -1,0 +1,220 @@
+{
+  "aaaAccepted": false,
+  "batch1": 12,
+  "batch2": 17,
+  "eraPacks": 9,
+  "errors": [],
+  "geometryValidationRun": false,
+  "jsonSchemaValidationRun": false,
+  "limits": "Navigation checks use specified axis-aligned envelopes, not actual generated geometry. Performance, collision, navmesh, UVs, GLBs, textures, visual quality and device behavior require separate asset receipts.",
+  "negativeContractChecks": [
+    {
+      "case": "negative-dimension",
+      "rejected": true
+    },
+    {
+      "case": "truth-promotion",
+      "rejected": true
+    },
+    {
+      "case": "candidate-binding",
+      "rejected": true
+    },
+    {
+      "case": "blocked-route",
+      "rejected": true
+    },
+    {
+      "case": "external-source",
+      "rejected": true
+    },
+    {
+      "case": "visual-inflation",
+      "rejected": true
+    }
+  ],
+  "passed": true,
+  "rendersReviewed": false,
+  "results": [
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-east-texas-living-room",
+      "sourceSpecSha256": "faa57ef86a9d1d5629aacf1ee6ad03280546a73e60d9b760f33ca726122b0857"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-family-kitchen-dining",
+      "sourceSpecSha256": "14dd8392b2b9589f4d6d6145ff065e160003df31bd4e27cbde48cf7ad46a3037"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-east-texas-residential-street",
+      "sourceSpecSha256": "19b70ac77b1c62b6bc5efbcf0f775a465796174e6e9856f08d7576ba23591815"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-school-classroom-hallway",
+      "sourceSpecSha256": "1ca5e0ac9db50cce43872e1debaac1a66c3197baa1538f7d51a24ef0e10c3e11"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-church-sanctuary-fellowship",
+      "sourceSpecSha256": "3f00153258a34f902d5237b9dc5917bf79081596ae0ff5c8c3ab1fc4260a0b48"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-hospital-room-corridor",
+      "sourceSpecSha256": "882565ad9641d9df900d64a86ee685e13bf5c5b5fbafb7df386c1580db1bf3fa"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-college-dorm-campus",
+      "sourceSpecSha256": "3f8b52efe5f435f688c0ce29111fb6f1c3686d9ef67e8f161723c34875ea531a"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-military-admin-operations",
+      "sourceSpecSha256": "64754f87113e68c7b2b4ee729b8ea4e1161963f070efd181428d55561466c992"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-lake-dock-shoreline",
+      "sourceSpecSha256": "436f75fa4b110036b0e82708d8a6e79bf019c0c3de6280b5f8e50fedebd481ce"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-backyard-garage-workshop",
+      "sourceSpecSha256": "e1447787a6305e9f5351fd893026a7fb6954dedefcc59742e7d23b619fdae34d"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-diner-cafe",
+      "sourceSpecSha256": "974021af1b7d57ea01219027abf813b576d6ef094b02538dd36c01c43e507f15"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-motel-room-walkway",
+      "sourceSpecSha256": "ba6c87fbf8bfc9421428699852d759e4a49c79203c9b18819c9982ee12b57ab8"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-bedroom-era",
+      "sourceSpecSha256": "5e1cc357f63a41d719e5f1e982d4ba8e57beabd5346d9bf1b2c741e77fb6c496"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-apartment-living",
+      "sourceSpecSha256": "be1d87488467924f4a870d71df43c1d78f2b701d780327d184b102cf89320f0a"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-rural-house-porch",
+      "sourceSpecSha256": "a120bd15740676e7ff286bed1efdf88936bd4382b1d6638f859b5a1c8ea466d8"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-office-workplace",
+      "sourceSpecSha256": "73e6887aac79b33f9e0df93cb701985fcaac9d62f86720e78c9688022dd30688"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-factory-floor",
+      "sourceSpecSha256": "9b2feb2aafbe95d7bdf6ebe1018581316a7f3daf3b2e6f1fe046719babdbd431"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-warehouse",
+      "sourceSpecSha256": "25dce089395052787b26dccbddff761fa6bc3118e0b84fe365f54436ae874bb6"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-grocery-store",
+      "sourceSpecSha256": "a8a7382bde860263e0a7e8e86cc86f0345a5000adc50f549cdb45bf3a6231510"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-park-playground",
+      "sourceSpecSha256": "e3708cd946acc6f4cdbfd14f9435d49f679c19224265d79f8ef7fb97b3843a40"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-cemetery",
+      "sourceSpecSha256": "411ac6db194fce1f7476d53ef9bfa27ffe33e1d057b82c1394988e320912705c"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-airport-concourse",
+      "sourceSpecSha256": "594fdc25053fca03788e5bd09f18711fcbdc5dd75e9672a3715d6c2f19d9ddcb"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-rural-road",
+      "sourceSpecSha256": "23c7e89379a543794b73a82faca52756b9380b3da5088d56b6ce45b6a4849297"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-gas-station",
+      "sourceSpecSha256": "fdac334d879acdf17fd7c541ac77e1c14dbe9a3e24e9debfd978b4a3e31e3a16"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-forest-trail",
+      "sourceSpecSha256": "631cf458f8e06f074f29d46e1fd19a0144f2ac9c1b0bbe9ae7edc1d6c46ec4b0"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-beach-boardwalk",
+      "sourceSpecSha256": "c427c724409d1346c7bd521cb6a26e260824e2ab2ae8de152a0f843475a77e48"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-courthouse-public-hall",
+      "sourceSpecSha256": "604cc513d720caa358a55e78a378d993838cd80e885a08b9ce9b95932c19d962"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-military-barracks",
+      "sourceSpecSha256": "04ac8f734291497b091cd67d07ad02d93728af396e3bdf73b7f092db7c9ec48e"
+    },
+    {
+      "checksPassed": true,
+      "errors": [],
+      "id": "gw-clinic-waiting-room",
+      "sourceSpecSha256": "306dfda86046a954415a5936a4a8d6913c45b7e4a064fcb14717c6f0804dbab0"
+    }
+  ],
+  "runtimeIntegrated": false,
+  "schemaVersion": "urai-spec-validation/1.0.0",
+  "scope": "SOURCE_SPECIFICATIONS_ONLY",
+  "sourceOutputSetSha256": "fa768563f4f88c0a6a39b0741f3f21de8d796c5702096beb07d10f5b0a95e303",
+  "uniqueKitBriefs": 136,
+  "worldCount": 29
+}

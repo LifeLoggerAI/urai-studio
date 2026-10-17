@@ -1,0 +1,512 @@
+{
+  "composition": {
+    "architectureBrief": "Tall north-wall window rhythm, classroom opening centered toward hallway, board surface on front wall. Desk banks have separate child furniture variants; cameras and navigation retain adult access clearance.",
+    "dressingRules": {
+      "empty": "Shell, openings, orientation landmark and required safety geometry only",
+      "light": "Specified furniture plus sparse neutral props on supporting surfaces; no real people",
+      "people": "Not generated in this lane; occupancy, character likeness, voices and animation require separate identity/consent authority",
+      "rich": "Add governed prop submodules within reserved placement envelopes; maintain clear route, readable exits and low visual stimulation"
+    },
+    "furniture": [
+      {
+        "anchorAllowed": true,
+        "collidable": true,
+        "dimensionsMeters": {
+          "depth": 3.4,
+          "height": 0.75,
+          "width": 2.2
+        },
+        "id": "desk-left",
+        "label": "Student desk bank, left",
+        "materialIntent": "laminate-desktop-neutral",
+        "positionMeters": [
+          -2.65,
+          0,
+          -0.6
+        ],
+        "role": "furniture",
+        "yawDegrees": 0,
+        "zone": "classroom"
+      },
+      {
+        "anchorAllowed": true,
+        "collidable": true,
+        "dimensionsMeters": {
+          "depth": 3.4,
+          "height": 0.75,
+          "width": 2.2
+        },
+        "id": "desk-right",
+        "label": "Student desk bank, right",
+        "materialIntent": "laminate-desktop-neutral",
+        "positionMeters": [
+          2.65,
+          0,
+          -0.6
+        ],
+        "role": "furniture",
+        "yawDegrees": 0,
+        "zone": "classroom"
+      },
+      {
+        "anchorAllowed": true,
+        "collidable": true,
+        "dimensionsMeters": {
+          "depth": 0.65,
+          "height": 0.75,
+          "width": 1.4
+        },
+        "id": "teacher-desk",
+        "label": "Teacher desk",
+        "materialIntent": "wood-oak-satin",
+        "positionMeters": [
+          -2.5,
+          0,
+          -2.9
+        ],
+        "role": "furniture",
+        "yawDegrees": 0,
+        "zone": "classroom"
+      },
+      {
+        "anchorAllowed": true,
+        "collidable": true,
+        "dimensionsMeters": {
+          "depth": 0.42,
+          "height": 1.0,
+          "width": 1.65
+        },
+        "id": "storage",
+        "label": "Low classroom storage",
+        "materialIntent": "painted-metal-neutral",
+        "positionMeters": [
+          2.9,
+          0,
+          2.7
+        ],
+        "role": "furniture",
+        "yawDegrees": 0,
+        "zone": "classroom"
+      }
+    ],
+    "openings": [
+      {
+        "centerLocalMeters": [
+          0,
+          1.05,
+          3.8
+        ],
+        "clearWidthTargetMeters": 1.0,
+        "heightMeters": 2.1,
+        "id": "primary-entry",
+        "levelThreshold": true,
+        "nominalWidthMeters": 1.1,
+        "status": "SPECIFIED_NOT_GEOMETRY_VALIDATED",
+        "wall": "+Z",
+        "zone": "classroom"
+      }
+    ],
+    "propBriefs": [
+      "blank board",
+      "unbranded books",
+      "plain notice paper",
+      "unmarked storage bins"
+    ],
+    "vegetationBriefs": [],
+    "zones": [
+      {
+        "dimensionsMeters": {
+          "depth": 7.6,
+          "height": 3,
+          "width": 8.4
+        },
+        "id": "classroom",
+        "kind": "interior",
+        "originMeters": [
+          0,
+          0,
+          0
+        ],
+        "purpose": "Learning and memory staging"
+      },
+      {
+        "dimensionsMeters": {
+          "depth": 2.4,
+          "height": 3,
+          "width": 8.4
+        },
+        "id": "hallway",
+        "kind": "interior",
+        "originMeters": [
+          0,
+          0,
+          5
+        ],
+        "purpose": "Unobstructed orientation route"
+      }
+    ]
+  },
+  "dressingRule": "Shell, openings, orientation landmark and required safety geometry only",
+  "eraPack": {
+    "path": "era-packs/era-1980s.json",
+    "sha256": "ea1b64323a05490ab5fff85209cf98edaf1bb7eac261de3fe44cc028e95b63d5"
+  },
+  "familyId": "gw-school-classroom-hallway",
+  "id": "gw-school-classroom-hallway@1.0.0+era-1980s.us-tx-east.empty.desktop.neutral.5f42022af79f",
+  "implementationStatus": "RECIPE_COMPILED_ONLY: no selection claims model/material/lighting changes have been built",
+  "lighting": {
+    "daylightCctKelvin": 5600,
+    "emotionalProfile": {
+      "cctDeltaKelvin": 0,
+      "exposureDeltaStops": 0,
+      "id": "neutral",
+      "saturationScale": 1
+    },
+    "emotionalWeatherRef": "../taxonomy/emotional-weather.json",
+    "interiorFixtureCctKelvin": 3000,
+    "noStrobe": true,
+    "primary": "diffuse natural light plus restrained practical fixtures",
+    "reducedStimulation": {
+      "animatedWaterAmplitudeMeters": 0.015,
+      "exposureAdaptation": "slow optional, disableable",
+      "movingShadows": false,
+      "suddenLightning": false
+    },
+    "status": "CONFIGURATION_TARGET_NOT_RENDER_VALIDATED",
+    "targetIlluminanceLux": {
+      "navigation": 100,
+      "task": 250
+    },
+    "toneMappingIntent": "preserve midtone orientation and restrained highlights; no crushed blacks or blown window regions",
+    "weatherDrivenSaturation": false
+  },
+  "logicalKitIds": [
+    "kit:gw-school-classroom-hallway-shell:v1",
+    "kit:door-interior-accessible-neutral:v1",
+    "kit:window-residential-neutral:v1",
+    "kit:baseboard-painted-neutral:v1",
+    "kit:gw-school-classroom-hallway-desk-left:v1",
+    "kit:gw-school-classroom-hallway-desk-right:v1",
+    "kit:gw-school-classroom-hallway-teacher-desk:v1",
+    "kit:gw-school-classroom-hallway-storage:v1"
+  ],
+  "materialDefinitions": [
+    {
+      "description": "matte dark green writing board",
+      "id": "mat:chalkboard-dark-green:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "chalkboard-dark-green",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "blank surface",
+        "metallic": 0,
+        "roughness": 0.9,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "clear glazing",
+      "id": "mat:glass-clear:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "glass-clear",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "transparent glTF fallback; transmission extension optional",
+        "metallic": 0,
+        "roughness": 0.12,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "matte neutral desk laminate",
+      "id": "mat:laminate-desktop-neutral:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "laminate-desktop-neutral",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "subtle micrograin",
+        "metallic": 0,
+        "roughness": 0.62,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "soft low-chroma institutional paint",
+      "id": "mat:paint-institutional-soft:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "paint-institutional-soft",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "restrained paint grain",
+        "metallic": 0,
+        "roughness": 0.78,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "warm low-chroma painted plaster",
+      "id": "mat:paint-warm-off-white:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "paint-warm-off-white",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "fine plaster grain",
+        "metallic": 0,
+        "roughness": 0.74,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "neutral painted metal",
+      "id": "mat:painted-metal-neutral:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "painted-metal-neutral",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "small paint wear only",
+        "metallic": 0.05,
+        "roughness": 0.52,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "muted vinyl tile floor",
+      "id": "mat:vinyl-tile-muted:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "vinyl-tile-muted",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "tile size .3 m or .45 m; configurable",
+        "metallic": 0,
+        "roughness": 0.68,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "unbranded warm wood",
+      "id": "mat:wood-oak-satin:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "wood-oak-satin",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "grain direction follows joinery",
+        "metallic": 0,
+        "roughness": 0.52,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    }
+  ],
+  "navigation": {
+    "accessibleDefault": {
+      "doorsAutomaticOrFixedOpen": true,
+      "legalAccessibilityCertification": false,
+      "levelThreshold": true,
+      "seatedEyeHeightMeters": 1.2,
+      "stairsRequired": false,
+      "standingEyeHeightMeters": 1.65
+    },
+    "connections": [
+      {
+        "clearWidthMeters": 1.4,
+        "from": "classroom",
+        "status": "SPECIFIED_NOT_BAKED",
+        "stepHeightMeters": 0,
+        "to": "hallway"
+      }
+    ],
+    "controls": {
+      "keyboard": true,
+      "noForcedVisibleHands": true,
+      "reducedMotion": true,
+      "snapTurnOptional": true,
+      "touch": true,
+      "uiTargetMinimumCssPixels": 48
+    },
+    "requiredBeforeIntegration": [
+      "baked navigation polygons",
+      "collision/navmesh consistency test",
+      "connected exit route",
+      "door-state traversal test",
+      "teleport valid/invalid surface tests",
+      "seated and standing camera clearance",
+      "device verification where claimed"
+    ],
+    "status": "DESIGN_REQUIREMENTS_ONLY_NOT_BAKED",
+    "targetClearRouteWidthMeters": 1.2,
+    "targetDoorClearWidthMeters": 1.0,
+    "targetTurningDiameterMeters": 1.5,
+    "xr": {
+      "edgeMarginMeters": 0.45,
+      "physicalDeviceVerified": false,
+      "safeTeleport": "Navmesh-constrained valid polygons; no water, roadway, dock edge, machinery or insert void destinations",
+      "teleportSpacingMeters": 1.5
+    },
+    "zones": [
+      {
+        "obstacleEnvelopes": [
+          "desk-left",
+          "desk-right",
+          "teacher-desk",
+          "storage"
+        ],
+        "pathLocalMeters": [
+          [
+            0,
+            0,
+            3.4499999999999997
+          ],
+          [
+            0,
+            0,
+            -3.4499999999999997
+          ]
+        ],
+        "routeKind": "reserved-center-corridor",
+        "turningArea": {
+          "centerLocalMeters": [
+            0,
+            0,
+            0
+          ],
+          "diameterMeters": 1.5
+        },
+        "widthMeters": 1.8,
+        "zone": "classroom"
+      },
+      {
+        "obstacleEnvelopes": [],
+        "pathLocalMeters": [
+          [
+            0,
+            0,
+            0.85
+          ],
+          [
+            0,
+            0,
+            -0.85
+          ]
+        ],
+        "routeKind": "reserved-center-corridor",
+        "turningArea": {
+          "centerLocalMeters": [
+            0,
+            0,
+            0
+          ],
+          "diameterMeters": 1.5
+        },
+        "widthMeters": 1.8,
+        "zone": "hallway"
+      }
+    ]
+  },
+  "outputsGenerated": [],
+  "performanceTarget": {
+    "drawCallsTarget": 220,
+    "maxSingleTextureEdge": 2048,
+    "targetFps": 60,
+    "textureMemoryMiBTarget": 384,
+    "visibleTriangleTarget": 750000
+  },
+  "personalization": {
+    "enabled": false,
+    "insertStatus": "UNBOUND",
+    "truthRule": "No generic component becomes autobiographical truth"
+  },
+  "providerExecuted": false,
+  "requiresBeforeAccepted": [
+    "asset realization bound to this recipe hash",
+    "realized geometry compared with source brief",
+    "asset machine QA",
+    "visual review",
+    "license receipt",
+    "runtime integration and device proof if claimed"
+  ],
+  "runtimeIntegrated": false,
+  "schemaVersion": "urai-generic-world-variant-recipe/1.0.0",
+  "seedSha256": "5f42022af79f5fa383ea61483e627bf0ed9cc4f6a30555103e4ab4c78d02931a",
+  "selection": {
+    "dressing": "empty",
+    "era": "era-1980s",
+    "finishLevel": "middle-maintained",
+    "lightingProfile": "neutral",
+    "lod": "desktop",
+    "navigation": "accessible-level-default",
+    "region": "us-tx-east",
+    "season": "summer",
+    "timeOfDay": "afternoon",
+    "weather": "clear"
+  },
+  "sourceSpec": {
+    "path": "specs/gw-school-classroom-hallway.json",
+    "sha256": "1ca5e0ac9db50cce43872e1debaac1a66c3197baa1538f7d51a24ef0e10c3e11"
+  },
+  "status": "SPECIFIED",
+  "truthClassification": "GENERIC",
+  "version": "1.0.0"
+}

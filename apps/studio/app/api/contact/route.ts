@@ -113,30 +113,43 @@ export async function POST(req: Request) {
     );
   }
 
-  const [contactRef, projectRef, integrationRef] = await Promise.all([
-    adminDb.collection('contactRequests').add(requestPayload),
-    adminDb.collection('projectRequests').add({
-      name,
-      email,
-      company,
-      useCase,
-      desiredSystems: interestedSystems,
-      budgetRange,
-      timeline,
-      createdAt: requestPayload.createdAt,
-      status: 'new',
-      source,
-    }),
-    adminDb.collection('integrationRequests').add({
-      email,
-      company,
-      useCase,
-      interestedSystems,
-      createdAt: requestPayload.createdAt,
-      status: 'new',
-      source,
-    }),
-  ]);
+  const contactRef = adminDb.collection('contactRequests').doc();
+  const projectRef = adminDb.collection('projectRequests').doc();
+  const integrationRef = adminDb.collection('integrationRequests').doc();
+  const batch = adminDb.batch();
+  batch.set(contactRef, requestPayload);
+  batch.set(projectRef, {
+    name,
+    email,
+    company,
+    useCase,
+    desiredSystems: interestedSystems,
+    budgetRange,
+    timeline,
+    createdAt: requestPayload.createdAt,
+    status: 'new',
+    source,
+  });
+  batch.set(integrationRef, {
+    email,
+    company,
+    useCase,
+    interestedSystems,
+    createdAt: requestPayload.createdAt,
+    status: 'new',
+    source,
+  });
+
+  try {
+    await batch.commit();
+  } catch {
+    return json({
+      ok: false,
+      status: 'persistence_failed',
+      persisted: false,
+      error: { code: 'persistence_failed', message: 'We could not confirm that your request was saved. Your form has been kept so you can retry.' },
+    }, 503);
+  }
 
   return json({
     ok: true,

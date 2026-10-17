@@ -1,0 +1,427 @@
+{
+  "batch2": {
+    "detailedSpecificationCount": 17,
+    "runtimeBinding": null,
+    "status": "SPECIFIED_EXTENSION_NOT_EXISTING_BATCH1_AUTHORITY"
+  },
+  "budgetAdapter": [
+    {
+      "actualPerformanceMeasured": false,
+      "authorityTextureMemoryBytesMax": 256000000,
+      "authorityTextureUnit": "decimal MB",
+      "authorityTrianglesMax": 250000,
+      "detailTextureMemoryBytesTarget": 100663296,
+      "detailTextureUnit": "binary MiB",
+      "detailTriangleTarget": 120000,
+      "tier": "mobile"
+    },
+    {
+      "actualPerformanceMeasured": false,
+      "authorityTextureMemoryBytesMax": 768000000,
+      "authorityTextureUnit": "decimal MB",
+      "authorityTrianglesMax": 750000,
+      "detailTextureMemoryBytesTarget": 402653184,
+      "detailTextureUnit": "binary MiB",
+      "detailTriangleTarget": 750000,
+      "tier": "desktop"
+    },
+    {
+      "actualPerformanceMeasured": false,
+      "authorityTextureMemoryBytesMax": 384000000,
+      "authorityTextureUnit": "decimal MB",
+      "authorityTrianglesMax": 350000,
+      "detailTextureMemoryBytesTarget": 134217728,
+      "detailTextureUnit": "binary MiB",
+      "detailTriangleTarget": 180000,
+      "tier": "xr"
+    }
+  ],
+  "coordinateAdapter": {
+    "authority": {
+      "forwardAxis": "-Z",
+      "forwardAxisRole": "UNSPECIFIED_VIEW_OR_ASSET",
+      "units": "meters",
+      "upAxis": "Y"
+    },
+    "detail": {
+      "assetFront": "+Z",
+      "cameraForward": "-Z",
+      "handedness": "right-handed",
+      "units": "meters",
+      "up": "+Y"
+    },
+    "ifAuthorityForwardMeansAssetFront": {
+      "quaternionXyzw": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "requiredRotation": "180 degrees around +Y",
+      "revalidateBoundsAndOrientation": true,
+      "transformGeometryCollisionNavAnchorsTogether": true
+    },
+    "ifAuthorityForwardMeansView": "camera convention matches; no mesh-axis conversion implied",
+    "interpretationStatus": "REQUIRES_EXPLICIT_RECEIPTED_SELECTION_BEFORE_INTEGRATION",
+    "transformsApplied": false
+  },
+  "createdAt": "2026-10-07T00:38:42.828515Z",
+  "families": [
+    {
+      "additionalDetailedEras": [],
+      "authorityEraSet": [
+        "1960s",
+        "1970s"
+      ],
+      "bindingKind": "SOURCE_SPECIFICATION_ADAPTER_NOT_RUNTIME_RESOLUTION",
+      "broaderEraStatus": "SPECIFIED_EXTENSION_NOT_ADOPTED_BY_EXISTING_BATCH1_AUTHORITY",
+      "canonicalFamilyId": "gw-etx-living-room-1960s-1970s-v1",
+      "canonicalProviderStatus": "READY_FOR_PROVIDER",
+      "canonicalStatus": "SPECIFIED",
+      "detailedSourceRefId": "gw-east-texas-living-room",
+      "detailedSourceStatus": "SPECIFIED",
+      "providerSpendAuthorized": false,
+      "runtimeIntegrated": false,
+      "sourceSpecPath": "specs/gw-east-texas-living-room.json",
+      "sourceSpecSha256": "faa57ef86a9d1d5629aacf1ee6ad03280546a73e60d9b760f33ca726122b0857",
+      "truthClassification": "GENERIC"
+    },
+    {
+      "additionalDetailedEras": [],
+      "authorityEraSet": [
+        "1970s",
+        "1980s"
+      ],
+      "bindingKind": "SOURCE_SPECIFICATION_ADAPTER_NOT_RUNTIME_RESOLUTION",
+      "broaderEraStatus": "SPECIFIED_EXTENSION_NOT_ADOPTED_BY_EXISTING_BATCH1_AUTHORITY",
+      "canonicalFamilyId": "gw-etx-kitchen-dining-1970s-1980s-v1",
+      "canonicalProviderStatus": "READY_FOR_PROVIDER",
+      "canonicalStatus": "SPECIFIED",
+      "detailedSourceRefId": "gw-family-kitchen-dining",
+      "detailedSourceStatus": "SPECIFIED",
+      "providerSpendAuthorized": false,
+      "runtimeIntegrated": false,
+      "sourceSpecPath": "specs/gw-family-kitchen-dining.json",
+      "sourceSpecSha256": "14dd8392b2b9589f4d6d6145ff065e160003df31bd4e27cbde48cf7ad46a3037",
+      "truthClassification": "GENERIC"
+    },
+    {
+      "additionalDetailedEras": [
+        "2000s",
+        "2010s",
+        "2020s"
+      ],
+      "authorityEraSet": [
+        "1960s",
+        "1970s",
+        "1980s",
+        "1990s"
+      ],
+      "bindingKind": "SOURCE_SPECIFICATION_ADAPTER_NOT_RUNTIME_RESOLUTION",
+      "broaderEraStatus": "SPECIFIED_EXTENSION_NOT_ADOPTED_BY_EXISTING_BATCH1_AUTHORITY",
+      "canonicalFamilyId": "gw-etx-small-town-street-v1",
+      "canonicalProviderStatus": "READY_FOR_PROVIDER",
+      "canonicalStatus": "SPECIFIED",
+      "detailedSourceRefId": "gw-east-texas-residential-street",
+      "detailedSourceStatus": "SPECIFIED",
+      "providerSpendAuthorized": false,
+      "runtimeIntegrated": false,
+      "sourceSpecPath": "specs/gw-east-texas-residential-street.json",
+      "sourceSpecSha256": "19b70ac77b1c62b6bc5efbcf0f775a465796174e6e9856f08d7576ba23591815",
+      "truthClassification": "GENERIC"
+    },
+    {
+      "additionalDetailedEras": [
+        "1950s",
+        "2010s",
+        "2020s"
+      ],
+      "authorityEraSet": [
+        "1960s",
+        "1970s",
+        "1980s",
+        "1990s",
+        "2000s"
+      ],
+      "bindingKind": "SOURCE_SPECIFICATION_ADAPTER_NOT_RUNTIME_RESOLUTION",
+      "broaderEraStatus": "SPECIFIED_EXTENSION_NOT_ADOPTED_BY_EXISTING_BATCH1_AUTHORITY",
+      "canonicalFamilyId": "gw-school-classroom-hall-v1",
+      "canonicalProviderStatus": "READY_FOR_PROVIDER",
+      "canonicalStatus": "SPECIFIED",
+      "detailedSourceRefId": "gw-school-classroom-hallway",
+      "detailedSourceStatus": "SPECIFIED",
+      "providerSpendAuthorized": false,
+      "runtimeIntegrated": false,
+      "sourceSpecPath": "specs/gw-school-classroom-hallway.json",
+      "sourceSpecSha256": "1ca5e0ac9db50cce43872e1debaac1a66c3197baa1538f7d51a24ef0e10c3e11",
+      "truthClassification": "GENERIC"
+    },
+    {
+      "additionalDetailedEras": [
+        "1940s",
+        "2000s",
+        "2010s",
+        "2020s"
+      ],
+      "authorityEraSet": [
+        "1950s",
+        "1960s",
+        "1970s",
+        "1980s",
+        "1990s"
+      ],
+      "bindingKind": "SOURCE_SPECIFICATION_ADAPTER_NOT_RUNTIME_RESOLUTION",
+      "broaderEraStatus": "SPECIFIED_EXTENSION_NOT_ADOPTED_BY_EXISTING_BATCH1_AUTHORITY",
+      "canonicalFamilyId": "gw-church-sanctuary-fellowship-v1",
+      "canonicalProviderStatus": "READY_FOR_PROVIDER",
+      "canonicalStatus": "SPECIFIED",
+      "detailedSourceRefId": "gw-church-sanctuary-fellowship",
+      "detailedSourceStatus": "SPECIFIED",
+      "providerSpendAuthorized": false,
+      "runtimeIntegrated": false,
+      "sourceSpecPath": "specs/gw-church-sanctuary-fellowship.json",
+      "sourceSpecSha256": "3f00153258a34f902d5237b9dc5917bf79081596ae0ff5c8c3ab1fc4260a0b48",
+      "truthClassification": "GENERIC"
+    },
+    {
+      "additionalDetailedEras": [
+        "2010s",
+        "2020s"
+      ],
+      "authorityEraSet": [
+        "1960s",
+        "1970s",
+        "1980s",
+        "1990s",
+        "2000s"
+      ],
+      "bindingKind": "SOURCE_SPECIFICATION_ADAPTER_NOT_RUNTIME_RESOLUTION",
+      "broaderEraStatus": "SPECIFIED_EXTENSION_NOT_ADOPTED_BY_EXISTING_BATCH1_AUTHORITY",
+      "canonicalFamilyId": "gw-hospital-room-corridor-v1",
+      "canonicalProviderStatus": "READY_FOR_PROVIDER",
+      "canonicalStatus": "SPECIFIED",
+      "detailedSourceRefId": "gw-hospital-room-corridor",
+      "detailedSourceStatus": "SPECIFIED",
+      "providerSpendAuthorized": false,
+      "runtimeIntegrated": false,
+      "sourceSpecPath": "specs/gw-hospital-room-corridor.json",
+      "sourceSpecSha256": "882565ad9641d9df900d64a86ee685e13bf5c5b5fbafb7df386c1580db1bf3fa",
+      "truthClassification": "GENERIC"
+    },
+    {
+      "additionalDetailedEras": [
+        "1950s",
+        "1960s",
+        "2010s",
+        "2020s"
+      ],
+      "authorityEraSet": [
+        "1970s",
+        "1980s",
+        "1990s",
+        "2000s"
+      ],
+      "bindingKind": "SOURCE_SPECIFICATION_ADAPTER_NOT_RUNTIME_RESOLUTION",
+      "broaderEraStatus": "SPECIFIED_EXTENSION_NOT_ADOPTED_BY_EXISTING_BATCH1_AUTHORITY",
+      "canonicalFamilyId": "gw-college-dorm-campus-v1",
+      "canonicalProviderStatus": "READY_FOR_PROVIDER",
+      "canonicalStatus": "SPECIFIED",
+      "detailedSourceRefId": "gw-college-dorm-campus",
+      "detailedSourceStatus": "SPECIFIED",
+      "providerSpendAuthorized": false,
+      "runtimeIntegrated": false,
+      "sourceSpecPath": "specs/gw-college-dorm-campus.json",
+      "sourceSpecSha256": "3f8b52efe5f435f688c0ce29111fb6f1c3686d9ef67e8f161723c34875ea531a",
+      "truthClassification": "GENERIC"
+    },
+    {
+      "additionalDetailedEras": [
+        "1950s",
+        "2000s",
+        "2010s",
+        "2020s"
+      ],
+      "authorityEraSet": [
+        "1960s",
+        "1970s",
+        "1980s",
+        "1990s"
+      ],
+      "bindingKind": "SOURCE_SPECIFICATION_ADAPTER_NOT_RUNTIME_RESOLUTION",
+      "broaderEraStatus": "SPECIFIED_EXTENSION_NOT_ADOPTED_BY_EXISTING_BATCH1_AUTHORITY",
+      "canonicalFamilyId": "gw-military-admin-ops-v1",
+      "canonicalProviderStatus": "READY_FOR_PROVIDER",
+      "canonicalStatus": "SPECIFIED",
+      "detailedSourceRefId": "gw-military-admin-operations",
+      "detailedSourceStatus": "SPECIFIED",
+      "providerSpendAuthorized": false,
+      "runtimeIntegrated": false,
+      "sourceSpecPath": "specs/gw-military-admin-operations.json",
+      "sourceSpecSha256": "64754f87113e68c7b2b4ee729b8ea4e1161963f070efd181428d55561466c992",
+      "truthClassification": "GENERIC"
+    },
+    {
+      "additionalDetailedEras": [
+        "1940s",
+        "1950s"
+      ],
+      "authorityEraSet": [
+        "1960s",
+        "1970s",
+        "1980s",
+        "1990s",
+        "2000s",
+        "2010s",
+        "2020s"
+      ],
+      "bindingKind": "SOURCE_SPECIFICATION_ADAPTER_NOT_RUNTIME_RESOLUTION",
+      "broaderEraStatus": "SPECIFIED_EXTENSION_NOT_ADOPTED_BY_EXISTING_BATCH1_AUTHORITY",
+      "canonicalFamilyId": "gw-lake-dock-shoreline-v1",
+      "canonicalProviderStatus": "READY_FOR_PROVIDER",
+      "canonicalStatus": "SPECIFIED",
+      "detailedSourceRefId": "gw-lake-dock-shoreline",
+      "detailedSourceStatus": "SPECIFIED",
+      "providerSpendAuthorized": false,
+      "runtimeIntegrated": false,
+      "sourceSpecPath": "specs/gw-lake-dock-shoreline.json",
+      "sourceSpecSha256": "436f75fa4b110036b0e82708d8a6e79bf019c0c3de6280b5f8e50fedebd481ce",
+      "truthClassification": "GENERIC"
+    },
+    {
+      "additionalDetailedEras": [
+        "1950s",
+        "2010s",
+        "2020s"
+      ],
+      "authorityEraSet": [
+        "1960s",
+        "1970s",
+        "1980s",
+        "1990s",
+        "2000s"
+      ],
+      "bindingKind": "SOURCE_SPECIFICATION_ADAPTER_NOT_RUNTIME_RESOLUTION",
+      "broaderEraStatus": "SPECIFIED_EXTENSION_NOT_ADOPTED_BY_EXISTING_BATCH1_AUTHORITY",
+      "canonicalFamilyId": "gw-backyard-workshop-v1",
+      "canonicalProviderStatus": "READY_FOR_PROVIDER",
+      "canonicalStatus": "SPECIFIED",
+      "detailedSourceRefId": "gw-backyard-garage-workshop",
+      "detailedSourceStatus": "SPECIFIED",
+      "providerSpendAuthorized": false,
+      "runtimeIntegrated": false,
+      "sourceSpecPath": "specs/gw-backyard-garage-workshop.json",
+      "sourceSpecSha256": "e1447787a6305e9f5351fd893026a7fb6954dedefcc59742e7d23b619fdae34d",
+      "truthClassification": "GENERIC"
+    },
+    {
+      "additionalDetailedEras": [
+        "1940s",
+        "2000s",
+        "2010s",
+        "2020s"
+      ],
+      "authorityEraSet": [
+        "1950s",
+        "1960s",
+        "1970s",
+        "1980s",
+        "1990s"
+      ],
+      "bindingKind": "SOURCE_SPECIFICATION_ADAPTER_NOT_RUNTIME_RESOLUTION",
+      "broaderEraStatus": "SPECIFIED_EXTENSION_NOT_ADOPTED_BY_EXISTING_BATCH1_AUTHORITY",
+      "canonicalFamilyId": "gw-diner-cafe-v1",
+      "canonicalProviderStatus": "READY_FOR_PROVIDER",
+      "canonicalStatus": "SPECIFIED",
+      "detailedSourceRefId": "gw-diner-cafe",
+      "detailedSourceStatus": "SPECIFIED",
+      "providerSpendAuthorized": false,
+      "runtimeIntegrated": false,
+      "sourceSpecPath": "specs/gw-diner-cafe.json",
+      "sourceSpecSha256": "974021af1b7d57ea01219027abf813b576d6ef094b02538dd36c01c43e507f15",
+      "truthClassification": "GENERIC"
+    },
+    {
+      "additionalDetailedEras": [
+        "1950s",
+        "2000s",
+        "2010s",
+        "2020s"
+      ],
+      "authorityEraSet": [
+        "1960s",
+        "1970s",
+        "1980s",
+        "1990s"
+      ],
+      "bindingKind": "SOURCE_SPECIFICATION_ADAPTER_NOT_RUNTIME_RESOLUTION",
+      "broaderEraStatus": "SPECIFIED_EXTENSION_NOT_ADOPTED_BY_EXISTING_BATCH1_AUTHORITY",
+      "canonicalFamilyId": "gw-motel-walkway-v1",
+      "canonicalProviderStatus": "READY_FOR_PROVIDER",
+      "canonicalStatus": "SPECIFIED",
+      "detailedSourceRefId": "gw-motel-room-walkway",
+      "detailedSourceStatus": "SPECIFIED",
+      "providerSpendAuthorized": false,
+      "runtimeIntegrated": false,
+      "sourceSpecPath": "specs/gw-motel-room-walkway.json",
+      "sourceSpecSha256": "ba6c87fbf8bfc9421428699852d759e4a49c79203c9b18819c9982ee12b57ab8",
+      "truthClassification": "GENERIC"
+    }
+  ],
+  "history": {
+    "adoptionFilesAreAdditive": true,
+    "existingArtifactSetModified": false,
+    "existingReceiptFilesModified": false
+  },
+  "id": "urai-generic-world-pr154-source-binding",
+  "navigationAdapter": {
+    "authorityEyeHeightMeters": 1.69,
+    "authorityMinClearWidthMeters": 0.9,
+    "detailedClearRouteTargetMeters": 1.2,
+    "detailedDoorClearTargetMeters": 1.0,
+    "detailedSeatedPreviewEyeHeightMeters": 1.2,
+    "detailedStandingPreviewEyeHeightMeters": 1.65,
+    "existingAuthorityEyeHeightRetained": true,
+    "targetsAreNotGeometryEvidence": true,
+    "turningDiameterMeters": 1.5
+  },
+  "resolverPolicy": {
+    "activeCandidateChanged": false,
+    "canonicalIds": "existing PR154 IDs remain family resolver identities",
+    "detailedIds": "source-reference keys only",
+    "existingAssetFactoryResolutionPreserved": true,
+    "newRuntimeAssetPaths": false
+  },
+  "schemaVersion": "urai-world-source-authority-adapter/1.0.0",
+  "sourceAuthority": {
+    "branch": "assets/generic-world-library-batch1-20261007",
+    "bytes": 8273,
+    "headSha": "38a07269009fc5a8b34946ecc0fa2a9566c4727a",
+    "path": "world-library/batch-01/generic-world-families.v1.json",
+    "pullRequest": 154,
+    "repository": "urai-studio",
+    "sha256": "a903eba314185da2985242248f3c81abd1c70b5a682740b1c8d9916afbe7699a",
+    "sourcePreservedUnchanged": true
+  },
+  "status": "AUTHORITY_ADOPTED_SOURCE_EXTENSION_UNBOUND",
+  "statusBoundary": {
+    "independentApproval": false,
+    "literalVisualReviewPerformedByThisBinding": false,
+    "machineAssetValidatedByThisBinding": false,
+    "providerExecutedByThisBinding": false,
+    "providerReadinessIsSpendAuthorization": false,
+    "runtimeIntegrated": false,
+    "sourceSpecification": "SPECIFIED",
+    "xrCertified": false
+  },
+  "truthClassification": "GENERIC",
+  "variantAdapter": {
+    "broaderEraRule": "canonical eras restrict existing Batch1; expansions need successor authority",
+    "day": "requires explicit morning/midday/afternoon selection",
+    "dressing": "empty/light/rich describes set dressing only; occupants not generated",
+    "emotionalWeather": "case-normalized exact six labels",
+    "fall": "autumn",
+    "rain": "light-rain detail is a narrower brief; not all rain combinations realized",
+    "upscale": "not implemented in detailed finish axes; pending variant"
+  },
+  "version": "1.0.0"
+}

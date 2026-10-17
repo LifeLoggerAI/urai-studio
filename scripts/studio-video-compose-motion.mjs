@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { readyTailWindow } from './studio-video-ready-tail.mjs'
 
 const auditRoot = path.resolve('_audit/20260623_urai_studio_video_factory')
 const captureReportPath = path.join(auditRoot, 'captures/route-capture-report.json')
@@ -62,14 +63,21 @@ for (const [index, route] of orderedRoutes.entries()) {
 
   const inputProbe = probeVideo(capture.motion)
   const sourceDuration = Number(inputProbe?.format?.duration ?? 0)
-  const availableAfterReady = sourceDuration - readyOffset
-  if (!Number.isFinite(sourceDuration) || availableAfterReady + 0.15 < duration) {
-    throw new Error(`motion capture too short for ${route}: source=${sourceDuration}s ready=${readyOffset}s need=${duration}s`)
-  }
+  // Wall elapsed time is not an encoded WebM timestamp. Select a bounded
+  // source tail after readiness is revalidated; never trim at the wall offset.
+  const window = readyTailWindow({
+    sourceDurationSeconds: sourceDuration,
+    usedDurationSeconds: duration,
+    recordedReadySeconds: capture.recordedReadySeconds,
+    semanticReadinessSampleCount: capture.semanticReadinessSampleCount,
+    recordingReadinessBasis: capture.recordingReadinessBasis,
+    semanticState: capture.semanticState,
+    semanticStateAtRecordingEnd: capture.semanticStateAtRecordingEnd,
+  })
 
   inputs.push('-i', capture.motion)
   filters.push(
-    `[${index}:v]trim=start=${readyOffset.toFixed(3)}:duration=${duration.toFixed(3)},setpts=PTS-STARTPTS,scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2:black,fps=30,format=yuv420p[v${index}]`,
+    `[${index}:v]trim=start=${window.startSeconds.toFixed(3)}:duration=${duration.toFixed(3)},setpts=PTS-STARTPTS,scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2:black,fps=30,format=yuv420p[v${index}]`,
   )
   clipEvidence.push({
     route,
@@ -78,6 +86,9 @@ for (const [index, route] of orderedRoutes.entries()) {
     sourceMotion: capture.motion,
     sourceDurationSeconds: sourceDuration,
     semanticReadyOffsetSeconds: readyOffset,
+    semanticReadyOffsetClock: 'process-wall-clock-diagnostic-only',
+    semanticStateAtRecordingEnd: capture.semanticStateAtRecordingEnd,
+    encodedWindow: window,
     usedDurationSeconds: duration,
   })
   expectedDurationSeconds += duration
