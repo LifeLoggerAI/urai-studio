@@ -11,8 +11,8 @@ const check=exports.assertSpatialLifeMovieBinding;
 const uid='spatial-user-a',planId='lmp_'+('a'.repeat(20)),now=Date.now();
 function fixture(){return {studioUid:'studio-a',tenantId:'tenant-a',spatialUid:uid,memoryId:'memory-a',movieId:'movie-a',planId,projectId:'urai-4dc1d',now,pendingDeletion:false,
 user:{accountStatus:'active',deleted:false},
-memory:{ownerId:uid,consentState:'authorized',lifeMovie:{sceneTruthPacketId:'scene-a'}},
-movie:{id:'movie-a',ownerId:uid,status:'ready',consentState:'authorized',lifeModelSchemaVersion:'urai-life-model-v1',syntheticOutputMayBecomeHistoricalSource:false,chapters:[{memoryId:'memory-a',sceneTruthPacketId:'scene-a',consentState:'authorized'}]},
+memory:{ownerId:uid,consentState:'authorized',lifeMovie:{sceneTruthPacketId:'scene-a',provenance:{sourceIds:['fictional']}}},
+movie:{id:'movie-a',ownerId:uid,status:'ready',consentState:'authorized',lifeModelSchemaVersion:'urai-life-model-v1',syntheticOutputMayBecomeHistoricalSource:false,chapters:[{memoryId:'memory-a',sceneTruthPacketId:'scene-a',consentState:'authorized',provenance:{sourceIds:['fictional']}}]},
 scene:{ownerId:uid,sceneId:'scene-a',memoryId:'memory-a',schemaVersion:'urai-life-model-v1',state:'current',syntheticOutputMayBecomeHistoricalSource:false,decision:'READY',packetHash:'a'.repeat(64),memorySourceBindingDigest:'b'.repeat(64),memorySourceIds:['fictional']},
 policy:{ownerId:uid,version:2,revision:1,domains:{memory:{mode:'granted'}},enforcement:{state:'fully-enforced'}},
 consent:{uid,purpose:'memory.storage',consentTier:'C1',policyVersion:'1.0.0',status:'granted',receiptHash:'c'.repeat(64),expiresAt:new Date(now+60000).toISOString()},
@@ -31,6 +31,9 @@ const scenarios=[
 ['chapter',x=>x.movie.chapters[0].memoryId='other-memory'],
 ['scene owner',x=>x.scene.ownerId='user-b'],
 ['scene stale',x=>x.scene.state='revoked'],
+['scene source substitution',x=>x.scene.memorySourceIds=['source-foreign']],
+['chapter source substitution',x=>x.movie.chapters[0].provenance.sourceIds=['source-foreign']],
+['memory source replaced',x=>x.memory.lifeMovie.provenance.sourceIds=['source-revised']],
 ['scene hash',x=>x.jobsStatus.plan.sceneTruthDigest='e'.repeat(64)],
 ['plan',x=>x.jobsStatus.plan.planId='lmp_'+('z'.repeat(20))],
 ['job revoked',x=>x.jobsStatus.plan.consentRevoked=true],
@@ -41,4 +44,4 @@ const scenarios=[
 ['render consent',x=>x.renderConsentBlock={ownerUid:uid,purpose:'life-movie.render',active:true}],
 ];
 for(const [name,mutate] of scenarios){const v=fixture();mutate(v);assert.throws(()=>check(v),undefined,name)}
-console.log('[PASS] 21 offline binding cases; identity and Jobs records are fixtures, not live cloud');
+console.log('[PASS] 24 offline binding cases with source-set substitutions; identity and Jobs records are fixtures, not live cloud');

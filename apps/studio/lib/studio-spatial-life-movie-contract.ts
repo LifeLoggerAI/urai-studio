@@ -9,6 +9,18 @@ const row = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string,unknown> : {};
 const fail = (code: string): never => { throw new StudioLongformError(code, 403); };
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
+/** Preserve the actual selected-memory source set across SceneTruth and the
+ * canonical life-movie chapter. Hashes alone do not identify a memory source. */
+function sameSourceSet(first: unknown, second: unknown) {
+  if (!Array.isArray(first) || !Array.isArray(second) ||
+      !first.length || first.length > 256 || first.length !== second.length ||
+      first.some(v => typeof v !== 'string' || !ID.test(v)) ||
+      second.some(v => typeof v !== 'string' || !ID.test(v))) return false;
+  const a = new Set<string>(first), b = new Set<string>(second);
+  return a.size === first.length && b.size === second.length &&
+    [...a].every(v => b.has(v));
+}
+
 function expiration(value: unknown): number {
   if (typeof value === 'string') return Date.parse(value);
   if (typeof value === 'number') return value;
@@ -88,7 +100,9 @@ export function assertSpatialLifeMovieBinding(input: {
         const chapter = row(ch);
         return chapter.memoryId === input.memoryId &&
           chapter.consentState === 'authorized' &&
-          chapter.sceneTruthPacketId === row(memory.lifeMovie).sceneTruthPacketId;
+          chapter.sceneTruthPacketId === row(memory.lifeMovie).sceneTruthPacketId &&
+          sameSourceSet(row(chapter.provenance).sourceIds,
+            row(row(memory.lifeMovie).provenance).sourceIds);
       })) fail('spatial_movie_not_bound_to_memory');
 
   const packetId = row(memory.lifeMovie).sceneTruthPacketId;
@@ -99,7 +113,8 @@ export function assertSpatialLifeMovieBinding(input: {
       !ready.has(String(scene.decision)) ||
       !SHA.test(String(scene.packetHash)) ||
       !SHA.test(String(scene.memorySourceBindingDigest)) ||
-      !Array.isArray(scene.memorySourceIds) || !scene.memorySourceIds.length) {
+      !sameSourceSet(scene.memorySourceIds,
+        row(row(memory.lifeMovie).provenance).sourceIds)) {
     fail('spatial_scene_truth_not_current');
   }
   // Jobs status is returned by Jobs after verifying the exact Studio owner and
