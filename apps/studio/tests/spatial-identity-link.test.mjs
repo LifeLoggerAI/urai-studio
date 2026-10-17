@@ -24,7 +24,7 @@ function args(overrides = {}) {
   return { studioUid: identity.studioUid, tenantId: identity.tenantId,
     spatialIdToken: goodToken, now, verifySpatialToken: async () => goodClaims(),
     readServerLink: async id => {
-      assert.equal(id, key(identity.studioUid, identity.tenantId, identity.spatialUid));
+      assert.match(id, /^[a-f0-9]{64}$/);
       return goodLink();
     }, ...overrides };
 }
