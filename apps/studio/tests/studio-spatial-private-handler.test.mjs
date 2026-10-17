@@ -54,7 +54,7 @@ const appSdk={
  getApps:()=>[spatialApp],initializeApp:()=>spatialApp
 };
 const spatialAuthSdk={getAuth:()=>({async verifyIdToken(token,checkRevoked){
- if(!checkRevoked||!(token===TOKEN||(process.env.URAI_STUDIO_PROTECTED_BROWSER_LOOPBACK==='true'&&token==='synthetic-sdk-token'))||state.spatialRevoked||state.spatialUnavailable)
+ if(!checkRevoked||!(token===TOKEN||(process.env.URAI_STUDIO_PROTECTED_BROWSER_LOOPBACK==='true'&&token===TOKEN))||state.spatialRevoked||state.spatialUnavailable)
    throw Error('spatial-auth-failed');
  return{uid:state.spatialUid,sub:state.spatialUid,aud:state.spatialAudience,
    iss:'https://securetoken.google.com/urai-4dc1d'};
