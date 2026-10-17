@@ -27,7 +27,8 @@ let bridgeUrl='';
 const savedEnv=Object.fromEntries(['NODE_ENV','URAI_STUDIO_SPATIAL_PRIVATE_DELIVERY_ENABLED',
  'URAI_STUDIO_SPATIAL_IDENTITY_ENABLED','URAI_STUDIO_SPATIAL_MEMORY_PLAN_ENABLED',
  'URAI_SPATIAL_BRIDGE_PROJECT_ID','URAI_STUDIO_LONGFORM_DISPATCH_ENABLED',
- 'URAI_JOBS_LONGFORM_BRIDGE_URL','URAI_STUDIO_JOBS_BRIDGE_TOKEN'].map(k=>[k,process.env[k]]));
+ 'URAI_JOBS_LONGFORM_BRIDGE_URL','URAI_STUDIO_JOBS_BRIDGE_TOKEN',
+ 'URAI_STUDIO_SPATIAL_ALLOWED_ORIGINS'].map(k=>[k,process.env[k]]));
 const studioAdmin={
  firebaseAdminStatus:{mode:'synthetic-test-only'},
  adminAuth:{async verifyIdToken(token){
@@ -181,7 +182,7 @@ function request(kind='mp4',options={}){
     action:'deliver-spatial-final',memoryId:'memory-a',
     movieId:'movie-a',planId:PLAN,kind})});
 }
-let server,cases=0;
+let server,handlerServer,cases=0;
 try{
  server=http.createServer(async(req,res)=>{
    const chunks=[];for await(const part of req)chunks.push(part);
@@ -282,9 +283,105 @@ try{
    memoryId:'memory-a',movieId:'movie-a',planId:PLAN,kind:'mp4',path:'foreign/bucket'}});
  await deny('unsupported range',undefined,{headers:{range:'bytes=0-10'}});
  await deny('foreign origin',undefined,{headers:{origin:'https://evil.example.test'}});
+
+ // Exercise the ACTUAL exported Studio route across a real loopback HTTP
+ // request boundary; Firebase Admin and Jobs remain explicit synthetic fakes.
+ // Node HTTP does not enforce browser CORS; check exact policy headers here,
+ // leaving genuine Chromium CORS verification to the separate browser suite.
+ handlerServer=http.createServer(async (incoming,outgoing)=>{
+   try {
+     const chunks=[];for await(const part of incoming)chunks.push(part);
+     const headers=new Headers();
+     for(const [key,value] of Object.entries(incoming.headers))
+       if(typeof value==='string')headers.set(key,value);
+     const target='http://127.0.0.1:'+handlerServer.address().port+incoming.url;
+     const method=incoming.method;
+     const testRequest=new Request(target,{method,headers,
+       ...(method==='POST'?{body:Buffer.concat(chunks)}:{})});
+     const result=method==='OPTIONS'?await route.OPTIONS(testRequest):
+       method==='POST'?await route.POST(testRequest):
+       new Response(null,{status:405});
+     outgoing.writeHead(result.status,Object.fromEntries(result.headers.entries()));
+     outgoing.end(Buffer.from(await result.arrayBuffer()));
+   }catch{
+     outgoing.writeHead(500,{'content-type':'text/plain','cache-control':'no-store'});
+     outgoing.end('synthetic_bridge_unavailable');
+   }
+ });
+ await new Promise(resolve=>handlerServer.listen(0,'127.0.0.1',resolve));
+ const localEndpoint='http://127.0.0.1:'+handlerServer.address().port+'/api/studio/spatial-private-media';
+ const allowed='https://synthetic-spatial.invalid';
+ const forbidden='https://foreign-spatial.invalid';
+ process.env.URAI_STUDIO_SPATIAL_ALLOWED_ORIGINS=allowed;
+ const send=async(kind='mp4',extra={})=>fetch(localEndpoint,{
+   method:'POST',
+   headers:{origin:allowed,authorization:'Bearer studio-token-a',
+     'x-urai-spatial-id-token':TOKEN,'content-type':'application/json',
+     ...(extra.headers||{})},
+   body:JSON.stringify({action:'deliver-spatial-final',memoryId:'memory-a',
+     movieId:'movie-a',planId:PLAN,kind}),
+ });
+ reset();
+ let answer=await fetch(localEndpoint,{method:'OPTIONS',
+   headers:{origin:allowed,'access-control-request-method':'POST',
+     'access-control-request-headers':'authorization,content-type,x-urai-spatial-id-token'}});
+ assert.equal(answer.status,204,'approved original-Spatial preflight');
+ assert.equal(answer.headers.get('access-control-allow-origin'),allowed);
+ assert.equal(answer.headers.get('access-control-allow-methods'),'POST, OPTIONS');
+ assert.ok(answer.headers.get('access-control-allow-headers').includes('x-urai-spatial-id-token'));
+ assert.ok(answer.headers.get('access-control-expose-headers').includes('x-urai-private-playlist-digest'));
+ assert.ok(!answer.headers.has('access-control-allow-credentials'));
+ cases++;
+ answer=await fetch(localEndpoint,{method:'OPTIONS',headers:{origin:forbidden,
+   'access-control-request-method':'POST'}});
+ assert.equal(answer.status,403,'foreign browser origin preflight must fail closed');
+ assert.equal(answer.headers.get('access-control-allow-origin'),null);
+ cases++;
+ for(const [kind,payload,mime] of [['mp4',VIDEO,'video/mp4'],['srt',SRT,'application/x-subrip']]){
+   reset();answer=await send(kind);
+   assert.equal(answer.status,200,'authorized Studio->Spatial synthetic '+kind);
+   assert.deepEqual(Buffer.from(await answer.arrayBuffer()),payload);
+   assert.equal(answer.headers.get('content-type'),mime);
+   assert.equal(answer.headers.get('access-control-allow-origin'),allowed);
+   assert.match(answer.headers.get('cache-control'),/no-store/);
+   assert.match(answer.headers.get('vary'),/Origin/);
+   assert.match(answer.headers.get('x-urai-private-playlist-digest'),/^[a-f0-9]{64}$/);
+   assert.equal(state.deliveryCount,1);
+   cases++;
+ }
+ reset();answer=await send('mp4',{headers:{authorization:'Bearer studio-token-b'}});
+ assert.equal(answer.status,403,'foreign Studio user denied by actual route over HTTP');
+ assert.equal(Buffer.from(await answer.arrayBuffer()).includes(VIDEO),false);
+ assert.equal(state.deliveryCount,0);cases++;
+ reset();answer=await send('mp4',{headers:{'x-urai-spatial-id-token':'forged.spatial.token'}});
+ assert.equal(answer.status,403,'forged Spatial identity denied over HTTP');
+ assert.equal(Buffer.from(await answer.arrayBuffer()).includes(VIDEO),false);
+ assert.equal(state.deliveryCount,0);cases++;
+ reset();answer=await send('mp4',{headers:{origin:forbidden}});
+ assert.equal(answer.status,403,'foreign POST origin denied over HTTP');
+ assert.equal(answer.headers.get('access-control-allow-origin'),null);
+ assert.equal(state.deliveryCount,0);cases++;
+ reset();answer=await send('mp4');
+ assert.equal(answer.status,200);await answer.arrayBuffer();
+ state.docs['users/spatial-a/privacyPolicy/current'].domains.memory.mode='denied';
+ const deliveredBefore=state.deliveryCount;
+ answer=await send('srt');
+ assert.equal(answer.status,403,'consent revoked before next caption request');
+ assert.equal(Buffer.from(await answer.arrayBuffer()).includes(SRT),false);
+ assert.equal(state.deliveryCount,deliveredBefore);
+ cases++;
+ reset();process.env.URAI_STUDIO_SPATIAL_PRIVATE_DELIVERY_ENABLED='false';
+ answer=await fetch(localEndpoint,{method:'OPTIONS',headers:{origin:allowed,
+   'access-control-request-method':'POST'}});
+ assert.equal(answer.status,403,'feature flag revokes preflight');
+ answer=await send('mp4');assert.equal(answer.status,403);
+ assert.equal(state.deliveryCount,0);cases++;
+ console.log('[PASS] 9 original Studio route loopback HTTP/CORS/identity/consent boundary cases; Firebase/Jobs synthetic, NOT live browser or real-cloud identity acceptance');
+
  assert.ok(cases>=38);
  console.log('[PASS] '+cases+' actual source handler synthetic identity/media cases with native loopback Jobs HTTP; not Firebase emulator, browser, or cloud acceptance.');
 } finally{
+ if(handlerServer)await new Promise(resolve=>handlerServer.close(resolve));
  if(server)await new Promise(resolve=>server.close(resolve));
  for(const [name,value] of Object.entries(savedEnv)){
    if(value===undefined)delete process.env[name];else process.env[name]=value;
