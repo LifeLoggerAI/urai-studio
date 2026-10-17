@@ -193,6 +193,72 @@ jobs:
           SPATIAL_BASE_URL: http://127.0.0.1:4173
         run: pnpm run video-factory:capture
 
+      - name: Setup Node 22 for original authenticated Replay movie proof
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Setup Java 21 for original Firebase emulators
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install genuine Jobs GitHub Actions media and verify source provenance
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/urai-jobs-wave131"
+          curl -fsSL --retry 3 -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/LifeLoggerAI/urai-jobs/actions/artifacts/12092815610/zip" \
+            -o "$RUNNER_TEMP/urai-jobs-wave131/source.zip"
+          unzip -oq "$RUNNER_TEMP/urai-jobs-wave131/source.zip" -d "$RUNNER_TEMP/urai-jobs-wave131"
+          test "$(sha256sum "$RUNNER_TEMP/urai-jobs-wave131/synthetic-worker-spoken-narration-5s.mp4" | cut -d' ' -f1)" = "c4ba548d480d7c71fb8e9efa496f1282bb833cdbb5303c868aa2a5e685c6fe91"
+          test -s "$RUNNER_TEMP/urai-jobs-wave131/synthetic-worker-spoken-narration-5s.srt"
+          echo "URAI_JOBS_SYNTH_MP4=$RUNNER_TEMP/urai-jobs-wave131/synthetic-worker-spoken-narration-5s.mp4" >> "$GITHUB_ENV"
+          echo "URAI_JOBS_SYNTH_SRT=$RUNNER_TEMP/urai-jobs-wave131/synthetic-worker-spoken-narration-5s.srt" >> "$GITHUB_ENV"
+
+      - name: Original authenticated Spatial Replay with Jobs movie (non-release)
+        shell: bash
+        env:
+          GCLOUD_PROJECT: demo-urai-auth-journey
+          FIREBASE_AUTH_EMULATOR_HOST: 127.0.0.1:9099
+          FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
+          FIREBASE_FUNCTIONS_EMULATOR_HOST: 127.0.0.1:5001
+          FIREBASE_STORAGE_EMULATOR_HOST: 127.0.0.1:9199
+          NEXT_PUBLIC_FIREBASE_API_KEY: fictional-emulator-key
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: demo-urai-auth-journey.firebaseapp.com
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: demo-urai-auth-journey
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: demo-urai-auth-journey.appspot.com
+          NEXT_PUBLIC_FIREBASE_APP_ID: 1:123456789:web:journey
+          NEXT_PUBLIC_URAI_AUTH_JOURNEY_EMULATOR: 'true'
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: |
+          set -euo pipefail
+          test "$(git -C spatial-source rev-parse HEAD)" = "$URAI_SPATIAL_EXPECTED_SHA"
+          if test -f /tmp/urai-spatial-preview.pid; then kill "$(cat /tmp/urai-spatial-preview.pid)" || true; fi
+          cd spatial-source
+          pnpm --filter urai-functions build
+          pnpm --dir urai-tier1 exec playwright install --with-deps chromium
+          pnpm exec firebase emulators:exec --project demo-urai-auth-journey --only auth,firestore,functions,storage --config firebase.captured-reality-emulator.json \
+            'node ../scripts/studio-video-original-replay.mjs'
+
+      - name: Restore Node 20 after isolated Replay proof
+        if: always()
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+
+      - name: Preserve original authenticated Replay evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: original-spatial-jobs-replay-${{ github.event.pull_request.head.sha || github.sha }}-${{ env.URAI_SPATIAL_EXPECTED_SHA }}
+          path: _audit/20261017_wave131_original_replay/
+          if-no-files-found: warn
+
       - name: Compose and verify playable diagnostic MP4
         env:
           URAI_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
