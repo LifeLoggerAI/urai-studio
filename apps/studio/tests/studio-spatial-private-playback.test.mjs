@@ -59,9 +59,9 @@ for(const [name,mutate] of denial){const value=fixture();mutate(value);
   assert.throws(()=>verifiedFinalSpatialAsset(value,auth,'mp4',now),undefined,name);}
 const a=fixture(),asset=verifiedFinalSpatialAsset(a,auth,'mp4',now);
 const revised=structuredClone(auth);revised.ownerUid='foreign-owner';
-assert.throws(()=>sameAuthorizedMemoryPlan(auth,revised),'', 'foreign owner');
+assert.throws(()=>sameAuthorizedMemoryPlan(auth,revised),undefined, 'foreign owner');
 const wrongMedia={...asset,sha256:'f'.repeat(64)};
-assert.throws(()=>sameFinalSpatialAsset(asset,wrongMedia),'','substituted bytes');
+assert.throws(()=>sameFinalSpatialAsset(asset,wrongMedia),undefined,'substituted bytes');
 const route=fs.readFileSync(new URL('../app/api/studio/spatial-private-media/route.ts',import.meta.url),'utf8');
 for(const marker of ['URAI_STUDIO_SPATIAL_PRIVATE_DELIVERY_ENABLED',
   'requireStudioLongformAuth(request)','verifyStudioSpatialAccountLink(identityArgs)',
