@@ -1,0 +1,128 @@
+import { NextResponse } from 'next/server';
+import { applicationDefault, getApp, getApps, initializeApp } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
+import { adminDb } from '@/lib/firebase-admin';
+import { requireStudioLongformAuth, refreshStudioLongformAuth } from '@/lib/studio-life-movie-longform-auth';
+import { verifyStudioSpatialAccountLink, SPATIAL_IDENTITY_PROJECT, STUDIO_IDENTITY_PROJECT } from '@/lib/studio-spatial-account-link';
+import { verifyCurrentSpatialMemoryPlan } from '@/lib/studio-spatial-life-movie-contract';
+import { verifiedFinalSpatialAsset, sameAuthorizedMemoryPlan, sameFinalSpatialAsset } from '@/lib/studio-spatial-private-playback';
+import { callStudioLongformBridge, callStudioLongformPrivateBytes } from '@/lib/studio-life-movie-longform-client';
+import { readStudioLongformJson } from '@/lib/studio-life-movie-longform-contract';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+const APP_NAME = 'urai-spatial-cross-project-identity-readonly';
+const ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
+const PLAN = /^lmp_[A-Za-z0-9_-]{20,64}$/;
+const headers = { 'Cache-Control': 'private, no-store, max-age=0',
+  'Vary': 'Authorization, x-urai-spatial-id-token',
+  'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' };
+const deny = () => NextResponse.json({ ok: false, error: 'spatial_private_media_authority_unavailable' },
+  { status: 403, headers });
+
+/** A separate, disabled-by-default bounded private transport. The original
+ * read-only memory-plan preflight is preserved unchanged. Every request
+ * separately revalidates existing Studio, Spatial, consent and Jobs authorities. */
+export async function POST(request: Request): Promise<Response> {
+  const actor = await requireStudioLongformAuth(request);
+  if (!actor.ok) return deny();
+  try {
+    if (process.env.URAI_STUDIO_SPATIAL_PRIVATE_DELIVERY_ENABLED !== 'true' ||
+        process.env.URAI_STUDIO_SPATIAL_IDENTITY_ENABLED !== 'true' ||
+        process.env.URAI_STUDIO_SPATIAL_MEMORY_PLAN_ENABLED !== 'true' ||
+        process.env.URAI_SPATIAL_BRIDGE_PROJECT_ID !== SPATIAL_IDENTITY_PROJECT ||
+        !adminDb || getApp().options.projectId !== STUDIO_IDENTITY_PROJECT) throw new Error('disabled');
+    const origin = request.headers.get('origin');
+    if (origin && origin !== new URL(request.url).origin) throw new Error('foreign_origin');
+    if (request.headers.has('range')) throw new Error('range_unsupported');
+    const value = await readStudioLongformJson(request, 4096) as Record<string,unknown>;
+    if (!value || Array.isArray(value) || typeof value !== 'object' ||
+        Object.keys(value).length !== 5 || value.action !== 'deliver-spatial-final' ||
+        typeof value.memoryId !== 'string' || !ID.test(value.memoryId) ||
+        typeof value.movieId !== 'string' || !ID.test(value.movieId) ||
+        typeof value.planId !== 'string' || !PLAN.test(value.planId) ||
+        (value.kind !== 'mp4' && value.kind !== 'srt')) throw new Error('selector_invalid');
+    const selector = { memoryId: value.memoryId, movieId: value.movieId, planId: value.planId };
+    const kind = value.kind as 'mp4' | 'srt';
+    const studioDb = adminDb;
+    const app = getApps().find(a => a.name === APP_NAME) ||
+      initializeApp({ credential: applicationDefault(), projectId: SPATIAL_IDENTITY_PROJECT }, APP_NAME);
+    if (app.options.projectId !== SPATIAL_IDENTITY_PROJECT) throw new Error('project_mismatch');
+    const spatialAuth = getAuth(app), spatialDb = getFirestore(app);
+    const spatialIdToken = request.headers.get('x-urai-spatial-id-token') || '';
+    const identityArgs = {
+      studioUid: actor.uid, tenantId: actor.tenantId, spatialIdToken,
+      verifySpatialToken: (token: string) => spatialAuth.verifyIdToken(token, true),
+      readServerLink: async (id: string) => {
+        const d = await studioDb.doc('studioSpatialAccountLinks/' + id).get();
+        return d.exists ? d.data() : null;
+      },
+    };
+    const readAuthority = async () => {
+      const link = await verifyStudioSpatialAccountLink(identityArgs);
+      const readPlan = () => verifyCurrentSpatialMemoryPlan({
+        studioUid: actor.uid, tenantId: actor.tenantId, spatialUid: link.spatialUid,
+        ...selector,
+        readSpatial: async (path: string) => {
+          const d = await spatialDb.doc(path).get();
+          return d.exists ? d.data() : null;
+        },
+        hasPendingDeletion: async (uid: string) => {
+          const [jobs, fence] = await Promise.all([
+            spatialDb.collection('users/' + uid + '/deletionJobs')
+              .where('state','in',['awaiting-grace','queued','in-progress','failed']).limit(1).get(),
+            spatialDb.doc('users/' + uid + '/privacyRuntime/exportAuthority').get(),
+          ]);
+          if (!jobs.empty) return true;
+          if (!fence.exists) return false;
+          const generation = fence.get('generation'), pending = fence.get('pendingDeletions');
+          return !Number.isSafeInteger(generation) || generation < 0 ||
+            !pending || typeof pending !== 'object' || Array.isArray(pending) ||
+            Object.keys(pending).length > 0;
+        },
+        readOwnedJobsPlan: ({userId,tenantId,planId}) =>
+          callStudioLongformBridge({action:'status',userId,tenantId,planId}),
+      });
+      const first = await readPlan();
+      const current = await refreshStudioLongformAuth(request, actor);
+      if (!current.ok || current.uid !== actor.uid || current.tenantId !== actor.tenantId)
+        throw new Error('studio_revoked');
+      const linkedAgain = await verifyStudioSpatialAccountLink(identityArgs);
+      if (link.spatialUid !== linkedAgain.spatialUid || link.revision !== linkedAgain.revision)
+        throw new Error('account_link_changed');
+      const second = await readPlan();
+      sameAuthorizedMemoryPlan(first, second);
+      return second;
+    };
+
+    const initial = await readAuthority();
+    const playlist = await callStudioLongformBridge({
+      action: 'playback', userId: actor.uid, tenantId: actor.tenantId, planId: selector.planId,
+    });
+    const asset = verifiedFinalSpatialAsset(playlist, initial, kind);
+    sameAuthorizedMemoryPlan(initial, await readAuthority());
+    const bytes = await callStudioLongformPrivateBytes({
+      action: 'deliver', userId: actor.uid, tenantId: actor.tenantId, planId: selector.planId,
+      artifact: 'final', kind, authorityHash: asset.authorityHash,
+      expiresAt: asset.expiresAt, generation: asset.generation, disposition: 'inline',
+    }, { sha256: asset.sha256, mimeType: asset.mimeType, signal: request.signal });
+    sameAuthorizedMemoryPlan(initial, await readAuthority());
+    const latestPlaylist = await callStudioLongformBridge({
+      action: 'playback', userId: actor.uid, tenantId: actor.tenantId, planId: selector.planId,
+    });
+    const latest = verifiedFinalSpatialAsset(latestPlaylist, initial, kind);
+    sameFinalSpatialAsset(asset, latest);
+    sameAuthorizedMemoryPlan(initial, await readAuthority());
+    if (request.signal.aborted || !bytes.length || bytes.length > 64 * 1024 * 1024)
+      throw new Error('delivery_cancelled');
+    // Existing owner-scoped Jobs transport verifies SHA-256 over all bytes
+    // before this route releases them; no streaming before full verification.
+    return new Response(new Uint8Array(bytes), { status: 200, headers: {
+      ...headers, 'Content-Type': asset.mimeType,
+      'Content-Disposition': 'inline; filename="urai-authorized-life-movie"',
+      'Content-Length': String(bytes.length),
+    } });
+  } catch { return deny(); }
+}
