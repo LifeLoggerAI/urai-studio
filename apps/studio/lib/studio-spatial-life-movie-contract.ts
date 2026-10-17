@@ -144,3 +144,50 @@ export function assertSpatialLifeMovieBinding(input: {
     sceneTruthDigest: scene.packetHash as string,
   });
 }
+
+/** Server-side proof adapter. Caller supplies only verified Studio/Spatial
+ * principals and project-pinned server readers. Selectors grant no ownership. */
+export async function verifyCurrentSpatialMemoryPlan(input: {
+  studioUid: string; tenantId: string; spatialUid: string;
+  memoryId: string; movieId: string; planId: string;
+  readSpatial: (path: string) => Promise<unknown>;
+  hasPendingDeletion: (uid: string) => Promise<boolean>;
+  readOwnedJobsPlan: (owner: { userId: string; tenantId: string; planId: string }) => Promise<unknown>;
+  now?: number;
+}) {
+  if (![input.studioUid, input.tenantId, input.spatialUid, input.memoryId, input.movieId]
+      .every(v => typeof v === 'string' && ID.test(v)) ||
+      typeof input.planId !== 'string' || !PLAN.test(input.planId)) {
+    fail('spatial_identity_or_selector_invalid');
+  }
+  const root = 'users/' + input.spatialUid;
+  const [user, memory, movie, policy, consent, tombstone, pendingDeletion] = await Promise.all([
+    input.readSpatial(root),
+    input.readSpatial(root + '/memories/' + input.memoryId),
+    input.readSpatial(root + '/lifeMovies/' + input.movieId),
+    input.readSpatial(root + '/privacyPolicy/current'),
+    input.readSpatial('consentRecords/' + input.spatialUid + '_memory_storage'),
+    input.readSpatial('privacyDeletionTombstones/' + input.spatialUid),
+    input.hasPendingDeletion(input.spatialUid),
+  ]);
+  if (typeof pendingDeletion !== 'boolean' || pendingDeletion ||
+      !user || !memory || !movie || !policy || !consent) {
+    fail('spatial_memory_authority_denied');
+  }
+  const sceneId = row(row(memory).lifeMovie).sceneTruthPacketId;
+  if (typeof sceneId !== 'string' || !ID.test(sceneId)) fail('spatial_scene_truth_not_current');
+  const scene = await input.readSpatial(root + '/sceneTruthPackets/' + sceneId);
+  if (!scene) fail('spatial_scene_truth_not_current');
+  // Jobs always receives the verified Studio principal, never a browser owner
+  // or the Spatial UID; Jobs independently enforces tenant/plan ownership.
+  const jobsStatus = await input.readOwnedJobsPlan({
+    userId: input.studioUid, tenantId: input.tenantId, planId: input.planId,
+  });
+  return assertSpatialLifeMovieBinding({
+    studioUid: input.studioUid, tenantId: input.tenantId,
+    spatialUid: input.spatialUid, memoryId: input.memoryId,
+    movieId: input.movieId, planId: input.planId, projectId: 'urai-4dc1d',
+    now: input.now, user, memory, movie, policy, consent,
+    ...(tombstone ? { tombstone } : {}), pendingDeletion, scene, jobsStatus,
+  });
+}
