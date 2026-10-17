@@ -263,6 +263,12 @@ jobs:
           grep -q 'URAI_STUDIO_REAL_HANDLER_HTTP.*"method":"POST".*"kind":"mp4".*"status":200' _audit/20261017_wave153_actual_studio_http/server.log
           grep -q 'URAI_STUDIO_REAL_HANDLER_HTTP.*"method":"POST".*"kind":"srt".*"status":200' _audit/20261017_wave153_actual_studio_http/server.log
           grep -q 'URAI_STUDIO_REAL_HANDLER_HTTP.*"method":"POST".*"kind":"mp4".*"status":403' _audit/20261017_wave153_actual_studio_http/server.log
+          if test -f spatial-source/artifacts/owned-memory-playback-browser/original-replay-real-handler-bootstrap-failure.json; then
+            cp spatial-source/artifacts/owned-memory-playback-browser/original-replay-real-handler-bootstrap-failure.json _audit/20261017_wave153_actual_studio_http/
+          fi
+          if test -f spatial-source/artifacts/owned-memory-playback-browser/original-replay-real-handler-bootstrap-failure.png; then
+            cp spatial-source/artifacts/owned-memory-playback-browser/original-replay-real-handler-bootstrap-failure.png _audit/20261017_wave153_actual_studio_http/
+          fi
           cp spatial-source/artifacts/owned-memory-playback-browser/original-replay-actual-studio-http.json _audit/20261017_wave153_actual_studio_http/
           cp spatial-source/artifacts/owned-memory-playback-browser/original-replay-actual-studio-handler.png _audit/20261017_wave153_actual_studio_http/
           test "$(git -C spatial-source rev-parse HEAD)" = "$URAI_SPATIAL_EXPECTED_SHA"
@@ -273,7 +279,10 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: original-spatial-actual-studio-http-${{ github.event.pull_request.head.sha || github.sha }}-${{ env.URAI_SPATIAL_EXPECTED_SHA }}
-          path: _audit/20261017_wave153_actual_studio_http/
+          path: |
+            _audit/20261017_wave153_actual_studio_http/
+            spatial-source/artifacts/owned-memory-playback-browser/original-replay-real-handler-bootstrap-failure.json
+            spatial-source/artifacts/owned-memory-playback-browser/original-replay-real-handler-bootstrap-failure.png
           if-no-files-found: warn
 
       - name: Original authenticated Spatial Replay with Jobs movie (non-release)
