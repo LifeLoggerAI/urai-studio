@@ -42,14 +42,21 @@ export async function verifyStudioSpatialAccountLink(input: {
 
   // verifySpatialToken MUST use a named, project-pinned Firebase Admin app and
   // verifyIdToken(token, true). Claims are checked again before any link read.
-  const claims = record(await input.verifySpatialToken(token));
+  let verifiedClaims: unknown;
+  try { verifiedClaims = await input.verifySpatialToken(token); }
+  catch { deny(); }
+  const claims = record(verifiedClaims);
   const spatialUid = claims.uid;
   if (typeof spatialUid !== 'string' || !ID.test(spatialUid) || claims.sub !== spatialUid
     || claims.aud !== SPATIAL_IDENTITY_PROJECT || claims.iss !== ISSUER) deny();
 
-  const link = record(await input.readServerLink(studioSpatialLinkId(
-    input.studioUid, input.tenantId, spatialUid,
-  )));
+  let storedLink: unknown;
+  try {
+    storedLink = await input.readServerLink(studioSpatialLinkId(
+      input.studioUid, input.tenantId, spatialUid,
+    ));
+  } catch { deny(); }
+  const link = record(storedLink);
   if (link.schemaVersion !== LINK_SCHEMA || link.status !== 'active'
     || link.provisionedBy !== 'trusted-server'
     || link.studioUid !== input.studioUid || link.tenantId !== input.tenantId
