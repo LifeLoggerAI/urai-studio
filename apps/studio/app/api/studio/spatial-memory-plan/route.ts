@@ -40,11 +40,12 @@ export async function POST(request: Request) {
       initializeApp({credential:applicationDefault(),projectId:SPATIAL_IDENTITY_PROJECT},NAME);
     if(app.options.projectId!==SPATIAL_IDENTITY_PROJECT) throw new Error('project_mismatch');
     const auth=getAuth(app), db=getFirestore(app);
+    const studioDb = adminDb;
     const spatialIdToken=request.headers.get('x-urai-spatial-id-token') || '';
     const identityArgs={
       studioUid:actor.uid,tenantId:actor.tenantId,spatialIdToken,
       verifySpatialToken:(token:string)=>auth.verifyIdToken(token,true),
-      readServerLink:async(id:string)=>{const x=await adminDb.doc('studioSpatialAccountLinks/'+id).get();return x.exists?x.data():null;},
+      readServerLink:async(id:string)=>{const x=await studioDb.doc('studioSpatialAccountLinks/'+id).get();return x.exists?x.data():null;},
     };
     const check=async(uid:string)=>verifyCurrentSpatialMemoryPlan({
       studioUid:actor.uid,tenantId:actor.tenantId,spatialUid:uid,
