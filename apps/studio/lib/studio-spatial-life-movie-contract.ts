@@ -119,6 +119,16 @@ export function assertSpatialLifeMovieBinding(input: {
   }
   // Jobs status is returned by Jobs after verifying the exact Studio owner and
   // tenant, not by a caller-supplied plan or public status document.
+  const jobsSource = row(plan.sourceBinding);
+  if (jobsSource.ownerUid !== input.studioUid ||
+      jobsSource.tenantId !== input.tenantId ||
+      jobsSource.sourceSystem !== 'urai-studio' ||
+      jobsSource.processingPurpose !== 'life-movie.render' ||
+      jobsSource.sceneTruthDigest !== scene.packetHash ||
+      jobsSource.renderPlanDigest !== plan.renderPlanDigest ||
+      typeof jobsSource.sceneTruthReceiptRef !== 'string' ||
+      jobsSource.sceneTruthReceiptRef.length === 0 ||
+      jobsSource.sceneTruthReceiptRef.length > 512) fail('spatial_jobs_source_binding_mismatch');
   if (row(input.jobsStatus).ok !== true || plan.planId !== input.planId ||
       plan.status !== 'SUCCESS' || plan.consentRevoked !== false ||
       plan.publicReleaseAuthorized !== false ||
