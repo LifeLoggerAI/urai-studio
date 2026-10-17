@@ -55,3 +55,40 @@ const scenarios=[
 ];
 for(const [name,mutate] of scenarios){const v=fixture();mutate(v);assert.throws(()=>check(v),undefined,name)}
 console.log('[PASS] 31 offline binding cases with source-set substitutions; identity and Jobs records are fixtures, not live cloud');
+const linked=fixture();
+const uidRoot='users/'+uid;
+const docs={
+  [uidRoot]:linked.user,
+  [uidRoot+'/memories/'+linked.memoryId]:linked.memory,
+  [uidRoot+'/lifeMovies/'+linked.movieId]:linked.movie,
+  [uidRoot+'/privacyPolicy/current']:linked.policy,
+  ['consentRecords/'+uid+'_memory_storage']:linked.consent,
+  [uidRoot+'/sceneTruthPackets/scene-a']:linked.scene,
+};
+const reads=[];
+const adapter={
+  studioUid:linked.studioUid,tenantId:linked.tenantId,spatialUid:linked.spatialUid,
+  memoryId:linked.memoryId,movieId:linked.movieId,planId:linked.planId,now,
+  readSpatial:async p=>{reads.push(p);return docs[p]??null},
+  hasPendingDeletion:async actor=>{assert.equal(actor,uid);return false},
+  readOwnedJobsPlan:async actor=>{assert.deepEqual(actor,{userId:'studio-a',tenantId:'tenant-a',planId});return linked.jobsStatus},
+};
+assert.equal((await exports.verifyCurrentSpatialMemoryPlan(adapter)).planId,planId);
+assert.ok(reads.includes('consentRecords/'+uid+'_memory_storage'));
+assert.ok(reads.includes(uidRoot+'/sceneTruthPackets/scene-a'));
+await assert.rejects(()=>exports.verifyCurrentSpatialMemoryPlan({
+  ...adapter,hasPendingDeletion:async()=>true
+}));
+await assert.rejects(()=>exports.verifyCurrentSpatialMemoryPlan({
+  ...adapter,readSpatial:async p=>p.includes('/memories/')?null:docs[p]??null
+}));
+await assert.rejects(()=>exports.verifyCurrentSpatialMemoryPlan({
+  ...adapter,readOwnedJobsPlan:async()=>({ok:false})
+}));
+await assert.rejects(()=>exports.verifyCurrentSpatialMemoryPlan({
+  ...adapter,spatialUid:'other-owner'
+}));
+await assert.rejects(()=>exports.verifyCurrentSpatialMemoryPlan({
+  ...adapter,readSpatial:async()=>{throw Error('provider-unavailable')}
+}));
+console.log('[PASS] server-owned Spatial/Jobs read adapter fixture with current deletion, cross-owner and provider denial');
