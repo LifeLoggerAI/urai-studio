@@ -88,6 +88,10 @@ export async function POST(request: Request) {
         'Cache-Control':'private, no-store, max-age=0',
         'Content-Type':mime,'X-Content-Type-Options':'nosniff',
         'Referrer-Policy':'no-referrer','Content-Disposition':'inline; filename="urai-private-movie"',
+        'Content-Length':String(bytes.length),
+        'X-URAI-CHECKSUM-SHA256':asset.checksum,
+        'X-URAI-STORAGE-GENERATION':desc.generation,
+        'Vary':'Authorization',
       }});
     }
     const envelope = buildStudioLongformRequest(body, { tenantId: auth.tenantId, userId: auth.uid });

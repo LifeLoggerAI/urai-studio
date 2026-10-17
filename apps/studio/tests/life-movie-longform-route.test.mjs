@@ -277,6 +277,106 @@ try {
   reset(); globalThis.fetch = async () => { throw Object.assign(new Error('synthetic abort'), { name: 'AbortError' }); };
   await expectStatus(route, createBody(), 504);
 
+
+  // Wave 125: exercise the checked-in route and server transport as two
+  // actual authenticated service calls (mocked identity and Jobs backend).
+  // The fixture tests byte/hash/generation and revocation, NOT decoded video.
+  const playbackPlanId = 'lmp_' + 'a'.repeat(20);
+  const privateFixture = (kind, bytes, sha = createHash('sha256').update(bytes).digest('hex')) => {
+    const mimeType = kind === 'mp4' ? 'video/mp4' : 'application/x-subrip';
+    const delivery = {
+      schemaVersion:'urai-authenticated-private-media-v1',
+      requiresAuthorization:true,action:'deliver',planId:playbackPlanId,
+      kind,artifact:'final',disposition:'inline',
+      authorityHash:'c'.repeat(64),expiresAt:Date.now()+120000,generation:'47',
+    };
+    const file = { mimeType,checksum:sha,delivery };
+    return {
+      schemaVersion:'urai-life-movie-private-playlist-v1',
+      planId:playbackPlanId,playlistDigest:'d'.repeat(64),
+      publicReleaseAuthorized:false,
+      finalFile:{video:file,subtitles:{...file, mimeType:'application/x-subrip'}},
+    };
+  };
+  const installDeliveryFixture = (kind, bytes, options = {}) => {
+    const expectedHash = createHash('sha256').update(bytes).digest('hex');
+    const responseHash = options.expectedHash || expectedHash;
+    const playback = privateFixture(kind,bytes,responseHash);
+    globalThis.fetch = async (url, fetchOptions) => {
+      const input = JSON.parse(fetchOptions.body);
+      state.calls.push({url:String(url),options:fetchOptions,input});
+      if(input.action === 'playback') {
+        return new Response(JSON.stringify({ok:true,playback}),{
+          status:200,headers:{'content-type':'application/json'},
+        });
+      }
+      assert.equal(input.action,'deliver');
+      assert.equal(input.planId,playbackPlanId);
+      assert.equal(input.tenantId,'studio-test');
+      assert.equal(input.userId,'user-test');
+      assert.equal(input.generation,'47');
+      assert.equal(input.authorityHash,'c'.repeat(64));
+      assert.equal(input.artifact,'final');
+      assert.equal(input.kind,kind);
+      assert.equal(fetchOptions.headers.authorization,'Bearer synthetic-server-secret');
+      assert.equal(fetchOptions.redirect,'error');
+      if(options.revokeDuringStream) state.revoked=true;
+      return new Response(new Uint8Array(bytes),{
+        status:200,headers:{
+          'content-type':kind==='mp4'?'video/mp4':'application/x-subrip',
+          'content-disposition':'inline; filename="urai-private-media"',
+          'cache-control':'private, no-store, max-age=0',
+          'content-length':String(bytes.length),
+        },
+      });
+    };
+    return expectedHash;
+  };
+  for (const [kind,bytes] of [
+    ['mp4',Buffer.from('synthetic transport bytes, not an encoded movie')],
+    ['srt',Buffer.from('1\n00:00:00,000 --> 00:00:01,500\nSynthetic private caption\n')],
+  ]) {
+    reset();
+    const expectedHash=installDeliveryFixture(kind,bytes);
+    const response=await route.POST(request({action:'deliver-final',planId:playbackPlanId,kind}));
+    assert.equal(response.status,200);
+    assert.equal(response.headers.get('cache-control'),'private, no-store, max-age=0');
+    assert.equal(response.headers.get('content-type'),kind==='mp4'?'video/mp4':'application/x-subrip');
+    assert.equal(response.headers.get('content-length'),String(bytes.length));
+    assert.equal(response.headers.get('x-urai-checksum-sha256'),expectedHash);
+    assert.equal(response.headers.get('x-urai-storage-generation'),'47');
+    assert.equal(response.headers.get('vary'),'Authorization');
+    assert.ok(!JSON.stringify([...response.headers]).includes('synthetic-server-secret'));
+    assert.deepEqual(Buffer.from(await response.arrayBuffer()),bytes);
+    assert.deepEqual(state.calls.map((call)=>call.input.action),['playback','deliver']);
+    assert.equal(state.checks.filter(check=>check.revokedCheck===true).length>=4,true);
+    assertions++;
+  }
+  reset();
+  const good=Buffer.from('synthetic integrity mismatch fixture');
+  installDeliveryFixture('mp4',good,{expectedHash:'0'.repeat(64)});
+  const badDigest=await route.POST(request({action:'deliver-final',planId:playbackPlanId,kind:'mp4'}));
+  assert.equal(badDigest.status,502);
+  assert.equal((await badDigest.json()).error.code,'longform_private_media_hash_mismatch');
+  assert.deepEqual(state.calls.map(call=>call.input.action),['playback','deliver']);
+  assertions++;
+  reset();
+  installDeliveryFixture('mp4',good,{revokeDuringStream:true});
+  const revokedDuring=await route.POST(request({action:'deliver-final',planId:playbackPlanId,kind:'mp4'}));
+  assert.equal(revokedDuring.status,401);
+  assert.deepEqual(state.calls.map(call=>call.input.action),['playback','deliver']);
+  assertions++;
+  reset();state.user.role='viewer';installDeliveryFixture('mp4',good);
+  const foreignRole=await route.POST(request({action:'deliver-final',planId:playbackPlanId,kind:'mp4'}));
+  assert.equal(foreignRole.status,403);assert.equal(state.calls.length,0);assertions++;
+  reset();installDeliveryFixture('mp4',good);
+  const spoofedOwner=await route.POST(request({action:'deliver-final',planId:playbackPlanId,kind:'mp4',userId:'victim'}));
+  assert.equal(spoofedOwner.status,400);assert.equal(state.calls.length,0);assertions++;
+  reset();installDeliveryFixture('mp4',good);
+  const wrongPlan=await route.POST(request({action:'deliver-final',planId:'lmp_invalid',kind:'mp4'}));
+  assert.equal(wrongPlan.status,400);assert.equal(state.calls.length,0);assertions++;
+  console.log('[PASS] 7 Wave125 Studio final-byte transport, fixed hash/generation, role and revocation regressions');
+
   const parity = JSON.parse(source('./fixtures/life-movie-longform-jobs-contract.v1.json'));
   assert.equal(contract.STUDIO_LONGFORM_JOBS_CONTRACT.jobsSourceSha, parity.jobsSourceSha);
   assert.deepEqual([...contract.STUDIO_LONGFORM_JOBS_CONTRACT.actions], parity.actions);
