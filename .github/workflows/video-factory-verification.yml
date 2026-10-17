@@ -220,6 +220,62 @@ jobs:
           echo "URAI_JOBS_SYNTH_MP4=$RUNNER_TEMP/urai-jobs-wave131/synthetic-worker-spoken-narration-5s.mp4" >> "$GITHUB_ENV"
           echo "URAI_JOBS_SYNTH_SRT=$RUNNER_TEMP/urai-jobs-wave131/synthetic-worker-spoken-narration-5s.srt" >> "$GITHUB_ENV"
 
+      - name: Original Chromium protected Replay through actual Studio HTTP handler (synthetic authorities)
+        shell: bash
+        env:
+          NODE_ENV: development
+          URAI_STUDIO_PROTECTED_BROWSER_LOOPBACK: 'true'
+          URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE: ${{ runner.temp }}/urai-studio-private-handler-ready.json
+        run: |
+          set -euo pipefail
+          test "$(git -C spatial-source rev-parse HEAD)" = "$URAI_SPATIAL_EXPECTED_SHA"
+          test "$(git rev-parse HEAD)" = "$URAI_EXACT_HEAD"
+          mkdir -p _audit/20261017_wave153_actual_studio_http
+          rm -f "$URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE"
+          node apps/studio/tests/studio-spatial-private-handler.test.mjs > _audit/20261017_wave153_actual_studio_http/server.log 2>&1 &
+          handler_pid=$!
+          cleanup() {
+            kill "$handler_pid" 2>/dev/null || true
+            wait "$handler_pid" 2>/dev/null || true
+            rm -f "$URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE"
+          }
+          trap cleanup EXIT
+          for attempt in $(seq 1 90); do
+            if ! kill -0 "$handler_pid" 2>/dev/null; then
+              cat _audit/20261017_wave153_actual_studio_http/server.log
+              exit 1
+            fi
+            if test -s "$URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE"; then break; fi
+            sleep 1
+          done
+          test -s "$URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE"
+          node -e "const fs=require('fs');const x=JSON.parse(fs.readFileSync(process.argv[1])); if(x.spatialOrigin!=='http://127.0.0.1:4173'||x.studioRoute!=='actual-exported-handler'||x.firebase!=='synthetic-admin-provider'||x.jobs!=='synthetic-owner-scoped-http'||!/^http:\/\/127\.0\.0\.1:[0-9]+$/.test(x.origin)) process.exit(1)" "$URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE"
+          URAI_STUDIO_REAL_HANDLER_ORIGIN="$(node -pe "JSON.parse(require('fs').readFileSync(process.argv[1])).origin" "$URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE")"
+          export URAI_STUDIO_REAL_HANDLER_ORIGIN
+          test -n "$URAI_JOBS_SYNTH_MP4"
+          test -n "$URAI_JOBS_SYNTH_SRT"
+          if test -f /tmp/urai-spatial-preview.pid; then kill "$(cat /tmp/urai-spatial-preview.pid)" || true; fi
+          cd spatial-source
+          pnpm --dir urai-tier1 exec playwright install chromium
+          pnpm --dir urai-tier1 exec node tests/owned-memory-media-playback.browser.mjs
+          cd ..
+          grep -q 'URAI_STUDIO_REAL_HANDLER_HTTP.*"method":"OPTIONS".*"status":204' _audit/20261017_wave153_actual_studio_http/server.log
+          grep -q 'URAI_STUDIO_REAL_HANDLER_HTTP.*"method":"POST".*"kind":"mp4".*"status":200' _audit/20261017_wave153_actual_studio_http/server.log
+          grep -q 'URAI_STUDIO_REAL_HANDLER_HTTP.*"method":"POST".*"kind":"srt".*"status":200' _audit/20261017_wave153_actual_studio_http/server.log
+          grep -q 'URAI_STUDIO_REAL_HANDLER_HTTP.*"method":"POST".*"kind":"mp4".*"status":403' _audit/20261017_wave153_actual_studio_http/server.log
+          cp spatial-source/artifacts/owned-memory-playback-browser/original-replay-actual-studio-http.json _audit/20261017_wave153_actual_studio_http/
+          cp spatial-source/artifacts/owned-memory-playback-browser/original-replay-actual-studio-handler.png _audit/20261017_wave153_actual_studio_http/
+          test "$(git -C spatial-source rev-parse HEAD)" = "$URAI_SPATIAL_EXPECTED_SHA"
+          test "$(git rev-parse HEAD)" = "$URAI_EXACT_HEAD"
+
+      - name: Preserve actual Studio HTTP Chromium integration evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: original-spatial-actual-studio-http-${{ github.event.pull_request.head.sha || github.sha }}-${{ env.URAI_SPATIAL_EXPECTED_SHA }}
+          path: _audit/20261017_wave153_actual_studio_http/
+          if-no-files-found: warn
+
       - name: Original authenticated Spatial Replay with Jobs movie (non-release)
         shell: bash
         env:
