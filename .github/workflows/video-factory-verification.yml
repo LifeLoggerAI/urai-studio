@@ -283,6 +283,7 @@ jobs:
             _audit/20261017_wave153_actual_studio_http/
             spatial-source/artifacts/owned-memory-playback-browser/original-replay-real-handler-bootstrap-failure.json
             spatial-source/artifacts/owned-memory-playback-browser/original-replay-real-handler-bootstrap-failure.png
+            spatial-source/artifacts/owned-memory-playback-browser/original-replay-actual-handler-delivery-failure.json
           if-no-files-found: warn
 
       - name: Original authenticated Spatial Replay with Jobs movie (non-release)
