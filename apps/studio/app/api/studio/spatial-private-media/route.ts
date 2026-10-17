@@ -17,17 +17,53 @@ const APP_NAME = 'urai-spatial-cross-project-identity-readonly';
 const ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const PLAN = /^lmp_[A-Za-z0-9_-]{20,64}$/;
 const headers = { 'Cache-Control': 'private, no-store, max-age=0',
-  'Vary': 'Authorization, x-urai-spatial-id-token',
+  'Vary': 'Authorization, x-urai-spatial-id-token, Origin',
   'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' };
-const deny = () => NextResponse.json({ ok: false, error: 'spatial_private_media_authority_unavailable' },
-  { status: 403, headers });
+/** No permissive cross-origin fallback: the one approved Spatial browser
+ * origin must be explicitly configured by the Studio deployment owner.
+ * Authentication and memory rights remain mandatory on every POST. */
+function allowedBrowserOrigin(request: Request) {
+  const origin = request.headers.get('origin');
+  if (!origin) return null;
+  if (origin === new URL(request.url).origin) return origin;
+  const approved = String(process.env.URAI_STUDIO_SPATIAL_ALLOWED_ORIGINS || '')
+    .split(',').map(value => value.trim()).filter(Boolean);
+  if (!approved.includes(origin)) return null;
+  let parsed: URL;
+  try { parsed = new URL(origin); } catch { return null; }
+  const local = process.env.NODE_ENV !== 'production' &&
+    ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname);
+  if (parsed.origin !== origin || parsed.username || parsed.password ||
+      (parsed.protocol !== 'https:' && !(local && parsed.protocol === 'http:')))
+    return null;
+  return origin;
+}
+function cors(request: Request): Record<string,string> {
+  const origin = allowedBrowserOrigin(request);
+  return origin ? {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'authorization, content-type, x-urai-spatial-id-token',
+    'Access-Control-Expose-Headers': 'content-type, content-length, x-urai-private-playlist-digest',
+    'Access-Control-Max-Age': '60',
+  } : {};
+}
+const deny = (request: Request) => NextResponse.json(
+  { ok: false, error: 'spatial_private_media_authority_unavailable' },
+  { status: 403, headers: { ...headers, ...cors(request) } },
+);
+export async function OPTIONS(request: Request): Promise<Response> {
+  if (process.env.URAI_STUDIO_SPATIAL_PRIVATE_DELIVERY_ENABLED !== 'true' ||
+      !request.headers.has('origin') || !allowedBrowserOrigin(request)) return deny(request);
+  return new Response(null, { status: 204, headers: { ...headers, ...cors(request) } });
+}
 
 /** A separate, disabled-by-default bounded private transport. The original
  * read-only memory-plan preflight is preserved unchanged. Every request
  * separately revalidates existing Studio, Spatial, consent and Jobs authorities. */
 export async function POST(request: Request): Promise<Response> {
   const actor = await requireStudioLongformAuth(request);
-  if (!actor.ok) return deny();
+  if (!actor.ok) return deny(request);
   try {
     if (process.env.URAI_STUDIO_SPATIAL_PRIVATE_DELIVERY_ENABLED !== 'true' ||
         process.env.URAI_STUDIO_SPATIAL_IDENTITY_ENABLED !== 'true' ||
@@ -35,7 +71,7 @@ export async function POST(request: Request): Promise<Response> {
         process.env.URAI_SPATIAL_BRIDGE_PROJECT_ID !== SPATIAL_IDENTITY_PROJECT ||
         !adminDb || getApp().options.projectId !== STUDIO_IDENTITY_PROJECT) throw new Error('disabled');
     const origin = request.headers.get('origin');
-    if (origin && origin !== new URL(request.url).origin) throw new Error('foreign_origin');
+    if (origin && !allowedBrowserOrigin(request)) throw new Error('foreign_origin');
     if (request.headers.has('range')) throw new Error('range_unsupported');
     const value = await readStudioLongformJson(request, 4096) as Record<string,unknown>;
     if (!value || Array.isArray(value) || typeof value !== 'object' ||
@@ -120,9 +156,10 @@ export async function POST(request: Request): Promise<Response> {
     // Existing owner-scoped Jobs transport verifies SHA-256 over all bytes
     // before this route releases them; no streaming before full verification.
     return new Response(new Uint8Array(bytes), { status: 200, headers: {
-      ...headers, 'Content-Type': asset.mimeType,
+      ...headers, ...cors(request), 'Content-Type': asset.mimeType,
+      'X-URAI-PRIVATE-PLAYLIST-DIGEST': String((latestPlaylist.playback as Record<string,unknown>).playlistDigest),
       'Content-Disposition': 'inline; filename="urai-authorized-life-movie"',
       'Content-Length': String(bytes.length),
     } });
-  } catch { return deny(); }
+  } catch { return deny(request); }
 }
