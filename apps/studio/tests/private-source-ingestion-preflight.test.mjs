@@ -9,7 +9,7 @@ const exported={};
 new Function('exports','require',js)(exported,id=>id==='./source-evidence'?{validateSourceEvidencePacket:p=>({ok:p.valid!==false})}:require(id));
 const check=exported.summarizePrivateSourcePreflight;
 const A='a'.repeat(64),B='b'.repeat(64),C='c'.repeat(64);
-const row=(id,sha=A,state='VERIFIED',decode='PASS',fresh=true)=>({opaqueId:id,originalSha256:sha,originalBytes:100,technicalState:state,decodeState:decode,...(fresh?{freshByteReceipt:{sha256:sha,bytes:100}}:{})});
+const row=(id,sha=A,state='VERIFIED',decode='PASS',fresh=true)=>({opaqueId:id,originalSha256:sha,originalBytes:100,technicalState:state,decodeState:decode,observedMimeType:'image/jpeg',...(fresh?{freshByteReceipt:{sha256:sha,bytes:100}}:{})});
 const rows=[row('alpha'),row('beta'),row('gamma',B),row('broken',C,'CORRUPT','FAIL'),row('unknown',null,'FOUND BUT UNPROCESSED','NONMEDIA',false)];
 const s=check(rows);assert.equal(s.total,5);assert.equal(s.archivalVerified,3);assert.equal(s.technicallyEligibleForHumanReview,3);assert.equal(s.corrupt,1);assert.equal(s.foundButUnprocessed,1);assert.equal(s.quarantined,1);assert.equal(s.duplicateGroups,1);assert.equal(s.excessIdenticalCopies,1);assert.equal(s.productionAdmissionsCertified,0);assert.equal(s.replayAdmissionsCertified,0);assert.deepEqual(check([...rows].reverse()),s);
 assert.ok(!JSON.stringify(s).includes('opaqueId')&&!JSON.stringify(s).includes(A));
@@ -21,4 +21,17 @@ const fake={...row('fake'),consentReceipt:'pointer',ownerLinkReceipt:'pointer',p
 assert.equal(check([{...row('draft'),transcriptState:'MACHINE_DRAFT'}]).machineDraftTranscriptRows,1);
 assert.equal(check([{...row('wrong'),freshByteReceipt:{sha256:B,bytes:100}}]).technicallyEligibleForHumanReview,0);
 assert.equal(check([{...row('wrong'),freshByteReceipt:{sha256:B,bytes:100}}]).quarantined,1);
-console.log('[PASS] private ingestion preflight: deterministic source counts, quarantine and hard-off authority');
+// Wave130: fail closed on unsupported MIME, malformed fresh proof and
+// substituted original source-evidence packet. All cases are fictional.
+assert.equal(check([{...row('unsupported'),observedMimeType:'application/x-msdownload'}]).technicallyEligibleForHumanReview,0);
+assert.equal(check([{...row('unsupported'),observedMimeType:'application/x-msdownload'}]).quarantined,1);
+assert.equal(check([{...row('missing-mime'),observedMimeType:null}]).technicallyEligibleForHumanReview,0);
+assert.throws(()=>check([{...row('malformed-sha'),freshByteReceipt:{sha256:42,bytes:100}}]),/invalid_fresh_byte_receipt/);
+assert.throws(()=>check([{...row('malformed-length'),freshByteReceipt:{sha256:A,bytes:'100'}}]),/invalid_fresh_byte_receipt/);
+assert.throws(()=>check([{...row('substituted'),sourcePacket:{valid:true,sourceAssetKey:'someone-else',sha256:A,byteSize:100,mimeType:'image/jpeg'}}]),/source_identity_mismatch/);
+assert.throws(()=>check([{...row('substituted-hash'),sourcePacket:{valid:true,sourceAssetKey:'substituted-hash',sha256:B,byteSize:100,mimeType:'image/jpeg'}}]),/source_identity_mismatch/);
+assert.throws(()=>check([{...row('substituted-mime'),sourcePacket:{valid:true,sourceAssetKey:'substituted-mime',sha256:A,byteSize:100,mimeType:'video/mp4'}}]),/source_identity_mismatch/);
+assert.equal(check([{...row('video'),observedMimeType:'video/quicktime'}]).technicallyEligibleForHumanReview,1);
+assert.equal(check([{...row('audio'),observedMimeType:'audio/mpeg'}]).technicallyEligibleForHumanReview,1);
+assert.equal(check([{...row('legitimate'),sourcePacket:{valid:true,sourceAssetKey:'legitimate',sha256:A,byteSize:100,mimeType:'image/jpeg'}}]).productionAdmissionsCertified,0);
+console.log('[PASS] Wave130 private ingestion preflight: existing checks plus 11 MIME and source-fixity cases; HARD OFF');
