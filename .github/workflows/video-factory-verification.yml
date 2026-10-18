@@ -220,11 +220,34 @@ jobs:
           echo "URAI_JOBS_SYNTH_MP4=$RUNNER_TEMP/urai-jobs-wave131/synthetic-worker-spoken-narration-5s.mp4" >> "$GITHUB_ENV"
           echo "URAI_JOBS_SYNTH_SRT=$RUNNER_TEMP/urai-jobs-wave131/synthetic-worker-spoken-narration-5s.srt" >> "$GITHUB_ENV"
 
+      - name: Produce distinct deterministic synthetic Jobs-compatible child MP4s
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+          mkdir -p "$RUNNER_TEMP/urai-jobs-wave167"
+          for segment in 1 2; do
+            angle=$((segment * 85))
+            dest="$RUNNER_TEMP/urai-jobs-wave167/segment-$segment.mp4"
+            ffmpeg -nostdin -hide_banner -loglevel error -y -i "$URAI_JOBS_SYNTH_MP4" \
+              -vf "hue=h=$angle" -c:v libx264 -preset veryfast -crf 26 -pix_fmt yuv420p \
+              -c:a aac -b:a 128k -ac 2 -ar 48000 -movflags +faststart "$dest"
+            ffmpeg -nostdin -hide_banner -loglevel error -xerror -i "$dest" -f null -
+            SEGMENT_FILE="$dest" node -e "const fs=require('fs');const x=fs.statSync(process.env.SEGMENT_FILE);if(x.size<1000||x.size>64*1024*1024)process.exit(1)"
+            echo "URAI_JOBS_SYNTH_SEGMENT_$segment"_"MP4=$dest" >> "$GITHUB_ENV"
+          done
+          test "$(sha256sum "$URAI_JOBS_SYNTH_MP4" | cut -d' ' -f1)" != "$(sha256sum "$RUNNER_TEMP/urai-jobs-wave167/segment-1.mp4" | cut -d' ' -f1)"
+          test "$(sha256sum "$RUNNER_TEMP/urai-jobs-wave167/segment-1.mp4" | cut -d' ' -f1)" != "$(sha256sum "$RUNNER_TEMP/urai-jobs-wave167/segment-2.mp4" | cut -d' ' -f1)"
+
       - name: Original Chromium protected Replay through actual Studio HTTP handler (synthetic authorities)
         shell: bash
         env:
           NODE_ENV: development
           URAI_STUDIO_PROTECTED_BROWSER_LOOPBACK: 'true'
+          URAI_STUDIO_PROTECTED_MULTI_SEGMENT_BROWSER_LOOPBACK: 'true'
           URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE: ${{ runner.temp }}/urai-studio-private-handler-ready.json
         run: |
           set -euo pipefail

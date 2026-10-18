@@ -98,26 +98,28 @@ const route=load('app/api/studio/spatial-private-media/route.ts',{
 });
 function playlist(){
  const expiresAt=Date.now()+60000;
- const descriptor=kind=>({schemaVersion:'urai-authenticated-private-media-v1',
-  requiresAuthorization:true,action:'deliver',kind,planId:PLAN,artifact:'final',
+ const descriptor=(kind,artifact)=>({schemaVersion:'urai-authenticated-private-media-v1',
+  requiresAuthorization:true,action:'deliver',kind,planId:PLAN,artifact,
   generation:'77',disposition:'inline',authorityHash:'c'.repeat(64),expiresAt});
- const asset=kind=>({delivery:descriptor(kind),
-  mimeType:kind==='mp4'?'video/mp4':'application/x-subrip',
-  checksum:hash(kind==='mp4'?VIDEO:SRT)});
- const video=asset('mp4'),subtitles=asset('srt');
- const segment={index:0,startMs:0,endMs:900,gapBeforeMs:0,
-  videoChecksum:video.checksum,subtitleChecksum:subtitles.checksum};
- const playlistDigest=hash(JSON.stringify({
-  schemaVersion:'urai-life-movie-private-playlist-v1',
-  planId:PLAN,renderPlanDigest:RENDER,sceneTruthDigest:SCENE,
-  segments:[segment]}));
- return{schemaVersion:'urai-life-movie-private-playlist-v1',
+ const asset=(kind,artifact,bytes)=>({delivery:descriptor(kind,artifact),
+  mimeType:kind==='mp4'?'video/mp4':'application/x-subrip',checksum:hash(bytes)});
+ const finalFile={video:asset('mp4','final',VIDEO),subtitles:asset('srt','final',SRT)};
+ const sources=state.multiSegments??[{startMs:0,endMs:900,videoBytes:VIDEO,subtitleBytes:SRT}];
+ const segments=sources.map((part,index)=>({
+  index,startMs:part.startMs,endMs:part.endMs,
+  gapBeforeMs:part.startMs-(index?sources[index-1].endMs:0),
+  video:asset('mp4','segment:'+index,part.videoBytes),
+  subtitles:asset('srt','segment:'+index,part.subtitleBytes),
+ }));
+ const authority=segments.map(part=>({
+  index:part.index,startMs:part.startMs,endMs:part.endMs,gapBeforeMs:part.gapBeforeMs,
+  videoChecksum:part.video.checksum,subtitleChecksum:part.subtitles.checksum}));
+ const playlistDigest=hash(JSON.stringify({schemaVersion:'urai-life-movie-private-playlist-v1',
+  planId:PLAN,renderPlanDigest:RENDER,sceneTruthDigest:SCENE,segments:authority}));
+ return {schemaVersion:'urai-life-movie-private-playlist-v1',
   planId:PLAN,sceneTruthDigest:SCENE,renderPlanDigest:RENDER,
-  publicReleaseAuthorized:false,playlistDigest,
-  expiresAt:new Date(expiresAt).toISOString(),
-  finalFile:{video,subtitles},segments:[{...segment,
-  video:{...video,delivery:{...video.delivery,artifact:'segment:0'}},
-  subtitles:{...subtitles,delivery:{...subtitles.delivery,artifact:'segment:0'}}}]};
+  publicReleaseAuthorized:false,playlistDigest,expiresAt:new Date(expiresAt).toISOString(),
+  finalFile,segments};
 }
 function jobStatus(){
  return{planId:PLAN,status:'SUCCESS',consentRevoked:false,
@@ -135,7 +137,7 @@ function reset(){
   studioRole:'owner',membershipActive:true,linkRevoked:false,
   spatialRevoked:false,spatialUnavailable:false,pendingDeletion:false,
   jobsUnavailable:false,jobsWrongOwner:false,jobsWrongPurpose:false,
-  jobsWrongPlan:false,playlistMutation:null,corruptVideo:false,
+  jobsWrongPlan:false,playlistMutation:null,multiSegments:null,corruptVideo:false,
   largeVideo:false,revokeOnPlayback:false,revokeOnDelivery:false,deliveryCount:0});
  state.linkId=link.studioSpatialLinkId('studio-a','tenant-a','spatial-a');
  state.link={schemaVersion:'urai-studio-spatial-account-link-v1',
@@ -214,7 +216,12 @@ try{
    if(input.action==='deliver'){
       state.deliveryCount++;
       if(state.revokeOnDelivery)state.docs['users/spatial-a/privacyPolicy/current'].domains.memory.mode='denied';
-      const correct=input.kind==='mp4'?VIDEO:SRT;
+      const part=input.artifact==='final'?{videoBytes:VIDEO,subtitleBytes:SRT}:
+        /^segment:(0|[1-9][0-9]*)$/.test(input.artifact??'')
+          ? (state.multiSegments??[{videoBytes:VIDEO,subtitleBytes:SRT}])[Number(input.artifact.split(':')[1])]
+          : null;
+      if(!part){res.writeHead(403);res.end();return;}
+      const correct=input.kind==='mp4'?part.videoBytes:part.subtitleBytes;
       const bytes=state.corruptVideo&&input.kind==='mp4'?Buffer.from('corrupt'):correct;
       res.writeHead(200,{'Content-Type':input.kind==='mp4'?'video/mp4':'application/x-subrip',
         'Content-Disposition':'inline; filename="fixture"',
@@ -359,7 +366,8 @@ try{
        new Response(null,{status:405});
      if(process.env.URAI_STUDIO_PROTECTED_BROWSER_LOOPBACK==='true'){
        const kind=method==='POST'?JSON.parse(Buffer.concat(chunks).toString()).kind:null;
-       console.log('URAI_STUDIO_REAL_HANDLER_HTTP '+JSON.stringify({method,kind,status:result.status,
+       const selected=method==='POST'?JSON.parse(Buffer.concat(chunks).toString()):null;
+       console.log('URAI_STUDIO_REAL_HANDLER_HTTP '+JSON.stringify({method,kind,action:selected?.action??null,segmentIndex:selected?.segmentIndex??null,status:result.status,
          corsOriginAllowed:result.headers.get('access-control-allow-origin')===incoming.headers.origin,
          contentLength:result.headers.get('content-length')}));
      }
@@ -482,6 +490,28 @@ try{
    assert.match(captions.toString(),/--> [0-9:,]+/);
    VIDEO=video;SRT=captions;
    reset();
+   if(process.env.URAI_STUDIO_PROTECTED_MULTI_SEGMENT_BROWSER_LOOPBACK==='true'){
+     const one=fs.readFileSync(process.env.URAI_JOBS_SYNTH_SEGMENT_1_MP4);
+     const two=fs.readFileSync(process.env.URAI_JOBS_SYNTH_SEGMENT_2_MP4);
+     assert.equal(new Set([hash(video),hash(one),hash(two)]).size,3,
+       'all three independently decoded MP4 files must have distinct hashes');
+     const middle=Buffer.from('1\n00:00:00,000 --> 00:00:03,000\nFictional middle protected memory caption\n');
+     const ending=Buffer.from('1\n00:00:00,000 --> 00:00:03,000\nFictional ending protected memory caption\n');
+     state.multiSegments=[
+       {startMs:0,endMs:5000,videoBytes:video,subtitleBytes:captions},
+       {startMs:5500,endMs:10500,videoBytes:one,subtitleBytes:middle},
+       {startMs:11000,endMs:16000,videoBytes:two,subtitleBytes:ending},
+     ];
+     const verified=playlist();
+     assert.equal(verified.segments.length,3);
+     assert.equal(verified.segments[1].gapBeforeMs,500);
+     assert.equal(verified.segments[2].gapBeforeMs,500);
+     console.log('URAI_STUDIO_SYNTHETIC_JOBS_MULTISEGMENT '+JSON.stringify({
+       playlistDigest:verified.playlistDigest,
+       segments:verified.segments.map(part=>({index:part.index,startMs:part.startMs,
+         endMs:part.endMs,gapBeforeMs:part.gapBeforeMs,
+         videoSha256:part.video.checksum,srtSha256:part.subtitles.checksum}))}));
+   }
    // Only the explicit local-browser test aligns fictionally provisioned
    // identities with the original Spatial Chromium fixture. Production link,
    // tenant, ownership, consent, Jobs and provenance functions are unchanged.
