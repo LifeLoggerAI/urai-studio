@@ -140,7 +140,8 @@ export function verifiedSpatialSegmentTimeline(
       playlist.segments.length > 180) fail();
   let expectedDigest: string | undefined;
   let expectedExpiry: number | undefined;
-  const segments = playlist.segments.map((_part: unknown, index: number) => {
+  const playlistSegments = playlist.segments as unknown[];
+  const segments = playlistSegments.map((_part: unknown, index: number) => {
     const video = verifiedSegmentSpatialAsset(response, authority, 'mp4', index, now);
     const captions = verifiedSegmentSpatialAsset(response, authority, 'srt', index, now);
     const startMs = Number(video.startMs), endMs = Number(video.endMs);
@@ -159,10 +160,12 @@ export function verifiedSpatialSegmentTimeline(
   });
   if (!expectedDigest || !expectedExpiry || expectedExpiry <= now ||
       !segments.length || !int(segments[segments.length - 1].endMs)) fail();
+  const digest = expectedDigest as string;
+  const expiry = expectedExpiry as number;
   return Object.freeze({
     schemaVersion: 'urai-spatial-private-segment-timeline-v1',
     movieId: authority.movieId, planId: authority.planId,
-    playlistDigest: expectedDigest, expiresAt: expectedExpiry,
+    playlistDigest: digest, expiresAt: expiry,
     durationMs: segments[segments.length - 1].endMs,
     segments: Object.freeze(segments),
   });
