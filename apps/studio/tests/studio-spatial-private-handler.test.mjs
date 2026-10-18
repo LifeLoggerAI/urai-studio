@@ -115,7 +115,9 @@ function playlist(){
   planId:PLAN,sceneTruthDigest:SCENE,renderPlanDigest:RENDER,
   publicReleaseAuthorized:false,playlistDigest,
   expiresAt:new Date(expiresAt).toISOString(),
-  finalFile:{video,subtitles},segments:[{...segment,video,subtitles}]};
+  finalFile:{video,subtitles},segments:[{...segment,
+  video:{...video,delivery:{...video.delivery,artifact:'segment:0'}},
+  subtitles:{...subtitles,delivery:{...subtitles.delivery,artifact:'segment:0'}}}]};
 }
 function jobStatus(){
  return{planId:PLAN,status:'SUCCESS',consentRevoked:false,
