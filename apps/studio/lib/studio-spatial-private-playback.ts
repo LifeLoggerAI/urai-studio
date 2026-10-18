@@ -121,6 +121,68 @@ export function verifiedFinalSpatialAsset(
   return Object.freeze(kind === 'mp4' ? video : captions);
 }
 
+
+/** A private, bounded projection of Jobs' fully authenticated playlist. Each
+ * segment's video and captions must independently validate against Jobs'
+ * digest-bound descriptors before its existence or timing can be disclosed. */
+export type VerifiedSpatialSegmentTimeline = Readonly<{
+  schemaVersion: 'urai-spatial-private-segment-timeline-v1';
+  movieId: string; planId: string; playlistDigest: string; expiresAt: number;
+  durationMs: number;
+  segments: ReadonlyArray<Readonly<{ index: number; startMs: number; endMs: number; gapBeforeMs: number }>>;
+}>;
+
+export function verifiedSpatialSegmentTimeline(
+  response: unknown, authority: AuthorizedMemoryPlan, now = Date.now(),
+): VerifiedSpatialSegmentTimeline {
+  const envelope = row(response), playlist = row(envelope.playback);
+  if (!Array.isArray(playlist.segments) || playlist.segments.length < 1 ||
+      playlist.segments.length > 180) fail();
+  let expectedDigest: string | undefined;
+  let expectedExpiry: number | undefined;
+  const segments = playlist.segments.map((_part: unknown, index: number) => {
+    const video = verifiedSegmentSpatialAsset(response, authority, 'mp4', index, now);
+    const captions = verifiedSegmentSpatialAsset(response, authority, 'srt', index, now);
+    const startMs = Number(video.startMs), endMs = Number(video.endMs);
+    const gapBeforeMs = Number(video.gapBeforeMs);
+    if (!int(startMs) || !int(endMs) || !int(gapBeforeMs) ||
+        endMs <= startMs || endMs > 45 * 60 * 1000 ||
+        video.startMs !== captions.startMs || video.endMs !== captions.endMs ||
+        video.gapBeforeMs !== captions.gapBeforeMs ||
+        !video.playlistDigest || video.playlistDigest !== captions.playlistDigest ||
+        video.authorityHash !== captions.authorityHash || video.expiresAt !== captions.expiresAt ||
+        (expectedDigest !== undefined && video.playlistDigest !== expectedDigest) ||
+        (expectedExpiry !== undefined && video.expiresAt !== expectedExpiry)) fail();
+    expectedDigest = video.playlistDigest;
+    expectedExpiry = video.expiresAt;
+    return Object.freeze({ index, startMs, endMs, gapBeforeMs });
+  });
+  if (!expectedDigest || !expectedExpiry || expectedExpiry <= now ||
+      !segments.length || !int(segments[segments.length - 1].endMs)) fail();
+  return Object.freeze({
+    schemaVersion: 'urai-spatial-private-segment-timeline-v1',
+    movieId: authority.movieId, planId: authority.planId,
+    playlistDigest: expectedDigest, expiresAt: expectedExpiry,
+    durationMs: segments[segments.length - 1].endMs,
+    segments: Object.freeze(segments),
+  });
+}
+
+export function sameVerifiedSpatialSegmentTimeline(
+  first: VerifiedSpatialSegmentTimeline, second: VerifiedSpatialSegmentTimeline,
+) {
+  if (first.planId !== second.planId || first.movieId !== second.movieId ||
+      first.playlistDigest !== second.playlistDigest ||
+      first.durationMs !== second.durationMs ||
+      first.expiresAt <= Date.now() || second.expiresAt <= Date.now() ||
+      first.segments.length !== second.segments.length) fail();
+  for (let index = 0; index < first.segments.length; index++) {
+    const a = first.segments[index], b = second.segments[index];
+    if (a.index !== b.index || a.startMs !== b.startMs ||
+        a.endMs !== b.endMs || a.gapBeforeMs !== b.gapBeforeMs) fail();
+  }
+}
+
 /** Segment and final deliveries share the same immutable resource comparison. */
 export function verifiedSegmentSpatialAsset(
   response: unknown, authority: AuthorizedMemoryPlan, kind: Kind, index: number,

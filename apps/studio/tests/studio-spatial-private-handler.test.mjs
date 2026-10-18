@@ -286,6 +286,34 @@ try{
  await deny('revocation after upstream bytes',()=>{state.revokeOnDelivery=true});
  await deny('caller storage path',undefined,{body:{action:'deliver-spatial-final',
    memoryId:'memory-a',movieId:'movie-a',planId:PLAN,kind:'mp4',path:'foreign/bucket'}});
+ // A timeline is private metadata, never an unvalidated caller's list.
+ const timelineRequest={action:'read-spatial-timeline',memoryId:'memory-a',
+   movieId:'movie-a',planId:PLAN};
+ reset();
+ const timelineResponse=await route.POST(request('mp4',{body:timelineRequest}));
+ assert.equal(timelineResponse.status,200,'owner-authorized timeline');
+ assert.match(timelineResponse.headers.get('cache-control'),/no-store/);
+ const timelineEnvelope=await timelineResponse.json();
+ assert.equal(timelineEnvelope.ok,true);
+ assert.equal(timelineEnvelope.timeline.schemaVersion,'urai-spatial-private-segment-timeline-v1');
+ assert.equal(timelineEnvelope.timeline.movieId,'movie-a');
+ assert.equal(timelineEnvelope.timeline.planId,PLAN);
+ assert.match(timelineEnvelope.timeline.playlistDigest,/^[a-f0-9]{64}$/);
+ assert.equal(timelineEnvelope.timeline.durationMs,900);
+ assert.deepEqual(timelineEnvelope.timeline.segments,[{index:0,startMs:0,endMs:900,gapBeforeMs:0}]);
+ assert.equal(state.deliveryCount,0,'timeline cannot read protected bytes');
+ assert.ok(!JSON.stringify(timelineEnvelope).includes('tenant-a/'),'no private storage identifiers');
+ cases++;
+ await deny('foreign timeline owner',()=>{state.spatialUid='spatial-b'},{body:timelineRequest});
+ await deny('wrong Studio timeline tenant',()=>{state.studioTenant='tenant-b'},{body:timelineRequest});
+ await deny('deleted timeline memory',()=>{state.docs['users/spatial-a/memories/memory-a'].deleted=true},{body:timelineRequest});
+ await deny('revoked timeline consent',()=>{state.docs['users/spatial-a/privacyPolicy/current'].domains.memory.mode='denied'},{body:timelineRequest});
+ await deny('wrong timeline plan',()=>{state.jobsWrongPlan=true},{body:timelineRequest});
+ await deny('tampered timeline digest',()=>{state.playlistMutation=p=>{p.playlistDigest='f'.repeat(64)}},{body:timelineRequest});
+ await deny('tampered timeline subtitle',()=>{state.playlistMutation=p=>{p.segments[0].subtitles.checksum='f'.repeat(64)}},{body:timelineRequest});
+ await deny('wrong timeline generation',()=>{state.playlistMutation=p=>{p.segments[0].video.delivery.generation='0'}},{body:timelineRequest});
+ await deny('unavailable timeline Jobs',()=>{state.jobsUnavailable=true},{body:timelineRequest});
+
  // Real exported route, synthetic Jobs HTTP and Admin. Final playback remains untouched.
  for(const kind of ['mp4','srt']){
   reset();
@@ -368,7 +396,7 @@ try{
    headers:{origin:allowed,authorization:'Bearer studio-token-a',
      'x-urai-spatial-id-token':TOKEN,'content-type':'application/json',
      ...(extra.headers||{})},
-   body:JSON.stringify({action:'deliver-spatial-final',memoryId:'memory-a',
+   body:JSON.stringify(extra.body??{action:'deliver-spatial-final',memoryId:'memory-a',
      movieId:'movie-a',planId:PLAN,kind}),
  });
  reset();
@@ -401,6 +429,13 @@ try{
    assert.equal(state.deliveryCount,1);
    cases++;
  }
+ reset();answer=await send('mp4',{body:timelineRequest});
+ assert.equal(answer.status,200,'authorized timeline via exported Studio handler');
+ const loopbackTimeline=await answer.json();
+ assert.equal(loopbackTimeline.timeline.durationMs,900);
+ assert.equal(loopbackTimeline.timeline.segments.length,1);
+ assert.equal(state.deliveryCount,0);
+ cases++;
  reset();answer=await send('mp4',{headers:{authorization:'Bearer studio-token-b'}});
  assert.equal(answer.status,403,'foreign Studio user denied by actual route over HTTP');
  assert.equal(Buffer.from(await answer.arrayBuffer()).includes(VIDEO),false);

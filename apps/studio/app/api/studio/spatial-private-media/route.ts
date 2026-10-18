@@ -6,7 +6,7 @@ import { adminDb } from '@/lib/firebase-admin';
 import { requireStudioLongformAuth, refreshStudioLongformAuth } from '@/lib/studio-life-movie-longform-auth';
 import { verifyStudioSpatialAccountLink, SPATIAL_IDENTITY_PROJECT, STUDIO_IDENTITY_PROJECT } from '@/lib/studio-spatial-account-link';
 import { verifyCurrentSpatialMemoryPlan } from '@/lib/studio-spatial-life-movie-contract';
-import { verifiedFinalSpatialAsset, verifiedSegmentSpatialAsset, sameAuthorizedMemoryPlan, sameFinalSpatialAsset } from '@/lib/studio-spatial-private-playback';
+import { verifiedFinalSpatialAsset, verifiedSegmentSpatialAsset, verifiedSpatialSegmentTimeline, sameVerifiedSpatialSegmentTimeline, sameAuthorizedMemoryPlan, sameFinalSpatialAsset } from '@/lib/studio-spatial-private-playback';
 import { callStudioLongformBridge, callStudioLongformPrivateBytes } from '@/lib/studio-life-movie-longform-client';
 import { readStudioLongformJson } from '@/lib/studio-life-movie-longform-contract';
 
@@ -74,20 +74,23 @@ export async function POST(request: Request): Promise<Response> {
     if (origin && !allowedBrowserOrigin(request)) throw new Error('foreign_origin');
     if (request.headers.has('range')) throw new Error('range_unsupported');
     const value = await readStudioLongformJson(request, 4096) as Record<string,unknown>;
+    const timelineAction = value?.action === 'read-spatial-timeline';
+    const finalAction = value?.action === 'deliver-spatial-final';
+    const segmentAction = value?.action === 'deliver-spatial-segment';
     if (!value || Array.isArray(value) || typeof value !== 'object' ||
-        !([5,6].includes(Object.keys(value).length)) ||
-        (value.action !== 'deliver-spatial-final' && value.action !== 'deliver-spatial-segment') ||
+        !(timelineAction || finalAction || segmentAction) ||
         typeof value.memoryId !== 'string' || !ID.test(value.memoryId) ||
         typeof value.movieId !== 'string' || !ID.test(value.movieId) ||
         typeof value.planId !== 'string' || !PLAN.test(value.planId) ||
-        (value.kind !== 'mp4' && value.kind !== 'srt') ||
-        (value.action === 'deliver-spatial-final' && (Object.keys(value).length !== 5 || 'segmentIndex' in value)) ||
-        (value.action === 'deliver-spatial-segment' && (Object.keys(value).length !== 6 ||
+        (timelineAction && Object.keys(value).length !== 4) ||
+        (!timelineAction && value.kind !== 'mp4' && value.kind !== 'srt') ||
+        (finalAction && (Object.keys(value).length !== 5 || 'segmentIndex' in value)) ||
+        (segmentAction && (Object.keys(value).length !== 6 ||
           !Number.isSafeInteger(value.segmentIndex) || Number(value.segmentIndex) < 0 ||
           Number(value.segmentIndex) >= 180))) throw new Error('selector_invalid');
     const selector = { memoryId: value.memoryId, movieId: value.movieId, planId: value.planId };
     const kind = value.kind as 'mp4' | 'srt';
-    const segmentIndex = value.action === 'deliver-spatial-segment' ? Number(value.segmentIndex) : null;
+    const segmentIndex = segmentAction ? Number(value.segmentIndex) : null;
     const studioDb = adminDb;
     const app = getApps().find(a => a.name === APP_NAME) ||
       initializeApp({ credential: applicationDefault(), projectId: SPATIAL_IDENTITY_PROJECT }, APP_NAME);
@@ -143,6 +146,21 @@ export async function POST(request: Request): Promise<Response> {
     const playlist = await callStudioLongformBridge({
       action: 'playback', userId: actor.uid, tenantId: actor.tenantId, planId: selector.planId,
     });
+    if (timelineAction) {
+      const firstTimeline = verifiedSpatialSegmentTimeline(playlist, initial);
+      sameAuthorizedMemoryPlan(initial, await readAuthority());
+      const refreshedPlaylist = await callStudioLongformBridge({
+        action: 'playback', userId: actor.uid, tenantId: actor.tenantId, planId: selector.planId,
+      });
+      const currentTimeline = verifiedSpatialSegmentTimeline(refreshedPlaylist, initial);
+      sameVerifiedSpatialSegmentTimeline(firstTimeline, currentTimeline);
+      sameAuthorizedMemoryPlan(initial, await readAuthority());
+      if (request.signal.aborted) throw new Error('timeline_cancelled');
+      // A private timeline is not an authorization token. Every subsequent
+      // segment request must independently revalidate current owner and consent.
+      return NextResponse.json({ ok: true, timeline: currentTimeline },
+        { status: 200, headers: { ...headers, ...cors(request) } });
+    }
     const asset = segmentIndex === null
       ? verifiedFinalSpatialAsset(playlist, initial, kind)
       : verifiedSegmentSpatialAsset(playlist, initial, kind, segmentIndex);
