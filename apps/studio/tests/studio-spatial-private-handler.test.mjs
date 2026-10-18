@@ -282,6 +282,29 @@ try{
  await deny('revocation after upstream bytes',()=>{state.revokeOnDelivery=true});
  await deny('caller storage path',undefined,{body:{action:'deliver-spatial-final',
    memoryId:'memory-a',movieId:'movie-a',planId:PLAN,kind:'mp4',path:'foreign/bucket'}});
+ // Real exported route, synthetic Jobs HTTP and Admin. Final playback remains untouched.
+ for(const kind of ['mp4','srt']){
+  reset();
+  const response=await route.POST(request(kind,{body:{
+   action:'deliver-spatial-segment',memoryId:'memory-a',movieId:'movie-a',
+   planId:PLAN,kind,segmentIndex:0}}));
+  assert.equal(response.status,200,'authorized segment '+kind);
+  assert.deepEqual(Buffer.from(await response.arrayBuffer()),kind==='mp4'?VIDEO:SRT);
+  assert.equal(response.headers.get('x-urai-private-segment-index'),'0');
+  assert.equal(response.headers.get('x-urai-private-segment-start-ms'),'0');
+  assert.equal(response.headers.get('x-urai-private-segment-end-ms'),'900');
+  assert.equal(state.requests.find(x=>x.action==='deliver')?.artifact,'segment:0');
+  cases++;
+ }
+ const segmentRequest=(index=0)=>({body:{action:'deliver-spatial-segment',
+   memoryId:'memory-a',movieId:'movie-a',planId:PLAN,kind:'mp4',segmentIndex:index}});
+ for(const index of [-1,1,180,1.5,'0'])await deny('invalid segment '+index,undefined,segmentRequest(index));
+ await deny('foreign segment owner',()=>{state.spatialUid='spatial-b'},segmentRequest());
+ await deny('withdrawn segment consent',()=>{state.docs['users/spatial-a/privacyPolicy/current'].domains.memory.mode='denied'},segmentRequest());
+ await deny('deleted segment memory',()=>{state.docs['users/spatial-a/memories/memory-a'].deleted=true},segmentRequest());
+ await deny('tampered segment digest',()=>{state.playlistMutation=p=>{p.segments[0].video.checksum='f'.repeat(64)}},segmentRequest());
+ await deny('changed segment generation',()=>{state.playlistMutation=p=>{p.segments[0].video.delivery.generation='0'}},segmentRequest());
+ await deny('Jobs outage on segment',()=>{state.jobsUnavailable=true},segmentRequest());
  await deny('unsupported range',undefined,{headers:{range:'bytes=0-10'}});
  await deny('foreign origin',undefined,{headers:{origin:'https://evil.example.test'}});
 
