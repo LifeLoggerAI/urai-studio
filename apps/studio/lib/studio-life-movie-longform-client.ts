@@ -75,7 +75,7 @@ export async function callStudioLongformBridge(input: StudioLongformRequest): Pr
  * No media bytes are released to the caller until all bytes match the hash. */
 export async function callStudioLongformPrivateBytes(
   input: { action:'deliver'; tenantId:string; userId:string; planId:string;
-    artifact:'final'; kind:'mp4'|'srt'; authorityHash:string; expiresAt:number;
+    artifact:'final' | `segment:${number}`; kind:'mp4'|'srt'; authorityHash:string; expiresAt:number;
     generation:string; disposition:'inline' },
   expected: { sha256:string; mimeType:'video/mp4'|'application/x-subrip'; signal?:AbortSignal },
 ): Promise<Buffer> {
@@ -84,7 +84,9 @@ export async function callStudioLongformPrivateBytes(
   if(!/^[a-f0-9]{64}$/.test(expected.sha256) ||
      !/^[a-f0-9]{64}$/.test(input.authorityHash) ||
      !/^[1-9][0-9]*$/.test(input.generation) ||
-     input.artifact!=='final' || input.action!=='deliver' || input.disposition!=='inline' ||
+     !(/^(?:final|segment:(?:0|[1-9][0-9]{0,2}))$/.test(input.artifact)) ||
+     (input.artifact.startsWith('segment:') && Number(input.artifact.slice(8)) >= 180) ||
+     input.action!=='deliver' || input.disposition!=='inline' ||
      (input.kind==='mp4'?'video/mp4':'application/x-subrip')!==expected.mimeType ||
      !Number.isSafeInteger(input.expiresAt) || input.expiresAt<=Date.now() ||
      input.expiresAt>Date.now()+5*60_000) {
