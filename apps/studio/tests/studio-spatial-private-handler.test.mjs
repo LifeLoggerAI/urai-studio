@@ -380,6 +380,8 @@ try{
  assert.equal(answer.headers.get('access-control-allow-methods'),'POST, OPTIONS');
  assert.ok(answer.headers.get('access-control-allow-headers').includes('x-urai-spatial-id-token'));
  assert.ok(answer.headers.get('access-control-expose-headers').includes('x-urai-private-playlist-digest'));
+ for(const segmentHeader of ['x-urai-private-segment-index','x-urai-private-segment-start-ms','x-urai-private-segment-end-ms'])
+   assert.ok(answer.headers.get('access-control-expose-headers').includes(segmentHeader), 'authorized segment header not exposed: '+segmentHeader);
  assert.ok(!answer.headers.has('access-control-allow-credentials'));
  cases++;
  answer=await fetch(localEndpoint,{method:'OPTIONS',headers:{origin:forbidden,
