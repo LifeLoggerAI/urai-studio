@@ -228,7 +228,7 @@ try{
  bridgeUrl='http://127.0.0.1:'+server.address().port+'/studioLifeMovieLongformBridge';
  async function deny(label,setup=()=>{},options={}){
    reset();setup();
-   const response=await route.POST(request('mp4',options));
+   const response=await route.POST(request(options.kind??'mp4',options));
    assert.equal(response.status,403,label);
    const body=Buffer.from(await response.arrayBuffer());
    assert.equal(body.includes(VIDEO),false,label+' returned video');
@@ -276,7 +276,9 @@ try{
  await deny('Spatial provider unavailable',()=>{state.spatialUnavailable=true});
  await deny('Studio provider unavailable',()=>{state.studioUnavailable=true});
  await deny('playlist digest substitution',()=>{state.playlistMutation=p=>{p.playlistDigest='f'.repeat(64)}});
- await deny('caption checksum substitution',()=>{state.playlistMutation=p=>{p.finalFile.subtitles.checksum='f'.repeat(64)}});
+ // A final SRT checksum substitution must fail on the SRT delivery boundary.
+ // Final MP4 remains independently authorized and is verified above.
+ await deny('caption checksum substitution',()=>{state.playlistMutation=p=>{p.finalFile.subtitles.checksum='f'.repeat(64)}},{kind:'srt'});
  await deny('storage generation substitution',()=>{state.playlistMutation=p=>{p.finalFile.video.delivery.generation='0'}});
  await deny('corrupt video bytes',()=>{state.corruptVideo=true});
  await deny('oversized advertised bytes',()=>{state.largeVideo=true});
