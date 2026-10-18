@@ -100,7 +100,7 @@ export function verifiedFinalSpatialAsset(
   // unchanged for the existing original Replay.
   if (segmentIndex !== null) {
     if (segmentIndex >= segments.length) fail();
-    const selected = segments[segmentIndex], part = row(playlist.segments[segmentIndex]);
+    const selected = segments[segmentIndex], part = row((playlist.segments as unknown[])[segmentIndex]);
     if (Number(selected.endMs) - Number(selected.startMs) > 15_000) fail();
     const video = verify(part.video, 'mp4', 'segment:' + segmentIndex);
     const captions = verify(part.subtitles, 'srt', 'segment:' + segmentIndex);
