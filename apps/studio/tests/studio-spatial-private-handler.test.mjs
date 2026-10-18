@@ -308,8 +308,24 @@ try{
          corsOriginAllowed:result.headers.get('access-control-allow-origin')===incoming.headers.origin,
          contentLength:result.headers.get('content-length')}));
      }
+     const responseBytes=Buffer.from(await result.arrayBuffer());
+     if(process.env.URAI_STUDIO_PROTECTED_BROWSER_LOOPBACK==='true' &&
+        method==='POST' && result.status===403) {
+       assert.equal(result.headers.get('content-type'),'application/json');
+       assert.match(result.headers.get('cache-control')??'',/no-store/);
+       assert.equal(result.headers.get('x-urai-private-playlist-digest'),null);
+       assert.equal(responseBytes.includes(VIDEO),false,'denial disclosed protected MP4');
+       assert.equal(responseBytes.includes(SRT),false,'denial disclosed protected captions');
+       assert.deepEqual(JSON.parse(responseBytes.toString()),{
+         ok:false,error:'spatial_private_media_authority_unavailable'
+       });
+       console.log('URAI_STUDIO_DENIED_NO_PRIVATE_BYTES '+JSON.stringify({
+         method,status:403,protectedMp4Bytes:0,protectedSrtBytes:0,
+         responseKind:'fixed-json-denial'
+       }));
+     }
      outgoing.writeHead(result.status,Object.fromEntries(result.headers.entries()));
-     outgoing.end(Buffer.from(await result.arrayBuffer()));
+     outgoing.end(responseBytes);
    }catch{
      outgoing.writeHead(500,{'content-type':'text/plain','cache-control':'no-store'});
      outgoing.end('synthetic_bridge_unavailable');
