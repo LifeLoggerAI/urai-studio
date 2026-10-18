@@ -44,7 +44,7 @@ function cors(request: Request): Record<string,string> {
     'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'authorization, content-type, x-urai-spatial-id-token',
-    'Access-Control-Expose-Headers': 'content-type, content-length, x-urai-private-playlist-digest',
+    'Access-Control-Expose-Headers': 'content-type, content-length, x-urai-private-playlist-digest, x-urai-private-segment-index, x-urai-private-segment-start-ms, x-urai-private-segment-end-ms',
     'Access-Control-Max-Age': '60',
   } : {};
 }
