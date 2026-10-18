@@ -230,10 +230,10 @@ jobs:
           fi
           mkdir -p "$RUNNER_TEMP/urai-jobs-wave167"
           for segment in 1 2; do
-            angle=$((segment * 85))
+            level=$((segment * 8))
             dest="$RUNNER_TEMP/urai-jobs-wave167/segment-$segment.mp4"
             ffmpeg -nostdin -hide_banner -loglevel error -y -i "$URAI_JOBS_SYNTH_MP4" \
-              -vf "hue=h=$angle" -c:v libx264 -preset veryfast -crf 26 -pix_fmt yuv420p \
+              -vf "eq=brightness=0.$level" -c:v libx264 -preset veryfast -crf 26 -pix_fmt yuv420p \
               -c:a aac -b:a 128k -ac 2 -ar 48000 -movflags +faststart "$dest"
             ffmpeg -nostdin -hide_banner -loglevel error -xerror -i "$dest" -f null -
             SEGMENT_FILE="$dest" node -e "const fs=require('fs');const x=fs.statSync(process.env.SEGMENT_FILE);if(x.size<1000||x.size>64*1024*1024)process.exit(1)"
