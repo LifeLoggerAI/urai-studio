@@ -6,7 +6,7 @@ import { adminDb } from '@/lib/firebase-admin';
 import { requireStudioLongformAuth, refreshStudioLongformAuth } from '@/lib/studio-life-movie-longform-auth';
 import { verifyStudioSpatialAccountLink, SPATIAL_IDENTITY_PROJECT, STUDIO_IDENTITY_PROJECT } from '@/lib/studio-spatial-account-link';
 import { verifyCurrentSpatialMemoryPlan } from '@/lib/studio-spatial-life-movie-contract';
-import { verifiedFinalSpatialAsset, sameAuthorizedMemoryPlan, sameFinalSpatialAsset } from '@/lib/studio-spatial-private-playback';
+import { verifiedFinalSpatialAsset, verifiedSegmentSpatialAsset, sameAuthorizedMemoryPlan, sameFinalSpatialAsset } from '@/lib/studio-spatial-private-playback';
 import { callStudioLongformBridge, callStudioLongformPrivateBytes } from '@/lib/studio-life-movie-longform-client';
 import { readStudioLongformJson } from '@/lib/studio-life-movie-longform-contract';
 
@@ -75,13 +75,19 @@ export async function POST(request: Request): Promise<Response> {
     if (request.headers.has('range')) throw new Error('range_unsupported');
     const value = await readStudioLongformJson(request, 4096) as Record<string,unknown>;
     if (!value || Array.isArray(value) || typeof value !== 'object' ||
-        Object.keys(value).length !== 5 || value.action !== 'deliver-spatial-final' ||
+        !([5,6].includes(Object.keys(value).length)) ||
+        (value.action !== 'deliver-spatial-final' && value.action !== 'deliver-spatial-segment') ||
         typeof value.memoryId !== 'string' || !ID.test(value.memoryId) ||
         typeof value.movieId !== 'string' || !ID.test(value.movieId) ||
         typeof value.planId !== 'string' || !PLAN.test(value.planId) ||
-        (value.kind !== 'mp4' && value.kind !== 'srt')) throw new Error('selector_invalid');
+        (value.kind !== 'mp4' && value.kind !== 'srt') ||
+        (value.action === 'deliver-spatial-final' && (Object.keys(value).length !== 5 || 'segmentIndex' in value)) ||
+        (value.action === 'deliver-spatial-segment' && (Object.keys(value).length !== 6 ||
+          !Number.isSafeInteger(value.segmentIndex) || Number(value.segmentIndex) < 0 ||
+          Number(value.segmentIndex) >= 180))) throw new Error('selector_invalid');
     const selector = { memoryId: value.memoryId, movieId: value.movieId, planId: value.planId };
     const kind = value.kind as 'mp4' | 'srt';
+    const segmentIndex = value.action === 'deliver-spatial-segment' ? Number(value.segmentIndex) : null;
     const studioDb = adminDb;
     const app = getApps().find(a => a.name === APP_NAME) ||
       initializeApp({ credential: applicationDefault(), projectId: SPATIAL_IDENTITY_PROJECT }, APP_NAME);
@@ -137,18 +143,23 @@ export async function POST(request: Request): Promise<Response> {
     const playlist = await callStudioLongformBridge({
       action: 'playback', userId: actor.uid, tenantId: actor.tenantId, planId: selector.planId,
     });
-    const asset = verifiedFinalSpatialAsset(playlist, initial, kind);
+    const asset = segmentIndex === null
+      ? verifiedFinalSpatialAsset(playlist, initial, kind)
+      : verifiedSegmentSpatialAsset(playlist, initial, kind, segmentIndex);
     sameAuthorizedMemoryPlan(initial, await readAuthority());
     const bytes = await callStudioLongformPrivateBytes({
       action: 'deliver', userId: actor.uid, tenantId: actor.tenantId, planId: selector.planId,
-      artifact: 'final', kind, authorityHash: asset.authorityHash,
+      artifact: segmentIndex === null ? 'final' : `segment:${segmentIndex}`,
+      kind, authorityHash: asset.authorityHash,
       expiresAt: asset.expiresAt, generation: asset.generation, disposition: 'inline',
     }, { sha256: asset.sha256, mimeType: asset.mimeType, signal: request.signal });
     sameAuthorizedMemoryPlan(initial, await readAuthority());
     const latestPlaylist = await callStudioLongformBridge({
       action: 'playback', userId: actor.uid, tenantId: actor.tenantId, planId: selector.planId,
     });
-    const latest = verifiedFinalSpatialAsset(latestPlaylist, initial, kind);
+    const latest = segmentIndex === null
+      ? verifiedFinalSpatialAsset(latestPlaylist, initial, kind)
+      : verifiedSegmentSpatialAsset(latestPlaylist, initial, kind, segmentIndex);
     sameFinalSpatialAsset(asset, latest);
     sameAuthorizedMemoryPlan(initial, await readAuthority());
     if (request.signal.aborted || !bytes.length || bytes.length > 64 * 1024 * 1024)
@@ -160,6 +171,11 @@ export async function POST(request: Request): Promise<Response> {
       'X-URAI-PRIVATE-PLAYLIST-DIGEST': String((latestPlaylist.playback as Record<string,unknown>).playlistDigest),
       'Content-Disposition': 'inline; filename="urai-authorized-life-movie"',
       'Content-Length': String(bytes.length),
+      ...(segmentIndex === null ? {} : {
+        'X-URAI-PRIVATE-SEGMENT-INDEX': String(segmentIndex),
+        'X-URAI-PRIVATE-SEGMENT-START-MS': String(asset.startMs),
+        'X-URAI-PRIVATE-SEGMENT-END-MS': String(asset.endMs),
+      }),
     } });
   } catch { return deny(request); }
 }
