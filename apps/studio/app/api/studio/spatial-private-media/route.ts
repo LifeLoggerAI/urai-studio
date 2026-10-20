@@ -184,7 +184,10 @@ export async function POST(request: Request): Promise<Response> {
       : verifiedSegmentSpatialAsset(latestPlaylist, initial, kind, segmentIndex);
     sameFinalSpatialAsset(asset, latest);
     sameAuthorizedMemoryPlan(initial, await readAuthority());
-    if (request.signal.aborted || !bytes.length || bytes.length > 64 * 1024 * 1024)
+    // Defense in depth: even a broken upstream response cannot send a caption
+    // larger than original Spatial Replay's 2 MiB private SRT ceiling.
+    if (request.signal.aborted || !bytes.length ||
+        bytes.length > (kind === 'srt' ? 2 * 1024 * 1024 : 64 * 1024 * 1024))
       throw new Error('delivery_cancelled');
     // Existing owner-scoped Jobs transport verifies SHA-256 over all bytes
     // before this route releases them; no streaming before full verification.

@@ -10,8 +10,10 @@ const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText
 
-function fixture(revokeAfterDelivery = false) {
-  const original = Buffer.from('SYNTHETIC_AUTHORIZED_PRIVATE_MP4_BYTES')
+function fixture(revokeAfterDelivery = false, { kind = 'mp4', byteLength = null } = {}) {
+  const original = byteLength === null
+    ? Buffer.from('SYNTHETIC_AUTHORIZED_PRIVATE_MP4_BYTES')
+    : Buffer.alloc(byteLength, 83)
   let deliveryReturned = false
   let passedToGuard = null
   const actor = { uid: 'synthetic-owner', tenantId: 'synthetic-tenant' }
@@ -19,7 +21,7 @@ function fixture(revokeAfterDelivery = false) {
   const studioApp = { name: '[DEFAULT]', options: { projectId: 'synthetic-studio-project' } }
   const memory = { ownerUid: 'synthetic-owner', planId: 'lmp_' + 'a'.repeat(20),
     memoryId: 'memory-a', movieId: 'movie-a' }
-  const asset = { kind: 'mp4', sha256: 'a'.repeat(64), mimeType: 'video/mp4',
+  const asset = { kind, sha256: 'a'.repeat(64), mimeType: kind === 'mp4' ? 'video/mp4' : 'application/x-subrip',
     authorityHash: 'b'.repeat(64), expiresAt: Date.now() + 60_000, generation: '1' }
   const mocks = {
     'next/server': { NextResponse: { json: (value, options = {}) =>
@@ -55,7 +57,7 @@ function fixture(revokeAfterDelivery = false) {
     },
     '@/lib/studio-life-movie-longform-contract': {
       readStudioLongformJson: async () => ({ action: 'deliver-spatial-final',
-        memoryId: memory.memoryId, movieId: memory.movieId, planId: memory.planId, kind: 'mp4' }),
+        memoryId: memory.memoryId, movieId: memory.movieId, planId: memory.planId, kind }),
     },
   }
   const exports = {}
@@ -87,4 +89,30 @@ test('consent revocation after private-byte acquisition wipes original Buffer be
   assert.equal(response.status, 403)
   assert.equal(f.guardedBuffer(), null)
   assert.ok(f.original.every(byte => byte === 0), 'revoked private media bytes remain in route memory')
+})
+
+
+test('original Spatial private route enforces the 2 MiB subtitle cap independently of Jobs', async () => {
+  const f = fixture(false, { kind: 'srt', byteLength: 2 * 1024 * 1024 + 1 })
+  const response = await f.request()
+  assert.equal(response.status, 403, 'oversized private caption must fail closed before response streaming')
+  assert.equal(f.guardedBuffer(), null, 'oversized subtitle must not reach response stream')
+  assert.ok(f.original.every(byte => byte === 0), 'oversized private subtitles must be scrubbed after denial')
+})
+
+test('original Spatial private route permits exactly 2 MiB captions and scrubs bytes', async () => {
+  const f = fixture(false, { kind: 'srt', byteLength: 2 * 1024 * 1024 })
+  const response = await f.request()
+  assert.equal(response.status, 200)
+  assert.strictEqual(f.guardedBuffer(), f.original)
+  assert.equal((await response.arrayBuffer()).byteLength, 2 * 1024 * 1024)
+  assert.ok(f.original.every(byte => byte === 0))
+})
+
+test('original Spatial private route permits MP4 exceeding the caption-specific limit', async () => {
+  const f = fixture(false, { kind: 'mp4', byteLength: 2 * 1024 * 1024 + 1 })
+  const response = await f.request()
+  assert.equal(response.status, 200)
+  assert.equal((await response.arrayBuffer()).byteLength, 2 * 1024 * 1024 + 1)
+  assert.ok(f.original.every(byte => byte === 0))
 })
