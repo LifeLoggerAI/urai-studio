@@ -219,15 +219,37 @@ export function guardedSpatialPrivateResponse(args: {
   const { bytes, reauthorize, signal } = args;
   const deadline = args.expiresAt;
   if (!bytes.byteLength || bytes.byteLength > 64 * 1024 * 1024 ||
-      !Number.isSafeInteger(deadline) || deadline <= Date.now()) {
+      !Number.isSafeInteger(deadline) || deadline <= Date.now() || signal.aborted) {
     bytes.fill(0);
     throw new Error('spatial_private_media_delivery_unavailable');
   }
   let offset = 0;
   let ended = false;
-  const scrub = () => { if (!ended) { ended = true; bytes.fill(0); } };
+  let deadlineTimer: ReturnType<typeof setTimeout> | undefined;
+  let streamController: ReadableStreamDefaultController<Uint8Array> | undefined;
+  const scrub = () => {
+    if (ended) return;
+    ended = true;
+    bytes.fill(0);
+    signal.removeEventListener('abort', revoke);
+    if (deadlineTimer !== undefined) clearTimeout(deadlineTimer);
+  };
+  const revoke = () => {
+    if (ended) return;
+    scrub();
+    // Reject even an unread response: otherwise an expired, aborted private
+    // Buffer can outlive its authorization until a consumer starts pulling.
+    try { streamController?.error(new Error('spatial_private_media_delivery_unavailable')); } catch {}
+  };
   const denied = () => signal.aborted || Date.now() >= deadline;
   const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      streamController = controller;
+      signal.addEventListener('abort', revoke, { once: true });
+      deadlineTimer = setTimeout(revoke, Math.max(1, deadline - Date.now()));
+      deadlineTimer.unref?.();
+      if (denied()) revoke();
+    },
     async pull(controller) {
       if (ended) return;
       try {
@@ -266,8 +288,7 @@ export function guardedSpatialPrivateResponse(args: {
         controller.enqueue(part);
         if (offset === bytes.byteLength) { scrub(); controller.close(); }
       } catch {
-        scrub();
-        controller.error(new Error('spatial_private_media_delivery_unavailable'));
+        revoke();
       }
     },
     cancel() { scrub(); },
