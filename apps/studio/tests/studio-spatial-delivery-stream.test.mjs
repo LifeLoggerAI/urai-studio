@@ -82,3 +82,30 @@ test('server-side authority timeout bounds permanently unresolved authorization 
   assert.equal(await Promise.race([result,new Promise(resolve=>setTimeout(()=>resolve('stalled'),250))]),'denied');
   assert.ok(bytes.every(value=>value===0));
 });
+
+test('aborted before construction scrubs source even before any stream exists',()=>{
+  const bytes=Buffer.alloc(64,21),abort=new AbortController();
+  abort.abort();
+  assert.throws(()=>make(bytes,async()=>{},abort.signal),/spatial_private_media_delivery_unavailable/);
+  assert.ok(bytes.every(value=>value===0));
+});
+test('aborted unread response immediately wipes source and denies subsequent read',async()=>{
+  const bytes=Buffer.alloc(1025,77),abort=new AbortController();
+  const response=make(bytes,async()=>{},abort.signal);
+  abort.abort();
+  assert.ok(bytes.every(value=>value===0));
+  await assert.rejects(response.arrayBuffer(),/spatial_private_media_delivery_unavailable/);
+});
+test('expired unread response wipes source without waiting for a consumer',async()=>{
+  const bytes=Buffer.alloc(1025,42);
+  const response=make(bytes,async()=>{},new AbortController().signal,Date.now()+25);
+  await new Promise(resolve=>setTimeout(resolve,65));
+  assert.ok(bytes.every(value=>value===0));
+  await assert.rejects(response.arrayBuffer(),/spatial_private_media_delivery_unavailable/);
+});
+test('cancel before reading private stream wipes source',async()=>{
+  const bytes=Buffer.alloc(1025,18);
+  const reader=make(bytes,async()=>{}).body.getReader();
+  await reader.cancel();
+  assert.ok(bytes.every(value=>value===0));
+});
