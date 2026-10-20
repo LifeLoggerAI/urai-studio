@@ -64,6 +64,9 @@ export async function OPTIONS(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   const actor = await requireStudioLongformAuth(request);
   if (!actor.ok) return deny(request);
+  // Retain ownership of the single verified Buffer until the guarded stream
+  // takes responsibility; scrub immediately if authorization is denied first.
+  let privateBytes: Buffer | null = null;
   try {
     if (process.env.URAI_STUDIO_SPATIAL_PRIVATE_DELIVERY_ENABLED !== 'true' ||
         process.env.URAI_STUDIO_SPATIAL_IDENTITY_ENABLED !== 'true' ||
@@ -171,6 +174,7 @@ export async function POST(request: Request): Promise<Response> {
       kind, authorityHash: asset.authorityHash,
       expiresAt: asset.expiresAt, generation: asset.generation, disposition: 'inline',
     }, { sha256: asset.sha256, mimeType: asset.mimeType, signal: request.signal });
+    privateBytes = bytes;
     sameAuthorizedMemoryPlan(initial, await readAuthority());
     const latestPlaylist = await callStudioLongformBridge({
       action: 'playback', userId: actor.uid, tenantId: actor.tenantId, planId: selector.planId,
@@ -184,7 +188,9 @@ export async function POST(request: Request): Promise<Response> {
       throw new Error('delivery_cancelled');
     // Existing owner-scoped Jobs transport verifies SHA-256 over all bytes
     // before this route releases them; no streaming before full verification.
-    return guardedSpatialPrivateResponse({ bytes: Uint8Array.from(bytes), signal: request.signal,
+    // The guarded stream scrubs this exact original Buffer upon completion,
+    // abort, denial or reader cancellation. Do not retain an unsanitized copy.
+    return guardedSpatialPrivateResponse({ bytes, signal: request.signal,
       expiresAt: asset.expiresAt,
       reauthorize: async () => { sameAuthorizedMemoryPlan(initial, await readAuthority()); },
       headers: {
@@ -198,5 +204,8 @@ export async function POST(request: Request): Promise<Response> {
         'X-URAI-PRIVATE-SEGMENT-END-MS': String(asset.endMs),
       }),
     } });
-  } catch { return deny(request); }
+  } catch {
+    privateBytes?.fill(0);
+    return deny(request);
+  }
 }

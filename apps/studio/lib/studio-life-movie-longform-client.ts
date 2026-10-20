@@ -103,6 +103,8 @@ export async function callStudioLongformPrivateBytes(
   const deadline=Math.min(input.expiresAt,Date.now()+52_000);
   const timer=setTimeout(abort,Math.max(1,deadline-Date.now()));
   let reader:ReadableStreamDefaultReader<Uint8Array>|null=null;
+  // Keep local chunk copies accessible to the cleanup path on both success and denial.
+  const chunks: Buffer[]=[];
   try {
     const response=await fetch(url,{
       method:'POST',headers:{authorization:'Bearer '+token,'content-type':'application/json',
@@ -126,7 +128,7 @@ export async function callStudioLongformPrivateBytes(
     if(advertised!==null && (!/^[1-9][0-9]*$/.test(advertised) || Number(advertised)>MAX_BYTES))
       throw new StudioLongformError('longform_private_media_too_large',413);
     reader=response.body.getReader();
-    const chunks:Buffer[]=[];let total=0;
+    let total=0;
     const digest=createHash('sha256');
     while(true) {
       if(controller.signal.aborted||Date.now()>=deadline)
@@ -147,6 +149,10 @@ export async function callStudioLongformPrivateBytes(
     if(error instanceof StudioLongformError)throw error;
     throw new StudioLongformError('longform_private_media_unavailable',502);
   }finally{
+    // Buffer.concat returns an independent authorized result; never retain
+    // its source chunk copies in the success, hash-denial or abort paths.
+    for (const chunk of chunks) chunk.fill(0);
+    chunks.length=0;
     clearTimeout(timer);expected.signal?.removeEventListener('abort',abort);
     if(reader){await reader.cancel().catch(()=>undefined);reader.releaseLock();}
   }
