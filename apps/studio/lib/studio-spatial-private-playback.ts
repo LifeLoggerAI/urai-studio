@@ -203,3 +203,50 @@ export function sameFinalSpatialAsset(first: FinalPrivateAsset, second: FinalPri
   }
   if (first.expiresAt <= Date.now() || second.expiresAt <= Date.now()) fail();
 }
+
+/** The upstream Jobs bridge has fully checked the checksum before this point.
+ * Recheck the original Studio/Spatial consent and owner authority for every
+ * bounded chunk as it leaves Studio, because response streaming may continue
+ * after an earlier request-time consent check. Never hand a single unguarded
+ * 64 MiB buffer to Next's response transport. */
+export function guardedSpatialPrivateResponse(args: {
+  bytes: Uint8Array;
+  headers: HeadersInit;
+  reauthorize: () => Promise<void>;
+  signal: AbortSignal;
+  expiresAt: number;
+}): Response {
+  const { bytes, reauthorize, signal } = args;
+  const deadline = args.expiresAt;
+  if (!bytes.byteLength || bytes.byteLength > 64 * 1024 * 1024 ||
+      !Number.isSafeInteger(deadline) || deadline <= Date.now()) {
+    bytes.fill(0);
+    throw new Error('spatial_private_media_delivery_unavailable');
+  }
+  let offset = 0;
+  let ended = false;
+  const scrub = () => { if (!ended) { ended = true; bytes.fill(0); } };
+  const denied = () => signal.aborted || Date.now() >= deadline;
+  const stream = new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      if (ended) return;
+      try {
+        if (denied()) throw new Error('private_media_delivery_expired');
+        await reauthorize();
+        if (denied()) throw new Error('private_media_delivery_expired');
+        const end = Math.min(bytes.byteLength, offset + 1024 * 1024);
+        // Copy so zeroizing the source after completion cannot mutate queued
+        // response chunks. No private bytes enter logs, errors or public URLs.
+        const part = Uint8Array.from(bytes.subarray(offset, end));
+        offset = end;
+        controller.enqueue(part);
+        if (offset === bytes.byteLength) { scrub(); controller.close(); }
+      } catch {
+        scrub();
+        controller.error(new Error('spatial_private_media_delivery_unavailable'));
+      }
+    },
+    cancel() { scrub(); },
+  }, { highWaterMark: 0 });
+  return new Response(stream, { status: 200, headers: args.headers });
+}
