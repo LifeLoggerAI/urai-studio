@@ -125,7 +125,7 @@ export const jobRunner = functions.pubsub
     const queuedJobsQuery = db.collection("jobs").where("state", "==", "queued")
       .orderBy("priority", "desc").orderBy("createdAt").limit(25);
     const expiredJobsQuery = db.collection("jobs").where("state", "==", "running")
-      .where("leaseExpiresAt", "<", now).orderBy("priority", "desc").orderBy("createdAt").limit(25);
+      .where("leaseExpiresAt", "<", now).orderBy("leaseExpiresAt").orderBy("priority", "desc").orderBy("createdAt").limit(25);
     const [queued, expired] = await Promise.all([queuedJobsQuery.get(), expiredJobsQuery.get()]);
     const candidates = [...queued.docs, ...expired.docs];
 
