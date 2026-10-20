@@ -59,7 +59,8 @@ export function verifiedFinalSpatialAsset(
     const part = row(entry), video = row(part.video), captions = row(part.subtitles);
     if (part.index !== i || !int(part.startMs) || !int(part.endMs) ||
         Number(part.endMs) <= Number(part.startMs) ||
-        part.gapBeforeMs !== Math.max(0, Number(part.startMs) - priorEnd) ||
+        Number(part.startMs) < priorEnd ||
+        part.gapBeforeMs !== Number(part.startMs) - priorEnd ||
         !sha(video.checksum) || !sha(captions.checksum) ||
         video.mimeType !== 'video/mp4' || captions.mimeType !== 'application/x-subrip') fail();
     priorEnd = Number(part.endMs);
