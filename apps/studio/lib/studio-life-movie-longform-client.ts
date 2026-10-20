@@ -100,12 +100,16 @@ export async function callStudioLongformPrivateBytes(
   const controller=new AbortController();
   const abort=()=>controller.abort();
   expected.signal?.addEventListener('abort',abort,{once:true});
+  // AbortSignal listeners do not fire retroactively for an already-aborted
+  // caller. Deny before sending any private Jobs request in that case.
+  if(expected.signal?.aborted)controller.abort();
   const deadline=Math.min(input.expiresAt,Date.now()+52_000);
   const timer=setTimeout(abort,Math.max(1,deadline-Date.now()));
   let reader:ReadableStreamDefaultReader<Uint8Array>|null=null;
   // Keep local chunk copies accessible to the cleanup path on both success and denial.
   const chunks: Buffer[]=[];
   try {
+    if(controller.signal.aborted)throw new StudioLongformError('longform_private_media_timeout',504);
     const response=await fetch(url,{
       method:'POST',headers:{authorization:'Bearer '+token,'content-type':'application/json',
         accept:expected.mimeType},body:encoded,cache:'no-store',redirect:'error',
@@ -123,10 +127,14 @@ export async function callStudioLongformPrivateBytes(
       await response.body?.cancel().catch(()=>undefined);
       throw new StudioLongformError('longform_private_media_response_invalid',502);
     }
-    const MAX_BYTES=64*1024*1024; // bounded local/nonproduction artifact admission
+    // Match original Spatial Replay: video <= 64 MiB, SRT <= 2 MiB.
+    // Never buffer subtitles the client would be required to reject.
+    const MAX_BYTES=input.kind==='srt' ? 2*1024*1024 : 64*1024*1024;
     const advertised=response.headers.get('content-length');
-    if(advertised!==null && (!/^[1-9][0-9]*$/.test(advertised) || Number(advertised)>MAX_BYTES))
+    if(advertised!==null && (!/^[1-9][0-9]*$/.test(advertised) || Number(advertised)>MAX_BYTES)) {
+      await response.body.cancel().catch(()=>undefined);
       throw new StudioLongformError('longform_private_media_too_large',413);
+    }
     reader=response.body.getReader();
     let total=0;
     const digest=createHash('sha256');

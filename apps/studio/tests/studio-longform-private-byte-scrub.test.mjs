@@ -16,8 +16,9 @@ class SyntheticBridgeError extends Error {
 }
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex')
 
-function sourceHarness(payload, expectedSha) {
+function sourceHarness(payload, expectedSha, kind = 'mp4', options = {}) {
   const chunkCopies = []
+  const transport = { fetchCalls: 0, cancels: 0, observedAborted: [] }
   const trackedBuffer = new Proxy(Buffer, {
     get(target, name) {
       if (name === 'from') return (...args) => {
@@ -28,20 +29,23 @@ function sourceHarness(payload, expectedSha) {
       return Reflect.get(target, name, target)
     },
   })
-  const fetchMock = async () => {
+  const fetchMock = async (_url, fetchOptions) => {
+    transport.fetchCalls++
+    transport.observedAborted.push(fetchOptions.signal.aborted)
     const stream = new ReadableStream({
       start(controller) {
         const middle = Math.floor(payload.length / 2)
         controller.enqueue(Uint8Array.from(payload.subarray(0, middle)))
         controller.enqueue(Uint8Array.from(payload.subarray(middle)))
-        controller.close()
+        if (!options.keepStreamOpen) controller.close()
       },
+      cancel() { transport.cancels++ },
     })
     return new Response(stream, { status: 200, headers: {
-      'content-type': 'video/mp4',
+      'content-type': kind === 'mp4' ? 'video/mp4' : 'application/x-subrip',
       'content-disposition': 'inline; filename="synthetic.mp4"',
       'cache-control': 'private, no-store',
-      'content-length': String(payload.length),
+      ...(options.omitContentLength ? {} : { 'content-length': String(options.advertisedLength ?? payload.length) }),
     } })
   }
   const sandbox = { exports: {} }
@@ -64,11 +68,11 @@ function sourceHarness(payload, expectedSha) {
     sandbox.exports, importer, fetchMock, trackedBuffer, { env },
   )
   const input = { action: 'deliver', tenantId: 'synthetic-tenant', userId: 'synthetic-owner',
-    planId: 'lmp_'+'a'.repeat(20), artifact: 'final', kind: 'mp4',
+    planId: 'lmp_'+'a'.repeat(20), artifact: 'final', kind,
     authorityHash: 'b'.repeat(64), expiresAt: Date.now() + 60_000,
     generation: '5', disposition: 'inline' }
-  const expected = { sha256: expectedSha, mimeType: 'video/mp4' }
-  return { run: () => sandbox.exports.callStudioLongformPrivateBytes(input, expected), chunkCopies }
+  const expected = { sha256: expectedSha, mimeType: kind === 'mp4' ? 'video/mp4' : 'application/x-subrip', ...(options.signal ? { signal: options.signal } : {}) }
+  return { run: () => sandbox.exports.callStudioLongformPrivateBytes(input, expected), chunkCopies, transport }
 }
 
 test('verified private delivery scrubs scratch chunks without corrupting returned authorized bytes', async () => {
@@ -90,4 +94,45 @@ test('mismatched private bytes scrub scratch chunks on digest rejection', async 
   for (const scratch of harness.chunkCopies) {
     assert.ok(scratch.every(byte => byte === 0), 'original Jobs bridge retained rejected private chunk scratch')
   }
+})
+
+
+test('protected subtitle delivery accepts the exact 2 MiB cross-system browser ceiling', async () => {
+  const source = Buffer.alloc(2 * 1024 * 1024, 65)
+  const harness = sourceHarness(source, sha256(source), 'srt')
+  const delivered = await harness.run()
+  assert.deepEqual(delivered, source)
+  assert.ok(harness.chunkCopies.every(chunk => chunk.every(byte => byte === 0)))
+})
+
+test('protected subtitles exceeding the original Spatial 2 MiB ceiling never cross the Studio bridge', async () => {
+  const source = Buffer.alloc(2 * 1024 * 1024 + 1, 66)
+  const harness = sourceHarness(source, sha256(source), 'srt')
+  await assert.rejects(harness.run(), /longform_private_media_too_large/)
+  assert.ok(harness.chunkCopies.every(chunk => chunk.every(byte => byte === 0)))
+  assert.ok(harness.transport.cancels > 0, 'oversized media response stream was not cancelled')
+})
+
+test('verified video may exceed the subtitle-specific ceiling', async () => {
+  const source = Buffer.alloc(2 * 1024 * 1024 + 1, 67)
+  const harness = sourceHarness(source, sha256(source), 'mp4')
+  const delivered = await harness.run()
+  assert.deepEqual(delivered, source)
+})
+
+test('an already-aborted private request never initiates a Jobs network dispatch', async () => {
+  const aborted = new AbortController()
+  aborted.abort()
+  const source = Buffer.from('SYNTHETIC_POST_LOGOUT_MEDIA')
+  const harness = sourceHarness(source, sha256(source), 'mp4', { signal: aborted.signal })
+  await assert.rejects(harness.run())
+  assert.equal(harness.transport.fetchCalls, 0)
+})
+
+test('unadvertised subtitle overflow is stopped during streaming without retaining private bytes', async () => {
+  const source = Buffer.alloc(2 * 1024 * 1024 + 1, 68)
+  const harness = sourceHarness(source, sha256(source), 'srt', { omitContentLength: true, keepStreamOpen: true })
+  await assert.rejects(harness.run(), /longform_private_media_too_large/)
+  assert.ok(harness.chunkCopies.every(chunk => chunk.every(byte => 0 === byte)))
+  assert.ok(harness.transport.cancels > 0)
 })
