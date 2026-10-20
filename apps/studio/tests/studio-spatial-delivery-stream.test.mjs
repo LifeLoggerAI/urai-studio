@@ -62,3 +62,23 @@ test('original Spatial delivery route connects chunk reauthorization',()=>{
   assert.match(route,/reauthorize: async \(\) => \{ sameAuthorizedMemoryPlan\(initial, await readAuthority\(\)\); \}/);
   assert.match(route,/expiresAt: asset\.expiresAt/);
 });
+test('aborted authorization read never strands a protected response or reveals a next chunk',async()=>{
+  const bytes=Buffer.alloc(2*1024*1024+13,71), abort=new AbortController();
+  let calls=0;
+  const reader=make(bytes,async()=>{
+    calls++;
+    if(calls>1) return new Promise(()=>{});
+  },abort.signal).body.getReader();
+  assert.equal((await reader.read()).value.length,1024*1024);
+  const blocked=reader.read().then(()=> 'released',()=> 'denied');
+  abort.abort();
+  assert.equal(await Promise.race([blocked,new Promise(resolve=>setTimeout(()=>resolve('stalled'),250))]),'denied');
+  assert.ok(bytes.every(value=>value===0));
+});
+test('server-side authority timeout bounds permanently unresolved authorization reads',async()=>{
+  const bytes=Buffer.alloc(123,74);
+  const reader=make(bytes,()=>new Promise(()=>{}),new AbortController().signal,Date.now()+30).body.getReader();
+  const result=reader.read().then(()=> 'released',()=> 'denied');
+  assert.equal(await Promise.race([result,new Promise(resolve=>setTimeout(()=>resolve('stalled'),250))]),'denied');
+  assert.ok(bytes.every(value=>value===0));
+});
