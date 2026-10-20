@@ -6,7 +6,7 @@ import { adminDb } from '@/lib/firebase-admin';
 import { requireStudioLongformAuth, refreshStudioLongformAuth } from '@/lib/studio-life-movie-longform-auth';
 import { verifyStudioSpatialAccountLink, SPATIAL_IDENTITY_PROJECT, STUDIO_IDENTITY_PROJECT } from '@/lib/studio-spatial-account-link';
 import { verifyCurrentSpatialMemoryPlan } from '@/lib/studio-spatial-life-movie-contract';
-import { verifiedFinalSpatialAsset, verifiedSegmentSpatialAsset, verifiedSpatialSegmentTimeline, sameVerifiedSpatialSegmentTimeline, sameAuthorizedMemoryPlan, sameFinalSpatialAsset } from '@/lib/studio-spatial-private-playback';
+import { verifiedFinalSpatialAsset, verifiedSegmentSpatialAsset, verifiedSpatialSegmentTimeline, sameVerifiedSpatialSegmentTimeline, sameAuthorizedMemoryPlan, sameFinalSpatialAsset, guardedSpatialPrivateResponse } from '@/lib/studio-spatial-private-playback';
 import { callStudioLongformBridge, callStudioLongformPrivateBytes } from '@/lib/studio-life-movie-longform-client';
 import { readStudioLongformJson } from '@/lib/studio-life-movie-longform-contract';
 
@@ -184,7 +184,10 @@ export async function POST(request: Request): Promise<Response> {
       throw new Error('delivery_cancelled');
     // Existing owner-scoped Jobs transport verifies SHA-256 over all bytes
     // before this route releases them; no streaming before full verification.
-    return new Response(new Uint8Array(bytes), { status: 200, headers: {
+    return guardedSpatialPrivateResponse({ bytes: Uint8Array.from(bytes), signal: request.signal,
+      expiresAt: asset.expiresAt,
+      reauthorize: async () => { sameAuthorizedMemoryPlan(initial, await readAuthority()); },
+      headers: {
       ...headers, ...cors(request), 'Content-Type': asset.mimeType,
       'X-URAI-PRIVATE-PLAYLIST-DIGEST': String((latestPlaylist.playback as Record<string,unknown>).playlistDigest),
       'Content-Disposition': 'inline; filename="urai-authorized-life-movie"',
