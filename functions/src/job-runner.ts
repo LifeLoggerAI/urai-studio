@@ -1,3 +1,4 @@
+import { inspectFallbackJobLease, ownsFallbackJobLease } from './fallback-job-lease';
 import * as functions from "firebase-functions/v1";
 import * as admin from "firebase-admin";
 
@@ -96,101 +97,108 @@ export const jobRunner = functions.pubsub
   .schedule("every 1 minutes")
   .onRun(async (context) => {
     const configDoc = await db.doc("system/config").get();
-    const { maxJobAttempts = 3, leaseSeconds = 300 } = configDoc.data() || {};
+    const settings = configDoc.data() || {};
+    // Fail closed on malformed operational configuration; keep each invocation bounded.
+    const maxJobAttempts = Number.isSafeInteger(settings.maxJobAttempts) &&
+      settings.maxJobAttempts >= 1 && settings.maxJobAttempts <= 10 ? settings.maxJobAttempts : 3;
+    const leaseSeconds = Number.isSafeInteger(settings.leaseSeconds) &&
+      settings.leaseSeconds >= 30 && settings.leaseSeconds <= 3600 ? settings.leaseSeconds : 300;
     const now = admin.firestore.Timestamp.now();
     const leaseExpiresAt = new admin.firestore.Timestamp(now.seconds + leaseSeconds, now.nanoseconds);
     const runnerId = context.eventId;
 
-    const queuedJobsQuery = db.collection("jobs").where("state", "==", "queued").orderBy("priority", "desc").orderBy("createdAt");
-    const expiredJobsQuery = db.collection("jobs").where("state", "==", "running").where("leaseExpiresAt", "<", now).orderBy("priority", "desc").orderBy("createdAt");
+    const queuedJobsQuery = db.collection("jobs").where("state", "==", "queued")
+      .orderBy("priority", "desc").orderBy("createdAt").limit(25);
+    const expiredJobsQuery = db.collection("jobs").where("state", "==", "running")
+      .where("leaseExpiresAt", "<", now).orderBy("priority", "desc").orderBy("createdAt").limit(25);
+    const [queued, expired] = await Promise.all([queuedJobsQuery.get(), expiredJobsQuery.get()]);
+    const candidates = [...queued.docs, ...expired.docs];
 
-    const [queuedJobsSnapshot, expiredJobsSnapshot] = await Promise.all([
-      queuedJobsQuery.get(),
-      expiredJobsQuery.get(),
-    ]);
-
-    const jobsToProcess = [...queuedJobsSnapshot.docs, ...expiredJobsSnapshot.docs];
-    if (jobsToProcess.length === 0) {
-      console.log("No jobs to process.");
-      return;
-    }
-
-    for (const jobDoc of jobsToProcess) {
-      const jobId = jobDoc.id;
+    for (const candidate of candidates) {
+      const jobId = candidate.id;
       const jobRef = db.collection("jobs").doc(jobId);
-      let finalState = "failed";
-
+      let activeClaim: { attempt: number; before: admin.firestore.DocumentData } | null = null;
       try {
-        await db.runTransaction(async (transaction) => {
-          const freshJobDoc = await transaction.get(jobRef);
-          if (!freshJobDoc.exists) return;
-
-          const jobData = freshJobDoc.data()!;
-          const { state, attempt = 0 } = jobData;
-
-          if (state !== "queued" && (state !== "running" || jobData.leaseExpiresAt > now)) {
-            return;
-          }
-
-          if (attempt >= maxJobAttempts) {
+        // Firestore retries this callback under contention. It must contain
+        // transaction reads/writes ONLY, never external artifacts or audit events.
+        const claim = await db.runTransaction(async (transaction) => {
+          const latest = await transaction.get(jobRef);
+          if (!latest.exists) return { kind: 'skipped' as const };
+          const before = latest.data()!;
+          const decision = inspectFallbackJobLease(before, now.toMillis(), maxJobAttempts);
+          if (decision.kind === 'skip') return { kind: 'skipped' as const };
+          if (decision.kind === 'exhausted') {
             transaction.update(jobRef, {
-              state: "failed",
-              error: { message: "Maximum attempts reached." },
+              state: 'failed',
+              error: { message: 'Maximum attempts reached.' },
               updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             });
-            await logJobEvent(jobId, "state_change", "Job failed: Maximum attempts reached.");
-            return;
+            return { kind: 'exhausted' as const, before, attempt: decision.attempt };
           }
-
+          const attempt = decision.attempt + 1;
           transaction.update(jobRef, {
-            state: "running",
-            claimedBy: runnerId,
-            leaseExpiresAt,
-            attempt: attempt + 1,
+            state: 'running', claimedBy: runnerId, leaseExpiresAt, attempt,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           });
+          return { kind: 'claimed' as const, before, attempt };
         });
 
-        const claimedJobData = (await jobRef.get()).data()!;
-        await logJobEvent(jobId, "state_change", `Job claimed by runner ${runnerId}. Attempt ${claimedJobData.attempt}.`);
-
-        const output = await processJob({ id: jobId, ...claimedJobData });
-
-        await jobRef.update({
-          state: "succeeded",
-          output,
-          error: null,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-        await logJobEvent(jobId, "artifact", "Fallback artifact generated.", output);
-        await logJobEvent(jobId, "state_change", "Job succeeded in fallback mode.");
-        await writeAuditLog("system", "job_succeeded_fallback", `jobs/${jobId}`, claimedJobData, (await jobRef.get()).data());
-        finalState = "succeeded";
-      } catch (e: unknown) {
-        const errorMessage = e instanceof Error ? e.message : "Unknown job error";
-        const errorStack = e instanceof Error ? e.stack : undefined;
-        console.error(`Error processing job ${jobId}:`, e);
-        const currentJobData = (await jobRef.get()).data()!;
-        const { attempt } = currentJobData;
-
-        const error = { message: errorMessage, stack: errorStack };
-        const updateData: admin.firestore.UpdateData<admin.firestore.DocumentData> = { error };
-
-        if (attempt >= maxJobAttempts) {
-          updateData.state = "failed";
-          finalState = "failed";
-        } else {
-          finalState = "retry";
+        if (claim.kind === 'skipped') continue;
+        if (claim.kind === 'exhausted') {
+          await logJobEvent(jobId, 'state_change', 'Job failed: Maximum attempts reached.');
+          await writeAuditLog('system', 'job_failed', `jobs/${jobId}`, claim.before, { state: 'failed' });
+          continue;
         }
+        if (claim.kind !== 'claimed') continue;
+        activeClaim = { attempt: claim.attempt, before: claim.before };
+        await logJobEvent(jobId, 'state_change', `Job leased by runner ${runnerId}. Attempt ${claim.attempt}.`);
+        const output = await processJob({ ...claim.before, id: jobId, attempt: claim.attempt });
 
-        updateData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
-        await jobRef.update(updateData);
-        await logJobEvent(jobId, "log", `Job error: ${errorMessage}`);
-
-        if (finalState === "failed") {
-          await logJobEvent(jobId, "state_change", `Job failed after ${attempt} attempts.`);
-          await writeAuditLog("system", "job_failed", `jobs/${jobId}`, currentJobData, (await jobRef.get()).data());
+        // Work can outlive its lease. Never mark a job successful after
+        // cancellation, deletion or a second runner's newer claim.
+        const applied = await db.runTransaction(async (transaction) => {
+          const current = await transaction.get(jobRef);
+          if (!current.exists) return false;
+          if (!ownsFallbackJobLease(current.data(), runnerId, claim.attempt)) return false;
+          transaction.update(jobRef, {
+            state: 'succeeded', output, error: null,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          return true;
+        });
+        if (!applied) continue;
+        await logJobEvent(jobId, 'artifact', 'Fallback artifact generated.', output);
+        await logJobEvent(jobId, 'state_change', 'Job succeeded in fallback mode.');
+        await writeAuditLog('system', 'job_succeeded_fallback', `jobs/${jobId}`,
+          claim.before, { ...claim.before, state: 'succeeded', output });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown job error';
+        console.error(`Fallback job ${jobId} failed:`, error);
+        if (!activeClaim) continue;
+        try {
+          // Failure updates must obey the SAME lease authority as success.
+          // Retry keeps the job running with an expired lease, matching the
+          // existing state machine (running -> queued is not an allowed edge).
+          const applied = await db.runTransaction(async (transaction) => {
+            const current = await transaction.get(jobRef);
+            if (!current.exists) return false;
+            if (!ownsFallbackJobLease(current.data(), runnerId, activeClaim!.attempt)) return false;
+            const terminal = activeClaim!.attempt >= maxJobAttempts;
+            transaction.update(jobRef, {
+              ...(terminal ? { state: 'failed' } : { leaseExpiresAt: admin.firestore.Timestamp.now() }),
+              error: { message }, updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+            return terminal ? 'failed' as const : 'retry' as const;
+          });
+          if (!applied) continue;
+          await logJobEvent(jobId, 'log', `Fallback job error: ${message}`);
+          if (applied === 'failed') {
+            await logJobEvent(jobId, 'state_change', `Job failed after ${activeClaim.attempt} attempts.`);
+            await writeAuditLog('system', 'job_failed', `jobs/${jobId}`,
+              activeClaim.before, { state: 'failed', error: { message } });
+          }
+        } catch (settlementError) {
+          console.error(`Cannot settle failed fallback job ${jobId}:`, settlementError);
         }
       }
     }
