@@ -232,7 +232,31 @@ export function guardedSpatialPrivateResponse(args: {
       if (ended) return;
       try {
         if (denied()) throw new Error('private_media_delivery_expired');
-        await reauthorize();
+        // Firestore and Auth reads cannot always be cancelled. Stop waiting
+        // for a stalled recheck when this request aborts or its authorization
+        // window closes; otherwise the response can retain private bytes.
+        let stopAbort = () => {};
+        let timeout: ReturnType<typeof setTimeout> | undefined;
+        try {
+          await Promise.race([
+            Promise.resolve().then(() => {
+              if (denied()) throw new Error('private_media_delivery_expired');
+              return reauthorize();
+            }),
+            new Promise<never>((_resolve, reject) => {
+              const refuse = () => reject(new Error('private_media_delivery_expired'));
+              signal.addEventListener('abort', refuse, { once: true });
+              stopAbort = () => signal.removeEventListener('abort', refuse);
+              // Keep a bounded pending private response in case the authority
+              // backend hangs without emitting an AbortSignal.
+              timeout = setTimeout(refuse, Math.max(1, Math.min(15_000, deadline - Date.now())));
+              if (denied()) refuse();
+            }),
+          ]);
+        } finally {
+          stopAbort();
+          if (timeout !== undefined) clearTimeout(timeout);
+        }
         if (denied()) throw new Error('private_media_delivery_expired');
         const end = Math.min(bytes.byteLength, offset + 1024 * 1024);
         // Copy so zeroizing the source after completion cannot mutate queued
