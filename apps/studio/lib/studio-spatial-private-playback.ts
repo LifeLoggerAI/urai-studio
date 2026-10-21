@@ -59,7 +59,8 @@ export function verifiedFinalSpatialAsset(
     const part = row(entry), video = row(part.video), captions = row(part.subtitles);
     if (part.index !== i || !int(part.startMs) || !int(part.endMs) ||
         Number(part.endMs) <= Number(part.startMs) ||
-        part.gapBeforeMs !== Math.max(0, Number(part.startMs) - priorEnd) ||
+        Number(part.startMs) < priorEnd ||
+        part.gapBeforeMs !== Number(part.startMs) - priorEnd ||
         !sha(video.checksum) || !sha(captions.checksum) ||
         video.mimeType !== 'video/mp4' || captions.mimeType !== 'application/x-subrip') fail();
     priorEnd = Number(part.endMs);
@@ -201,4 +202,96 @@ export function sameFinalSpatialAsset(first: FinalPrivateAsset, second: FinalPri
     if (first[field] !== second[field]) fail();
   }
   if (first.expiresAt <= Date.now() || second.expiresAt <= Date.now()) fail();
+}
+
+/** The upstream Jobs bridge has fully checked the checksum before this point.
+ * Recheck the original Studio/Spatial consent and owner authority for every
+ * bounded chunk as it leaves Studio, because response streaming may continue
+ * after an earlier request-time consent check. Never hand a single unguarded
+ * 64 MiB buffer to Next's response transport. */
+export function guardedSpatialPrivateResponse(args: {
+  bytes: Uint8Array;
+  headers: HeadersInit;
+  reauthorize: () => Promise<void>;
+  signal: AbortSignal;
+  expiresAt: number;
+}): Response {
+  const { bytes, reauthorize, signal } = args;
+  const deadline = args.expiresAt;
+  if (!bytes.byteLength || bytes.byteLength > 64 * 1024 * 1024 ||
+      !Number.isSafeInteger(deadline) || deadline <= Date.now() || signal.aborted) {
+    bytes.fill(0);
+    throw new Error('spatial_private_media_delivery_unavailable');
+  }
+  let offset = 0;
+  let ended = false;
+  let deadlineTimer: ReturnType<typeof setTimeout> | undefined;
+  let streamController: ReadableStreamDefaultController<Uint8Array> | undefined;
+  const scrub = () => {
+    if (ended) return;
+    ended = true;
+    bytes.fill(0);
+    signal.removeEventListener('abort', revoke);
+    if (deadlineTimer !== undefined) clearTimeout(deadlineTimer);
+  };
+  const revoke = () => {
+    if (ended) return;
+    scrub();
+    // Reject even an unread response: otherwise an expired, aborted private
+    // Buffer can outlive its authorization until a consumer starts pulling.
+    try { streamController?.error(new Error('spatial_private_media_delivery_unavailable')); } catch {}
+  };
+  const denied = () => signal.aborted || Date.now() >= deadline;
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      streamController = controller;
+      signal.addEventListener('abort', revoke, { once: true });
+      deadlineTimer = setTimeout(revoke, Math.max(1, deadline - Date.now()));
+      deadlineTimer.unref?.();
+      if (denied()) revoke();
+    },
+    async pull(controller) {
+      if (ended) return;
+      try {
+        if (denied()) throw new Error('private_media_delivery_expired');
+        // Firestore and Auth reads cannot always be cancelled. Stop waiting
+        // for a stalled recheck when this request aborts or its authorization
+        // window closes; otherwise the response can retain private bytes.
+        let stopAbort = () => {};
+        let timeout: ReturnType<typeof setTimeout> | undefined;
+        try {
+          await Promise.race([
+            Promise.resolve().then(() => {
+              if (denied()) throw new Error('private_media_delivery_expired');
+              return reauthorize();
+            }),
+            new Promise<never>((_resolve, reject) => {
+              const refuse = () => reject(new Error('private_media_delivery_expired'));
+              signal.addEventListener('abort', refuse, { once: true });
+              stopAbort = () => signal.removeEventListener('abort', refuse);
+              // Keep a bounded pending private response in case the authority
+              // backend hangs without emitting an AbortSignal.
+              timeout = setTimeout(refuse, Math.max(1, Math.min(15_000, deadline - Date.now())));
+              if (denied()) refuse();
+            }),
+          ]);
+        } finally {
+          stopAbort();
+          if (timeout !== undefined) clearTimeout(timeout);
+        }
+        if (denied()) throw new Error('private_media_delivery_expired');
+        const end = Math.min(bytes.byteLength, offset + 1024 * 1024);
+        // Copy so zeroizing the source after completion cannot mutate queued
+        // response chunks. No private bytes enter logs, errors or public URLs.
+        const part = Uint8Array.from(bytes.subarray(offset, end));
+        offset = end;
+        controller.enqueue(part);
+        if (offset === bytes.byteLength) { scrub(); controller.close(); }
+      } catch {
+        revoke();
+      }
+    },
+    cancel() { scrub(); },
+  }, { highWaterMark: 0 });
+  return new Response(stream, { status: 200, headers: args.headers });
 }

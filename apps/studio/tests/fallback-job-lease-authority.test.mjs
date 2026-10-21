@@ -8,9 +8,9 @@ const ts = requireFunctions('typescript');
 const helper = fs.readFileSync(new URL('../../../functions/src/fallback-job-lease.ts', import.meta.url), 'utf8');
 const result = ts.transpileModule(helper, { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS }, reportDiagnostics: true });
 assert.deepEqual((result.diagnostics ?? []).filter(x => x.category === ts.DiagnosticCategory.Error).map(x => x.code), []);
-const module = { exports: {} };
-new Function('exports', 'module', result.outputText)(module.exports, module);
-const { inspectFallbackJobLease: inspect, ownsFallbackJobLease: owns } = module.exports;
+const leaseModule = { exports: {} };
+new Function('exports', 'module', result.outputText)(leaseModule.exports, leaseModule);
+const { inspectFallbackJobLease: inspect, ownsFallbackJobLease: owns } = leaseModule.exports;
 const tsValue = ms => ({ toMillis: () => ms });
 const now = 10000;
 

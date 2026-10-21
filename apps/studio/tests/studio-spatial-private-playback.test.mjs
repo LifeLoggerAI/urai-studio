@@ -72,3 +72,39 @@ for(const marker of ['URAI_STUDIO_SPATIAL_PRIVATE_DELIVERY_ENABLED',
 ])assert.ok(route.includes(marker),'Missing exact protected delivery boundary: '+marker);
 assert.ok(!route.includes('createSignedUrl'));
 console.log('[PASS] 24 synthetic private-media binding/denial assertions and source boundaries; not cloud acceptance');
+
+// Studio must reject digest-valid overlapping clips before sending a timeline
+// that original Spatial would reject. The playlist hash alone is not a timing check.
+function segmentPlaylist(timings) {
+  const base=fixture(), expiry=base.playback.finalFile.video.delivery.expiresAt;
+  const segments=timings.map(([startMs,endMs],index)=>{
+    const gapBeforeMs=Math.max(0,startMs-(index?timings[index-1][1]:0));
+    const entry=kind=>({
+      delivery:{schemaVersion:'urai-authenticated-private-media-v1',
+        requiresAuthorization:true,action:'deliver',kind,authorityHash:'c'.repeat(64),
+        expiresAt:expiry,generation:'123',disposition:'inline',
+        planId,artifact:'segment:'+index},
+      mimeType:kind==='mp4'?'video/mp4':'application/x-subrip',
+      checksum:digest(kind+'-'+index),
+    });
+    const video=entry('mp4'),subtitles=entry('srt');
+    return {index,startMs,endMs,gapBeforeMs,video,subtitles,
+      videoChecksum:video.checksum,subtitleChecksum:subtitles.checksum};
+  });
+  const playlistDigest=digest({schemaVersion:'urai-life-movie-private-playlist-v1',
+    planId,renderPlanDigest:auth.renderPlanDigest,sceneTruthDigest:auth.sceneTruthDigest,
+    segments:segments.map(({index,startMs,endMs,gapBeforeMs,videoChecksum,subtitleChecksum})=>
+      ({index,startMs,endMs,gapBeforeMs,videoChecksum,subtitleChecksum}))});
+  base.playback.segments=segments;
+  base.playback.playlistDigest=playlistDigest;
+  return base;
+}
+const {verifiedSpatialSegmentTimeline}=exports;
+assert.equal(verifiedSpatialSegmentTimeline(segmentPlaylist([[0,1000],[1000,2000]]),auth,now).durationMs,2000);
+assert.equal(verifiedSpatialSegmentTimeline(segmentPlaylist([[0,1000],[1500,2500]]),auth,now).segments[1].gapBeforeMs,500);
+for (const timings of [[[0,1000],[500,1500]],[[0,1500],[1499,2500]]]) {
+  assert.throws(()=>verifiedSpatialSegmentTimeline(segmentPlaylist(timings),auth,now),
+    undefined,'overlapping timeline must deny even with a valid digest');
+}
+assert.throws(()=>verifiedSpatialSegmentTimeline(segmentPlaylist([[0,15001]]),auth,now),
+  undefined,'overlong single segment must deny');

@@ -6,7 +6,7 @@ import { adminDb } from '@/lib/firebase-admin';
 import { requireStudioLongformAuth, refreshStudioLongformAuth } from '@/lib/studio-life-movie-longform-auth';
 import { verifyStudioSpatialAccountLink, SPATIAL_IDENTITY_PROJECT, STUDIO_IDENTITY_PROJECT } from '@/lib/studio-spatial-account-link';
 import { verifyCurrentSpatialMemoryPlan } from '@/lib/studio-spatial-life-movie-contract';
-import { verifiedFinalSpatialAsset, verifiedSegmentSpatialAsset, verifiedSpatialSegmentTimeline, sameVerifiedSpatialSegmentTimeline, sameAuthorizedMemoryPlan, sameFinalSpatialAsset } from '@/lib/studio-spatial-private-playback';
+import { verifiedFinalSpatialAsset, verifiedSegmentSpatialAsset, verifiedSpatialSegmentTimeline, sameVerifiedSpatialSegmentTimeline, sameAuthorizedMemoryPlan, sameFinalSpatialAsset, guardedSpatialPrivateResponse } from '@/lib/studio-spatial-private-playback';
 import { callStudioLongformBridge, callStudioLongformPrivateBytes } from '@/lib/studio-life-movie-longform-client';
 import { readStudioLongformJson } from '@/lib/studio-life-movie-longform-contract';
 
@@ -64,6 +64,9 @@ export async function OPTIONS(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   const actor = await requireStudioLongformAuth(request);
   if (!actor.ok) return deny(request);
+  // Retain ownership of the single verified Buffer until the guarded stream
+  // takes responsibility; scrub immediately if authorization is denied first.
+  let privateBytes: Buffer | null = null;
   try {
     if (process.env.URAI_STUDIO_SPATIAL_PRIVATE_DELIVERY_ENABLED !== 'true' ||
         process.env.URAI_STUDIO_SPATIAL_IDENTITY_ENABLED !== 'true' ||
@@ -171,6 +174,7 @@ export async function POST(request: Request): Promise<Response> {
       kind, authorityHash: asset.authorityHash,
       expiresAt: asset.expiresAt, generation: asset.generation, disposition: 'inline',
     }, { sha256: asset.sha256, mimeType: asset.mimeType, signal: request.signal });
+    privateBytes = bytes;
     sameAuthorizedMemoryPlan(initial, await readAuthority());
     const latestPlaylist = await callStudioLongformBridge({
       action: 'playback', userId: actor.uid, tenantId: actor.tenantId, planId: selector.planId,
@@ -180,11 +184,19 @@ export async function POST(request: Request): Promise<Response> {
       : verifiedSegmentSpatialAsset(latestPlaylist, initial, kind, segmentIndex);
     sameFinalSpatialAsset(asset, latest);
     sameAuthorizedMemoryPlan(initial, await readAuthority());
-    if (request.signal.aborted || !bytes.length || bytes.length > 64 * 1024 * 1024)
+    // Defense in depth: even a broken upstream response cannot send a caption
+    // larger than original Spatial Replay's 2 MiB private SRT ceiling.
+    if (request.signal.aborted || !bytes.length ||
+        bytes.length > (kind === 'srt' ? 2 * 1024 * 1024 : 64 * 1024 * 1024))
       throw new Error('delivery_cancelled');
     // Existing owner-scoped Jobs transport verifies SHA-256 over all bytes
     // before this route releases them; no streaming before full verification.
-    return new Response(new Uint8Array(bytes), { status: 200, headers: {
+    // The guarded stream scrubs this exact original Buffer upon completion,
+    // abort, denial or reader cancellation. Do not retain an unsanitized copy.
+    return guardedSpatialPrivateResponse({ bytes, signal: request.signal,
+      expiresAt: asset.expiresAt,
+      reauthorize: async () => { sameAuthorizedMemoryPlan(initial, await readAuthority()); },
+      headers: {
       ...headers, ...cors(request), 'Content-Type': asset.mimeType,
       'X-URAI-PRIVATE-PLAYLIST-DIGEST': String((latestPlaylist.playback as Record<string,unknown>).playlistDigest),
       'Content-Disposition': 'inline; filename="urai-authorized-life-movie"',
@@ -195,5 +207,8 @@ export async function POST(request: Request): Promise<Response> {
         'X-URAI-PRIVATE-SEGMENT-END-MS': String(asset.endMs),
       }),
     } });
-  } catch { return deny(request); }
+  } catch {
+    privateBytes?.fill(0);
+    return deny(request);
+  }
 }
