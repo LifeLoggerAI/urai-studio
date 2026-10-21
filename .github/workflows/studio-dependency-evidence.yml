@@ -1,0 +1,161 @@
+
+name: Studio exact-source dependency evidence
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'apps/studio/package.json'
+      - 'functions/**'
+      - 'packages/types/package.json'
+      - 'scripts/studio-offline-dependency-check.mjs'
+      - 'scripts/studio-public-advisory-catalog.py'
+      - 'scripts/studio-dependency-evidence-export.mjs'
+      - 'scripts/studio-functions-runtime-check.cjs'
+      - 'scripts/tests/studio-sharp-compatibility.test.mjs'
+      - 'scripts/tests/studio-braces-mitigation.test.cjs'
+      - 'patches/**'
+      - 'scripts/tests/studio-offline-dependency-check.test.mjs'
+      - '.github/workflows/studio-dependency-evidence.yml'
+permissions:
+  contents: read
+concurrency:
+  group: studio-dependency-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    name: Locked dependencies, offline public advisories and compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      EXACT_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_SITE_URL: https://www.uraistudio.com
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ci-placeholder
+      NEXT_PUBLIC_FIREBASE_APP_ID: ci-placeholder
+      FIREBASE_PROJECT_ID: ci-placeholder
+      FIREBASE_CLIENT_EMAIL: ci@example.com
+      FIREBASE_PRIVATE_KEY: ci-placeholder
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Require exact clean source
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXACT_SOURCE_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Setup pnpm9.7
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1
+        with:
+          version: 9.7.0
+      - name: Setup declared Node20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+          cache: pnpm
+      - name: Preserve original locks and resolve supported public packages
+        run: |
+          mkdir -p dependency-evidence/original
+          git show 854477d80b1a7aa718edb60d1ed4c1cf22dbed9d:pnpm-lock.yaml > dependency-evidence/original/pnpm-lock.yaml
+          git show 854477d80b1a7aa718edb60d1ed4c1cf22dbed9d:functions/package-lock.json > dependency-evidence/original/functions-package-lock.json
+          printf '%s\n' 854477d80b1a7aa718edb60d1ed4c1cf22dbed9d > dependency-evidence/original/lock-source-sha.txt
+          pnpm install --lockfile-only --ignore-scripts
+          npm --prefix functions install --package-lock-only --ignore-scripts --no-audit --no-fund
+          cp pnpm-lock.yaml dependency-evidence/pnpm-lock.yaml
+          cp functions/package-lock.json dependency-evidence/functions-package-lock.json
+          sha256sum dependency-evidence/pnpm-lock.yaml dependency-evidence/functions-package-lock.json > dependency-evidence/resolved-locks.sha256
+          printf '%s\n' "$EXACT_SOURCE_SHA" > dependency-evidence/source-sha.txt
+      - name: Retain bounded lock readback in authenticated job diagnostics
+        run: node scripts/studio-dependency-evidence-export.mjs pnpm-lock.yaml functions/package-lock.json
+      - name: Install resolved dependencies without audit disclosure
+        run: pnpm install --frozen-lockfile
+      - name: Test fail-closed local advisory matching
+        run: node --test scripts/tests/studio-offline-dependency-check.test.mjs
+      - name: Verify committed patch and actual installed braces consumers
+        run: |
+          node --test scripts/tests/studio-braces-mitigation.test.cjs
+          node scripts/studio-dependency-evidence-export.mjs dependency-evidence/braces-installed-runtime.json
+      - name: Download only the public advisory catalog
+        run: python3 scripts/studio-public-advisory-catalog.py --output-directory dependency-evidence/public
+      - name: Match original locks locally for diagnostic comparison
+        run: node scripts/studio-offline-dependency-check.mjs --pnpm-lock=dependency-evidence/original/pnpm-lock.yaml --npm-lock=dependency-evidence/original/functions-package-lock.json --catalog=dependency-evidence/public/public-osv-npm.jsonl --output=dependency-evidence/original-match.json --lock-source-sha=854477d80b1a7aa718edb60d1ed4c1cf22dbed9d --source-sha="$EXACT_SOURCE_SHA" --diagnostic-only=true
+      - name: Match resolved locks locally without transmitting graph
+        run: node scripts/studio-offline-dependency-check.mjs --pnpm-lock=pnpm-lock.yaml --npm-lock=functions/package-lock.json --catalog=dependency-evidence/public/public-osv-npm.jsonl --output=dependency-evidence/resolved-match.json --source-sha="$EXACT_SOURCE_SHA" --diagnostic-only=true
+      - name: Retain bounded local match readback in authenticated job diagnostics
+        run: node scripts/studio-dependency-evidence-export.mjs dependency-evidence/original-match.json dependency-evidence/resolved-match.json
+      - name: Verify patched image codec compatibility
+        run: node --test scripts/tests/studio-sharp-compatibility.test.mjs
+      - name: Build and typecheck Functions compatibility
+        run: |
+          pnpm --dir functions typecheck
+          pnpm --dir functions build
+      - name: Verify Studio release behavior
+        run: pnpm release:check
+      - name: Require admitted lock bytes and no unmitigated high or critical findings
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXACT_SOURCE_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          node scripts/studio-offline-dependency-check.mjs --pnpm-lock=pnpm-lock.yaml --npm-lock=functions/package-lock.json --catalog=dependency-evidence/public/public-osv-npm.jsonl --output=dependency-evidence/accepted-match.json --source-sha="$EXACT_SOURCE_SHA" --diagnostic-only=true
+          node scripts/studio-dependency-mitigation-gate.mjs --report=dependency-evidence/accepted-match.json --runtime-receipt=dependency-evidence/braces-installed-runtime.json --provenance=patches/braces-3.0.3-provenance.json --output=dependency-evidence/local-mitigation-acceptance.json --source-sha="$EXACT_SOURCE_SHA" --workflow-run-id="$GITHUB_RUN_ID"
+      - name: Retain exact source and dependency receipts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: urai-studio-dependency-evidence-${{ github.event.pull_request.head.sha || github.sha }}
+          retention-days: 30
+          path: |
+            dependency-evidence/*.json
+            dependency-evidence/*.json.public-records.json
+            dependency-evidence/*.yaml
+            dependency-evidence/*.txt
+            dependency-evidence/*.sha256
+            dependency-evidence/original/**
+            dependency-evidence/public/public-catalog-receipt.json
+
+  npm-functions:
+    name: Clean npm Functions compilation and local SDK linkage
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      EXACT_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      GCLOUD_PROJECT: urai-studio-ci
+      FIREBASE_CONFIG: '{"projectId":"urai-studio-ci","storageBucket":"urai-studio-ci.appspot.com"}'
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Require exact clean source
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXACT_SOURCE_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Setup declared Node20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+      - name: Install exact npm deployment lock without audit disclosure
+        run: npm --prefix functions ci --no-audit --no-fund
+      - name: Compile and link actual installed Functions SDK
+        run: |
+          npm --prefix functions run typecheck
+          npm --prefix functions run build
+          node scripts/studio-functions-runtime-check.cjs
+          node scripts/studio-dependency-evidence-export.mjs dependency-evidence/npm-functions-runtime.json
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Retain compiled Functions and exact runtime receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: urai-studio-npm-functions-${{ github.event.pull_request.head.sha || github.sha }}
+          retention-days: 30
+          path: |
+            dependency-evidence/npm-functions-runtime.json
+            functions/lib/**
+            functions/package.json
+            functions/package-lock.json

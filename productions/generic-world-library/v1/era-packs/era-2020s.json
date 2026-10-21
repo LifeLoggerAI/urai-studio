@@ -1,0 +1,51 @@
+{
+  "compatibleRegionAxes": [
+    "us-tx-east",
+    "us-south-generic",
+    "region-adapter-required"
+  ],
+  "components": {
+    "appliances": "unbranded contemporary enclosure packages",
+    "architecture": "contemporary and inherited older stock, configurable regional/income fit",
+    "clothing": "later reference brief only, region/person-specific evidence required for actual wardrobe",
+    "consumerObjects": [
+      "plain mugs",
+      "unlabelled containers",
+      "generic books"
+    ],
+    "electronics": [
+      "inactive flat display",
+      "unbranded smartphone/laptop enclosure"
+    ],
+    "furniture": "maintained legacy or simple contemporary forms without assumed affluence",
+    "lighting": "diffuse LED-style ambient/task fixtures; no automatic colored strips",
+    "palette": [
+      "soft neutrals",
+      "varied wood",
+      "restrained color accents"
+    ],
+    "roadMarkings": "current jurisdiction evidence needed before exact markings",
+    "signage": "neutral authored signs or blank inactive screens",
+    "vehicles": "unbranded contemporary sedan/crossover brief with powertrain unspecified"
+  },
+  "generationStatus": "NO_ASSET_BYTES",
+  "historicalReconstruction": false,
+  "id": "era-2020s",
+  "license": "UNASSIGNED_PROJECT_AUTHORED_SPECIFICATION",
+  "provenance": {
+    "createdAt": "2026-10-07T00:16:23Z",
+    "externalAssets": [],
+    "source": "original generic design brief"
+  },
+  "schemaVersion": "urai-generic-world-spec/1.0.0",
+  "scope": "Creative modular brief; region, income, older retained objects and renovation dates vary",
+  "status": "SPECIFIED",
+  "truthClassification": "GENERIC",
+  "universalHistoricalClaim": false,
+  "variationRules": [
+    "Earlier objects may persist into later eras; do not require every object to match a single decade style",
+    "Income, region, institution and household taste can override palette choices",
+    "Exact personal wardrobe, vehicle or appliance requires authorized evidence"
+  ],
+  "version": "1.0.0"
+}

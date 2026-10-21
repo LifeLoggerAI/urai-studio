@@ -1,0 +1,34 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() { return request.auth != null; }
+
+    function isStudioMember(studioId) {
+      return isSignedIn()
+        && exists(/databases/(default)/documents/memberships/$(request.auth.uid + "_" + studioId));
+    }
+
+    match /studios/{studioId}/uploads/{allPaths=**} {
+      allow read, write: if isStudioMember(studioId);
+    }
+
+    match /studios/{studioId}/outputs/{allPaths=**} {
+      allow read, write: if isStudioMember(studioId);
+    }
+
+    match /user-uploads/{uid}/studio/{allPaths=**} {
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    match /generated/{uid}/studio/{allPaths=**} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /public/studio-assets/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

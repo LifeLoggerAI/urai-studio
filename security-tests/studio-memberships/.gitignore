@@ -1,0 +1,4 @@
+node_modules/
+.emulator-rules/
+*-debug.log
+artifacts/

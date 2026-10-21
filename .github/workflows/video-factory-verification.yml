@@ -6,6 +6,11 @@ concurrency:
 
 on:
   workflow_dispatch:
+    inputs:
+      spatial_source_sha:
+        description: Exact current Spatial PR 1636 source for diagnostic capture; no approval or deployment authority
+        required: false
+        type: string
   pull_request:
     paths:
       - 'apps/studio/**'
@@ -29,6 +34,9 @@ jobs:
   verify-video-factory:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      URAI_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+      URAI_SPATIAL_EXPECTED_SHA: ${{ inputs.spatial_source_sha || '' }}
     steps:
       - name: Checkout exact event source
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -53,8 +61,13 @@ jobs:
         with:
           version: '9.7.0'
 
-      - name: Install
-        run: pnpm install --no-frozen-lockfile
+      - name: Install exact dependency graph
+        run: pnpm install --frozen-lockfile
+
+      - name: Prove install preserved exact source
+        run: |
+          test "$(git rev-parse HEAD)" = "$URAI_EXACT_HEAD"
+          test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Test
         run: pnpm --filter studio test
@@ -65,8 +78,31 @@ jobs:
       - name: Build
         run: pnpm --filter studio build
 
+      - name: Prove Studio build preserved exact source
+        run: |
+          test "$(git rev-parse HEAD)" = "$URAI_EXACT_HEAD"
+          test -z "$(git status --porcelain --untracked-files=all)"
+
       - name: Install browser for route capture
         run: pnpm --filter studio exec playwright install chromium
+
+      - name: Verify mounted production Studio queue behavior
+        run: node scripts/studio-video-queue-ui-check.mjs
+
+      - name: Resolve and pin current Spatial controller source
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/studio-video-spatial-owner.mjs --resolve-source >> "$GITHUB_ENV"
+
+      - name: Bind current Spatial owner before capture
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p _audit/20260623_urai_studio_video_factory/source-authority
+          node scripts/studio-video-spatial-owner.mjs > _audit/20260623_urai_studio_video_factory/source-authority/current-source-before.json
 
       - name: Start Studio server
         run: |
@@ -90,7 +126,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           repository: LifeLoggerAI/urai-spatial
-          ref: ff6f3df71a18b7ac6a2e5b7872b2fd0e802dbe3b
+          ref: ${{ env.URAI_SPATIAL_EXPECTED_SHA }}
           path: spatial-source
           persist-credentials: false
           fetch-depth: 1
@@ -100,16 +136,24 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Setup declared Spatial pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+        with:
+          version: '10.0.0'
+          package_json_file: spatial-source/package.json
+
       - name: Build exact Spatial candidate locally
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git -C spatial-source rev-parse HEAD)" = "ff6f3df71a18b7ac6a2e5b7872b2fd0e802dbe3b"
+          test "$(git -C spatial-source rev-parse HEAD)" = "$URAI_SPATIAL_EXPECTED_SHA"
           test -z "$(git -C spatial-source status --porcelain --untracked-files=all)"
-          corepack prepare pnpm@10.0.0 --activate
           cd spatial-source
+          test "$(pnpm --version)" = "10.0.0"
           pnpm install --frozen-lockfile
-          NEXT_PUBLIC_URAI_BUILD_SHA=ff6f3df71a18b7ac6a2e5b7872b2fd0e802dbe3b           URAI_LOCATION_MAP_ACCEPTANCE_FIXTURES=1           URAI_FIREBASE_STATIC_EXPORT=true           pnpm build:static
+          NEXT_PUBLIC_URAI_BUILD_SHA="$URAI_SPATIAL_EXPECTED_SHA" \
+            URAI_LOCATION_MAP_ACCEPTANCE_FIXTURES=1 \
+            URAI_FIREBASE_STATIC_EXPORT=true pnpm build:static
           test -z "$(git status --porcelain --untracked-files=all)"
           cd ..
 
@@ -119,9 +163,12 @@ jobs:
           node-version: '20'
 
       - name: Restore Studio pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@9.7.0 --activate
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+        with:
+          version: '9.7.0'
+
+      - name: Verify restored Studio pnpm
+        run: test "$(pnpm --version)" = "9.7.0"
 
       - name: Restore browser for exact Spatial route capture
         run: pnpm --filter studio exec playwright install chromium
@@ -144,8 +191,162 @@ jobs:
       - name: Capture exact Spatial route evidence
         env:
           SPATIAL_BASE_URL: http://127.0.0.1:4173
-          URAI_SPATIAL_EXPECTED_SHA: ff6f3df71a18b7ac6a2e5b7872b2fd0e802dbe3b
         run: pnpm run video-factory:capture
+
+      - name: Setup Node 22 for original authenticated Replay movie proof
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Setup Java 21 for original Firebase emulators
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install genuine Jobs GitHub Actions media and verify source provenance
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/urai-jobs-wave131"
+          curl -fsSL --retry 3 -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/LifeLoggerAI/urai-jobs/actions/artifacts/12092815610/zip" \
+            -o "$RUNNER_TEMP/urai-jobs-wave131/source.zip"
+          unzip -oq "$RUNNER_TEMP/urai-jobs-wave131/source.zip" -d "$RUNNER_TEMP/urai-jobs-wave131"
+          test "$(sha256sum "$RUNNER_TEMP/urai-jobs-wave131/synthetic-worker-spoken-narration-5s.mp4" | cut -d' ' -f1)" = "c4ba548d480d7c71fb8e9efa496f1282bb833cdbb5303c868aa2a5e685c6fe91"
+          test -s "$RUNNER_TEMP/urai-jobs-wave131/synthetic-worker-spoken-narration-5s.srt"
+          echo "URAI_JOBS_SYNTH_MP4=$RUNNER_TEMP/urai-jobs-wave131/synthetic-worker-spoken-narration-5s.mp4" >> "$GITHUB_ENV"
+          echo "URAI_JOBS_SYNTH_SRT=$RUNNER_TEMP/urai-jobs-wave131/synthetic-worker-spoken-narration-5s.srt" >> "$GITHUB_ENV"
+
+      - name: Produce distinct deterministic synthetic Jobs-compatible child MP4s
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+          mkdir -p "$RUNNER_TEMP/urai-jobs-wave167"
+          for segment in 1 2; do
+            level=$((segment * 8))
+            dest="$RUNNER_TEMP/urai-jobs-wave167/segment-$segment.mp4"
+            ffmpeg -nostdin -hide_banner -loglevel error -y -i "$URAI_JOBS_SYNTH_MP4" \
+              -vf "eq=brightness=0.$level" -c:v libx264 -preset veryfast -crf 26 -pix_fmt yuv420p \
+              -c:a aac -b:a 128k -ac 2 -ar 48000 -movflags +faststart "$dest"
+            ffmpeg -nostdin -hide_banner -loglevel error -xerror -i "$dest" -f null -
+            SEGMENT_FILE="$dest" node -e "const fs=require('fs');const x=fs.statSync(process.env.SEGMENT_FILE);if(x.size<1000||x.size>64*1024*1024)process.exit(1)"
+            echo "URAI_JOBS_SYNTH_SEGMENT_$segment"_"MP4=$dest" >> "$GITHUB_ENV"
+          done
+          test "$(sha256sum "$URAI_JOBS_SYNTH_MP4" | cut -d' ' -f1)" != "$(sha256sum "$RUNNER_TEMP/urai-jobs-wave167/segment-1.mp4" | cut -d' ' -f1)"
+          test "$(sha256sum "$RUNNER_TEMP/urai-jobs-wave167/segment-1.mp4" | cut -d' ' -f1)" != "$(sha256sum "$RUNNER_TEMP/urai-jobs-wave167/segment-2.mp4" | cut -d' ' -f1)"
+
+      - name: Original Chromium protected Replay through actual Studio HTTP handler (synthetic authorities)
+        shell: bash
+        env:
+          NODE_ENV: development
+          URAI_STUDIO_PROTECTED_BROWSER_LOOPBACK: 'true'
+          URAI_STUDIO_PROTECTED_MULTI_SEGMENT_BROWSER_LOOPBACK: 'true'
+          URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE: ${{ runner.temp }}/urai-studio-private-handler-ready.json
+        run: |
+          set -euo pipefail
+          test "$(git -C spatial-source rev-parse HEAD)" = "$URAI_SPATIAL_EXPECTED_SHA"
+          test "$(git rev-parse HEAD)" = "$URAI_EXACT_HEAD"
+          mkdir -p _audit/20261017_wave153_actual_studio_http
+          rm -f "$URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE"
+          node apps/studio/tests/studio-spatial-private-handler.test.mjs > _audit/20261017_wave153_actual_studio_http/server.log 2>&1 &
+          handler_pid=$!
+          cleanup() {
+            kill "$handler_pid" 2>/dev/null || true
+            wait "$handler_pid" 2>/dev/null || true
+            rm -f "$URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE"
+          }
+          trap cleanup EXIT
+          for attempt in $(seq 1 90); do
+            if ! kill -0 "$handler_pid" 2>/dev/null; then
+              cat _audit/20261017_wave153_actual_studio_http/server.log
+              exit 1
+            fi
+            if test -s "$URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE"; then break; fi
+            sleep 1
+          done
+          test -s "$URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE"
+          node -e "const fs=require('fs');const x=JSON.parse(fs.readFileSync(process.argv[1])); if(x.spatialOrigin!=='http://127.0.0.1:4173'||x.studioRoute!=='actual-exported-handler'||x.firebase!=='synthetic-admin-provider'||x.jobs!=='synthetic-owner-scoped-http'||!/^http:\/\/127\.0\.0\.1:[0-9]+$/.test(x.origin)) process.exit(1)" "$URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE"
+          URAI_STUDIO_REAL_HANDLER_ORIGIN="$(node -pe "JSON.parse(require('fs').readFileSync(process.argv[1])).origin" "$URAI_STUDIO_PRIVATE_HANDLER_PORT_FILE")"
+          export URAI_STUDIO_REAL_HANDLER_ORIGIN
+          test -n "$URAI_JOBS_SYNTH_MP4"
+          test -n "$URAI_JOBS_SYNTH_SRT"
+          if test -f /tmp/urai-spatial-preview.pid; then kill "$(cat /tmp/urai-spatial-preview.pid)" || true; fi
+          cd spatial-source
+          pnpm --dir urai-tier1 exec playwright install chromium
+          pnpm --dir urai-tier1 exec node tests/owned-memory-media-playback.browser.mjs
+          cd ..
+          grep -q 'URAI_STUDIO_REAL_HANDLER_HTTP.*"method":"OPTIONS".*"status":204' _audit/20261017_wave153_actual_studio_http/server.log
+          grep -q 'URAI_STUDIO_REAL_HANDLER_HTTP.*"method":"POST".*"kind":"mp4".*"status":200' _audit/20261017_wave153_actual_studio_http/server.log
+          grep -q 'URAI_STUDIO_REAL_HANDLER_HTTP.*"method":"POST".*"kind":"srt".*"status":200' _audit/20261017_wave153_actual_studio_http/server.log
+          grep -q 'URAI_STUDIO_REAL_HANDLER_HTTP.*"method":"POST".*"kind":"mp4".*"status":403' _audit/20261017_wave153_actual_studio_http/server.log
+          if test -f spatial-source/artifacts/owned-memory-playback-browser/original-replay-real-handler-bootstrap-failure.json; then
+            cp spatial-source/artifacts/owned-memory-playback-browser/original-replay-real-handler-bootstrap-failure.json _audit/20261017_wave153_actual_studio_http/
+          fi
+          if test -f spatial-source/artifacts/owned-memory-playback-browser/original-replay-real-handler-bootstrap-failure.png; then
+            cp spatial-source/artifacts/owned-memory-playback-browser/original-replay-real-handler-bootstrap-failure.png _audit/20261017_wave153_actual_studio_http/
+          fi
+          cp spatial-source/artifacts/owned-memory-playback-browser/original-replay-actual-studio-http.json _audit/20261017_wave153_actual_studio_http/
+          cp spatial-source/artifacts/owned-memory-playback-browser/original-replay-actual-studio-handler.png _audit/20261017_wave153_actual_studio_http/
+          test "$(git -C spatial-source rev-parse HEAD)" = "$URAI_SPATIAL_EXPECTED_SHA"
+          test "$(git rev-parse HEAD)" = "$URAI_EXACT_HEAD"
+
+      - name: Preserve actual Studio HTTP Chromium integration evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: original-spatial-actual-studio-http-${{ github.event.pull_request.head.sha || github.sha }}-${{ env.URAI_SPATIAL_EXPECTED_SHA }}
+          path: |
+            _audit/20261017_wave153_actual_studio_http/
+            spatial-source/artifacts/owned-memory-playback-browser/original-replay-real-handler-bootstrap-failure.json
+            spatial-source/artifacts/owned-memory-playback-browser/original-replay-real-handler-bootstrap-failure.png
+            spatial-source/artifacts/owned-memory-playback-browser/original-replay-actual-handler-delivery-failure.json
+          if-no-files-found: warn
+
+      - name: Original authenticated Spatial Replay with Jobs movie (non-release)
+        shell: bash
+        env:
+          GCLOUD_PROJECT: demo-urai-auth-journey
+          FIREBASE_AUTH_EMULATOR_HOST: 127.0.0.1:9099
+          FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
+          FIREBASE_FUNCTIONS_EMULATOR_HOST: 127.0.0.1:5001
+          FIREBASE_STORAGE_EMULATOR_HOST: 127.0.0.1:9199
+          NEXT_PUBLIC_FIREBASE_API_KEY: fictional-emulator-key
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: demo-urai-auth-journey.firebaseapp.com
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: demo-urai-auth-journey
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: demo-urai-auth-journey.appspot.com
+          NEXT_PUBLIC_FIREBASE_APP_ID: 1:123456789:web:journey
+          NEXT_PUBLIC_URAI_AUTH_JOURNEY_EMULATOR: 'true'
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: |
+          set -euo pipefail
+          test "$(git -C spatial-source rev-parse HEAD)" = "$URAI_SPATIAL_EXPECTED_SHA"
+          if test -f /tmp/urai-spatial-preview.pid; then kill "$(cat /tmp/urai-spatial-preview.pid)" || true; fi
+          cd spatial-source
+          pnpm --filter urai-functions build
+          pnpm --dir urai-tier1 exec playwright install --with-deps chromium
+          pnpm exec firebase emulators:exec --project demo-urai-auth-journey --only auth,firestore,functions,storage --config firebase.captured-reality-emulator.json \
+            'node ../scripts/studio-video-original-replay.mjs'
+
+      - name: Restore Node 20 after isolated Replay proof
+        if: always()
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+
+      - name: Preserve original authenticated Replay evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: original-spatial-jobs-replay-${{ github.event.pull_request.head.sha || github.sha }}-${{ env.URAI_SPATIAL_EXPECTED_SHA }}
+          path: _audit/20261017_wave131_original_replay/
+          if-no-files-found: warn
 
       - name: Compose and verify playable diagnostic MP4
         env:
@@ -162,11 +363,17 @@ jobs:
           URAI_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
         run: pnpm run video-factory:compose-motion
 
+      - name: Revalidate current Spatial owner after capture
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/studio-video-spatial-owner.mjs > _audit/20260623_urai_studio_video_factory/source-authority/current-source-after.json
+
       - name: Upload Video Factory evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: urai-studio-video-factory-evidence
+          name: urai-studio-video-${{ github.event.pull_request.head.sha || github.sha }}-${{ env.URAI_SPATIAL_EXPECTED_SHA }}-${{ github.run_id }}
           path: |
             _audit/20260623_urai_studio_video_factory/**
             /tmp/urai-studio-dev.log
+

@@ -1,0 +1,51 @@
+{
+  "compatibleRegionAxes": [
+    "us-tx-east",
+    "us-south-generic",
+    "region-adapter-required"
+  ],
+  "components": {
+    "appliances": "unbranded light or stainless-look enclosure briefs",
+    "architecture": "mixed practical suburban, apartment, civic and workplace finishes",
+    "clothing": "later character reference brief: ordinary clothing variants, no named logos",
+    "consumerObjects": [
+      "plain storage",
+      "generic mugs",
+      "blank paper files"
+    ],
+    "electronics": [
+      "inactive flat-display or CRT variants",
+      "unbranded early mobile enclosure"
+    ],
+    "furniture": "wood/laminate and mixed textile seating; varied income branches",
+    "lighting": "warm/cool task combinations without flicker",
+    "palette": [
+      "neutrals",
+      "wood",
+      "restrained cool accents"
+    ],
+    "roadMarkings": "regional source review needed",
+    "signage": "simple printed or blank digital display panels",
+    "vehicles": "unbranded sedan/SUV brief"
+  },
+  "generationStatus": "NO_ASSET_BYTES",
+  "historicalReconstruction": false,
+  "id": "era-2000s",
+  "license": "UNASSIGNED_PROJECT_AUTHORED_SPECIFICATION",
+  "provenance": {
+    "createdAt": "2026-10-07T00:16:23Z",
+    "externalAssets": [],
+    "source": "original generic design brief"
+  },
+  "schemaVersion": "urai-generic-world-spec/1.0.0",
+  "scope": "Creative modular brief; region, income, older retained objects and renovation dates vary",
+  "status": "SPECIFIED",
+  "truthClassification": "GENERIC",
+  "universalHistoricalClaim": false,
+  "variationRules": [
+    "Earlier objects may persist into later eras; do not require every object to match a single decade style",
+    "Income, region, institution and household taste can override palette choices",
+    "Exact personal wardrobe, vehicle or appliance requires authorized evidence"
+  ],
+  "version": "1.0.0"
+}

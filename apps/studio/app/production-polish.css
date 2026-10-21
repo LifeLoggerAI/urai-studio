@@ -42,6 +42,17 @@ body {
   padding-top: 1.2rem;
 }
 
+[data-urai-studio-page="video-factory"] .card {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+[data-urai-studio-page="video-factory"] .code-block {
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .studio-system-state {
   display: grid;
   min-height: min(72dvh, 52rem);

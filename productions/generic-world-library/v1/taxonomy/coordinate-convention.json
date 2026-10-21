@@ -1,0 +1,11 @@
+{
+  "assetFront": "+Z",
+  "assetTransforms": "Apply mesh-specific transforms once and receipt them; root export may bake vertices. Do not apply a second axis conversion.",
+  "cameraForward": "-Z",
+  "handedness": "right-handed",
+  "origin": "primary-zone floor center",
+  "units": "meters",
+  "up": "+Y",
+  "worldZoneTransforms": "translation only, explicit originMeters",
+  "zoneLocalOrigin": "floor center"
+}

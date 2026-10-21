@@ -22,7 +22,7 @@ export function SystemOfSystemsMap({ compact = false }: { compact?: boolean }) {
     <section className="system-map-panel" aria-labelledby="system-map-heading">
       <div className="section-heading">
         <p className="eyebrow">System of systems</p>
-        <h2 id="system-map-heading">One studio spine. Every URAI system connected.</h2>
+        <h2 id="system-map-heading">One studio spine for the UrAi ecosystem.</h2>
         <p>
           URAI Studio is the creative command layer for Asset Factory, Motion, Cinema, Music, Visuals,
           Spatial, Privacy, Admin, Foundation, and Labs — a front door into the broader URAI emotional and cinematic operating system.

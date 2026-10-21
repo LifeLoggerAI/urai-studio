@@ -1,0 +1,132 @@
+{
+  "schemaVersion": "urai-generic-world-acceptance-contract-v1",
+  "appliesTo": "All generic world challenger assets",
+  "states": [
+    "SPECIFIED",
+    "PROVIDER_READY",
+    "GENERATED_CHALLENGER",
+    "TECHNICALLY_VALID",
+    "VISUALLY_REVIEWED",
+    "ACCEPTED_LIBRARY",
+    "RUNTIME_BOUND",
+    "LIVE_VERIFIED",
+    "SUPERSEDED",
+    "REJECTED"
+  ],
+  "failClosed": true,
+  "gates": [
+    {
+      "id": "G1_PROVENANCE",
+      "requires": [
+        "provider",
+        "providerJobId",
+        "generationTimestamp",
+        "promptHash",
+        "source/reference provenance",
+        "rights/use basis"
+      ],
+      "failure": "REJECTED"
+    },
+    {
+      "id": "G2_BINARY_INTEGRITY",
+      "requires": [
+        "sha256 for every retained binary",
+        "nonzero file size",
+        "parse/load succeeds"
+      ],
+      "failure": "REJECTED"
+    },
+    {
+      "id": "G3_GEOMETRY",
+      "requires": [
+        "scale/unit recorded",
+        "triangle count within declared profile",
+        "no catastrophic holes/nonmanifold corruption visible in QA",
+        "origin/pivot suitable for placement"
+      ],
+      "failure": "REJECTED"
+    },
+    {
+      "id": "G4_MATERIALS",
+      "requires": [
+        "PBR material inventory",
+        "textures resolve",
+        "no missing-texture fallback",
+        "no unintended baked text/logos/identity"
+      ],
+      "failure": "REJECTED"
+    },
+    {
+      "id": "G5_NAV_SAFETY",
+      "requires": [
+        "walkable surfaces identified",
+        "collision proxy supplied or derivable",
+        "door/corridor/egress clearances reviewed",
+        "no unavoidable trapping geometry"
+      ],
+      "failure": "REJECTED"
+    },
+    {
+      "id": "G6_ACCESSIBILITY",
+      "requires": [
+        "48px UI rule not applicable to geometry",
+        "reduced-stimulation variant compatibility",
+        "no mandatory flashing/emissive effects",
+        "first-person path can support accessible navigation"
+      ],
+      "failure": "REJECTED"
+    },
+    {
+      "id": "G7_TRUTH_PRIVACY",
+      "requires": [
+        "truthClass remains GENERIC",
+        "no autobiographical source claim",
+        "no real person likeness",
+        "no real address",
+        "no private data",
+        "no unlicensed brand dependency"
+      ],
+      "failure": "REJECTED"
+    },
+    {
+      "id": "G8_VISUAL",
+      "requires": [
+        "front",
+        "rear",
+        "left",
+        "right",
+        "interior/key-zone views",
+        "human-scale view",
+        "lighting-neutral inspection"
+      ],
+      "humanRequired": true,
+      "failure": "REJECTED"
+    },
+    {
+      "id": "G9_PERSONALIZATION",
+      "requires": [
+        "identity-bearing surfaces remain replaceable",
+        "era/regional dressing separable where practical",
+        "memory-specific details not baked into generic base"
+      ],
+      "failure": "REJECTED"
+    },
+    {
+      "id": "G10_RUNTIME",
+      "requires": [
+        "runtime consumer binding receipt",
+        "exact accepted asset hashes",
+        "fallback behavior",
+        "live readback"
+      ],
+      "humanRequired": false,
+      "failure": "not promotable beyond ACCEPTED_LIBRARY"
+    }
+  ],
+  "promotionRules": {
+    "providerOutput": "GENERATED_CHALLENGER only",
+    "technicalAutomationMax": "TECHNICALLY_VALID",
+    "humanVisualApprovalRequiredFor": "ACCEPTED_LIBRARY",
+    "spatialOrProductionMutation": "Requires separate current release authority; this asset lane has none."
+  }
+}

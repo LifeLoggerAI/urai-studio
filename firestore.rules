@@ -6,9 +6,43 @@ service cloud.firestore {
     function ownsExisting() { return isSignedIn() && resource.data.uid == request.auth.uid; }
     function ownsIncoming() { return isSignedIn() && request.resource.data.uid == request.auth.uid; }
 
+    // Read the exact existing server authority; Rules hex is uppercase by
+    // default, while the Node subjectHash uses lowercase SHA-256.
+    function canonicalDeletionAllowsMutation(path, uid) {
+      let marker = get(path).data;
+      let keys = marker.keys();
+      return marker.uid == uid
+        && !keys.hasAny(["deletionPlanningLeaseToken", "deletionPlanningLeaseUntil",
+          "deletionPlanningLeaseRequestId", "deletionPlanningLeaseOperation", "deletionPlanningLeaseBy"])
+        && ((("active" in marker) && marker.active == false)
+          || (!("active" in marker) && keys.hasOnly(["uid", "updatedAt"]) && marker.updatedAt is timestamp));
+    }
+
+    function canMutateStudioOwner(uid) {
+      let fenceId = hashing.sha256("urai-studio-data-rights:" + uid).toHexString().lower();
+      let fencePath = /databases/$(database)/documents/studioDataRightsOwnerFences/$(fenceId);
+      let deletionPath = /databases/$(database)/documents/privacyDeletionTombstones/$(uid);
+      return isSignedIn() && uid == request.auth.uid
+        && (!exists(fencePath) || (get(fencePath).data.uid == uid
+          && get(fencePath).data.requestId is string && get(fencePath).data.requestId.size() > 0
+          && get(fencePath).data.active == false && get(fencePath).data.permanent == false))
+        && (!exists(deletionPath) || canonicalDeletionAllowsMutation(deletionPath, uid));
+    }
+
+    function ownedCreateAllowed() { return ownsIncoming() && canMutateStudioOwner(request.auth.uid); }
+    function ownedUpdateAllowed() { return ownsExisting() && ownsIncoming() && canMutateStudioOwner(request.auth.uid); }
+    function ownedDeleteAllowed() { return ownsExisting() && canMutateStudioOwner(request.auth.uid); }
+    function compatibilityOwnerMatches(data) { return !("userId" in data) || data.userId == request.auth.uid; }
+
+    // Membership authority is provisioned by trusted servers, never by client SDKs.
+    // Bind the stored identity and tenant as well as the document path.
     function isStudioMember(studioId) {
       return isSignedIn()
-        && exists(/databases/$(database)/documents/memberships/$(request.auth.uid + "_" + studioId));
+        && studioId is string
+        && exists(/databases/$(database)/documents/memberships/$(request.auth.uid + "_" + studioId))
+        && membershipDoc(studioId).data.uid == request.auth.uid
+        && membershipDoc(studioId).data.studioId == studioId
+        && membershipDoc(studioId).data.role in ["owner", "creator", "viewer"];
     }
 
     function membershipDoc(studioId) {
@@ -27,50 +61,61 @@ service cloud.firestore {
     }
 
     match /memberships/{membershipId} {
-      allow read: if isSignedIn() && membershipId.startsWith(request.auth.uid + "_");
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && membershipId.startsWith(request.auth.uid + "_");
+      allow read: if isSignedIn()
+        && resource.data.studioId is string
+        && membershipId == request.auth.uid + "_" + resource.data.studioId
+        && isStudioMember(resource.data.studioId);
+      allow create, update, delete: if false;
     }
 
     function studioScoped() {
       return request.resource.data.studioId is string;
     }
 
+    function studioUpdateScoped() {
+      return isStudioMember(resource.data.studioId)
+        && request.resource.data.studioId == resource.data.studioId;
+    }
+
     match /clipRequests/{id} {
       allow read: if isStudioMember(resource.data.studioId);
       allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
-      allow update: if isStudioMember(resource.data.studioId);
+      allow update: if studioUpdateScoped();
       allow delete: if roleIs(resource.data.studioId, "owner");
     }
 
     match /jobs/{id} {
       allow read: if isStudioMember(resource.data.studioId);
       allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
-      allow update: if isStudioMember(resource.data.studioId);
+      allow update: if studioUpdateScoped();
       allow delete: if roleIs(resource.data.studioId, "owner");
     }
 
     match /jobRuns/{id} {
       allow read: if isStudioMember(resource.data.studioId);
-      allow create, update: if isStudioMember(request.resource.data.studioId);
+      allow create: if isStudioMember(request.resource.data.studioId);
+      allow update: if studioUpdateScoped();
       allow delete: if roleIs(resource.data.studioId, "owner");
     }
 
     match /assets/{id} {
       allow read: if isStudioMember(resource.data.studioId);
       allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
-      allow update, delete: if isStudioMember(resource.data.studioId);
+      allow update: if studioUpdateScoped();
+      allow delete: if isStudioMember(resource.data.studioId);
     }
 
     match /outputs/{id} {
       allow read: if isStudioMember(resource.data.studioId);
-      allow create, update: if isStudioMember(request.resource.data.studioId);
+      allow create: if isStudioMember(request.resource.data.studioId);
+      allow update: if studioUpdateScoped();
       allow delete: if roleIs(resource.data.studioId, "owner");
     }
 
     match /deadLetters/{id} {
       allow read: if isStudioMember(resource.data.studioId);
-      allow create, update: if isStudioMember(request.resource.data.studioId);
+      allow create: if isStudioMember(request.resource.data.studioId);
+      allow update: if studioUpdateScoped();
       allow delete: if roleIs(resource.data.studioId, "owner");
     }
 
@@ -81,66 +126,87 @@ service cloud.firestore {
     }
 
     match /users/{uid} {
-      allow read, create, update: if isSignedIn() && uid == request.auth.uid;
+      allow read: if isSignedIn() && uid == request.auth.uid;
+      allow create, update: if canMutateStudioOwner(uid)
+        && (!("uid" in request.resource.data) || request.resource.data.uid == uid)
+        && compatibilityOwnerMatches(request.resource.data);
       allow delete: if false;
     }
 
     // Legacy client-owned Studio documents. These remain uid-scoped for old clients.
     match /studioProjects/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if ownsExisting();
+      allow create: if ownedCreateAllowed() && compatibilityOwnerMatches(request.resource.data);
+      allow update: if ownedUpdateAllowed() && compatibilityOwnerMatches(resource.data) && compatibilityOwnerMatches(request.resource.data);
+      allow delete: if ownedDeleteAllowed() && compatibilityOwnerMatches(resource.data);
     }
 
     match /studioScenes/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if ownsExisting();
+      allow create: if ownedCreateAllowed();
+      allow update: if ownedUpdateAllowed();
+      allow delete: if ownedDeleteAllowed();
     }
 
     match /studioAssets/{id} {
       allow read: if (resource.data.isPublic == true) || ownsExisting();
-      allow create: if ownsIncoming();
-      allow update, delete: if ownsExisting();
+      allow create: if ownedCreateAllowed() && compatibilityOwnerMatches(request.resource.data);
+      allow update: if ownedUpdateAllowed() && compatibilityOwnerMatches(resource.data) && compatibilityOwnerMatches(request.resource.data);
+      allow delete: if ownedDeleteAllowed() && compatibilityOwnerMatches(resource.data);
     }
 
     match /assetJobs/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if ownsExisting();
+      allow create: if ownedCreateAllowed();
+      allow update: if ownedUpdateAllowed();
+      allow delete: if ownedDeleteAllowed();
     }
 
     match /assetCollections/{id} {
       allow read: if (resource.data.isPublic == true) || ownsExisting();
-      allow create: if ownsIncoming();
-      allow update, delete: if ownsExisting();
+      allow create: if ownedCreateAllowed();
+      allow update: if ownedUpdateAllowed();
+      allow delete: if ownedDeleteAllowed();
     }
 
     match /studioScrolls/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if ownsExisting();
+      allow create: if ownedCreateAllowed();
+      allow update: if ownedUpdateAllowed();
+      allow delete: if ownedDeleteAllowed();
     }
 
     match /narratorScripts/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if ownsExisting();
+      allow create: if ownedCreateAllowed();
+      allow update: if ownedUpdateAllowed();
+      allow delete: if ownedDeleteAllowed();
     }
 
     match /subtitles/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if ownsExisting();
+      allow create: if ownedCreateAllowed();
+      allow update: if ownedUpdateAllowed();
+      allow delete: if ownedDeleteAllowed();
     }
 
     match /voiceoverJobs/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if ownsExisting();
+      allow create: if ownedCreateAllowed();
+      allow update: if ownedUpdateAllowed();
+      allow delete: if ownedDeleteAllowed();
     }
 
     match /exportJobs/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if ownsExisting();
+      allow create: if ownedCreateAllowed();
+      allow update: if ownedUpdateAllowed();
+      allow delete: if ownedDeleteAllowed();
     }
 
     match /studioEvents/{id} {
       allow read: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow create: if ownedCreateAllowed();
       allow update, delete: if false;
     }
 
@@ -155,13 +221,17 @@ service cloud.firestore {
     }
 
     match /xrSessions/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if ownsExisting();
+      allow create: if ownedCreateAllowed();
+      allow update: if ownedUpdateAllowed();
+      allow delete: if ownedDeleteAllowed();
     }
 
     match /vrSessions/{id} {
-      allow read, update, delete: if ownsExisting();
-      allow create: if ownsIncoming();
+      allow read: if ownsExisting();
+      allow create: if ownedCreateAllowed();
+      allow update: if ownedUpdateAllowed();
+      allow delete: if ownedDeleteAllowed();
     }
 
     // Runtime system-contract collections are written only by trusted server/API routes
@@ -187,6 +257,22 @@ service cloud.firestore {
     }
 
     match /studioDataRightsAudit/{id} {
+      allow read, write: if false;
+    }
+
+    match /studioDataRightsOwnerFences/{id} {
+      allow read, write: if false;
+    }
+
+    match /studioDataRightsMaintenance/{id} {
+      allow read, write: if false;
+    }
+
+    match /consentRecords/{id} {
+      allow read, write: if false;
+    }
+
+    match /privacyDeletionTombstones/{id} {
       allow read, write: if false;
     }
 

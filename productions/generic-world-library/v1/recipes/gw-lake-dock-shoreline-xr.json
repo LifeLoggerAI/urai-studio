@@ -1,0 +1,451 @@
+{
+  "composition": {
+    "architectureBrief": "Dock centerline aligns with shore route. Dock deck is level with shore in default navigable variant; water, banks, and edge zones are non-walkable. Railings or conservative movement bounds protect exposed edges; no diving/jumping path.",
+    "dressingRules": {
+      "empty": "Shell, openings, orientation landmark and required safety geometry only",
+      "light": "Specified furniture plus sparse neutral props on supporting surfaces; no real people",
+      "people": "Not generated in this lane; occupancy, character likeness, voices and animation require separate identity/consent authority",
+      "rich": "Add governed prop submodules within reserved placement envelopes; maintain clear route, readable exits and low visual stimulation"
+    },
+    "furniture": [
+      {
+        "anchorAllowed": true,
+        "collidable": true,
+        "dimensionsMeters": {
+          "depth": 0.65,
+          "height": 0.9,
+          "width": 1.8
+        },
+        "id": "bench",
+        "label": "Plain shoreline bench",
+        "materialIntent": "wood-weathered",
+        "positionMeters": [
+          -6.5,
+          0,
+          -5.5
+        ],
+        "role": "furniture",
+        "yawDegrees": 0,
+        "zone": "shore"
+      },
+      {
+        "anchorAllowed": true,
+        "collidable": true,
+        "dimensionsMeters": {
+          "depth": 0.65,
+          "height": 0.75,
+          "width": 1.2
+        },
+        "id": "storage",
+        "label": "Small dock storage box",
+        "materialIntent": "wood-weathered",
+        "positionMeters": [
+          6,
+          0,
+          -5
+        ],
+        "role": "furniture",
+        "yawDegrees": 0,
+        "zone": "shore"
+      }
+    ],
+    "openings": [
+      {
+        "centerLocalMeters": [
+          0,
+          1.05,
+          11.0
+        ],
+        "clearWidthTargetMeters": 1.8,
+        "heightMeters": 2.1,
+        "id": "primary-entry",
+        "levelThreshold": true,
+        "nominalWidthMeters": 1.8,
+        "status": "SPECIFIED_NOT_GEOMETRY_VALIDATED",
+        "wall": "+Z",
+        "zone": "shore"
+      }
+    ],
+    "propBriefs": [
+      "unbranded closed tackle box",
+      "plain rope coil secured outside route",
+      "no-catch generic bucket"
+    ],
+    "vegetationBriefs": [
+      "mixed broadleaf treeline profiles",
+      "shore grass clumps",
+      "sparse reeds outside dock route"
+    ],
+    "zones": [
+      {
+        "dimensionsMeters": {
+          "depth": 22,
+          "height": 8,
+          "width": 24
+        },
+        "id": "shore",
+        "kind": "exterior",
+        "originMeters": [
+          0,
+          0,
+          0
+        ],
+        "purpose": "Level lakeside exploration area"
+      },
+      {
+        "dimensionsMeters": {
+          "depth": 12,
+          "height": 1.2,
+          "width": 2.4
+        },
+        "id": "dock",
+        "kind": "exterior",
+        "originMeters": [
+          0,
+          0,
+          -17
+        ],
+        "purpose": "Accessible dock with guarded water boundary"
+      }
+    ]
+  },
+  "dressingRule": "Specified furniture plus sparse neutral props on supporting surfaces; no real people",
+  "eraPack": {
+    "path": "era-packs/era-1960s.json",
+    "sha256": "a7f1ab4310c0c887f522bcc845d08ff5e1d6185f6eace786388dab9841f9b22e"
+  },
+  "familyId": "gw-lake-dock-shoreline",
+  "id": "gw-lake-dock-shoreline@1.0.0+era-1960s.us-tx-east.light.xr.reflective.7f0f15b048b6",
+  "implementationStatus": "RECIPE_COMPILED_ONLY: no selection claims model/material/lighting changes have been built",
+  "lighting": {
+    "daylightCctKelvin": 5600,
+    "emotionalProfile": {
+      "cctDeltaKelvin": -100,
+      "exposureDeltaStops": -0.08,
+      "id": "reflective",
+      "saturationScale": 0.92
+    },
+    "emotionalWeatherRef": "../taxonomy/emotional-weather.json",
+    "interiorFixtureCctKelvin": 4000,
+    "noStrobe": true,
+    "primary": "diffuse natural light plus restrained practical fixtures",
+    "reducedStimulation": {
+      "animatedWaterAmplitudeMeters": 0.015,
+      "exposureAdaptation": "slow optional, disableable",
+      "movingShadows": false,
+      "suddenLightning": false
+    },
+    "status": "CONFIGURATION_TARGET_NOT_RENDER_VALIDATED",
+    "targetIlluminanceLux": {
+      "navigation": 80,
+      "task": 150
+    },
+    "toneMappingIntent": "preserve midtone orientation and restrained highlights; no crushed blacks or blown window regions",
+    "weatherDrivenSaturation": false
+  },
+  "logicalKitIds": [
+    "kit:gw-lake-dock-shoreline-ground-shell:v1",
+    "kit:sidewalk-concrete-one-meter:v1",
+    "kit:gw-lake-dock-shoreline-bench:v1",
+    "kit:gw-lake-dock-shoreline-storage:v1",
+    "kit:gw-lake-dock-shoreline-vegetation-1:v1",
+    "kit:gw-lake-dock-shoreline-vegetation-2:v1",
+    "kit:gw-lake-dock-shoreline-vegetation-3:v1"
+  ],
+  "materialDefinitions": [
+    {
+      "description": "generic bark",
+      "id": "mat:bark-neutral:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "bark-neutral",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "species-neutral until regional review",
+        "metallic": 0,
+        "roughness": 0.91,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "weathered concrete",
+      "id": "mat:concrete-weathered:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "concrete-weathered",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "low-contrast aggregate and expansion seams",
+        "metallic": 0,
+        "roughness": 0.86,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "generic broadleaf foliage",
+      "id": "mat:leaf-neutral:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "leaf-neutral",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "no alpha-sorted volumetric filler; quality needs visual review",
+        "metallic": 0,
+        "roughness": 0.84,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "weathered painted metal",
+      "id": "mat:painted-metal-aged:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "painted-metal-aged",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "edge wear constrained to plausible exposure",
+        "metallic": 0.12,
+        "roughness": 0.7,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "neutral soil and ground",
+      "id": "mat:soil-muted:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "soil-muted",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "region-swappable granular structure",
+        "metallic": 0,
+        "roughness": 0.95,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "generic lake water",
+      "id": "mat:water-lake-neutral:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "water-lake-neutral",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "gentle normal and nonwalkable collision boundary",
+        "metallic": 0,
+        "roughness": 0.18,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    },
+    {
+      "description": "weathered timber",
+      "id": "mat:wood-weathered:v1",
+      "lodFallback": "core glTF material with restrained base color and roughness; do not require unsupported shader",
+      "name": "wood-weathered",
+      "nonRepetitionPlan": "macro albedo/roughness variation plus deterministic masks; high-frequency repeated detail alone is insufficient",
+      "pbrIntent": {
+        "baseColorSpace": "sRGB",
+        "dataMapSpace": "linear",
+        "detail": "broad grain, mild wear masks",
+        "metallic": 0,
+        "roughness": 0.82,
+        "workflow": "metallic-roughness"
+      },
+      "source": "original parameter brief; no imported texture",
+      "textureScaleMeters": {
+        "macroTile": 2,
+        "microTile": 0.12
+      },
+      "textureStatus": "SPECIFIED_NOT_GENERATED"
+    }
+  ],
+  "navigation": {
+    "accessibleDefault": {
+      "doorsAutomaticOrFixedOpen": true,
+      "legalAccessibilityCertification": false,
+      "levelThreshold": true,
+      "seatedEyeHeightMeters": 1.2,
+      "stairsRequired": false,
+      "standingEyeHeightMeters": 1.65
+    },
+    "connections": [
+      {
+        "clearWidthMeters": 1.4,
+        "from": "shore",
+        "status": "SPECIFIED_NOT_BAKED",
+        "stepHeightMeters": 0,
+        "to": "dock"
+      }
+    ],
+    "controls": {
+      "keyboard": true,
+      "noForcedVisibleHands": true,
+      "reducedMotion": true,
+      "snapTurnOptional": true,
+      "touch": true,
+      "uiTargetMinimumCssPixels": 48
+    },
+    "requiredBeforeIntegration": [
+      "baked navigation polygons",
+      "collision/navmesh consistency test",
+      "connected exit route",
+      "door-state traversal test",
+      "teleport valid/invalid surface tests",
+      "seated and standing camera clearance",
+      "device verification where claimed"
+    ],
+    "status": "DESIGN_REQUIREMENTS_ONLY_NOT_BAKED",
+    "targetClearRouteWidthMeters": 1.2,
+    "targetDoorClearWidthMeters": 1.0,
+    "targetTurningDiameterMeters": 1.5,
+    "xr": {
+      "edgeMarginMeters": 0.45,
+      "physicalDeviceVerified": false,
+      "safeTeleport": "Navmesh-constrained valid polygons; no water, roadway, dock edge, machinery or insert void destinations",
+      "teleportSpacingMeters": 1.5
+    },
+    "zones": [
+      {
+        "obstacleEnvelopes": [
+          "bench",
+          "storage"
+        ],
+        "pathLocalMeters": [
+          [
+            0,
+            0,
+            10.65
+          ],
+          [
+            0,
+            0,
+            -10.65
+          ]
+        ],
+        "routeKind": "reserved-center-corridor",
+        "turningArea": {
+          "centerLocalMeters": [
+            0,
+            0,
+            0
+          ],
+          "diameterMeters": 1.5
+        },
+        "widthMeters": 1.8,
+        "zone": "shore"
+      },
+      {
+        "obstacleEnvelopes": [],
+        "pathLocalMeters": [
+          [
+            0,
+            0,
+            5.65
+          ],
+          [
+            0,
+            0,
+            -5.65
+          ]
+        ],
+        "routeKind": "reserved-center-corridor",
+        "turningArea": {
+          "centerLocalMeters": [
+            0,
+            0,
+            0
+          ],
+          "diameterMeters": 1.5
+        },
+        "widthMeters": 1.7999999999999998,
+        "zone": "dock"
+      }
+    ]
+  },
+  "outputsGenerated": [],
+  "performanceTarget": {
+    "drawCallsTarget": 95,
+    "maxSingleTextureEdge": 1024,
+    "targetFps": 72,
+    "textureMemoryMiBTarget": 128,
+    "visibleTriangleTarget": 180000
+  },
+  "personalization": {
+    "enabled": false,
+    "insertStatus": "UNBOUND",
+    "truthRule": "No generic component becomes autobiographical truth"
+  },
+  "providerExecuted": false,
+  "requiresBeforeAccepted": [
+    "asset realization bound to this recipe hash",
+    "realized geometry compared with source brief",
+    "asset machine QA",
+    "visual review",
+    "license receipt",
+    "runtime integration and device proof if claimed"
+  ],
+  "runtimeIntegrated": false,
+  "schemaVersion": "urai-generic-world-variant-recipe/1.0.0",
+  "seedSha256": "7f0f15b048b6a6b4f65321326e96dde6b87a20f741e67f7f1cc4bb90990f1a36",
+  "selection": {
+    "dressing": "light",
+    "era": "era-1960s",
+    "finishLevel": "middle-maintained",
+    "lightingProfile": "reflective",
+    "lod": "xr",
+    "navigation": "accessible-level-default",
+    "region": "us-tx-east",
+    "season": "summer",
+    "timeOfDay": "afternoon",
+    "weather": "clear"
+  },
+  "sourceSpec": {
+    "path": "specs/gw-lake-dock-shoreline.json",
+    "sha256": "436f75fa4b110036b0e82708d8a6e79bf019c0c3de6280b5f8e50fedebd481ce"
+  },
+  "status": "SPECIFIED",
+  "truthClassification": "GENERIC",
+  "version": "1.0.0"
+}

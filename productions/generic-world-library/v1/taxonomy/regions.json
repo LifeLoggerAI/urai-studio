@@ -1,0 +1,61 @@
+{
+  "defaultRegion": "us-tx-east",
+  "extensionContract": {
+    "noUserCultureAssumption": true,
+    "regionIdPattern": "{country}-{subregion}-{adapter-version}",
+    "required": [
+      "id",
+      "parent",
+      "label",
+      "climate assumptions",
+      "vegetation/architecture review",
+      "source provenance if historical claims",
+      "era compatibility",
+      "accessibility profile"
+    ]
+  },
+  "regionIsHistoricalEvidence": false,
+  "regions": [
+    {
+      "assumptions": {
+        "builtEnvironment": "ordinary maintained suburban/rural/civic stock, varied income and era",
+        "climateFeel": "warm/humid variants; not site-specific climatology",
+        "snowDefault": false,
+        "vegetation": "broadleaf and optional mixed pine profiles subject to species review"
+      },
+      "id": "us-tx-east",
+      "label": "East Texas generic creative adapter",
+      "namedPlaces": [],
+      "parent": "us-south-generic",
+      "preciseCoordinates": null,
+      "status": "SPECIFIED_NOT_SOURCE_VERIFIED"
+    },
+    {
+      "assumptions": {
+        "notUniversal": true,
+        "regionalDetail": "requires subregion and context review"
+      },
+      "id": "us-south-generic",
+      "label": "U.S. South generic adapter",
+      "namedPlaces": [],
+      "parent": null,
+      "preciseCoordinates": null,
+      "status": "SPECIFIED_NOT_SOURCE_VERIFIED"
+    },
+    {
+      "assumptions": {
+        "climate": "unspecified",
+        "noPalmDefault": true,
+        "species": "unspecified"
+      },
+      "id": "us-coastal-generic",
+      "label": "Generic U.S. coast adapter",
+      "namedPlaces": [],
+      "parent": null,
+      "preciseCoordinates": null,
+      "status": "SPECIFIED_NOT_SOURCE_VERIFIED"
+    }
+  ],
+  "schemaVersion": "urai-generic-world-spec/1.0.0",
+  "version": "1.0.0"
+}
