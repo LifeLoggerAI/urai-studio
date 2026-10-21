@@ -30,19 +30,23 @@ test('untrusted attempt and state cannot bypass retry cap', () => {
     {state:'queued',attempt:1.5},{state:'queued',attempt:Number.MAX_SAFE_INTEGER+1}])
     assert.equal(inspect(job,now,3).kind,'skip');
 });
-test('a later runner or attempt cannot complete or fail the previous lease', () => {
-  const leased={state:'running',claimedBy:'runner-a',attempt:2};
-  assert.equal(owns(leased,'runner-a',2),true);
-  assert.equal(owns({...leased,claimedBy:'runner-b'},'runner-a',2),false);
-  assert.equal(owns({...leased,attempt:3},'runner-a',2),false);
-  assert.equal(owns({...leased,state:'succeeded'},'runner-a',2),false);
-  assert.equal(owns(leased,'',2),false);
+test('only the current unexpired runner/attempt can commit', () => {
+  const leased={state:'running',claimedBy:'runner-a',attempt:2,leaseExpiresAt:tsValue(now+1)};
+  assert.equal(owns(leased,'runner-a',2,now),true);
+  assert.equal(owns({...leased,claimedBy:'runner-b'},'runner-a',2,now),false);
+  assert.equal(owns({...leased,attempt:3},'runner-a',2,now),false);
+  assert.equal(owns({...leased,state:'succeeded'},'runner-a',2,now),false);
+  assert.equal(owns(leased,'',2,now),false);
+  assert.equal(owns(leased,'runner-a',2,now+1),false);
+  assert.equal(owns({...leased,leaseExpiresAt:null},'runner-a',2,now),false);
+  assert.equal(owns(leased,'runner-a',2,Number.NaN),false);
 });
-test('runtime verifies claim and completion in transactions before invoking fallback processing', () => {
+test('runtime verifies claim, write, completion, stale cleanup and lease expiry', () => {
   const src=fs.readFileSync(new URL('../../../functions/src/job-runner.ts',import.meta.url),'utf8');
   for(const term of ["import { inspectFallbackJobLease, ownsFallbackJobLease }",'const claim = await db.runTransaction(',
     "if (claim.kind !== 'claimed') continue",'if (!ownsFallbackJobLease(current.data()',
-    'const applied = await db.runTransaction(', 'if (!applied) continue'])
+    'const applied = await db.runTransaction(', 'if (!applied) continue',
+    'attemptScopedPath(', 'touchedPaths.add(', 'if (!committed)', 'await file.delete({ ignoreNotFound: true })'])
     assert.ok(src.includes(term),'missing exact-claim runtime protection: '+term);
   assert.ok(!src.includes('const claimedJobData = (await jobRef.get()).data()!'));
 });

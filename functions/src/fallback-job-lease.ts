@@ -16,14 +16,19 @@ export function inspectFallbackJobLease(value: unknown, nowMillis: number, maxAt
   const job = value as JobFields;
   const attempt = job.attempt === undefined ? 0 : job.attempt;
   if (!Number.isSafeInteger(attempt) || (attempt as number) < 0) return skip;
+  const expiry = leaseMillis(job.leaseExpiresAt);
   const eligible = job.state === 'queued' || (job.state === 'running'
-    && Number.isFinite(leaseMillis(job.leaseExpiresAt)) && leaseMillis(job.leaseExpiresAt) <= nowMillis);
+    && Number.isFinite(expiry) && expiry <= nowMillis);
   if (!eligible) return skip;
   return { kind: (attempt as number) >= maxAttempts ? 'exhausted' : 'claim', attempt: attempt as number };
 }
 
-export function ownsFallbackJobLease(value: unknown, runnerId: string, attempt: number): boolean {
-  if (!value || typeof value !== 'object' || !runnerId || !Number.isSafeInteger(attempt) || attempt < 1) return false;
+/** The deadline is exclusive: an expired lease cannot publish an output. */
+export function ownsFallbackJobLease(value: unknown, runnerId: string, attempt: number, nowMillis: number): boolean {
+  if (!value || typeof value !== 'object' || !runnerId || !Number.isSafeInteger(attempt) || attempt < 1
+    || !Number.isSafeInteger(nowMillis) || nowMillis < 0) return false;
   const job = value as JobFields;
-  return job.state === 'running' && job.claimedBy === runnerId && job.attempt === attempt;
+  const expiry = leaseMillis(job.leaseExpiresAt);
+  return job.state === 'running' && job.claimedBy === runnerId && job.attempt === attempt
+    && Number.isFinite(expiry) && expiry > nowMillis;
 }
