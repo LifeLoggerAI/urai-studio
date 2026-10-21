@@ -62,6 +62,7 @@ export async function OPTIONS(request: Request): Promise<Response> {
  * read-only memory-plan preflight is preserved unchanged. Every request
  * separately revalidates existing Studio, Spatial, consent and Jobs authorities. */
 export async function POST(request: Request): Promise<Response> {
+  const operationDeadline = Date.now() + 50_000;
   const actor = await requireStudioLongformAuth(request);
   if (!actor.ok) return deny(request);
   // Retain ownership of the single verified Buffer until the guarded stream
@@ -76,7 +77,21 @@ export async function POST(request: Request): Promise<Response> {
     const origin = request.headers.get('origin');
     if (origin && !allowedBrowserOrigin(request)) throw new Error('foreign_origin');
     if (request.headers.has('range')) throw new Error('range_unsupported');
-    const value = await readStudioLongformJson(request, 4096) as Record<string,unknown>;
+    // A disconnected Spatial client or stalled body must never outlive this
+    // request's original deadline before owner and consent checks can run.
+    const inputController = new AbortController();
+    const abortInput = () => inputController.abort();
+    const remaining = operationDeadline - Date.now();
+    const inputTimer = setTimeout(abortInput, Math.max(1, remaining));
+    if (request.signal.aborted || remaining <= 0) abortInput();
+    else request.signal.addEventListener('abort', abortInput, { once: true });
+    let value: Record<string,unknown>;
+    try {
+      value = await readStudioLongformJson(request, 4096, inputController.signal) as Record<string,unknown>;
+    } finally {
+      clearTimeout(inputTimer);
+      request.signal.removeEventListener('abort', abortInput);
+    }
     const timelineAction = value?.action === 'read-spatial-timeline';
     const finalAction = value?.action === 'deliver-spatial-final';
     const segmentAction = value?.action === 'deliver-spatial-segment';
