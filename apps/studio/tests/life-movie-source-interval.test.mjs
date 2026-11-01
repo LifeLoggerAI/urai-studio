@@ -25,7 +25,7 @@ const input = {
 function longRequest(value) {
   const { tenantId, ...body } = value;
   return long.buildStudioLongformRequest({ ...body, action: 'create',
-    consent: { purpose: 'life-movie.render', policyVersion: 'fixture-v1', decisionReceiptId: 'fixture-decision' },
+    consent: { purpose: 'life-movie.render', policyVersion: '1.1.0', decisionReceiptId: 'a'.repeat(64) },
   }, { tenantId, userId: 'owner-fixture' });
 }
 let cases = 0;
