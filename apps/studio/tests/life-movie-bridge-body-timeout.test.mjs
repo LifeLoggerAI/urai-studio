@@ -58,6 +58,22 @@ async function boundedCall(call, limitMs) {
   } finally { clearTimeout(timer); }
 }
 try {
+  // Studio previously accepted 512 KiB bodies that Jobs always rejected at
+  // its 32 KiB bridge boundary. Reject them locally without sending a token.
+  const oversize = { ...input, payload: { synthetic: true, subtitleText: 'x'.repeat(32 * 1024) } };
+  assert.ok(Buffer.byteLength(JSON.stringify(oversize), 'utf8') > 32 * 1024);
+  for (const [name, call, envName, code] of [
+    ['shortform', () => callStudioJobsBridge(oversize), 'URAI_JOBS_BRIDGE_URL', 'life_movie_request_too_large'],
+    ['longform', () => callStudioLongformBridge(oversize), 'URAI_JOBS_LONGFORM_BRIDGE_URL', 'longform_request_too_large'],
+  ]) {
+    process.env[envName] = `${endpoint}/success`;
+    const previouslyReceived = received.length;
+    await assert.rejects(call(), (error) => error.message === code
+      && (name === 'shortform' || error.status === 413));
+    assert.equal(received.length, previouslyReceived, name + ' must never transmit an oversized private envelope');
+    cases++;
+  }
+
   for (const [name, call, envName, timeout, invalid] of [
     ['shortform', () => callStudioJobsBridge(input, { timeoutMs: 1000 }), 'URAI_JOBS_BRIDGE_URL', 'jobs_bridge_timeout', 'jobs_bridge_invalid_response'],
     ['longform', () => callStudioLongformBridge(input), 'URAI_JOBS_LONGFORM_BRIDGE_URL', 'longform_bridge_timeout', 'longform_bridge_invalid_response'],

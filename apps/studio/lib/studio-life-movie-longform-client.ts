@@ -3,6 +3,11 @@ import { createHash } from 'node:crypto';
 
 import { StudioLongformError, readStudioLongformJson, STUDIO_LONGFORM_JOBS_CONTRACT, type StudioLongformRequest } from './studio-life-movie-longform-contract';
 
+// Jobs studioLifeMovieLongformBridge accepts a 32 KiB request envelope,
+// even though Studio supports larger editing inputs. Never send oversized
+// private plans or the bridge token in a request Jobs must reject.
+const JOBS_BRIDGE_MAX_BODY_BYTES = 32 * 1024;
+
 function validateUrl(raw: string): URL {
   let url;
   try { url = new URL(raw); } catch { throw new StudioLongformError('longform_bridge_url_invalid', 503); }
@@ -37,7 +42,7 @@ export async function callStudioLongformBridge(input: StudioLongformRequest): Pr
   const encoded = JSON.stringify(input);
   // Server-owned identity, digests and flags add bytes to the caller's body.
   // Apply Jobs' bound to the actual transmitted UTF-8 envelope as well.
-  if (Buffer.byteLength(encoded, 'utf8') > STUDIO_LONGFORM_JOBS_CONTRACT.maxRequestBytes) {
+  if (Buffer.byteLength(encoded, 'utf8') > Math.min(STUDIO_LONGFORM_JOBS_CONTRACT.maxRequestBytes, JOBS_BRIDGE_MAX_BODY_BYTES)) {
     throw new StudioLongformError('longform_request_too_large', 413);
   }
   const controller = new AbortController();
