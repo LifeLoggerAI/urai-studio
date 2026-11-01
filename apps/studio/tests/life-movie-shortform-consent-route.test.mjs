@@ -105,6 +105,19 @@ try {
       assert.equal(result.status, 400); assert.equal((await result.json()).error.code, 'life_movie_invalid_render_consent');
       assert.equal(state.calls.length, 0, 'invalid consent must never reach Jobs'); cases++;
     }
+    // In-memory direct client inputs may contain non-enumerable/symbol keys
+    // even when JSON request bodies cannot represent those properties.
+    for (const hidden of [
+      Object.defineProperty({ ...consent }, 'hiddenGrant', { value: true }),
+      { ...consent, [Symbol('privileged')]: true },
+    ]) {
+      reset();
+      await assert.rejects(client.callStudioJobsBridge({
+        action: 'create', tenantId: 'synthetic-tenant', userId: 'synthetic-owner',
+        idempotencyKey: 'synthetic-idempotency', consent: hidden, payload: {},
+      }), /life_movie_invalid_render_consent/);
+      assert.equal(state.calls.length, 0); cases++;
+    }
     reset(); const trimmed = body(); trimmed.consent.policyVersion = ' 1.1.0 '; trimmed.consent.decisionReceiptId = ' ' + 'a'.repeat(64) + ' ';
     assert.equal((await route.POST(request(trimmed))).status, 202); assert.deepEqual(state.calls[0].input.consent, consent); cases++;
     reset(); state.authOk = false; assert.equal((await route.POST(request(body()))).status, 401); assert.equal(state.calls.length, 0); cases++;
