@@ -75,9 +75,9 @@ function createBody(clips = 3) {
     action: 'create', projectId: 'project-test',
     sceneTruthReceiptRef: `str_${'a'.repeat(16)}_${'b'.repeat(8)}_${'c'.repeat(40)}`,
     sceneTruthDigest: 'd'.repeat(64),
-    sources: [{ id: 'clip-test', bucket: 'urai-synthetic-test', objectPath: 'tenants/studio-test/clips/synthetic.mp4', mimeType: 'video/mp4', provenance: 'generated', sourceRefs: ['synthetic-fixture-only'], consentRef: 'synthetic-consent', ownerOrRightsRef: 'synthetic-rights' }],
+    sources: [{ id: 'clip-test', bucket: 'urai-synthetic-test', objectPath: 'tenants/studio-test/clips/synthetic.mp4', generation: '1793378565000001', mimeType: 'video/mp4', provenance: 'generated', sourceRefs: ['synthetic-fixture-only'], consentRef: 'synthetic-consent', ownerOrRightsRef: 'synthetic-rights' }],
     timeline: Array.from({ length: clips }, (_, i) => ({ sourceId: 'clip-test', startMs: i * 15_000, endMs: (i + 1) * 15_000 })),
-    consent: { purpose: 'life-movie.render', policyVersion: 'synthetic-v1', decisionReceiptId: 'synthetic-decision' },
+    consent: { purpose: 'life-movie.render', policyVersion: '1.1.0', decisionReceiptId: 'a'.repeat(64) },
   };
 }
 function request(body, { token = true, headers = {}, raw } = {}) {
