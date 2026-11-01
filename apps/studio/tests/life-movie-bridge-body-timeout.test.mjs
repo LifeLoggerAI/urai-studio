@@ -28,7 +28,7 @@ const envKeys = ['NODE_ENV', 'URAI_STUDIO_JOBS_DISPATCH_ENABLED', 'URAI_STUDIO_L
 const previousEnv = Object.fromEntries(envKeys.map((name) => [name, process.env[name]]));
 const input = {
   action: 'create', tenantId: 'synthetic-tenant', userId: 'synthetic-owner', idempotencyKey: 'synthetic-timeout-key',
-  consent: { purpose: 'life-movie.render', policyVersion: 'synthetic-policy', decisionReceiptId: 'synthetic-decision' },
+  consent: { purpose: 'life-movie.render', policyVersion: '1.1.0', decisionReceiptId: 'a'.repeat(64) },
   payload: { synthetic: true },
 };
 const received = [];
