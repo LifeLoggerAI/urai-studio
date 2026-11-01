@@ -16,7 +16,7 @@ export function requireStudioJobsRenderConsent(value: unknown): StudioJobsRender
     || consent.purpose !== 'life-movie.render' || typeof consent.policyVersion !== 'string'
     || typeof consent.decisionReceiptId !== 'string') throw new Error('life_movie_invalid_render_consent');
   const policyVersion = consent.policyVersion.trim(), decisionReceiptId = consent.decisionReceiptId.trim();
-  if (!policyVersion || policyVersion.length > 80 || !decisionReceiptId || decisionReceiptId.length > 160) {
+  if (policyVersion !== '1.1.0' || !/^[0-9a-f]{64}$/.test(decisionReceiptId)) {
     throw new Error('life_movie_invalid_render_consent');
   }
   return { purpose: 'life-movie.render', policyVersion, decisionReceiptId };
