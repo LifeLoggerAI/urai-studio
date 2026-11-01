@@ -73,6 +73,21 @@ for (const [field, code, values] of [
   });
 }
 
+test('selected media requires immutable safe Storage generation', () => {
+  const selected = fixture();
+  const initial = build(selected);
+  assert.equal(initial.payload.sources[0].generation, '1793378565000001');
+  const replacement = fixture();
+  replacement.sources[0].generation = '1793378565000002';
+  assert.notEqual(build(replacement).payload.renderPlanDigest, initial.payload.renderPlanDigest);
+  assert.notEqual(build(replacement).idempotencyKey, initial.idempotencyKey);
+  for (const generation of [undefined, null, '', '0', '-1', '1.0', '01', ' 1', '1 ', '9007199254740992', '99999999999999999999', 1, NaN, Infinity]) {
+    const sample = fixture();
+    sample.sources[0].generation = generation;
+    assert.throws(() => build(sample), /life_movie_invalid_source_generation/);
+  }
+});
+
 test('raw audio roles must match the existing Jobs enum', () => {
   for (const role of ['speech', ' narration', null, 7]) {
     const input = fixture(); input.audioCues[0].role = role;
