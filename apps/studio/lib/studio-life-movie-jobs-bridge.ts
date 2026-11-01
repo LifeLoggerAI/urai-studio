@@ -245,3 +245,29 @@ export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInpu
     publicReleaseAuthorized: false as const,
   };
 }
+
+/**
+ * Stable source selection identity. Requires the already normalized envelope,
+ * including explicit immutable Storage object generations. NOT authorization.
+ */
+export function deriveStudioLifeMovieRenderScope(payload: ReturnType<typeof buildJobsLifeMovieEnvelope>['payload']) {
+  const selection = payload.sources.map((source) => [
+    source.id,
+    source.bucket,
+    source.objectPath,
+    source.generation,
+    source.mimeType,
+    source.provenance,
+    source.sourceRefs,
+    source.consentRef,
+    source.ownerOrRightsRef,
+  ] as const);
+  selection.sort((left, right) => left[0] < right[0] ? -1 : left[0] > right[0] ? 1 : 0);
+  if (selection.some((source, index) => index > 0 && source[0] === selection[index - 1][0])) fail('life_movie_duplicate_source_id');
+  const sourceSetDigest = createHash('sha256')
+    .update('urai-life-movie-source-set-v1\n')
+    .update(JSON.stringify(selection))
+    .digest('hex');
+  return { projectId: payload.projectId, renderPlanDigest: payload.renderPlanDigest, sourceSetDigest };
+}
+
