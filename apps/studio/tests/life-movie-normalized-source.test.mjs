@@ -21,7 +21,7 @@ function fixture() {
     sceneTruthReceiptRef: `str_fixturefixture1234_zzzzzzzz_${'A'.repeat(40)}`,
     sceneTruthDigest: 'b'.repeat(64), width: 320, height: 320, fps: 30,
     sources: [{ id: 'fixture-source', bucket: 'private-fixture-bucket',
-      objectPath: 'tenants/fixture-tenant/source.mp4', mimeType: 'video/mp4',
+      objectPath: 'tenants/fixture-tenant/source.mp4', generation: '1793378565000001', mimeType: 'video/mp4',
       provenance: 'original-source', sourceRefs: ['synthetic-source-reference'],
       consentRef: 'fixture-consent', ownerOrRightsRef: 'fixture-rights' }],
     timeline: [{ sourceId: 'fixture-source', startMs: 0, endMs: 750, sourceStartMs: 1250 }],
