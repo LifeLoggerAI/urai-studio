@@ -88,6 +88,22 @@ try {
   await check('declared size beyond bound rejected before streaming',async()=>{
     globalThis.fetch=async()=>new Response('a',{headers:{'content-type':'video/mp4','content-length':'2147483649'}});await assert.rejects(deliver());
   });
+  await check('subtitle declared byte count above 2 MiB denied before consuming upstream',async()=>{
+    const value=body();value.delivery.kind='srt';
+    globalThis.fetch=async()=>new Response('a',{headers:{'content-type':'application/x-subrip','content-length':String(2*1024*1024+1)}});
+    await assert.rejects(deliver(value));
+  });
+  await check('subtitle streaming without length is capped at 2 MiB',async()=>{
+    const value=body();value.delivery.kind='srt';let count=0;
+    globalThis.fetch=async()=>new Response(new ReadableStream({pull(c){
+      if(count++<33)c.enqueue(new Uint8Array(65536).fill(7));else c.close();
+    }}),{headers:{'content-type':'application/x-subrip'}});
+    await assert.rejects((await deliver(value)).arrayBuffer());
+  });
+  await check('compressed private media denied before bytes reach caller',async()=>{
+    globalThis.fetch=async()=>new Response('not a real movie',{headers:{'content-type':'video/mp4','content-encoding':'gzip'}});
+    await assert.rejects(deliver());
+  });
   await check('wrong MIME rejected without private body delivery',async()=>{
     globalThis.fetch=async()=>new Response('a',{headers:{'content-type':'text/html'}});await assert.rejects(deliver());
   });
