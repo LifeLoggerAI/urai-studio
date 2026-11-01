@@ -79,9 +79,9 @@ function createBody(clips = 3) {
     action: 'create', projectId: 'project-test',
     sceneTruthReceiptRef: `str_${'a'.repeat(16)}_${'b'.repeat(8)}_${'c'.repeat(40)}`,
     sceneTruthDigest: 'd'.repeat(64),
-    sources: [{ id: 'clip-test', bucket: 'urai-synthetic-test', objectPath: 'tenants/studio-test/clips/synthetic.mp4', mimeType: 'video/mp4', provenance: 'generated', sourceRefs: ['synthetic-fixture-only'], consentRef: 'synthetic-consent', ownerOrRightsRef: 'synthetic-rights' }],
+    sources: [{ id: 'clip-test', bucket: 'urai-synthetic-test', objectPath: 'tenants/studio-test/clips/synthetic.mp4', generation: '1793378565000001', mimeType: 'video/mp4', provenance: 'generated', sourceRefs: ['synthetic-fixture-only'], consentRef: 'synthetic-consent', ownerOrRightsRef: 'synthetic-rights' }],
     timeline: Array.from({ length: clips }, (_, i) => ({ sourceId: 'clip-test', startMs: i * 15_000, endMs: (i + 1) * 15_000 })),
-    consent: { purpose: 'life-movie.render', policyVersion: 'synthetic-v1', decisionReceiptId: 'synthetic-decision' },
+    consent: { purpose: 'life-movie.render', policyVersion: '1.1.0', decisionReceiptId: 'a'.repeat(64) },
   };
 }
 function unalignedAudioBody(cueCount, distinctSources = false) {
@@ -229,6 +229,14 @@ try {
     (body) => { body.sources[0].objectPath += '/../escape'; },
     (body) => { body.sources[0].url = 'https://public.example.test/media.mp4'; },
     (body) => { body.sources[0].mimeType = 'application/octet-stream'; },
+    (body) => { delete body.sources[0].generation; },
+    (body) => { body.sources[0].generation = '0'; },
+    (body) => { body.sources[0].generation = '01'; },
+    (body) => { body.sources[0].generation = '9007199254740992'; },
+    (body) => { body.sources[0].generation = 1793378565000001; },
+    (body) => { body.consent.policyVersion = 'synthetic-v1'; },
+    (body) => { body.consent.decisionReceiptId = 'synthetic-decision'; },
+    (body) => { body.consent.decisionReceiptId = 'A'.repeat(64); },
     (body) => { body.sources[0].provenance = 'archival-from-generated'; },
     (body) => { body.sources[0].consentRef = 'x'.repeat(129); },
     (body) => { body.sceneTruthReceiptRef = 'missing-signature'; },
