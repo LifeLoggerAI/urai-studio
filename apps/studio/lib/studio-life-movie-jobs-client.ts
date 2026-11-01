@@ -11,8 +11,9 @@ export type StudioJobsRenderConsent = {
 export function requireStudioJobsRenderConsent(value: unknown): StudioJobsRenderConsent {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('life_movie_invalid_render_consent');
   const consent = value as Record<string, unknown>;
-  if (Object.keys(consent).length !== 3
-    || Object.keys(consent).some((key) => !['purpose', 'policyVersion', 'decisionReceiptId'].includes(key))
+  const keys = Reflect.ownKeys(consent);
+  if (keys.length !== 3
+    || keys.some((key) => typeof key !== 'string' || !['purpose', 'policyVersion', 'decisionReceiptId'].includes(key))
     || consent.purpose !== 'life-movie.render' || typeof consent.policyVersion !== 'string'
     || typeof consent.decisionReceiptId !== 'string') throw new Error('life_movie_invalid_render_consent');
   const policyVersion = consent.policyVersion.trim(), decisionReceiptId = consent.decisionReceiptId.trim();
