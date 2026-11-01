@@ -13,7 +13,7 @@ const SOURCE_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const RECEIPT_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const BUCKET = /^[a-z0-9][a-z0-9._-]+[a-z0-9]$/;
 const SAFE_PROJECT = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
-const SOURCE_FIELDS = ['id', 'bucket', 'objectPath', 'mimeType', 'provenance', 'sourceRefs', 'consentRef', 'ownerOrRightsRef'];
+const SOURCE_FIELDS = ['id', 'bucket', 'objectPath', 'generation', 'mimeType', 'provenance', 'sourceRefs', 'consentRef', 'ownerOrRightsRef'];
 const MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime', 'video/webm', 'audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/x-wav', 'audio/webm', 'audio/ogg']);
 const PROVENANCE = new Set(['original-source', 'user-provided-fact', 'verified-metadata', 'user-recorded-memory', 'inferred', 'reconstructed', 'generated', 'artistic-interpretation', 'unknown']);
 const AUDIO_ROLES = new Set(['narration', 'dialogue', 'music', 'ambience', 'foley', 'effects']);
@@ -22,6 +22,7 @@ export type JobsLifeMovieSource = {
   id: string;
   bucket: string;
   objectPath: string;
+  generation: string;
   mimeType:
     | 'image/jpeg' | 'image/png' | 'image/webp'
     | 'video/mp4' | 'video/quicktime' | 'video/webm'
@@ -154,6 +155,11 @@ export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInpu
     if (typeof source.bucket !== 'string' || source.bucket.length > 255 || !BUCKET.test(source.bucket)) fail('life_movie_invalid_bucket');
     const objectPath = safeObjectPath(source.objectPath, 'life_movie_invalid_source_path');
     if (!allowedSourcePrefixes.some((prefix) => objectPath.startsWith(prefix))) fail('life_movie_source_outside_tenant');
+    // Jobs requires a precise existing Storage object generation. Never fall back
+    // to the latest object at a caller-supplied path or round unsafe integers.
+    if (typeof source.generation !== 'string'
+      || !/^[1-9][0-9]{0,19}$/.test(source.generation)
+      || !Number.isSafeInteger(Number(source.generation))) fail('life_movie_invalid_source_generation');
     if (!Array.isArray(source.sourceRefs) || source.sourceRefs.length < 1 || source.sourceRefs.length > 32 || source.sourceRefs.some((ref) => typeof ref !== 'string' || !ref.trim() || ref.length > 512)) fail('life_movie_invalid_source_refs');
     if (!MIME.has(source.mimeType)) fail('life_movie_invalid_source_mime');
     if (!PROVENANCE.has(source.provenance)) fail('life_movie_invalid_source_provenance');
@@ -239,3 +245,29 @@ export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInpu
     publicReleaseAuthorized: false as const,
   };
 }
+
+/**
+ * Stable source selection identity. Requires the already normalized envelope,
+ * including explicit immutable Storage object generations. NOT authorization.
+ */
+export function deriveStudioLifeMovieRenderScope(payload: ReturnType<typeof buildJobsLifeMovieEnvelope>['payload']) {
+  const selection = payload.sources.map((source) => [
+    source.id,
+    source.bucket,
+    source.objectPath,
+    source.generation,
+    source.mimeType,
+    source.provenance,
+    source.sourceRefs,
+    source.consentRef,
+    source.ownerOrRightsRef,
+  ] as const);
+  selection.sort((left, right) => left[0] < right[0] ? -1 : left[0] > right[0] ? 1 : 0);
+  if (selection.some((source, index) => index > 0 && source[0] === selection[index - 1][0])) fail('life_movie_duplicate_source_id');
+  const sourceSetDigest = createHash('sha256')
+    .update('urai-life-movie-source-set-v1\n')
+    .update(JSON.stringify(selection))
+    .digest('hex');
+  return { projectId: payload.projectId, renderPlanDigest: payload.renderPlanDigest, sourceSetDigest };
+}
+

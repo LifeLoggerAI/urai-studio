@@ -3,7 +3,9 @@ import 'server-only';
 type Identity = { uid: string; tenantId: string };
 type Authority = Identity & { ok: boolean };
 type Delivery = { action: 'deliver'; kind: 'mp4' | 'srt'; authorityHash: string; expiresAt: number; generation: string; disposition: 'inline' | 'attachment'; jobId?: string; planId?: string; artifact?: string };
-const MAX_BYTES = 2 * 1024 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 2 * 1024 * 1024 * 1024;
+const MAX_SUBTITLE_BYTES = 2 * 1024 * 1024;
+
 function fail(): never { throw new Error('private_media_delivery_unavailable'); }
 function object(value: unknown, keys: string[]) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) fail();
@@ -47,6 +49,8 @@ function configuration(bridge: 'short' | 'longform') {
  * repeats current revoked-token/edit-role/tenant authority and provisioning. */
 export async function deliverStudioPrivateMedia(args: { value: unknown; identity: Identity; request: Request; authorize: () => Promise<Authority>; operationDeadline?: number }): Promise<Response> {
   const { bridge, delivery } = parseStudioPrivateMedia(args.value);
+  // Captions have a much smaller security/resource budget than video bytes.
+  const maxBytes = delivery.kind === 'srt' ? MAX_SUBTITLE_BYTES : MAX_VIDEO_BYTES;
   const operationDeadline = args.operationDeadline ?? Date.now() + 50_000;
   if (!Number.isSafeInteger(operationDeadline) || operationDeadline <= Date.now() || operationDeadline > Date.now() + 50_000) fail();
   const snapshot = configuration(bridge), expires = Math.min(delivery.expiresAt, operationDeadline);
@@ -74,8 +78,12 @@ export async function deliverStudioPrivateMedia(args: { value: unknown; identity
     await check();
     const mime = delivery.kind === 'mp4' ? 'video/mp4' : 'application/x-subrip';
     const length = response.headers.get('content-length');
+    // Fetch may transparently decompress responses: refuse encoded media so
+    // the declared length and the streamed byte budget describe the same bytes.
+    const encoding = response.headers.get('content-encoding');
     if (!response.ok || !response.body || response.headers.get('content-type')?.split(';')[0].trim() !== mime
-      || (length !== null && (!/^[0-9]+$/.test(length) || !Number.isSafeInteger(Number(length)) || Number(length) > MAX_BYTES))) {
+      || (encoding !== null && encoding.toLowerCase().trim() !== 'identity')
+      || (length !== null && (!/^[0-9]+$/.test(length) || !Number.isSafeInteger(Number(length)) || Number(length) > maxBytes))) {
       await response.body?.cancel(); fail();
     }
     reader = response.body.getReader();
@@ -96,7 +104,7 @@ export async function deliverStudioPrivateMedia(args: { value: unknown; identity
           }
           const part = pending.subarray(offset, offset + 64 * 1024);
           offset += part.byteLength; bytes += part.byteLength;
-          if (bytes > MAX_BYTES || (length !== null && bytes > Number(length))) fail();
+          if (bytes > maxBytes || (length !== null && bytes > Number(length))) fail();
           await check(); output.enqueue(part);
         } catch {
           controller.abort(); cleanup(); await reader?.cancel().catch(() => {}); output.error(new Error('private_media_delivery_unavailable'));

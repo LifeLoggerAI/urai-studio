@@ -37,7 +37,7 @@ function fail(code: string): never { throw new StudioLongformError(code); }
 function record(value: unknown, allowed: string[]): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) fail('longform_invalid_request');
   const object = value as Record<string, unknown>;
-  if (Object.keys(object).some((key) => !allowed.includes(key))) fail('longform_unknown_request_field');
+  if (Reflect.ownKeys(object).some((key) => typeof key !== 'string' || !allowed.includes(key))) fail('longform_unknown_request_field');
   return object;
 }
 function text(value: unknown, max: number, code: string): string {
@@ -118,13 +118,18 @@ export function buildStudioLongformRequest(value: unknown, identity: { tenantId:
     policyVersion: text(consentInput.policyVersion, 80, 'longform_invalid_consent'),
     decisionReceiptId: text(consentInput.decisionReceiptId, 160, 'longform_invalid_consent'),
   };
+  // The transport shape must match Jobs #232 and the Privacy 1.1.0 receipt
+  // policy. A correctly shaped hash is never itself proof of authorization.
+  if (consent.policyVersion !== '1.1.0' || !/^[0-9a-f]{64}$/.test(consent.decisionReceiptId)) {
+    fail('longform_invalid_consent');
+  }
   const width = integer(body.width ?? 1920, 320, 1920, 'longform_invalid_width');
   const height = integer(body.height ?? 1080, 320, 1080, 'longform_invalid_height');
   const fps = integer(body.fps ?? 30, 24, 30, 'longform_invalid_fps');
   if (width % 2 || height % 2 || ![24, 25, 30].includes(fps)) fail('longform_invalid_dimensions');
   const sourceIds = new Set<string>();
   const sources = array(body.sources, 1, 128, 'longform_invalid_sources').map((value) => {
-    const source = record(value, ['id', 'bucket', 'objectPath', 'mimeType', 'provenance', 'sourceRefs', 'consentRef', 'ownerOrRightsRef']);
+    const source = record(value, ['id', 'bucket', 'objectPath', 'generation', 'mimeType', 'provenance', 'sourceRefs', 'consentRef', 'ownerOrRightsRef']);
     const sourceId = id(source.id, 'longform_invalid_source_id');
     if (sourceIds.has(sourceId)) fail('longform_duplicate_source_id');
     sourceIds.add(sourceId);
@@ -132,9 +137,15 @@ export function buildStudioLongformRequest(value: unknown, identity: { tenantId:
     if (bucket.length < 3 || !/^[a-z0-9][a-z0-9._-]+[a-z0-9]$/.test(bucket)) fail('longform_invalid_bucket');
     const objectPath = path(source.objectPath);
     if (![`studios/${tenantId}/`, `tenants/${tenantId}/`].some((prefix) => objectPath.startsWith(prefix))) fail('longform_source_outside_tenant');
+    // Bound each source to an immutable object generation, exactly as the
+    // Jobs validator and installed Storage SDK require. No latest-object fallback.
+    const generation = text(source.generation, 20, 'longform_invalid_source_generation');
+    if (!/^[1-9][0-9]{0,19}$/.test(generation) || !Number.isSafeInteger(Number(generation))) {
+      fail('longform_invalid_source_generation');
+    }
     if (!MIME.has(String(source.mimeType)) || !PROVENANCE.has(String(source.provenance))) fail('longform_invalid_source_metadata');
     return {
-      id: sourceId, bucket, objectPath, mimeType: source.mimeType, provenance: source.provenance,
+      id: sourceId, bucket, objectPath, generation, mimeType: source.mimeType, provenance: source.provenance,
       sourceRefs: array(source.sourceRefs, 1, 32, 'longform_invalid_source_refs').map((ref) => text(ref, 512, 'longform_invalid_source_ref')),
       consentRef: id(source.consentRef, 'longform_invalid_source_consent'),
       ownerOrRightsRef: id(source.ownerOrRightsRef, 'longform_invalid_source_rights'),

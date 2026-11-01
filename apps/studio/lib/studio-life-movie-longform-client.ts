@@ -3,6 +3,9 @@ import { createHash } from 'node:crypto';
 
 import { StudioLongformError, readStudioLongformJson, STUDIO_LONGFORM_JOBS_CONTRACT, type StudioLongformRequest } from './studio-life-movie-longform-contract';
 
+// The Jobs long-form bridge accepts 512 KiB request bodies. Its short-form
+// sibling accepts only 32 KiB; do not accidentally apply that smaller ceiling
+// to valid long-form plans.
 function validateUrl(raw: string): URL {
   let url;
   try { url = new URL(raw); } catch { throw new StudioLongformError('longform_bridge_url_invalid', 503); }

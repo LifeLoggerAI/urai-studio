@@ -11,12 +11,13 @@ export type StudioJobsRenderConsent = {
 export function requireStudioJobsRenderConsent(value: unknown): StudioJobsRenderConsent {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('life_movie_invalid_render_consent');
   const consent = value as Record<string, unknown>;
-  if (Object.keys(consent).length !== 3
-    || Object.keys(consent).some((key) => !['purpose', 'policyVersion', 'decisionReceiptId'].includes(key))
+  const keys = Reflect.ownKeys(consent);
+  if (keys.length !== 3
+    || keys.some((key) => typeof key !== 'string' || !['purpose', 'policyVersion', 'decisionReceiptId'].includes(key))
     || consent.purpose !== 'life-movie.render' || typeof consent.policyVersion !== 'string'
     || typeof consent.decisionReceiptId !== 'string') throw new Error('life_movie_invalid_render_consent');
   const policyVersion = consent.policyVersion.trim(), decisionReceiptId = consent.decisionReceiptId.trim();
-  if (!policyVersion || policyVersion.length > 80 || !decisionReceiptId || decisionReceiptId.length > 160) {
+  if (policyVersion !== '1.1.0' || !/^[0-9a-f]{64}$/.test(decisionReceiptId)) {
     throw new Error('life_movie_invalid_render_consent');
   }
   return { purpose: 'life-movie.render', policyVersion, decisionReceiptId };
@@ -37,6 +38,9 @@ export type StudioJobsBridgeStatus = {
 };
 
 const DEFAULT_TIMEOUT_MS = 15_000;
+// Jobs studioLifeMovieBridge rejects a 32 KiB JSON envelope. Enforce the
+// receiving service limit before transmitting the Studio bridge credential.
+const JOBS_BRIDGE_MAX_BODY_BYTES = 32 * 1024;
 
 function productionRuntime() {
   return process.env.NODE_ENV === 'production';
@@ -118,7 +122,7 @@ export async function callStudioJobsBridge(
 
   const timeoutMs = Math.max(1_000, Math.min(30_000, options.timeoutMs ?? DEFAULT_TIMEOUT_MS));
   const encoded = JSON.stringify(envelope);
-  if (Buffer.byteLength(encoded, 'utf8') > 512 * 1024) throw new Error('life_movie_request_too_large');
+  if (Buffer.byteLength(encoded, 'utf8') > JOBS_BRIDGE_MAX_BODY_BYTES) throw new Error('life_movie_request_too_large');
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 

@@ -41,7 +41,7 @@ export async function GET(request: Request) {
     providerGenerationAuthorized:false,
     publicReleaseAuthorized:false,
     requiredSceneFields:['sceneTruthReceiptRef','sceneTruthDigest'],
-    requiredSourceFields:['id','bucket','objectPath','mimeType','provenance','sourceRefs','consentRef','ownerOrRightsRef'],
+    requiredSourceFields:['id','bucket','objectPath','generation','mimeType','provenance','sourceRefs','consentRef','ownerOrRightsRef'],
     note:'This endpoint builds a governed Jobs request envelope only. It does not dispatch work or authorize providers/public release.',
   });
 }

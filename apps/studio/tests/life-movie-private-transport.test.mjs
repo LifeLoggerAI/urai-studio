@@ -55,11 +55,11 @@ const routeUrl = data(compile(source('app/api/studio/video-factory/jobs-dispatch
   .replaceAll('@/lib/studio-life-movie-longform-contract', contract)
   .replaceAll('@/lib/studio-life-movie-jobs-bridge', bridge)
   .replaceAll('@/lib/studio-life-movie-jobs-client', shortClient));
-const consent = { purpose: 'life-movie.render', policyVersion: 'synthetic-policy-v1', decisionReceiptId: 'synthetic-receipt' };
+const consent = { purpose: 'life-movie.render', policyVersion: '1.1.0', decisionReceiptId: 'a'.repeat(64) };
 function body() {
   return { projectId: 'synthetic-project', consent: structuredClone(consent), width: 320, height: 320, fps: 30,
     sceneTruthReceiptRef: `str_${'a'.repeat(20)}_${'b'.repeat(8)}_${'c'.repeat(43)}`, sceneTruthDigest: 'd'.repeat(64),
-    sources: [{ id: 'synthetic-clip', bucket: 'synthetic-bucket', objectPath: 'tenants/synthetic-tenant/clips/source.mp4',
+    sources: [{ id: 'synthetic-clip', bucket: 'synthetic-bucket', objectPath: 'tenants/synthetic-tenant/clips/source.mp4', generation: '1793378565000001',
       mimeType: 'video/mp4', provenance: 'user-recorded-memory', sourceRefs: ['synthetic-source'], consentRef: 'synthetic-consent', ownerOrRightsRef: 'synthetic-rights' }],
     timeline: [{ sourceId: 'synthetic-clip', startMs: 0, endMs: 1000 }], subtitleText: '1\n00:00:00,000 --> 00:00:00,900\nSynthetic private caption' };
 }

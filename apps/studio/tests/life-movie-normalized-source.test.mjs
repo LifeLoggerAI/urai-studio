@@ -13,6 +13,7 @@ vm.runInNewContext(ts.transpileModule(fs.readFileSync(sourcePath, 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText, { exports, require, Buffer });
 const build = exports.buildJobsLifeMovieEnvelope;
+const deriveScope = exports.deriveStudioLifeMovieRenderScope;
 const plain = (value) => JSON.parse(JSON.stringify(value));
 
 function fixture() {
@@ -21,7 +22,7 @@ function fixture() {
     sceneTruthReceiptRef: `str_fixturefixture1234_zzzzzzzz_${'A'.repeat(40)}`,
     sceneTruthDigest: 'b'.repeat(64), width: 320, height: 320, fps: 30,
     sources: [{ id: 'fixture-source', bucket: 'private-fixture-bucket',
-      objectPath: 'tenants/fixture-tenant/source.mp4', mimeType: 'video/mp4',
+      objectPath: 'tenants/fixture-tenant/source.mp4', generation: '1793378565000001', mimeType: 'video/mp4',
       provenance: 'original-source', sourceRefs: ['synthetic-source-reference'],
       consentRef: 'fixture-consent', ownerOrRightsRef: 'fixture-rights' }],
     timeline: [{ sourceId: 'fixture-source', startMs: 0, endMs: 750, sourceStartMs: 1250 }],
@@ -72,6 +73,21 @@ for (const [field, code, values] of [
     }
   });
 }
+
+test('selected media requires immutable safe Storage generation', () => {
+  const selected = fixture();
+  const initial = build(selected);
+  assert.equal(initial.payload.sources[0].generation, '1793378565000001');
+  const replacement = fixture();
+  replacement.sources[0].generation = '1793378565000002';
+  assert.notEqual(build(replacement).payload.renderPlanDigest, initial.payload.renderPlanDigest);
+  assert.notEqual(build(replacement).idempotencyKey, initial.idempotencyKey);
+  for (const generation of [undefined, null, '', '0', '-1', '1.0', '01', ' 1', '1 ', '9007199254740992', '99999999999999999999', 1, NaN, Infinity]) {
+    const sample = fixture();
+    sample.sources[0].generation = generation;
+    assert.throws(() => build(sample), /life_movie_invalid_source_generation/);
+  }
+});
 
 test('raw audio roles must match the existing Jobs enum', () => {
   for (const role of ['speech', ' narration', null, 7]) {
@@ -137,4 +153,28 @@ test('the emitted digest binds the emitted plan while factual changes remain dis
   assert.equal(plan.sceneTruthDigest, fixture().sceneTruthDigest);
   assert.equal(plan.sceneTruthReceiptRef, fixture().sceneTruthReceiptRef);
   assert.equal(plan.timeline[0].sourceStartMs, 1250);
+});
+
+
+test('versioned source-set fingerprint binds exact source generations and is order-independent', () => {
+  const input = fixture();
+  const envelope = build(input);
+  const scope = plain(deriveScope(envelope.payload));
+  assert.equal(scope.projectId, envelope.payload.projectId);
+  assert.equal(scope.renderPlanDigest, envelope.payload.renderPlanDigest);
+  const expectedSelection = envelope.payload.sources.map((source) => [
+    source.id, source.bucket, source.objectPath, source.generation,
+    source.mimeType, source.provenance, source.sourceRefs,
+    source.consentRef, source.ownerOrRightsRef,
+  ]);
+  expectedSelection.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
+  const expected = createHash('sha256').update('urai-life-movie-source-set-v1\n')
+    .update(JSON.stringify(expectedSelection)).digest('hex');
+  assert.equal(scope.sourceSetDigest, expected);
+  const replacement = fixture();
+  replacement.sources[0].generation = '1793378565000002';
+  assert.notEqual(deriveScope(build(replacement).payload).sourceSetDigest, scope.sourceSetDigest);
+  const tampered = fixture();
+  tampered.sources[0].ownerOrRightsRef = 'fixture-other-rights';
+  assert.notEqual(deriveScope(build(tampered).payload).sourceSetDigest, scope.sourceSetDigest);
 });
