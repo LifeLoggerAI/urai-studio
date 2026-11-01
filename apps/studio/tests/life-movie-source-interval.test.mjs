@@ -18,7 +18,7 @@ const input = {
   tenantId: 'tenant-fixture', projectId: 'project-fixture',
   sceneTruthReceiptRef: `str_fixturefixture1234_zzzzzzzz_${'A'.repeat(40)}`, sceneTruthDigest: 'b'.repeat(64),
   width: 320, height: 320, fps: 30,
-  sources: [{ id: 'source-fixture', bucket: 'private-fixture-bucket', objectPath: 'tenants/tenant-fixture/source.mp4',
+  sources: [{ id: 'source-fixture', bucket: 'private-fixture-bucket', objectPath: 'tenants/tenant-fixture/source.mp4', generation: '1793378565000001',
     mimeType: 'video/mp4', provenance: 'original-source', sourceRefs: ['synthetic-source-reference'], consentRef: 'fixture-consent', ownerOrRightsRef: 'fixture-rights' }],
   timeline: [{ sourceId: 'source-fixture', startMs: 0, endMs: 750, sourceStartMs: 1250 }],
 };
