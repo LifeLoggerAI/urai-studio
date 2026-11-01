@@ -24,7 +24,7 @@ function fixture(subtitleText) {
     sceneTruthReceiptRef: `str_fixturefixture1234_zzzzzzzz_${'A'.repeat(40)}`,
     sceneTruthDigest: 'b'.repeat(64), width: 320, height: 320, fps: 30,
     sources: [{ id: 'fixture-source', bucket: 'private-fixture-bucket',
-      objectPath: 'tenants/fixture-tenant/source.mp4', mimeType: 'video/mp4',
+      objectPath: 'tenants/fixture-tenant/source.mp4', generation: '1793378565000001', mimeType: 'video/mp4',
       provenance: 'original-source', sourceRefs: ['synthetic-source-reference'],
       consentRef: 'fixture-consent', ownerOrRightsRef: 'fixture-rights' }],
     timeline: [{ sourceId: 'fixture-source', startMs: 0, endMs: 1000 }], subtitleText,
@@ -33,7 +33,7 @@ function fixture(subtitleText) {
 function buildLong(input) {
   const { tenantId, ...body } = input;
   return long({ action: 'create', ...body, consent: {
-    purpose: 'life-movie.render', policyVersion: 'synthetic-policy', decisionReceiptId: 'synthetic-decision',
+    purpose: 'life-movie.render', policyVersion: '1.1.0', decisionReceiptId: 'a'.repeat(64),
   } }, { tenantId, userId: 'fixture-owner' });
 }
 const malformed = [
