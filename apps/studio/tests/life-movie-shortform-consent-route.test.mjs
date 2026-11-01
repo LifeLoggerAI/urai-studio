@@ -44,7 +44,7 @@ function body() {
   return { projectId: 'synthetic-project', consent: { ...consent },
     sceneTruthReceiptRef: `str_${'a'.repeat(16)}_${'b'.repeat(8)}_${'c'.repeat(40)}`,
     sceneTruthDigest: 'd'.repeat(64),
-    sources: [{ id: 'synthetic-source', bucket: 'synthetic-private-bucket', objectPath: 'tenants/synthetic-tenant/source/image.png',
+    sources: [{ id: 'synthetic-source', bucket: 'synthetic-private-bucket', objectPath: 'tenants/synthetic-tenant/source/image.png', generation: '1793378565000001',
       mimeType: 'image/png', provenance: 'original-source', sourceRefs: ['synthetic-fixture'],
       consentRef: 'synthetic-source-consent', ownerOrRightsRef: 'synthetic-rights' }],
     timeline: [{ sourceId: 'synthetic-source', startMs: 0, endMs: 1000 }] };
