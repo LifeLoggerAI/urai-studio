@@ -194,6 +194,15 @@ try {
     `studioDataRightsOwnerFences/${createHash('sha256').update('urai-studio-data-rights:user-test').digest('hex')}`].sort());
   const repeated = contract.buildStudioLongformRequest(createBody(), { tenantId: 'studio-test', userId: 'user-test' });
   assert.equal(repeated.idempotencyKey, call.input.idempotencyKey);
+  const changedSelection = createBody();
+  changedSelection.sources[0].generation = '1793378565000002';
+  const selectedGeneration = contract.buildStudioLongformRequest(changedSelection, { tenantId: 'studio-test', userId: 'user-test' });
+  assert.notEqual(selectedGeneration.payload.renderPlanDigest, call.input.payload.renderPlanDigest);
+  assert.notEqual(selectedGeneration.idempotencyKey, call.input.idempotencyKey);
+  const changedRights = createBody();
+  changedRights.sources[0].ownerOrRightsRef = 'synthetic-other-rights';
+  assert.notEqual(contract.buildStudioLongformRequest(changedRights, { tenantId: 'studio-test', userId: 'user-test' }).payload.renderPlanDigest, call.input.payload.renderPlanDigest);
+
   assert.equal(contract.buildStudioLongformRequest(createBody(180), { tenantId: 'studio-test', userId: 'user-test' }).payload.timeline.at(-1).endMs, 2_700_000);
   assert.throws(() => contract.buildStudioLongformRequest(createBody(181), { tenantId: 'studio-test', userId: 'user-test' }));
 
