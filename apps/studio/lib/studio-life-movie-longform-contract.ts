@@ -37,7 +37,7 @@ function fail(code: string): never { throw new StudioLongformError(code); }
 function record(value: unknown, allowed: string[]): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) fail('longform_invalid_request');
   const object = value as Record<string, unknown>;
-  if (Object.keys(object).some((key) => !allowed.includes(key))) fail('longform_unknown_request_field');
+  if (Reflect.ownKeys(object).some((key) => typeof key !== 'string' || !allowed.includes(key))) fail('longform_unknown_request_field');
   return object;
 }
 function text(value: unknown, max: number, code: string): string {
