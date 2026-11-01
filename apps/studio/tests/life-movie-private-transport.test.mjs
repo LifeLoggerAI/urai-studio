@@ -55,7 +55,7 @@ const routeUrl = data(compile(source('app/api/studio/video-factory/jobs-dispatch
   .replaceAll('@/lib/studio-life-movie-longform-contract', contract)
   .replaceAll('@/lib/studio-life-movie-jobs-bridge', bridge)
   .replaceAll('@/lib/studio-life-movie-jobs-client', shortClient));
-const consent = { purpose: 'life-movie.render', policyVersion: 'synthetic-policy-v1', decisionReceiptId: 'synthetic-receipt' };
+const consent = { purpose: 'life-movie.render', policyVersion: '1.1.0', decisionReceiptId: 'a'.repeat(64) };
 function body() {
   return { projectId: 'synthetic-project', consent: structuredClone(consent), width: 320, height: 320, fps: 30,
     sceneTruthReceiptRef: `str_${'a'.repeat(20)}_${'b'.repeat(8)}_${'c'.repeat(43)}`, sceneTruthDigest: 'd'.repeat(64),
