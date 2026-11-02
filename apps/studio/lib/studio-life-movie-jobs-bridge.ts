@@ -202,6 +202,7 @@ export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInpu
     const endMs = positiveInteger(cue.endMs, 'life_movie_invalid_audio_end');
     if (endMs <= startMs || endMs > totalTimelineMs) fail('life_movie_invalid_audio_duration');
     const sourceStartMs = nonnegativeInteger(cue.sourceStartMs ?? 0, 'life_movie_invalid_audio_source_start');
+    if (sourceStartMs > 45 * 60 * 1000) fail('life_movie_invalid_audio_source_start');
     const gainDb = cue.gainDb ?? 0;
     if (!Number.isFinite(gainDb) || gainDb < -60 || gainDb > 12) fail('life_movie_invalid_audio_gain');
     return { sourceId:cue.sourceId, role:cue.role, startMs, endMs, sourceStartMs, gainDb };
