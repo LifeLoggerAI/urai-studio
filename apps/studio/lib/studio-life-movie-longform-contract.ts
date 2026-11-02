@@ -178,7 +178,7 @@ export function buildStudioLongformRequest(value: unknown, identity: { tenantId:
     const startMs = integer(cue.startMs, 0, totalMs, 'longform_invalid_audio_start');
     const endMs = integer(cue.endMs, 1, totalMs, 'longform_invalid_audio_end');
     if (endMs <= startMs) fail('longform_invalid_audio_duration');
-    const sourceStartMs = integer(cue.sourceStartMs ?? 0, 0, Number.MAX_SAFE_INTEGER, 'longform_invalid_audio_offset');
+    const sourceStartMs = integer(cue.sourceStartMs ?? 0, 0, 45 * 60 * 1000, 'longform_invalid_audio_offset');
     const gainDb = cue.gainDb ?? 0;
     if (typeof gainDb !== 'number' || !Number.isFinite(gainDb) || gainDb < -60 || gainDb > 12) fail('longform_invalid_audio_gain');
     return { sourceId, role: cue.role as JobsLifeMovieAudioCue['role'], startMs, endMs, sourceStartMs, gainDb };
