@@ -7,24 +7,34 @@ const MAX_VIDEO_BYTES = 2 * 1024 * 1024 * 1024;
 const MAX_SUBTITLE_BYTES = 2 * 1024 * 1024;
 
 function fail(): never { throw new Error('private_media_delivery_unavailable'); }
-function object(value: unknown, keys: string[]) {
+function object(value: unknown, keys: readonly string[]) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) fail();
-  const result = value as Record<string, unknown>;
-  if (Object.keys(result).some(key => !keys.includes(key))) fail();
-  return result;
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) fail();
+  const ownKeys = Reflect.ownKeys(value);
+  if (ownKeys.length !== keys.length || ownKeys.some(key => {
+    if (typeof key !== 'string' || !keys.includes(key)) return true;
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    return !descriptor || !Object.prototype.hasOwnProperty.call(descriptor, 'value');
+  })) fail();
+  return value as Record<string, unknown>;
 }
 export function parseStudioPrivateMedia(value: unknown) {
   const body = object(value, ['bridge', 'delivery']);
   if (body.bridge !== 'short' && body.bridge !== 'longform') fail();
-  const d = object(body.delivery, ['schemaVersion', 'requiresAuthorization', 'action', 'kind', 'authorityHash', 'expiresAt', 'generation', 'disposition', 'jobId', 'planId', 'artifact']);
+  const fields = ['schemaVersion', 'requiresAuthorization', 'action', 'kind', 'authorityHash', 'expiresAt', 'generation', 'disposition',
+    ...(body.bridge === 'short' ? ['jobId'] : ['planId', 'artifact'])];
+  const d = object(body.delivery, fields);
   if (d.schemaVersion !== 'urai-authenticated-private-media-v1' || d.requiresAuthorization !== true || d.action !== 'deliver'
     || typeof d.kind !== 'string' || !['mp4', 'srt'].includes(d.kind) || typeof d.authorityHash !== 'string' || !/^[a-f0-9]{64}$/.test(d.authorityHash)
-    || typeof d.generation !== 'string' || !/^[1-9][0-9]*$/.test(d.generation) || typeof d.expiresAt !== 'number' || !Number.isSafeInteger(d.expiresAt)
+    || typeof d.generation !== 'string' || !/^[1-9][0-9]{0,19}$/.test(d.generation) || !Number.isSafeInteger(Number(d.generation)) || typeof d.expiresAt !== 'number' || !Number.isSafeInteger(d.expiresAt)
     || d.expiresAt <= Date.now() || d.expiresAt > Date.now() + 300_000 || typeof d.disposition !== 'string' || !['inline', 'attachment'].includes(d.disposition)) fail();
   if (body.bridge === 'short') {
     if (typeof d.jobId !== 'string' || !/^[A-Za-z0-9_-]{10,64}$/.test(d.jobId) || d.planId !== undefined || d.artifact !== undefined) fail();
   } else if (typeof d.planId !== 'string' || !/^lmp_[A-Za-z0-9_-]{20,64}$/.test(d.planId)
-    || typeof d.artifact !== 'string' || !/^(?:final|segment:(?:0|[1-9][0-9]{0,2}))$/.test(d.artifact) || d.jobId !== undefined) fail();
+    || typeof d.artifact !== 'string' || (d.artifact !== 'final'
+      && (!/^segment:(?:0|[1-9][0-9]{0,2})$/.test(d.artifact) || Number(d.artifact.slice(8)) >= 180))
+    || d.jobId !== undefined) fail();
   const delivery: Delivery = { action: 'deliver', kind: d.kind as Delivery['kind'], authorityHash: d.authorityHash as string,
     expiresAt: d.expiresAt, generation: d.generation as string, disposition: d.disposition as Delivery['disposition'] };
   if (body.bridge === 'short') delivery.jobId = d.jobId as string;

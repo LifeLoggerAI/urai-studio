@@ -62,6 +62,31 @@ try {
   for(let i=0;i<mutations.length;i++)await check(`malformed/caller-controlled descriptor ${i} denied before token delivery`,async()=>{
     const value=body();mutations[i](value);assert.throws(()=>parseStudioPrivateMedia(value));await assert.rejects(deliver(value));assert.equal(calls.length,0);
   });
+  await check('Studio and Jobs descriptor bounds reject unauthorized or malformed private media',async()=>{
+    const safe=body('longform');safe.delivery.artifact='segment:179';
+    assert.equal(parseStudioPrivateMedia(safe).delivery.artifact,'segment:179');
+    const max=body();max.delivery.generation=String(Number.MAX_SAFE_INTEGER);
+    assert.equal(parseStudioPrivateMedia(max).delivery.generation,String(Number.MAX_SAFE_INTEGER));
+    let getterReads=0;
+    for(const [bridge,mutate] of [
+      ['short',value=>{value.delivery.generation='9007199254740992';}],
+      ['short',value=>{value.delivery.generation='123456789012345678901234567890';}],
+      ['longform',value=>{value.delivery.artifact='segment:180';}],
+      ['longform',value=>{value.delivery.artifact='segment:999';}],
+      ['short',value=>{Object.defineProperty(value.delivery,'hidden',{value:true});}],
+      ['short',value=>{value.delivery[Symbol('hidden')]=true;}],
+      ['short',value=>{Object.setPrototypeOf(value.delivery,{approved:true});}],
+      ['short',value=>{delete value.delivery.generation;Object.setPrototypeOf(value.delivery,{generation:'123'});}],
+      ['short',value=>{Object.defineProperty(value.delivery,'generation',{get(){getterReads++;return '123';},enumerable:true});}],
+      ['short',value=>{Object.defineProperty(value,'hidden',{value:true});}],
+    ]) {
+      const value=body(bridge);mutate(value);
+      assert.throws(()=>parseStudioPrivateMedia(value),/private_media_delivery_unavailable/);
+      await assert.rejects(deliver(value),/private_media_delivery_unavailable/);
+    }
+    assert.equal(getterReads,0);
+    assert.equal(calls.length,0);
+  });
   await check('current revoked or offboarded identity denied before fetch',async()=>{authority.ok=false;await assert.rejects(deliver());assert.equal(calls.length,0);});
   await check('tenant reassignment during authority lookup prevents credential dispatch',async()=>{
     await assert.rejects(deliver(body(),{authorize:async()=>({ok:true,uid:identity.uid,tenantId:'different'})}));assert.equal(calls.length,0);
