@@ -178,3 +178,14 @@ test('versioned source-set fingerprint binds exact source generations and is ord
   tampered.sources[0].ownerOrRightsRef = 'fixture-other-rights';
   assert.notEqual(deriveScope(build(tampered).payload).sourceSetDigest, scope.sourceSetDigest);
 });
+
+test('short-form audio seek is bounded at the same 45-minute source limit as video', () => {
+  const boundary = fixture();
+  boundary.audioCues[0].sourceStartMs = 45 * 60 * 1000;
+  assert.equal(build(boundary).payload.audioCues[0].sourceStartMs, 45 * 60 * 1000);
+  for (const offset of [45 * 60 * 1000 + 1, Number.MAX_SAFE_INTEGER]) {
+    const input = fixture();
+    input.audioCues[0].sourceStartMs = offset;
+    assert.throws(() => build(input), /life_movie_invalid_audio_source_start/);
+  }
+});
