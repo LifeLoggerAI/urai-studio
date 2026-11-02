@@ -87,6 +87,39 @@ try {
     assert.equal(getterReads,0);
     assert.equal(calls.length,0);
   });
+  // R375: a Proxy can report safe own data descriptors while returning a
+  // different value from a later property read. Both bridge types must use
+  // the inspected descriptor values, never subsequent trap-controlled reads.
+  for (const bridge of ['short','longform']) await check(bridge + ' private media generation snapshot defeats Proxy read mutation',async()=>{
+    const input=body(bridge),original=input.delivery;
+    let generationReads=0;
+    input.delivery=new Proxy(original,{get(target,key,receiver){
+      if(key==='generation'){generationReads++;return generationReads<=3?'123':'9007199254740992';}
+      return Reflect.get(target,key,receiver);
+    }});
+    const parsed=parseStudioPrivateMedia(input);
+    assert.equal(parsed.delivery.generation,'123');
+    assert.equal(generationReads,0,'validation must not invoke generation get trap');
+    const response=await deliver(input);
+    assert.deepEqual([...new Uint8Array(await response.arrayBuffer())],[1,2,3]);
+    assert.equal(calls.length,1);
+    assert.equal(JSON.parse(calls[0].options.body).generation,'123');
+    assert.equal(generationReads,0);
+  });
+  for (const bridge of ['short','longform']) await check(bridge + ' bridge identity snapshots exact own descriptor despite Proxy reads',async()=>{
+    const original=body(bridge);
+    let bridgeReads=0;
+    const input=new Proxy(original,{get(target,key,receiver){
+      if(key==='bridge'){bridgeReads++;return bridgeReads<=2?bridge:(bridge==='short'?'longform':'short');}
+      return Reflect.get(target,key,receiver);
+    }});
+    assert.equal(parseStudioPrivateMedia(input).bridge,bridge);
+    assert.equal(bridgeReads,0);
+    const response=await deliver(input);
+    assert.equal((await response.arrayBuffer()).byteLength,3);
+    assert.equal(calls.length,1);
+    assert.equal(bridgeReads,0);
+  });
   await check('current revoked or offboarded identity denied before fetch',async()=>{authority.ok=false;await assert.rejects(deliver());assert.equal(calls.length,0);});
   await check('tenant reassignment during authority lookup prevents credential dispatch',async()=>{
     await assert.rejects(deliver(body(),{authorize:async()=>({ok:true,uid:identity.uid,tenantId:'different'})}));assert.equal(calls.length,0);

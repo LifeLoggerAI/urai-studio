@@ -12,12 +12,16 @@ function object(value: unknown, keys: readonly string[]) {
   const prototype = Object.getPrototypeOf(value);
   if (prototype !== Object.prototype && prototype !== null) fail();
   const ownKeys = Reflect.ownKeys(value);
-  if (ownKeys.length !== keys.length || ownKeys.some(key => {
-    if (typeof key !== 'string' || !keys.includes(key)) return true;
+  if (ownKeys.length !== keys.length || ownKeys.some(key => typeof key !== 'string' || !keys.includes(key))) fail();
+  // Capture own data descriptors once; never re-read a caller-controlled Proxy
+  // after validating it or run a getter while constructing the Jobs request.
+  const snapshot: Record<string, unknown> = Object.create(null);
+  for (const key of keys) {
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
-    return !descriptor || !Object.prototype.hasOwnProperty.call(descriptor, 'value');
-  })) fail();
-  return value as Record<string, unknown>;
+    if (!descriptor || !Object.prototype.hasOwnProperty.call(descriptor, 'value')) fail();
+    snapshot[key] = descriptor.value;
+  }
+  return snapshot;
 }
 export function parseStudioPrivateMedia(value: unknown) {
   const body = object(value, ['bridge', 'delivery']);
