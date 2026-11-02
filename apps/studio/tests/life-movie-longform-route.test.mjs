@@ -199,6 +199,21 @@ try {
   const selectedGeneration = contract.buildStudioLongformRequest(changedSelection, { tenantId: 'studio-test', userId: 'user-test' });
   assert.notEqual(selectedGeneration.payload.renderPlanDigest, call.input.payload.renderPlanDigest);
   assert.notEqual(selectedGeneration.idempotencyKey, call.input.idempotencyKey);
+  for (const offset of [45 * 60 * 1000 + 1, Number.MAX_SAFE_INTEGER]) {
+    const invalid = createBody(1);
+    invalid.sources.push({ ...invalid.sources[0], id: 'audio-seek', mimeType: 'audio/wav' });
+    invalid.audioCues = [{ sourceId: 'audio-seek', role: 'ambience', startMs: 0, endMs: 1000, sourceStartMs: offset }];
+    reset();
+    const rejectedOffset = await expectStatus(route, invalid, 400);
+    assert.equal(rejectedOffset.error.code, 'longform_invalid_audio_offset');
+    assert.equal(state.calls.length, 0);
+  }
+  const permittedOffset = createBody(1);
+  permittedOffset.sources.push({ ...permittedOffset.sources[0], id: 'audio-seek', mimeType: 'audio/wav' });
+  permittedOffset.audioCues = [{ sourceId: 'audio-seek', role: 'ambience', startMs: 0, endMs: 1000, sourceStartMs: 45 * 60 * 1000 }];
+  reset();
+  await expectStatus(route, permittedOffset, 202);
+  assert.equal(state.calls.length, 1);
   const changedRights = createBody();
   changedRights.sources[0].ownerOrRightsRef = 'synthetic-other-rights';
   assert.notEqual(contract.buildStudioLongformRequest(changedRights, { tenantId: 'studio-test', userId: 'user-test' }).payload.renderPlanDigest, call.input.payload.renderPlanDigest);
