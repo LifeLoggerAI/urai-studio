@@ -10,17 +10,37 @@ export type StudioJobsRenderConsent = {
 
 export function requireStudioJobsRenderConsent(value: unknown): StudioJobsRenderConsent {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('life_movie_invalid_render_consent');
-  const consent = value as Record<string, unknown>;
-  const keys = Reflect.ownKeys(consent);
-  if (keys.length !== 3
-    || keys.some((key) => typeof key !== 'string' || !['purpose', 'policyVersion', 'decisionReceiptId'].includes(key))
-    || consent.purpose !== 'life-movie.render' || typeof consent.policyVersion !== 'string'
-    || typeof consent.decisionReceiptId !== 'string') throw new Error('life_movie_invalid_render_consent');
-  const policyVersion = consent.policyVersion.trim(), decisionReceiptId = consent.decisionReceiptId.trim();
-  if (policyVersion !== '1.1.0' || !/^[0-9a-f]{64}$/.test(decisionReceiptId)) {
+  // Consent is authority-bearing data, not executable object behavior. Never
+  // invoke accessor properties or accept an inherited authority prototype.
+  try {
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) throw new Error('invalid_consent_prototype');
+    const keys = Reflect.ownKeys(value);
+    const required = ['purpose', 'policyVersion', 'decisionReceiptId'] as const;
+    if (keys.length !== required.length ||
+        keys.some((key) => typeof key !== 'string' || !required.includes(key as typeof required[number]))) {
+      throw new Error('invalid_consent_fields');
+    }
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    if (!required.every((key) => Object.prototype.hasOwnProperty.call(descriptors, key)
+      && Object.prototype.hasOwnProperty.call(descriptors[key], 'value'))) {
+      throw new Error('invalid_consent_accessor');
+    }
+    const purpose = descriptors.purpose.value;
+    const policy = descriptors.policyVersion.value;
+    const receipt = descriptors.decisionReceiptId.value;
+    if (purpose !== 'life-movie.render' || typeof policy !== 'string' || typeof receipt !== 'string') {
+      throw new Error('invalid_consent_values');
+    }
+    const policyVersion = policy.trim(), decisionReceiptId = receipt.trim();
+    if (policyVersion !== '1.1.0' || !/^[0-9a-f]{64}$/.test(decisionReceiptId)) {
+      throw new Error('invalid_consent_policy');
+    }
+    return { purpose: 'life-movie.render', policyVersion, decisionReceiptId };
+  } catch {
+    // Do not expose proxy trap details, caller secrets, or raw input objects.
     throw new Error('life_movie_invalid_render_consent');
   }
-  return { purpose: 'life-movie.render', policyVersion, decisionReceiptId };
 }
 
 export type StudioJobsBridgeAction =
@@ -70,7 +90,7 @@ function validateBridgeUrl(raw: string) {
   if (url.username || url.password || url.search || url.hash) throw new Error('jobs_bridge_url_invalid');
   if (url.protocol === 'https:') return url;
 
-  const loopback = ['127.0.0.1', 'localhost', '::1'].includes(url.hostname);
+  const loopback = ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname);
   if (!productionRuntime() && url.protocol === 'http:' && loopback) return url;
 
   throw new Error('jobs_bridge_url_not_approved');
