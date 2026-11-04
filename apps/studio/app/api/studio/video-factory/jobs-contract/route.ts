@@ -4,6 +4,7 @@ import { requireStudioAuth } from '@/lib/studio-auth';
 import { readStudioLongformJson, StudioLongformError } from '@/lib/studio-life-movie-longform-contract';
 import {
   buildJobsLifeMovieEnvelope,
+  deriveStudioLifeMovieRenderScope,
   type JobsLifeMovieAudioCue,
   type JobsLifeMovieSource,
   type JobsLifeMovieTimelineItem,
@@ -75,12 +76,19 @@ export async function POST(request: Request) {
       fps: typeof body.fps === 'number' ? body.fps as 24 | 25 | 30 | 50 | 60 : undefined,
     });
 
+    // This fingerprint is a source-selection identifier, never a grant.
+    // The trusted Privacy issuer must separately verify owner approval,
+    // immutable source rights and the current deletion/consent state.
+    const renderScope = deriveStudioLifeMovieRenderScope(envelope.payload);
     return json({
       ok:true,
       status:'jobs-contract-built',
       authMode:auth.authMode,
       tenantId:auth.tenantId,
       envelope,
+      renderScope,
+      renderConsentAuthorized:false,
+      consentGrantIssued:false,
     });
   } catch (error) {
     const rawCode = error instanceof StudioLongformError ? error.code
