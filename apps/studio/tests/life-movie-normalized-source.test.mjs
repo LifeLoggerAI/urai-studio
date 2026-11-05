@@ -13,6 +13,7 @@ vm.runInNewContext(ts.transpileModule(fs.readFileSync(sourcePath, 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText, { exports, require, Buffer });
 const build = exports.buildJobsLifeMovieEnvelope;
+const deriveScope = exports.deriveStudioLifeMovieRenderScope;
 const plain = (value) => JSON.parse(JSON.stringify(value));
 
 function fixture() {
@@ -21,13 +22,43 @@ function fixture() {
     sceneTruthReceiptRef: `str_fixturefixture1234_zzzzzzzz_${'A'.repeat(40)}`,
     sceneTruthDigest: 'b'.repeat(64), width: 320, height: 320, fps: 30,
     sources: [{ id: 'fixture-source', bucket: 'private-fixture-bucket',
-      objectPath: 'tenants/fixture-tenant/source.mp4', mimeType: 'video/mp4',
+      objectPath: 'tenants/fixture-tenant/source.mp4', generation: '1793378565000001', mimeType: 'video/mp4',
       provenance: 'original-source', sourceRefs: ['synthetic-source-reference'],
       consentRef: 'fixture-consent', ownerOrRightsRef: 'fixture-rights' }],
     timeline: [{ sourceId: 'fixture-source', startMs: 0, endMs: 750, sourceStartMs: 1250 }],
     audioCues: [{ sourceId: 'fixture-source', role: 'narration', startMs: 0, endMs: 750 }],
   };
 }
+
+test('all Studio-accepted project ID lengths fit the Jobs retry-key limit', () => {
+  for (const size of [1, 116, 117, 128]) {
+    const input = fixture();
+    input.projectId = 'p'.repeat(size);
+    const result = build(input);
+    assert.equal(result.payload.projectId, input.projectId);
+    assert.ok(result.idempotencyKey.length <= 160, `Jobs max 160 exceeded at project length ${size}`);
+    assert.equal(result.idempotencyKey, build(input).idempotencyKey, 'retries must be stable');
+    if (size <= 116) {
+      assert.equal(result.idempotencyKey,
+        `life-movie:${input.projectId}:${result.payload.renderPlanDigest.slice(0, 32)}`,
+        'existing short-project retry keys must retain their format');
+    }
+  }
+  const overlong = fixture();
+  overlong.projectId = 'p'.repeat(129);
+  assert.throws(() => build(overlong), /life_movie_invalid_project/);
+});
+
+test('long project IDs with an identical prefix never share a Jobs retry key', () => {
+  const prefix = 'p'.repeat(116);
+  const left = fixture(); left.projectId = prefix + 'a'.repeat(12);
+  const right = fixture(); right.projectId = prefix + 'b'.repeat(12);
+  const leftResult = build(left), rightResult = build(right);
+  assert.notEqual(leftResult.payload.renderPlanDigest, rightResult.payload.renderPlanDigest);
+  assert.notEqual(leftResult.idempotencyKey, rightResult.idempotencyKey);
+  assert.ok(leftResult.idempotencyKey.length <= 160);
+  assert.ok(rightResult.idempotencyKey.length <= 160);
+});
 
 test('accepted padded source references bind the same worker plan and retry key', () => {
   const clean = fixture();
@@ -72,6 +103,21 @@ for (const [field, code, values] of [
     }
   });
 }
+
+test('selected media requires immutable safe Storage generation', () => {
+  const selected = fixture();
+  const initial = build(selected);
+  assert.equal(initial.payload.sources[0].generation, '1793378565000001');
+  const replacement = fixture();
+  replacement.sources[0].generation = '1793378565000002';
+  assert.notEqual(build(replacement).payload.renderPlanDigest, initial.payload.renderPlanDigest);
+  assert.notEqual(build(replacement).idempotencyKey, initial.idempotencyKey);
+  for (const generation of [undefined, null, '', '0', '-1', '1.0', '01', ' 1', '1 ', '9007199254740992', '99999999999999999999', 1, NaN, Infinity]) {
+    const sample = fixture();
+    sample.sources[0].generation = generation;
+    assert.throws(() => build(sample), /life_movie_invalid_source_generation/);
+  }
+});
 
 test('raw audio roles must match the existing Jobs enum', () => {
   for (const role of ['speech', ' narration', null, 7]) {
@@ -137,4 +183,39 @@ test('the emitted digest binds the emitted plan while factual changes remain dis
   assert.equal(plan.sceneTruthDigest, fixture().sceneTruthDigest);
   assert.equal(plan.sceneTruthReceiptRef, fixture().sceneTruthReceiptRef);
   assert.equal(plan.timeline[0].sourceStartMs, 1250);
+});
+
+
+test('versioned source-set fingerprint binds exact source generations and is order-independent', () => {
+  const input = fixture();
+  const envelope = build(input);
+  const scope = plain(deriveScope(envelope.payload));
+  assert.equal(scope.projectId, envelope.payload.projectId);
+  assert.equal(scope.renderPlanDigest, envelope.payload.renderPlanDigest);
+  const expectedSelection = envelope.payload.sources.map((source) => [
+    source.id, source.bucket, source.objectPath, source.generation,
+    source.mimeType, source.provenance, source.sourceRefs,
+    source.consentRef, source.ownerOrRightsRef,
+  ]);
+  expectedSelection.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
+  const expected = createHash('sha256').update('urai-life-movie-source-set-v1\n')
+    .update(JSON.stringify(expectedSelection)).digest('hex');
+  assert.equal(scope.sourceSetDigest, expected);
+  const replacement = fixture();
+  replacement.sources[0].generation = '1793378565000002';
+  assert.notEqual(deriveScope(build(replacement).payload).sourceSetDigest, scope.sourceSetDigest);
+  const tampered = fixture();
+  tampered.sources[0].ownerOrRightsRef = 'fixture-other-rights';
+  assert.notEqual(deriveScope(build(tampered).payload).sourceSetDigest, scope.sourceSetDigest);
+});
+
+test('short-form audio seek is bounded at the same 45-minute source limit as video', () => {
+  const boundary = fixture();
+  boundary.audioCues[0].sourceStartMs = 45 * 60 * 1000;
+  assert.equal(build(boundary).payload.audioCues[0].sourceStartMs, 45 * 60 * 1000);
+  for (const offset of [45 * 60 * 1000 + 1, Number.MAX_SAFE_INTEGER]) {
+    const input = fixture();
+    input.audioCues[0].sourceStartMs = offset;
+    assert.throws(() => build(input), /life_movie_invalid_audio_source_start/);
+  }
 });

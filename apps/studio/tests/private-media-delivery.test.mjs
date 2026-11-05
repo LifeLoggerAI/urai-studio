@@ -62,6 +62,64 @@ try {
   for(let i=0;i<mutations.length;i++)await check(`malformed/caller-controlled descriptor ${i} denied before token delivery`,async()=>{
     const value=body();mutations[i](value);assert.throws(()=>parseStudioPrivateMedia(value));await assert.rejects(deliver(value));assert.equal(calls.length,0);
   });
+  await check('Studio and Jobs descriptor bounds reject unauthorized or malformed private media',async()=>{
+    const safe=body('longform');safe.delivery.artifact='segment:179';
+    assert.equal(parseStudioPrivateMedia(safe).delivery.artifact,'segment:179');
+    const max=body();max.delivery.generation=String(Number.MAX_SAFE_INTEGER);
+    assert.equal(parseStudioPrivateMedia(max).delivery.generation,String(Number.MAX_SAFE_INTEGER));
+    let getterReads=0;
+    for(const [bridge,mutate] of [
+      ['short',value=>{value.delivery.generation='9007199254740992';}],
+      ['short',value=>{value.delivery.generation='123456789012345678901234567890';}],
+      ['longform',value=>{value.delivery.artifact='segment:180';}],
+      ['longform',value=>{value.delivery.artifact='segment:999';}],
+      ['short',value=>{Object.defineProperty(value.delivery,'hidden',{value:true});}],
+      ['short',value=>{value.delivery[Symbol('hidden')]=true;}],
+      ['short',value=>{Object.setPrototypeOf(value.delivery,{approved:true});}],
+      ['short',value=>{delete value.delivery.generation;Object.setPrototypeOf(value.delivery,{generation:'123'});}],
+      ['short',value=>{Object.defineProperty(value.delivery,'generation',{get(){getterReads++;return '123';},enumerable:true});}],
+      ['short',value=>{Object.defineProperty(value,'hidden',{value:true});}],
+    ]) {
+      const value=body(bridge);mutate(value);
+      assert.throws(()=>parseStudioPrivateMedia(value),/private_media_delivery_unavailable/);
+      await assert.rejects(deliver(value),/private_media_delivery_unavailable/);
+    }
+    assert.equal(getterReads,0);
+    assert.equal(calls.length,0);
+  });
+  // R375: a Proxy can report safe own data descriptors while returning a
+  // different value from a later property read. Both bridge types must use
+  // the inspected descriptor values, never subsequent trap-controlled reads.
+  for (const bridge of ['short','longform']) await check(bridge + ' private media generation snapshot defeats Proxy read mutation',async()=>{
+    const input=body(bridge),original=input.delivery;
+    let generationReads=0;
+    input.delivery=new Proxy(original,{get(target,key,receiver){
+      if(key==='generation'){generationReads++;return generationReads<=3?'123':'9007199254740992';}
+      return Reflect.get(target,key,receiver);
+    }});
+    const parsed=parseStudioPrivateMedia(input);
+    assert.equal(parsed.delivery.generation,'123');
+    assert.equal(generationReads,0,'validation must not invoke generation get trap');
+    const response=await deliver(input);
+    assert.deepEqual([...new Uint8Array(await response.arrayBuffer())],[1,2,3]);
+    assert.equal(calls.length,1);
+    assert.equal(JSON.parse(calls[0].options.body).generation,'123');
+    assert.equal(generationReads,0);
+  });
+  for (const bridge of ['short','longform']) await check(bridge + ' bridge identity snapshots exact own descriptor despite Proxy reads',async()=>{
+    const original=body(bridge);
+    let bridgeReads=0;
+    const input=new Proxy(original,{get(target,key,receiver){
+      if(key==='bridge'){bridgeReads++;return bridgeReads<=2?bridge:(bridge==='short'?'longform':'short');}
+      return Reflect.get(target,key,receiver);
+    }});
+    assert.equal(parseStudioPrivateMedia(input).bridge,bridge);
+    assert.equal(bridgeReads,0);
+    const response=await deliver(input);
+    assert.equal((await response.arrayBuffer()).byteLength,3);
+    assert.equal(calls.length,1);
+    assert.equal(bridgeReads,0);
+  });
   await check('current revoked or offboarded identity denied before fetch',async()=>{authority.ok=false;await assert.rejects(deliver());assert.equal(calls.length,0);});
   await check('tenant reassignment during authority lookup prevents credential dispatch',async()=>{
     await assert.rejects(deliver(body(),{authorize:async()=>({ok:true,uid:identity.uid,tenantId:'different'})}));assert.equal(calls.length,0);
@@ -87,6 +145,22 @@ try {
   });
   await check('declared size beyond bound rejected before streaming',async()=>{
     globalThis.fetch=async()=>new Response('a',{headers:{'content-type':'video/mp4','content-length':'2147483649'}});await assert.rejects(deliver());
+  });
+  await check('subtitle declared byte count above 2 MiB denied before consuming upstream',async()=>{
+    const value=body();value.delivery.kind='srt';
+    globalThis.fetch=async()=>new Response('a',{headers:{'content-type':'application/x-subrip','content-length':String(2*1024*1024+1)}});
+    await assert.rejects(deliver(value));
+  });
+  await check('subtitle streaming without length is capped at 2 MiB',async()=>{
+    const value=body();value.delivery.kind='srt';let count=0;
+    globalThis.fetch=async()=>new Response(new ReadableStream({pull(c){
+      if(count++<33)c.enqueue(new Uint8Array(65536).fill(7));else c.close();
+    }}),{headers:{'content-type':'application/x-subrip'}});
+    await assert.rejects((await deliver(value)).arrayBuffer());
+  });
+  await check('compressed private media denied before bytes reach caller',async()=>{
+    globalThis.fetch=async()=>new Response('not a real movie',{headers:{'content-type':'video/mp4','content-encoding':'gzip'}});
+    await assert.rejects(deliver());
   });
   await check('wrong MIME rejected without private body delivery',async()=>{
     globalThis.fetch=async()=>new Response('a',{headers:{'content-type':'text/html'}});await assert.rejects(deliver());

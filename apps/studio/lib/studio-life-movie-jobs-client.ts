@@ -10,16 +10,37 @@ export type StudioJobsRenderConsent = {
 
 export function requireStudioJobsRenderConsent(value: unknown): StudioJobsRenderConsent {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('life_movie_invalid_render_consent');
-  const consent = value as Record<string, unknown>;
-  if (Object.keys(consent).length !== 3
-    || Object.keys(consent).some((key) => !['purpose', 'policyVersion', 'decisionReceiptId'].includes(key))
-    || consent.purpose !== 'life-movie.render' || typeof consent.policyVersion !== 'string'
-    || typeof consent.decisionReceiptId !== 'string') throw new Error('life_movie_invalid_render_consent');
-  const policyVersion = consent.policyVersion.trim(), decisionReceiptId = consent.decisionReceiptId.trim();
-  if (!policyVersion || policyVersion.length > 80 || !decisionReceiptId || decisionReceiptId.length > 160) {
+  // Consent is authority-bearing data, not executable object behavior. Never
+  // invoke accessor properties or accept an inherited authority prototype.
+  try {
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) throw new Error('invalid_consent_prototype');
+    const keys = Reflect.ownKeys(value);
+    const required = ['purpose', 'policyVersion', 'decisionReceiptId'] as const;
+    if (keys.length !== required.length ||
+        keys.some((key) => typeof key !== 'string' || !required.includes(key as typeof required[number]))) {
+      throw new Error('invalid_consent_fields');
+    }
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    if (!required.every((key) => Object.prototype.hasOwnProperty.call(descriptors, key)
+      && Object.prototype.hasOwnProperty.call(descriptors[key], 'value'))) {
+      throw new Error('invalid_consent_accessor');
+    }
+    const purpose = descriptors.purpose.value;
+    const policy = descriptors.policyVersion.value;
+    const receipt = descriptors.decisionReceiptId.value;
+    if (purpose !== 'life-movie.render' || typeof policy !== 'string' || typeof receipt !== 'string') {
+      throw new Error('invalid_consent_values');
+    }
+    const policyVersion = policy.trim(), decisionReceiptId = receipt.trim();
+    if (policyVersion !== '1.1.0' || !/^[0-9a-f]{64}$/.test(decisionReceiptId)) {
+      throw new Error('invalid_consent_policy');
+    }
+    return { purpose: 'life-movie.render', policyVersion, decisionReceiptId };
+  } catch {
+    // Do not expose proxy trap details, caller secrets, or raw input objects.
     throw new Error('life_movie_invalid_render_consent');
   }
-  return { purpose: 'life-movie.render', policyVersion, decisionReceiptId };
 }
 
 export type StudioJobsBridgeAction =
@@ -37,6 +58,9 @@ export type StudioJobsBridgeStatus = {
 };
 
 const DEFAULT_TIMEOUT_MS = 15_000;
+// Jobs studioLifeMovieBridge rejects a 32 KiB JSON envelope. Enforce the
+// receiving service limit before transmitting the Studio bridge credential.
+const JOBS_BRIDGE_MAX_BODY_BYTES = 32 * 1024;
 
 function productionRuntime() {
   return process.env.NODE_ENV === 'production';
@@ -66,7 +90,7 @@ function validateBridgeUrl(raw: string) {
   if (url.username || url.password || url.search || url.hash) throw new Error('jobs_bridge_url_invalid');
   if (url.protocol === 'https:') return url;
 
-  const loopback = ['127.0.0.1', 'localhost', '::1'].includes(url.hostname);
+  const loopback = ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname);
   if (!productionRuntime() && url.protocol === 'http:' && loopback) return url;
 
   throw new Error('jobs_bridge_url_not_approved');
@@ -118,7 +142,7 @@ export async function callStudioJobsBridge(
 
   const timeoutMs = Math.max(1_000, Math.min(30_000, options.timeoutMs ?? DEFAULT_TIMEOUT_MS));
   const encoded = JSON.stringify(envelope);
-  if (Buffer.byteLength(encoded, 'utf8') > 512 * 1024) throw new Error('life_movie_request_too_large');
+  if (Buffer.byteLength(encoded, 'utf8') > JOBS_BRIDGE_MAX_BODY_BYTES) throw new Error('life_movie_request_too_large');
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 

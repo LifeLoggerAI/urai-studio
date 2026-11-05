@@ -28,7 +28,7 @@ const envKeys = ['NODE_ENV', 'URAI_STUDIO_JOBS_DISPATCH_ENABLED', 'URAI_STUDIO_L
 const previousEnv = Object.fromEntries(envKeys.map((name) => [name, process.env[name]]));
 const input = {
   action: 'create', tenantId: 'synthetic-tenant', userId: 'synthetic-owner', idempotencyKey: 'synthetic-timeout-key',
-  consent: { purpose: 'life-movie.render', policyVersion: 'synthetic-policy', decisionReceiptId: 'synthetic-decision' },
+  consent: { purpose: 'life-movie.render', policyVersion: '1.1.0', decisionReceiptId: 'a'.repeat(64) },
   payload: { synthetic: true },
 };
 const received = [];
@@ -58,6 +58,36 @@ async function boundedCall(call, limitMs) {
   } finally { clearTimeout(timer); }
 }
 try {
+  // Studio previously accepted 512 KiB bodies that Jobs always rejected at
+  // its 32 KiB bridge boundary. Reject them locally without sending a token.
+  const oversize = { ...input, payload: { synthetic: true, subtitleText: 'x'.repeat(32 * 1024) } };
+  assert.ok(Buffer.byteLength(JSON.stringify(oversize), 'utf8') > 32 * 1024);
+  // Jobs short-form is 32 KiB, but long-form is 512 KiB. A 33 KiB
+  // envelope must be refused locally for short-form, yet still be delivered
+  // exactly once to the long-form receiver.
+  process.env.URAI_JOBS_BRIDGE_URL = `${endpoint}/success`;
+  process.env.URAI_JOBS_LONGFORM_BRIDGE_URL = `${endpoint}/success`;
+  const beforeShort = received.length;
+  await assert.rejects(callStudioJobsBridge(oversize), (error) =>
+    error.message === 'life_movie_request_too_large');
+  assert.equal(received.length, beforeShort, 'short-form must not transmit more than 32 KiB');
+  cases++;
+
+  const longBytes = Buffer.byteLength(JSON.stringify(oversize), 'utf8');
+  assert.ok(longBytes < 512 * 1024);
+  assert.deepEqual(await callStudioLongformBridge(oversize), { ok: true, jobId: 'synthetic-job' });
+  assert.equal(received.length, beforeShort + 1, 'long-form must accept a bounded plan beyond 32 KiB');
+  assert.equal(received[beforeShort].body.length, JSON.stringify(oversize).length);
+  cases++;
+
+  const huge = { ...input, payload: { synthetic: true, subtitleText: 'x'.repeat(512 * 1024) } };
+  assert.ok(Buffer.byteLength(JSON.stringify(huge), 'utf8') > 512 * 1024);
+  const beforeHuge = received.length;
+  await assert.rejects(callStudioLongformBridge(huge), (error) =>
+    error.message === 'longform_request_too_large' && error.status === 413);
+  assert.equal(received.length, beforeHuge, 'long-form must not transmit more than 512 KiB');
+  cases++;
+
   for (const [name, call, envName, timeout, invalid] of [
     ['shortform', () => callStudioJobsBridge(input, { timeoutMs: 1000 }), 'URAI_JOBS_BRIDGE_URL', 'jobs_bridge_timeout', 'jobs_bridge_invalid_response'],
     ['longform', () => callStudioLongformBridge(input), 'URAI_JOBS_LONGFORM_BRIDGE_URL', 'longform_bridge_timeout', 'longform_bridge_invalid_response'],
@@ -82,7 +112,7 @@ try {
       }
     }
   }
-  assert.equal(received.length, baseline ? 9 : 10, 'each action dispatches once without hidden retry');
+  assert.equal(received.length, baseline ? 10 : 11, 'each action dispatches once without hidden retry');
   assert.ok(received.every((entry) => JSON.parse(entry.body).payload.synthetic === true));
   console.log(baseline
     ? 'Reproduced both response-body timeout misclassifications on actual Studio source; 9 native loopback HTTP cases, no provider calls.'

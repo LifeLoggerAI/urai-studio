@@ -3,26 +3,42 @@ import 'server-only';
 type Identity = { uid: string; tenantId: string };
 type Authority = Identity & { ok: boolean };
 type Delivery = { action: 'deliver'; kind: 'mp4' | 'srt'; authorityHash: string; expiresAt: number; generation: string; disposition: 'inline' | 'attachment'; jobId?: string; planId?: string; artifact?: string };
-const MAX_BYTES = 2 * 1024 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 2 * 1024 * 1024 * 1024;
+const MAX_SUBTITLE_BYTES = 2 * 1024 * 1024;
+
 function fail(): never { throw new Error('private_media_delivery_unavailable'); }
-function object(value: unknown, keys: string[]) {
+function object(value: unknown, keys: readonly string[]) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) fail();
-  const result = value as Record<string, unknown>;
-  if (Object.keys(result).some(key => !keys.includes(key))) fail();
-  return result;
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) fail();
+  const ownKeys = Reflect.ownKeys(value);
+  if (ownKeys.length !== keys.length || ownKeys.some(key => typeof key !== 'string' || !keys.includes(key))) fail();
+  // Capture own data descriptors once; never re-read a caller-controlled Proxy
+  // after validating it or run a getter while constructing the Jobs request.
+  const snapshot: Record<string, unknown> = Object.create(null);
+  for (const key of keys) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !Object.prototype.hasOwnProperty.call(descriptor, 'value')) fail();
+    snapshot[key] = descriptor.value;
+  }
+  return snapshot;
 }
 export function parseStudioPrivateMedia(value: unknown) {
   const body = object(value, ['bridge', 'delivery']);
   if (body.bridge !== 'short' && body.bridge !== 'longform') fail();
-  const d = object(body.delivery, ['schemaVersion', 'requiresAuthorization', 'action', 'kind', 'authorityHash', 'expiresAt', 'generation', 'disposition', 'jobId', 'planId', 'artifact']);
+  const fields = ['schemaVersion', 'requiresAuthorization', 'action', 'kind', 'authorityHash', 'expiresAt', 'generation', 'disposition',
+    ...(body.bridge === 'short' ? ['jobId'] : ['planId', 'artifact'])];
+  const d = object(body.delivery, fields);
   if (d.schemaVersion !== 'urai-authenticated-private-media-v1' || d.requiresAuthorization !== true || d.action !== 'deliver'
     || typeof d.kind !== 'string' || !['mp4', 'srt'].includes(d.kind) || typeof d.authorityHash !== 'string' || !/^[a-f0-9]{64}$/.test(d.authorityHash)
-    || typeof d.generation !== 'string' || !/^[1-9][0-9]*$/.test(d.generation) || typeof d.expiresAt !== 'number' || !Number.isSafeInteger(d.expiresAt)
+    || typeof d.generation !== 'string' || !/^[1-9][0-9]{0,19}$/.test(d.generation) || !Number.isSafeInteger(Number(d.generation)) || typeof d.expiresAt !== 'number' || !Number.isSafeInteger(d.expiresAt)
     || d.expiresAt <= Date.now() || d.expiresAt > Date.now() + 300_000 || typeof d.disposition !== 'string' || !['inline', 'attachment'].includes(d.disposition)) fail();
   if (body.bridge === 'short') {
     if (typeof d.jobId !== 'string' || !/^[A-Za-z0-9_-]{10,64}$/.test(d.jobId) || d.planId !== undefined || d.artifact !== undefined) fail();
   } else if (typeof d.planId !== 'string' || !/^lmp_[A-Za-z0-9_-]{20,64}$/.test(d.planId)
-    || typeof d.artifact !== 'string' || !/^(?:final|segment:(?:0|[1-9][0-9]{0,2}))$/.test(d.artifact) || d.jobId !== undefined) fail();
+    || typeof d.artifact !== 'string' || (d.artifact !== 'final'
+      && (!/^segment:(?:0|[1-9][0-9]{0,2})$/.test(d.artifact) || Number(d.artifact.slice(8)) >= 180))
+    || d.jobId !== undefined) fail();
   const delivery: Delivery = { action: 'deliver', kind: d.kind as Delivery['kind'], authorityHash: d.authorityHash as string,
     expiresAt: d.expiresAt, generation: d.generation as string, disposition: d.disposition as Delivery['disposition'] };
   if (body.bridge === 'short') delivery.jobId = d.jobId as string;
@@ -47,6 +63,8 @@ function configuration(bridge: 'short' | 'longform') {
  * repeats current revoked-token/edit-role/tenant authority and provisioning. */
 export async function deliverStudioPrivateMedia(args: { value: unknown; identity: Identity; request: Request; authorize: () => Promise<Authority>; operationDeadline?: number }): Promise<Response> {
   const { bridge, delivery } = parseStudioPrivateMedia(args.value);
+  // Captions have a much smaller security/resource budget than video bytes.
+  const maxBytes = delivery.kind === 'srt' ? MAX_SUBTITLE_BYTES : MAX_VIDEO_BYTES;
   const operationDeadline = args.operationDeadline ?? Date.now() + 50_000;
   if (!Number.isSafeInteger(operationDeadline) || operationDeadline <= Date.now() || operationDeadline > Date.now() + 50_000) fail();
   const snapshot = configuration(bridge), expires = Math.min(delivery.expiresAt, operationDeadline);
@@ -74,8 +92,12 @@ export async function deliverStudioPrivateMedia(args: { value: unknown; identity
     await check();
     const mime = delivery.kind === 'mp4' ? 'video/mp4' : 'application/x-subrip';
     const length = response.headers.get('content-length');
+    // Fetch may transparently decompress responses: refuse encoded media so
+    // the declared length and the streamed byte budget describe the same bytes.
+    const encoding = response.headers.get('content-encoding');
     if (!response.ok || !response.body || response.headers.get('content-type')?.split(';')[0].trim() !== mime
-      || (length !== null && (!/^[0-9]+$/.test(length) || !Number.isSafeInteger(Number(length)) || Number(length) > MAX_BYTES))) {
+      || (encoding !== null && encoding.toLowerCase().trim() !== 'identity')
+      || (length !== null && (!/^[0-9]+$/.test(length) || !Number.isSafeInteger(Number(length)) || Number(length) > maxBytes))) {
       await response.body?.cancel(); fail();
     }
     reader = response.body.getReader();
@@ -96,7 +118,7 @@ export async function deliverStudioPrivateMedia(args: { value: unknown; identity
           }
           const part = pending.subarray(offset, offset + 64 * 1024);
           offset += part.byteLength; bytes += part.byteLength;
-          if (bytes > MAX_BYTES || (length !== null && bytes > Number(length))) fail();
+          if (bytes > maxBytes || (length !== null && bytes > Number(length))) fail();
           await check(); output.enqueue(part);
         } catch {
           controller.abort(); cleanup(); await reader?.cancel().catch(() => {}); output.error(new Error('private_media_delivery_unavailable'));
