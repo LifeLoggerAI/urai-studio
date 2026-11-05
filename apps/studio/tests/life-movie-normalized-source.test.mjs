@@ -30,6 +30,36 @@ function fixture() {
   };
 }
 
+test('all Studio-accepted project ID lengths fit the Jobs retry-key limit', () => {
+  for (const size of [1, 116, 117, 128]) {
+    const input = fixture();
+    input.projectId = 'p'.repeat(size);
+    const result = build(input);
+    assert.equal(result.payload.projectId, input.projectId);
+    assert.ok(result.idempotencyKey.length <= 160, `Jobs max 160 exceeded at project length ${size}`);
+    assert.equal(result.idempotencyKey, build(input).idempotencyKey, 'retries must be stable');
+    if (size <= 116) {
+      assert.equal(result.idempotencyKey,
+        `life-movie:${input.projectId}:${result.payload.renderPlanDigest.slice(0, 32)}`,
+        'existing short-project retry keys must retain their format');
+    }
+  }
+  const overlong = fixture();
+  overlong.projectId = 'p'.repeat(129);
+  assert.throws(() => build(overlong), /life_movie_invalid_project/);
+});
+
+test('long project IDs with an identical prefix never share a Jobs retry key', () => {
+  const prefix = 'p'.repeat(116);
+  const left = fixture(); left.projectId = prefix + 'a'.repeat(12);
+  const right = fixture(); right.projectId = prefix + 'b'.repeat(12);
+  const leftResult = build(left), rightResult = build(right);
+  assert.notEqual(leftResult.payload.renderPlanDigest, rightResult.payload.renderPlanDigest);
+  assert.notEqual(leftResult.idempotencyKey, rightResult.idempotencyKey);
+  assert.ok(leftResult.idempotencyKey.length <= 160);
+  assert.ok(rightResult.idempotencyKey.length <= 160);
+});
+
 test('accepted padded source references bind the same worker plan and retry key', () => {
   const clean = fixture();
   const padded = fixture();
