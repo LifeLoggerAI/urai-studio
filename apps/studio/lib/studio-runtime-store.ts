@@ -109,7 +109,9 @@ export async function createStudioProject(input: Partial<StudioProject> = {}): P
     updatedAt: timestamp,
   };
 
-  await adminDb.collection(COLLECTIONS.projects).doc(project.id).set(project, { merge: true });
+  // Creation is never a caller-selected upsert into another owner's ID.
+  // Existing IDs must fail rather than silently replacing historical records.
+  await adminDb.collection(COLLECTIONS.projects).doc(project.id).create(project);
   return { ok: true, mode: 'firebase', data: project };
 }
 
@@ -119,22 +121,46 @@ export async function createStudioBrief(input: Partial<StudioBrief> & { projectI
   }
 
   const timestamp = nowIso();
+  const tenantId = cleanString(input.tenantId, DEFAULT_TENANT_ID);
+  const userId = cleanString(input.userId, DEFAULT_USER_ID);
+  const projectId = input.projectId.trim();
   const brief: StudioBrief = {
     id: input.id ?? newId('brief'),
-    tenantId: cleanString(input.tenantId, DEFAULT_TENANT_ID),
-    userId: cleanString(input.userId, DEFAULT_USER_ID),
-    projectId: input.projectId,
+    tenantId,
+    userId,
+    projectId,
     title: cleanString(input.title, 'URAI Studio Brief'),
     prompt: cleanString(input.prompt, ''),
     intendedOutputs: input.intendedOutputs ?? ['image', 'script', 'scene_manifest'],
     requestedExports: input.requestedExports ?? ['json'],
     consentRequirements: input.consentRequirements ?? defaultConsentRequirements(),
     safetyBoundaries: input.safetyBoundaries ?? [{ requiredLanguage: 'none', humanReviewRequired: false }],
-    createdAt: input.createdAt ?? timestamp,
+    createdAt: timestamp,
     updatedAt: timestamp,
   };
 
-  await adminDb.collection(COLLECTIONS.briefs).doc(brief.id).set(brief, { merge: true });
+  // Existing projects must belong to this exact tenant AND user before a
+  // standalone brief is created. No implicit legacy uid->userId conversion.
+  if (!/^[A-Za-z0-9_-]{1,160}$/.test(projectId) ||
+      !/^[A-Za-z0-9_-]{1,160}$/.test(brief.id)) {
+    return { ok: false, mode: 'firebase', error: 'studio_reference_unavailable' };
+  }
+  const projectRef = adminDb.collection(COLLECTIONS.projects).doc(projectId);
+  try {
+    await adminDb.runTransaction(async transaction => {
+      const currentProject = await transaction.get(projectRef);
+      const data = currentProject.data();
+      if (!currentProject.exists || data?.tenantId !== tenantId || data?.userId !== userId) {
+        throw new Error('studio_reference_unavailable');
+      }
+      transaction.create(adminDb.collection(COLLECTIONS.briefs).doc(brief.id), brief);
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'studio_reference_unavailable') {
+      return { ok: false, mode: 'firebase', error: 'studio_reference_unavailable' };
+    }
+    throw error;
+  }
   return { ok: true, mode: 'firebase', data: brief };
 }
 
@@ -240,14 +266,28 @@ export async function createStudioExport(input: CreateStudioExportInput): Promis
     return { ok: false, mode: 'unconfigured', error: 'firebase_admin_unconfigured' };
   }
 
+  const projectId = typeof input.projectId === 'string' ? input.projectId.trim() : '';
+  const tenantId = cleanString(input.tenantId, DEFAULT_TENANT_ID);
+  const userId = cleanString(input.userId, DEFAULT_USER_ID);
+  const jobId = typeof input.jobId === 'string' && input.jobId.trim()
+    ? input.jobId.trim() : undefined;
+  const assetIds = input.assetIds ?? [];
+  const validId = (id: string) => /^[A-Za-z0-9_-]{1,160}$/.test(id);
+  // Never let arbitrary caller path fragments escape their intended collection.
+  if (!validId(projectId) || (jobId !== undefined && !validId(jobId)) ||
+      assetIds.length > 25 || assetIds.some(id => typeof id !== 'string' || !validId(id)) ||
+      new Set(assetIds).size !== assetIds.length) {
+    return { ok: false, mode: 'firebase', error: 'studio_reference_unavailable' };
+  }
+
   const timestamp = nowIso();
   const studioExport: StudioExport = {
     id: newId('export'),
-    tenantId: cleanString(input.tenantId, DEFAULT_TENANT_ID),
-    userId: cleanString(input.userId, DEFAULT_USER_ID),
-    projectId: input.projectId,
-    jobId: input.jobId,
-    assetIds: input.assetIds ?? [],
+    tenantId,
+    userId,
+    projectId,
+    jobId,
+    assetIds,
     kind: input.kind,
     status: 'draft' satisfies StudioJobStatus,
     storagePath: undefined,
@@ -258,7 +298,38 @@ export async function createStudioExport(input: CreateStudioExportInput): Promis
     updatedAt: timestamp,
   };
 
-  await adminDb.collection(COLLECTIONS.exports).doc(studioExport.id).set(studioExport, { merge: true });
+  const projectRef = adminDb.collection(COLLECTIONS.projects).doc(projectId);
+  const jobRef = jobId ? adminDb.collection(COLLECTIONS.jobs).doc(jobId) : undefined;
+  const assetRefs = assetIds.map(id => adminDb.collection(COLLECTIONS.assets).doc(id));
+  try {
+    await adminDb.runTransaction(async transaction => {
+      const projectSnap = await transaction.get(projectRef);
+      const project = projectSnap.data();
+      if (!projectSnap.exists || project?.tenantId !== tenantId || project?.userId !== userId) {
+        throw new Error('studio_reference_unavailable');
+      }
+
+      const jobSnap = jobRef ? await transaction.get(jobRef) : undefined;
+      const assetSnaps = await Promise.all(assetRefs.map(ref => transaction.get(ref)));
+      if (jobRef && (!jobSnap?.exists || jobSnap.data()?.tenantId !== tenantId ||
+          jobSnap.data()?.userId !== userId || jobSnap.data()?.projectId !== projectId)) {
+        throw new Error('studio_reference_unavailable');
+      }
+      for (const assetSnap of assetSnaps) {
+        const asset = assetSnap.data();
+        if (!assetSnap.exists || asset?.tenantId !== tenantId ||
+            asset?.userId !== userId || asset?.projectId !== projectId) {
+          throw new Error('studio_reference_unavailable');
+        }
+      }
+      transaction.create(adminDb.collection(COLLECTIONS.exports).doc(studioExport.id), studioExport);
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'studio_reference_unavailable') {
+      return { ok: false, mode: 'firebase', error: 'studio_reference_unavailable' };
+    }
+    throw error;
+  }
   return { ok: true, mode: 'firebase', data: studioExport };
 }
 
