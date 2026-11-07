@@ -123,7 +123,8 @@ test('legitimate owner can update their studio; creator cannot claim owner power
   await assertFails(updateDoc(doc(ctx('creator-a').firestore(), 'studios/studio-a'), { name: 'Escalation' }));
 });
 // Legacy client-controlled collections, excluding trusted job state and audit receipts.
-for (const collection of ['clipRequests', 'jobRuns', 'assets', 'outputs', 'deadLetters']) {
+// Preserve legacy client mutation only for the remaining non-worker-owned collections.
+for (const collection of ['clipRequests', 'assets', 'outputs']) {
   test(`${collection} updates require the existing tenant and cannot change or remove studioId`, async () => {
     const db = ctx('creator-a').firestore();
     const own = doc(db, `${collection}/a`);
@@ -178,6 +179,35 @@ test('trusted Admin seed for job and audit remains present and readable to membe
   const receipt = await getDoc(doc(db, 'auditLogs/a'));
   assert.equal(job.data()?.studioId, 'studio-a');
   assert.equal(receipt.data()?.studioId, 'studio-a');
+});
+
+
+for (const collection of ['jobRuns', 'deadLetters']) {
+  for (const role of ['owner', 'creator', 'viewer']) {
+    test('worker-owned ' + collection + ' rejects client ' + role + ' create/update/delete while allowing member read', async () => {
+      const db = ctx(role + '-a').firestore();
+      const existing = doc(db, collection + '/a');
+      await assertFails(setDoc(doc(db, collection + '/client-forged-' + role), {
+        studioId: 'studio-a', jobId: 'jobs/a', status: 'succeeded',
+        attempt: 0, source: 'untrusted-client-r859',
+      }));
+      await assertFails(updateDoc(existing, {
+        status: 'succeeded', attempt: 99, lastError: null,
+        source: 'untrusted-client-r859',
+      }));
+      await assertFails(deleteDoc(existing));
+      const current = await getDoc(existing);
+      assert.equal(current.data()?.studioId, 'studio-a');
+    });
+  }
+}
+test('member can still read server-created jobRuns/deadLetters but outsider cannot', async () => {
+  for (const collection of ['jobRuns', 'deadLetters']) {
+    const refA = doc(ctx('creator-a').firestore(), collection + '/a');
+    const refB = doc(ctx('member-b').firestore(), collection + '/a');
+    await assertSucceeds(getDoc(refA));
+    await assertFails(getDoc(refB));
+  }
 });
 
 test('client cannot create or change the separate server-owned studioUsers bootstrap authority', async () => {
