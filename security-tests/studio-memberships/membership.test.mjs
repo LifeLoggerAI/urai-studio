@@ -106,16 +106,43 @@ for (const collection of collections) {
   });
 }
 for (const role of ['owner', 'creator', 'viewer']) {
-  test(`valid ${role} retains their membership, studio, uploads and outputs access`, async () => {
+  test(`valid ${role} keeps member reads; only owner/creator upload and no direct shared output writes`, async () => {
     const uid = role + '-a';
     await assertSucceeds(getDoc(doc(ctx(uid).firestore(), `memberships/${uid}_studio-a`)));
     await assertSucceeds(getDoc(doc(ctx(uid).firestore(), 'studios/studio-a')));
     for (const kind of ['uploads', 'outputs']) {
       await assertSucceeds(getBytes(ref(ctx(uid).storage(), `studios/studio-a/${kind}/${kind === 'uploads' ? 'source' : 'movie'}.txt`)));
       const path = ref(ctx(uid).storage(), `studios/studio-a/${kind}/compatible-${role}.txt`);
-      await assertSucceeds(uploadBytes(path, new Uint8Array([1, 2])));
-      await assertSucceeds(deleteObject(path));
+      if (kind === 'uploads' && role !== 'viewer') {
+        await assertSucceeds(uploadBytes(path, new Uint8Array([1, 2])));
+        await assertSucceeds(deleteObject(path));
+      } else {
+        await assertFails(uploadBytes(path, new Uint8Array([1, 2])));
+      }
+      if (kind === 'outputs') {
+        await assertFails(deleteObject(ref(ctx(uid).storage(), 'studios/studio-a/outputs/movie.txt')));
+      }
     }
+  });
+}
+
+// Revocation is not a role change: a once-valid role must lose both Firestore
+// and Storage access when a trusted server explicitly withdraws membership.
+for (const [field, value] of [['revoked', true], ['disabled', true], ['active', false],
+  ['revoked', 'false'], ['disabled', 'false'], ['active', 'true']]) {
+  test(`membership ${field}=${String(value)} fails closed for client data and media`, async () => {
+    const uid = `flag-${field}-${String(value).replace(/[^a-z]/gi, '')}`;
+    await env.withSecurityRulesDisabled(async admin => {
+      await setDoc(doc(admin.firestore(), `memberships/${uid}_studio-a`),
+        { ...member(uid, 'studio-a', 'creator'), [field]: value });
+    });
+    const client = ctx(uid);
+    await assertFails(getDoc(doc(client.firestore(), 'studios/studio-a')));
+    await assertFails(getDoc(doc(client.firestore(), `memberships/${uid}_studio-a`)));
+    await assertFails(getBytes(ref(client.storage(), 'studios/studio-a/uploads/source.txt')));
+    await assertFails(getBytes(ref(client.storage(), 'studios/studio-a/outputs/movie.txt')));
+    await assertFails(uploadBytes(ref(client.storage(), `studios/studio-a/uploads/${uid}.txt`), new Uint8Array([1])));
+    await assertFails(uploadBytes(ref(client.storage(), `studios/studio-a/outputs/${uid}.txt`), new Uint8Array([1])));
   });
 }
 test('legitimate owner can update their studio; creator cannot claim owner powers', async () => {
