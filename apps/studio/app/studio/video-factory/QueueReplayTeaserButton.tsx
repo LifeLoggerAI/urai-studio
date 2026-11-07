@@ -72,7 +72,7 @@ export function QueueReplayTeaserButton({ templateId, prompt }: { templateId: st
       setState('failed');
       setMessage(controller.signal.aborted
         ? 'Draft request timed out. Check saved drafts before retrying.'
-        : error instanceof Error ? error.message : 'Queue failed.');
+        : error instanceof Error ? error.message : 'Draft save failed.');
     } finally {
       clearTimeout(timer);
       activeRequest.current = null;
@@ -81,7 +81,7 @@ export function QueueReplayTeaserButton({ templateId, prompt }: { templateId: st
   }
 
   return (
-    <div className={`card status-${state === 'failed' ? 'error' : state === 'draft' ? 'info' : 'info'}`} data-video-factory-queue="replay-teaser">
+    <div className={`card status-${state === 'failed' ? 'error' : 'info'}`} data-video-factory-queue="replay-teaser">
       <p className="eyebrow">Draft action</p>
       <h3>Save Replay Teaser Draft</h3>
       <p role="status" aria-live="polite" aria-atomic="true">{message}</p>
