@@ -445,7 +445,7 @@ export const markAssetReady = onCall(async (request) => {
       }
       if (tombstoneSnap.exists && (!tombstone || tombstone.uid !== uid
         || tombstone.active !== false
-        || STUDIO_DELETION_LEASE_FIELDS.some((field) => Object.hasOwn(tombstone, field)))) {
+        || STUDIO_DELETION_LEASE_FIELDS.some((field) => Object.prototype.hasOwnProperty.call(tombstone, field)))) {
         throw new HttpsError("failed-precondition", "Studio owner deletion fence is active or invalid.");
       }
     }
