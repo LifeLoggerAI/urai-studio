@@ -8,30 +8,34 @@
   "git_reported_blob_count": 908,
   "git_reported_size_bytes": 6068047,
   "categoryCounts": {
-    "other": 138,
+    "other": 126,
     "documentation": 105,
+    "binary-icon": 3,
     "other-source": 212,
     "configuration": 46,
+    "vector-graphic-source": 15,
     "archive-binary": 4,
     "ci-workflow": 9,
     "studio-api": 26,
     "studio-library": 42,
     "test": 93,
-    "archived-source": 138,
+    "archived-source": 132,
     "firebase-function-source": 16,
     "production-manifest-or-source": 79
   },
   "categorySizes": {
-    "other": 166679,
+    "other": 108189,
     "documentation": 273517,
+    "binary-icon": 77793,
     "other-source": 948351,
     "configuration": 983493,
+    "vector-graphic-source": 9942,
     "archive-binary": 303563,
     "ci-workflow": 38879,
     "studio-api": 85212,
     "studio-library": 226149,
     "test": 452773,
-    "archived-source": 978018,
+    "archived-source": 948773,
     "firebase-function-source": 132928,
     "production-manifest-or-source": 1478485
   },
@@ -43,7 +47,8 @@
     "No Git binary/archive bytes were downloaded.",
     "No LFS content, external workflow ZIP/MP4, Cloud Storage, provider asset or untracked worktree contents were audited.",
     "See MANIFEST_SELECTED_TREES.json for main, donor #175 and historical tag paths and Git objects.",
-    "Earlier directly read selected source files are separately documented with Git blob SHAs; this manifest alone asserts metadata only."
+    "Earlier directly read selected source files are separately documented with Git blob SHAs; this manifest alone asserts metadata only.",
+    "Three ICO binary file path occurrences (some archived) and fifteen SVG vector text files are now explicitly categorized; classification does not imply source quality, licensing or runtime use."
   ],
   "files": [
     {
@@ -69,7 +74,7 @@
       "size_bytes": 25931,
       "git_blob_sha": "718d6fea4835ec2d246af9800eddb7ffb276240c",
       "git_mode": "100644",
-      "category": "other",
+      "category": "binary-icon",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -150,7 +155,7 @@
       "size_bytes": 391,
       "git_blob_sha": "004145cddf3f9db91b57b9cb596683c8eb420862",
       "git_mode": "100644",
-      "category": "other",
+      "category": "vector-graphic-source",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -159,7 +164,7 @@
       "size_bytes": 1035,
       "git_blob_sha": "567f17b0d7c7fb662c16d4357dd74830caf2dccb",
       "git_mode": "100644",
-      "category": "other",
+      "category": "vector-graphic-source",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -168,7 +173,7 @@
       "size_bytes": 1375,
       "git_blob_sha": "5174b28c565c285e3e312ec5178be64fbeca8398",
       "git_mode": "100644",
-      "category": "other",
+      "category": "vector-graphic-source",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -177,7 +182,7 @@
       "size_bytes": 128,
       "git_blob_sha": "77053960334e2e34dc584dea8019925c3b4ccca9",
       "git_mode": "100644",
-      "category": "other",
+      "category": "vector-graphic-source",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -186,7 +191,7 @@
       "size_bytes": 385,
       "git_blob_sha": "b2b2a44f6ebc70c450043c05a002e7a93ba5d651",
       "git_mode": "100644",
-      "category": "other",
+      "category": "vector-graphic-source",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -2958,7 +2963,7 @@
       "size_bytes": 391,
       "git_blob_sha": "004145cddf3f9db91b57b9cb596683c8eb420862",
       "git_mode": "100644",
-      "category": "other",
+      "category": "vector-graphic-source",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -2967,7 +2972,7 @@
       "size_bytes": 1035,
       "git_blob_sha": "567f17b0d7c7fb662c16d4357dd74830caf2dccb",
       "git_mode": "100644",
-      "category": "other",
+      "category": "vector-graphic-source",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -2976,7 +2981,7 @@
       "size_bytes": 1375,
       "git_blob_sha": "5174b28c565c285e3e312ec5178be64fbeca8398",
       "git_mode": "100644",
-      "category": "other",
+      "category": "vector-graphic-source",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -2985,7 +2990,7 @@
       "size_bytes": 128,
       "git_blob_sha": "77053960334e2e34dc584dea8019925c3b4ccca9",
       "git_mode": "100644",
-      "category": "other",
+      "category": "vector-graphic-source",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -2994,7 +2999,7 @@
       "size_bytes": 385,
       "git_blob_sha": "b2b2a44f6ebc70c450043c05a002e7a93ba5d651",
       "git_mode": "100644",
-      "category": "other",
+      "category": "vector-graphic-source",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -3021,7 +3026,7 @@
       "size_bytes": 25931,
       "git_blob_sha": "718d6fea4835ec2d246af9800eddb7ffb276240c",
       "git_mode": "100644",
-      "category": "other",
+      "category": "binary-icon",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -4632,7 +4637,7 @@
       "size_bytes": 25931,
       "git_blob_sha": "718d6fea4835ec2d246af9800eddb7ffb276240c",
       "git_mode": "100644",
-      "category": "archived-source",
+      "category": "binary-icon",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -5127,7 +5132,7 @@
       "size_bytes": 391,
       "git_blob_sha": "004145cddf3f9db91b57b9cb596683c8eb420862",
       "git_mode": "100644",
-      "category": "archived-source",
+      "category": "vector-graphic-source",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -5136,7 +5141,7 @@
       "size_bytes": 1035,
       "git_blob_sha": "567f17b0d7c7fb662c16d4357dd74830caf2dccb",
       "git_mode": "100644",
-      "category": "archived-source",
+      "category": "vector-graphic-source",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -5145,7 +5150,7 @@
       "size_bytes": 1375,
       "git_blob_sha": "5174b28c565c285e3e312ec5178be64fbeca8398",
       "git_mode": "100644",
-      "category": "archived-source",
+      "category": "vector-graphic-source",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -5154,7 +5159,7 @@
       "size_bytes": 128,
       "git_blob_sha": "77053960334e2e34dc584dea8019925c3b4ccca9",
       "git_mode": "100644",
-      "category": "archived-source",
+      "category": "vector-graphic-source",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -5163,7 +5168,7 @@
       "size_bytes": 385,
       "git_blob_sha": "b2b2a44f6ebc70c450043c05a002e7a93ba5d651",
       "git_mode": "100644",
-      "category": "archived-source",
+      "category": "vector-graphic-source",
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     },
@@ -8218,5 +8223,6 @@
       "coverage": "tree_metadata_only",
       "sha256_raw_bytes": null
     }
-  ]
+  ],
+  "inventory_revision": "R856: recognize ICO binary and SVG vector asset paths in previously complete Git path/byte ledger; no new raw content coverage"
 }
