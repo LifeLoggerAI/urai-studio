@@ -1,5 +1,6 @@
 import { adminDb, firebaseAdminStatus } from '@/lib/firebase-admin';
 import { assertStudioDraftAuthorityInTransaction } from '@/lib/studio-member-auth';
+import { deriveStudioDraftReceipt } from '@/lib/studio-draft-idempotency';
 import {
   consentRequired,
   type ConsentRequirement,
@@ -39,6 +40,8 @@ export const STUDIO_CONTRACT_EXECUTION = Object.freeze({
 export type RuntimeStoreMode = 'firebase' | 'unconfigured';
 
 export type CreateStudioJobInput = {
+  /** Required by public POST routes; optional for historical internal callers. */
+  idempotencyKey?: string;
   projectId?: UraiId;
   briefId?: UraiId;
   kind?: StudioJobKind;
@@ -179,6 +182,15 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
   const projectId = requestedProjectId || newId('project');
   const tenantId = cleanString(input.tenantId, DEFAULT_TENANT_ID);
   const userId = cleanString(input.userId, DEFAULT_USER_ID);
+  const idempotency = input.idempotencyKey
+    ? deriveStudioDraftReceipt({
+        tenantId, userId, key: input.idempotencyKey,
+        projectId: requestedProjectId, briefId: input.briefId,
+        kind: input.kind ?? 'asset_bundle_export',
+        prompt: input.prompt ?? '',
+        requestedExports: input.requestedExports ?? ['json'],
+      })
+    : undefined;
 
   // An implicit project is an actual owned StudioProject, not a dangling ID.
   const project: StudioProject | undefined = requestedProjectId
@@ -213,7 +225,8 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
     : undefined;
 
   const job: StudioJob = {
-    id: newId('job'),
+    id: idempotency?.jobId ?? newId('job'),
+    ...(idempotency ? { idempotencyKeyDigest: idempotency.keyDigest, idempotencyRequestDigest: idempotency.requestDigest } : {}),
     tenantId,
     userId,
     projectId,
@@ -238,8 +251,25 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
   const existingBriefRef = !brief && input.briefId
     ? adminDb.collection(COLLECTIONS.briefs).doc(input.briefId)
     : undefined;
-  await adminDb.runTransaction(async transaction => {
-      await assertStudioDraftAuthorityInTransaction(transaction, userId, tenantId);
+  const persisted = await adminDb.runTransaction(async transaction => {
+    await assertStudioDraftAuthorityInTransaction(transaction, userId, tenantId);
+    // Check the deterministic job identity in the SAME commit-validated read
+    // set. A retry after a lost HTTP response returns the original receipt.
+    // A reused key with different content is a hard conflict.
+    if (idempotency) {
+      const prior = await transaction.get(adminDb.collection(COLLECTIONS.jobs).doc(idempotency.jobId));
+      if (prior.exists) {
+        const previous = prior.data() as StudioJob | undefined;
+        if (previous?.tenantId !== tenantId || previous?.userId !== userId ||
+            previous?.idempotencyKeyDigest !== idempotency.keyDigest ||
+            previous?.idempotencyRequestDigest !== idempotency.requestDigest ||
+            previous?.status !== 'draft' || previous?.provider !== 'feature-gated' ||
+            previous?.model !== 'contract-only') {
+          throw new Error('studio_idempotency_conflict');
+        }
+        return previous;
+      }
+    }
     const currentProject = project ? undefined : await transaction.get(projectRef);
     const currentBrief = existingBriefRef ? await transaction.get(existingBriefRef) : undefined;
 
@@ -262,9 +292,10 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
     if (project) transaction.create(projectRef, project);
     if (brief) transaction.create(adminDb.collection(COLLECTIONS.briefs).doc(brief.id), brief);
     transaction.create(adminDb.collection(COLLECTIONS.jobs).doc(job.id), job);
+    return job;
   });
 
-  return { ok: true, mode: 'firebase', data: job };
+  return { ok: true, mode: 'firebase', data: persisted };
 }
 
 export async function createStudioExport(input: CreateStudioExportInput): Promise<RuntimeStoreResponse<StudioExport>> {
