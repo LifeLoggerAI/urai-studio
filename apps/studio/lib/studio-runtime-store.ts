@@ -64,6 +64,8 @@ export type RuntimeStoreResponse<T> = {
   ok: boolean;
   mode: RuntimeStoreMode;
   data?: T;
+  /** True only when the original committed draft was reused. */
+  replayed?: boolean;
   error?: string;
 };
 
@@ -267,7 +269,7 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
             previous?.model !== 'contract-only') {
           throw new Error('studio_idempotency_conflict');
         }
-        return previous;
+        return { job: previous, replayed: true };
       }
     }
     const currentProject = project ? undefined : await transaction.get(projectRef);
@@ -292,10 +294,10 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
     if (project) transaction.create(projectRef, project);
     if (brief) transaction.create(adminDb.collection(COLLECTIONS.briefs).doc(brief.id), brief);
     transaction.create(adminDb.collection(COLLECTIONS.jobs).doc(job.id), job);
-    return job;
+    return { job, replayed: false };
   });
 
-  return { ok: true, mode: 'firebase', data: persisted };
+  return { ok: true, mode: 'firebase', data: persisted.job, replayed: persisted.replayed };
 }
 
 export async function createStudioExport(input: CreateStudioExportInput): Promise<RuntimeStoreResponse<StudioExport>> {
