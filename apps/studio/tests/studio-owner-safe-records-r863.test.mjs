@@ -67,6 +67,9 @@ function runtime({ records = {}, failCommit = false } = {}) {
     newId: prefix => prefix + '-synthetic-' + ++sequence,
     cleanString: (v, fallback) => typeof v === 'string' && v.trim() ? v.trim() : fallback,
     defaultConsentRequirements: () => [{ purpose: 'generated_assets' }],
+    // The existing focused persistence mock isolates project/brief/export behavior.
+    // R866 separately tests the real transaction-bound authority function.
+    assertStudioDraftAuthorityInTransaction: async () => {},
     DEFAULT_TENANT_ID: 'public-studio',
     DEFAULT_USER_ID: 'anonymous-studio-user',
     COLLECTIONS: {
