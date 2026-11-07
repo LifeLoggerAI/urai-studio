@@ -84,11 +84,12 @@ service cloud.firestore {
       allow delete: if roleIs(resource.data.studioId, "owner");
     }
 
+    // Job admission, state and priority are trusted-server authority.
+    // Firebase Admin writes bypass Rules and must enforce owner/project checks.
+    // Keep existing tenant-member reads; no client can mint or mutate a job.
     match /jobs/{id} {
       allow read: if isStudioMember(resource.data.studioId);
-      allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
-      allow update: if studioUpdateScoped();
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      allow create, update, delete: if false;
     }
 
     match /jobRuns/{id} {
@@ -119,10 +120,11 @@ service cloud.firestore {
       allow delete: if roleIs(resource.data.studioId, "owner");
     }
 
+    // Audit receipts must be issued by the trusted server, not caller-supplied
+    // actorUid/action strings. Existing tenant-member reads are preserved.
     match /auditLogs/{id} {
       allow read: if isStudioMember(resource.data.studioId);
-      allow create: if isStudioMember(request.resource.data.studioId);
-      allow update, delete: if false;
+      allow create, update, delete: if false;
     }
 
     match /users/{uid} {
