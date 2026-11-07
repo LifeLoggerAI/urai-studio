@@ -41,3 +41,13 @@
 - **Preserve existing P0 Jobs #252 and positive C6 hard-off**. These new findings are additional release review gates, not a basis to bypass the actual movie authorization boundary or modify live privileges.
 
 The R856 source and test documentation was written only to this existing R854/R855 draft documentation branch. No other worker branch, Firebase Rules, execution code, cloud project, paid provider, protected production deployment, or private owner media was changed.
+
+
+## R857 — isolated native Rules reproducer for Studio client job authority (2026-11-07)
+
+- New **test-only** engineering [Studio #181](https://github.com/LifeLoggerAI/urai-studio/pull/181) bases directly on #179 exact `153d6c35557c66a8b9f8629778ca796b83730464`, adds eight proposed disposable Auth-context Firestore/Storage Rules tests at commit `481c6d069ec6fd3f0d16e20e2d89e371282c02d2`. Neither #179 nor #175, main or production was edited.
+- [Full R857 test execution handoff](STUDIO_R857_CLIENT_JOB_AUTHORITY_HANDOFF_20261107.md): source-level job/viewer/audit/output permission mismatch and exact original Git blobs; *observed* mode characterizes permissive current-source behavior; *secure* mode is prospective denial and **NOT a passing result** on this source. The new test file was committed and GitHub-read-back, not executed with actual Firebase.
+- **R857 native execution blocker**: local Node22/Java21 present, but Firebase CLI and SDK absent, and npm/GitHub DNS unavailable; no new full Studio build, real emulator, source-fixed admission, privileged storage fence or positive C6 receipt. Local `node --check` passed for a corresponding precommit test draft only; do not promote to native test success.
+- Separate strict source boundary: the legacy `studios/{studioId}/outputs/**` client member write policy is not Jobs' canonical private Life Movie Storage prefix. Native security review must distinguish these and preserve legitimate client migration pathways.
+
+**Release remains HOLD.** Next safe actions are native two-emulator R857 reproduction at #181 then a separate independently reviewed minimal rules/queue repair and full compatibility gates, alongside Jobs #252 and positive Privacy C6 work.
