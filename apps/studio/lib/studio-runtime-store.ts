@@ -145,12 +145,34 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
 
   const timestamp = nowIso();
   const projectId = cleanString(input.projectId, newId('project'));
+  const tenantId = cleanString(input.tenantId, DEFAULT_TENANT_ID);
+  const userId = cleanString(input.userId, DEFAULT_USER_ID);
+
+  // A prompt brief is part of the SAME persisted draft, not a separate
+  // best-effort follow-up write. Neither record exists if the batch fails.
+  const brief: StudioBrief | undefined = input.prompt
+    ? {
+        id: newId('brief'),
+        tenantId,
+        userId,
+        projectId,
+        title: 'URAI Studio Brief',
+        prompt: cleanString(input.prompt, ''),
+        intendedOutputs: ['image', 'script', 'scene_manifest'],
+        requestedExports: input.requestedExports ?? ['json'],
+        consentRequirements: defaultConsentRequirements(),
+        safetyBoundaries: [{ requiredLanguage: 'none', humanReviewRequired: false }],
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }
+    : undefined;
+
   const job: StudioJob = {
     id: newId('job'),
-    tenantId: cleanString(input.tenantId, DEFAULT_TENANT_ID),
-    userId: cleanString(input.userId, DEFAULT_USER_ID),
+    tenantId,
+    userId,
     projectId,
-    briefId: input.briefId,
+    ...(brief ? { briefId: brief.id } : input.briefId ? { briefId: input.briefId } : {}),
     kind: input.kind ?? 'asset_bundle_export',
     status: 'draft',
     provider: 'feature-gated',
@@ -164,17 +186,15 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
     updatedAt: timestamp,
   };
 
-  await adminDb.collection(COLLECTIONS.jobs).doc(job.id).set(job, { merge: true });
-
-  if (input.prompt) {
-    await createStudioBrief({
-      projectId,
-      tenantId: job.tenantId,
-      userId: job.userId,
-      prompt: input.prompt,
-      requestedExports: input.requestedExports ?? ['json'],
-    });
+  // Firebase Admin batch commits are atomic: a failed prompt write cannot
+  // leave an orphaned job that the API mistakenly reports as unpersisted.
+  // This does NOT dispatch a worker or make client retries idempotent.
+  const batch = adminDb.batch();
+  batch.create(adminDb.collection(COLLECTIONS.jobs).doc(job.id), job);
+  if (brief) {
+    batch.create(adminDb.collection(COLLECTIONS.briefs).doc(brief.id), brief);
   }
+  await batch.commit();
 
   return { ok: true, mode: 'firebase', data: job };
 }
