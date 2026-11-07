@@ -336,7 +336,7 @@ export async function createStudioExport(input: CreateStudioExportInput): Promis
   return { ok: true, mode: 'firebase', data: studioExport };
 }
 
-export async function listTenantJobs(tenantId = DEFAULT_TENANT_ID): Promise<RuntimeStoreResponse<StudioJob[]>> {
+export async function listTenantJobs(tenantId: UraiId, userId: UraiId): Promise<RuntimeStoreResponse<StudioJob[]>> {
   if (!adminDb) {
     return { ok: false, mode: 'unconfigured', error: 'firebase_admin_unconfigured' };
   }
@@ -344,6 +344,7 @@ export async function listTenantJobs(tenantId = DEFAULT_TENANT_ID): Promise<Runt
   const snapshot = await adminDb
     .collection(COLLECTIONS.jobs)
     .where('tenantId', '==', tenantId)
+    .where('userId', '==', userId)
     .orderBy('createdAt', 'desc')
     .limit(25)
     .get();
