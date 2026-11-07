@@ -1,6 +1,6 @@
 import { adminDb, firebaseAdminStatus } from '@/lib/firebase-admin';
 import { assertStudioDraftAuthorityInTransaction } from '@/lib/studio-member-auth';
-import { deriveStudioDraftReceipt } from '@/lib/studio-draft-idempotency';
+import { deriveStudioDraftReceipt, deriveStudioExportReceipt } from '@/lib/studio-draft-idempotency';
 import {
   consentRequired,
   type ConsentRequirement,
@@ -52,6 +52,7 @@ export type CreateStudioJobInput = {
 };
 
 export type CreateStudioExportInput = {
+  idempotencyKey?: string;
   projectId: UraiId;
   jobId?: UraiId;
   assetIds?: UraiId[];
@@ -345,9 +346,17 @@ export async function createStudioExport(input: CreateStudioExportInput): Promis
     return { ok: false, mode: 'firebase', error: 'studio_reference_unavailable' };
   }
 
+  const idempotency = input.idempotencyKey
+    ? deriveStudioExportReceipt({
+        tenantId, userId, key: input.idempotencyKey, projectId,
+        jobId, assetIds, kind: input.kind,
+      })
+    : undefined;
+
   const timestamp = nowIso();
   const studioExport: StudioExport = {
-    id: newId('export'),
+    id: idempotency?.exportId ?? newId('export'),
+    ...(idempotency ? { idempotencyKeyDigest: idempotency.keyDigest, idempotencyRequestDigest: idempotency.requestDigest } : {}),
     tenantId,
     userId,
     projectId,
@@ -367,8 +376,22 @@ export async function createStudioExport(input: CreateStudioExportInput): Promis
   const jobRef = jobId ? adminDb.collection(COLLECTIONS.jobs).doc(jobId) : undefined;
   const assetRefs = assetIds.map(id => adminDb.collection(COLLECTIONS.assets).doc(id));
   try {
-    await adminDb.runTransaction(async transaction => {
+    const persisted = await adminDb.runTransaction(async transaction => {
       await assertStudioDraftAuthorityInTransaction(transaction, userId, tenantId);
+      // A retry reads the original export as part of this transaction. Still
+      // validate its referenced project/job/assets before returning it.
+      const prior = idempotency
+        ? await transaction.get(adminDb.collection(COLLECTIONS.exports).doc(idempotency.exportId))
+        : undefined;
+      if (prior?.exists) {
+        const old = prior.data() as StudioExport | undefined;
+        if (!old || old.tenantId !== tenantId || old.userId !== userId ||
+            old.idempotencyKeyDigest !== idempotency?.keyDigest ||
+            old.idempotencyRequestDigest !== idempotency?.requestDigest ||
+            old.status !== 'draft' || old.downloadUrl || old.storagePath) {
+          throw new Error('studio_idempotency_conflict');
+        }
+      }
       const projectSnap = await transaction.get(projectRef);
       const project = projectSnap.data();
       if (!projectSnap.exists || project?.tenantId !== tenantId || project?.userId !== userId) {
@@ -388,15 +411,21 @@ export async function createStudioExport(input: CreateStudioExportInput): Promis
           throw new Error('studio_reference_unavailable');
         }
       }
+      if (prior?.exists) {
+        return { data: prior.data() as StudioExport, replayed: true };
+      }
       transaction.create(adminDb.collection(COLLECTIONS.exports).doc(studioExport.id), studioExport);
+      return { data: studioExport, replayed: false };
     });
+    return { ok: true, mode: 'firebase', data: persisted.data, replayed: persisted.replayed };
   } catch (error) {
-    if (error instanceof Error && error.message === 'studio_reference_unavailable') {
-      return { ok: false, mode: 'firebase', error: 'studio_reference_unavailable' };
+    if (error instanceof Error && [
+      'studio_reference_unavailable', 'studio_idempotency_conflict',
+    ].includes(error.message)) {
+      return { ok: false, mode: 'firebase', error: error.message };
     }
     throw error;
   }
-  return { ok: true, mode: 'firebase', data: studioExport };
 }
 
 export async function listTenantJobs(tenantId: UraiId, userId: UraiId): Promise<RuntimeStoreResponse<StudioJob[]>> {

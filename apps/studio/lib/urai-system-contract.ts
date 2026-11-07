@@ -181,6 +181,8 @@ export interface StudioAsset extends TenantScopedRecord {
 }
 
 export interface StudioExport extends TenantScopedRecord {
+  idempotencyKeyDigest?: string;
+  idempotencyRequestDigest?: string;
   projectId: UraiId;
   jobId?: UraiId;
   assetIds: UraiId[];

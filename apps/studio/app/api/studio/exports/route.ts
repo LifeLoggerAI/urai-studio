@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { requireStudioMemberAuth, refreshStudioMemberAuth } from '@/lib/studio-member-auth';
 import type { requireStudioAuth } from '@/lib/studio-auth';
 import { createStudioExport, runtimeStoreStatus } from '@/lib/studio-runtime-store';
+import { STUDIO_DRAFT_KEY_HEADER, validStudioDraftKey } from '@/lib/studio-draft-idempotency';
 import { createFallbackStudioSpatialManifest } from '@/lib/studio-spatial-handoff';
 import type { StudioExportKind } from '@/lib/urai-system-contract';
 
@@ -106,10 +107,19 @@ export async function POST(req: Request) {
     return json({ ok: false, status: 'invalid_project', error: { code: 'invalid_project', message: 'projectId is required.' } }, 400);
   }
 
+  const idempotencyKey = req.headers.get(STUDIO_DRAFT_KEY_HEADER);
+  if (!validStudioDraftKey(idempotencyKey)) {
+    return json({ ok: false, status: 'studio_idempotency_key_required', error: {
+      code: 'studio_idempotency_key_required',
+      message: 'A valid draft export idempotency key is required for safe retries.',
+    } }, 400);
+  }
+
   const currentAuth = await refreshStudioMemberAuth(req, auth, 'draft');
   if (!currentAuth.ok) return authErrorResponse(currentAuth);
 
   const result = await createStudioExport({
+    idempotencyKey,
     projectId,
     jobId: jobId || undefined,
     assetIds,
@@ -117,6 +127,13 @@ export async function POST(req: Request) {
     tenantId: auth.tenantId,
     userId: auth.uid,
   });
+
+  if (!result.ok && result.error === 'studio_idempotency_conflict') {
+    return json({ ok: false, status: 'studio_idempotency_conflict', error: {
+      code: 'studio_idempotency_conflict',
+      message: 'This export request key has already been used for different inputs.',
+    } }, 409);
+  }
 
   if (!result.ok) {
     const contractExportId = `contract_${projectId}_${kind}`;
@@ -189,6 +206,7 @@ export async function POST(req: Request) {
     ok: true,
     status: 'draft',
     persisted: true,
+    replayed: result.replayed === true,
     execution: runtimeStoreStatus().execution,
     authMode: auth.authMode,
     tenantId: auth.tenantId,
