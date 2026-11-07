@@ -34,3 +34,25 @@ export function deriveStudioDraftReceipt(input: DraftIdempotencyInput) {
   ]);
   return { jobId: 'job_idem_' + keyDigest, keyDigest, requestDigest } as const;
 }
+
+export type ExportIdempotencyInput = {
+  tenantId: string;
+  userId: string;
+  key: string;
+  projectId: string;
+  jobId?: string;
+  assetIds: readonly string[];
+  kind: string;
+};
+
+/** Export namespace differs from draft-job IDs even when clients use the same key. */
+export function deriveStudioExportReceipt(input: ExportIdempotencyInput) {
+  if (!validStudioDraftKey(input.key)) throw new Error('studio_idempotency_key_invalid');
+  if (!input.tenantId || !input.userId) throw new Error('studio_idempotency_identity_required');
+  const keyDigest = digest(['urai-studio-export-key-v1', input.tenantId, input.userId, input.key]);
+  const requestDigest = digest([
+    'urai-studio-export-request-v1', input.tenantId, input.userId,
+    input.projectId, input.jobId || '', input.kind, [...input.assetIds],
+  ]);
+  return { exportId: 'export_idem_' + keyDigest, keyDigest, requestDigest } as const;
+}
