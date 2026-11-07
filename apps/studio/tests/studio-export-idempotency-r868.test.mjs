@@ -130,9 +130,9 @@ test('other tenant or owner cannot reuse same deterministic ID', async () => {
   const rt = runtime({ seed: {
     ...seeded(), ['studioProjects/other-project']: { tenantId: 'other', userId, projectId: 'other-project' },
   } });
-  const first = helper.deriveStudioExportReceipt({ ...base });
-  const other = helper.deriveStudioExportReceipt({ ...base, userId: 'different' });
-  const otherTenant = helper.deriveStudioExportReceipt({ ...base, tenantId: 'other' });
+  const first = helper.deriveStudioExportReceipt({ ...base, key });
+  const other = helper.deriveStudioExportReceipt({ ...base, key, userId: 'different' });
+  const otherTenant = helper.deriveStudioExportReceipt({ ...base, key, tenantId: 'other' });
   assert.notEqual(first.exportId, other.exportId);
   assert.notEqual(first.exportId, otherTenant.exportId);
   assert.notEqual(other.exportId, otherTenant.exportId);
