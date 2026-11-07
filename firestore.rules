@@ -92,11 +92,11 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Worker attempt/lease evidence cannot be fabricated or erased by a
+    // Studio client. Server/Admin is the authority for job run receipts.
     match /jobRuns/{id} {
       allow read: if isStudioMember(resource.data.studioId);
-      allow create: if isStudioMember(request.resource.data.studioId);
-      allow update: if studioUpdateScoped();
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      allow create, update, delete: if false;
     }
 
     match /assets/{id} {
@@ -113,11 +113,11 @@ service cloud.firestore {
       allow delete: if roleIs(resource.data.studioId, "owner");
     }
 
+    // Failure and retry evidence is server-owned. An owner can request
+    // replay through the authorized server API; it cannot rewrite the DLQ.
     match /deadLetters/{id} {
       allow read: if isStudioMember(resource.data.studioId);
-      allow create: if isStudioMember(request.resource.data.studioId);
-      allow update: if studioUpdateScoped();
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      allow create, update, delete: if false;
     }
 
     // Audit receipts must be issued by the trusted server, not caller-supplied
