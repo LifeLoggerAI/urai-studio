@@ -147,6 +147,10 @@ export interface StudioBrief extends TenantScopedRecord {
 }
 
 export interface StudioJob extends TenantScopedRecord {
+  // Optional, digest-only for backward-compatible pre-R867 draft records.
+  // Never persist the raw Idempotency-Key value.
+  idempotencyKeyDigest?: string;
+  idempotencyRequestDigest?: string;
   projectId: UraiId;
   briefId?: UraiId;
   kind: StudioJobKind;
