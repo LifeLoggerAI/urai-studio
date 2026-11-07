@@ -253,7 +253,9 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
   const existingBriefRef = !brief && input.briefId
     ? adminDb.collection(COLLECTIONS.briefs).doc(input.briefId)
     : undefined;
-  const persisted = await adminDb.runTransaction(async transaction => {
+  let persisted: { job: StudioJob; replayed: boolean };
+  try {
+    persisted = await adminDb.runTransaction(async transaction => {
     await assertStudioDraftAuthorityInTransaction(transaction, userId, tenantId);
     // Check the deterministic job identity in the SAME commit-validated read
     // set. A retry after a lost HTTP response returns the original receipt.
@@ -295,7 +297,13 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
     if (brief) transaction.create(adminDb.collection(COLLECTIONS.briefs).doc(brief.id), brief);
     transaction.create(adminDb.collection(COLLECTIONS.jobs).doc(job.id), job);
     return { job, replayed: false };
-  });
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'studio_idempotency_conflict') {
+      return { ok: false, mode: 'firebase', error: 'studio_idempotency_conflict' };
+    }
+    throw error;
+  }
 
   return { ok: true, mode: 'firebase', data: persisted.job, replayed: persisted.replayed };
 }
