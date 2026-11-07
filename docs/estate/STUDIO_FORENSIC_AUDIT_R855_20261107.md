@@ -51,3 +51,14 @@ The R856 source and test documentation was written only to this existing R854/R8
 - Separate strict source boundary: the legacy `studios/{studioId}/outputs/**` client member write policy is not Jobs' canonical private Life Movie Storage prefix. Native security review must distinguish these and preserve legitimate client migration pathways.
 
 **Release remains HOLD.** Next safe actions are native two-emulator R857 reproduction at #181 then a separate independently reviewed minimal rules/queue repair and full compatibility gates, alongside Jobs #252 and positive Privacy C6 work.
+
+
+## R858 — server-owned job and audit admission repair (2026-11-07 UTC)
+
+- [Review-only isolated engineering PR #182](https://github.com/LifeLoggerAI/urai-studio/pull/182) restores the original 2026-02-03 Studio server-owned `jobs` and `auditLogs` trust boundary while preserving tenant-member reads and existing legacy shared output Storage behavior. R858 source commit `c0df95eaef976c10b4f5b611060f83ac1c4e035a`. No merge or deploy.
+- [Full R858 evidence and next native acceptance](STUDIO_R858_SERVER_JOB_AUDIT_HANDOFF_20261107.md) records original architecture, exact Git blobs, an updated original membership emulator suite with 7 new negative/read cases, and **15/15 direct source-structure checks PASS**. **This is NOT Firebase emulator or authorized private movie PASS**.
+- [R857 diagnostic PR #181](https://github.com/LifeLoggerAI/urai-studio/pull/181) remains independent; its `secure` target was corrected to preserve intentionally legacy viewer shared-output writes, not misrepresent a broad, incompatible output migration. Commit `70deea733d6b408e0b94ca0eb1645784e5783430`.
+- Native `npm ci && npm test && npm audit` and full source build remain unrun locally: no SDK/CLI installed, no outbound npm/GitHub DNS. Require independent exact source native verification and compatibility before any approval.
+- Still OPEN: `jobRuns`, `deadLetters`, shared output metadata write authority; historical forged memberships; Jobs #252 privileged Storage future-write denial; trusted C6 issuer, real protected MP4/SRT generation, device Replay, deletion and production GO.
+
+**Genesis production HOLD stays in force.**
