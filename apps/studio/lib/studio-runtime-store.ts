@@ -265,7 +265,14 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
       const prior = await transaction.get(adminDb.collection(COLLECTIONS.jobs).doc(idempotency.jobId));
       if (prior.exists) {
         const previous = prior.data() as StudioJob | undefined;
-        if (previous?.tenantId !== tenantId || previous?.userId !== userId ||
+        if (previous?.id !== idempotency.jobId ||
+            previous?.tenantId !== tenantId || previous?.userId !== userId ||
+            previous?.kind !== (input.kind ?? 'asset_bundle_export') ||
+            (requestedProjectId !== '' && previous?.projectId !== requestedProjectId) ||
+            (input.prompt ? !previous?.briefId : previous?.briefId !== input.briefId) ||
+            !Array.isArray(previous?.inputAssetIds) || previous.inputAssetIds.length !== 0 ||
+            !Array.isArray(previous?.outputAssetIds) || previous.outputAssetIds.length !== 0 ||
+            !Array.isArray(previous?.requestedExportIds) || previous.requestedExportIds.length !== 0 ||
             previous?.idempotencyKeyDigest !== idempotency.keyDigest ||
             previous?.idempotencyRequestDigest !== idempotency.requestDigest ||
             previous?.status !== 'draft' || previous?.provider !== 'feature-gated' ||
@@ -285,8 +292,14 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
           const priorBrief = await transaction.get(
             adminDb.collection(COLLECTIONS.briefs).doc(previous.briefId));
           const briefData = priorBrief.data();
+          const expectedExports = input.requestedExports ?? ['json'];
           if (!priorBrief.exists || briefData?.tenantId !== tenantId ||
-              briefData?.userId !== userId || briefData?.projectId !== previous.projectId) {
+              briefData?.userId !== userId || briefData?.projectId !== previous.projectId ||
+              (input.prompt && (briefData?.prompt !== cleanString(input.prompt, '') ||
+                !Array.isArray(briefData?.requestedExports) ||
+                briefData.requestedExports.length !== expectedExports.length ||
+                briefData.requestedExports.some((value: string, index: number) =>
+                  value !== expectedExports[index])))) {
             throw new Error('studio_idempotency_conflict');
           }
         }
@@ -385,10 +398,16 @@ export async function createStudioExport(input: CreateStudioExportInput): Promis
         : undefined;
       if (prior?.exists) {
         const old = prior.data() as StudioExport | undefined;
-        if (!old || old.tenantId !== tenantId || old.userId !== userId ||
+        if (!old || old.id !== idempotency?.exportId ||
+            old.tenantId !== tenantId || old.userId !== userId ||
+            old.projectId !== projectId || old.jobId !== jobId ||
+            old.kind !== input.kind || old.tenantScoped !== true ||
+            !Array.isArray(old.assetIds) || old.assetIds.length !== assetIds.length ||
+            old.assetIds.some((id: string, index: number) => id !== assetIds[index]) ||
             old.idempotencyKeyDigest !== idempotency?.keyDigest ||
             old.idempotencyRequestDigest !== idempotency?.requestDigest ||
-            old.status !== 'draft' || old.downloadUrl || old.storagePath) {
+            old.status !== 'draft' || old.downloadUrl !== undefined ||
+            old.storagePath !== undefined || old.expiresAt !== undefined) {
           throw new Error('studio_idempotency_conflict');
         }
       }
