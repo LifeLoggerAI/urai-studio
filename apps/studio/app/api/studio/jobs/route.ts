@@ -52,7 +52,7 @@ export async function GET(req: Request) {
   const auth = await requireStudioAuth(req);
   if (!auth.ok) return authErrorResponse(auth);
 
-  const result = await listTenantJobs(auth.tenantId);
+  const result = await listTenantJobs(auth.tenantId, auth.uid);
 
   if (!result.ok) {
     return json(
