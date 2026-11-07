@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { requireStudioAuth } from '@/lib/studio-auth';
+import { requireStudioMemberAuth, refreshStudioMemberAuth } from '@/lib/studio-member-auth';
+import type { requireStudioAuth } from '@/lib/studio-auth';
 import { createStudioJob, runtimeStoreStatus } from '@/lib/studio-runtime-store';
 import {
   DEFAULT_VIDEO_FACTORY_TEMPLATE_ID,
@@ -31,7 +32,7 @@ function authErrorResponse(auth: Awaited<ReturnType<typeof requireStudioAuth>>) 
 }
 
 export async function GET(req: Request) {
-  const auth = await requireStudioAuth(req);
+  const auth = await requireStudioMemberAuth(req, 'read');
   if (!auth.ok) return authErrorResponse(auth);
 
   return json({
@@ -54,7 +55,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const auth = await requireStudioAuth(req);
+  const auth = await requireStudioMemberAuth(req, 'draft');
   if (!auth.ok) return authErrorResponse(auth);
 
   const rawBody = await req.json().catch(() => null);
@@ -76,6 +77,9 @@ export async function POST(req: Request) {
     projectId: optionalText(body.projectId),
     prompt: optionalText(body.prompt),
   });
+
+  const currentAuth = await refreshStudioMemberAuth(req, auth, 'draft');
+  if (!currentAuth.ok) return authErrorResponse(currentAuth);
 
   const result = await createStudioJob({
     projectId: jobRequest.projectId,
