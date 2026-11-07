@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { requireStudioAuth } from '@/lib/studio-auth';
+import { requireStudioMemberAuth, refreshStudioMemberAuth } from '@/lib/studio-member-auth';
+import type { requireStudioAuth } from '@/lib/studio-auth';
 import { createStudioExport, runtimeStoreStatus } from '@/lib/studio-runtime-store';
 import { createFallbackStudioSpatialManifest } from '@/lib/studio-spatial-handoff';
 import type { StudioExportKind } from '@/lib/urai-system-contract';
@@ -65,7 +66,7 @@ function createExportHandoff(input: {
 }
 
 export async function GET(req: Request) {
-  const auth = await requireStudioAuth(req);
+  const auth = await requireStudioMemberAuth(req, 'read');
   if (!auth.ok) return authErrorResponse(auth);
 
   return json({
@@ -87,7 +88,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const auth = await requireStudioAuth(req);
+  const auth = await requireStudioMemberAuth(req, 'draft');
   if (!auth.ok) return authErrorResponse(auth);
 
   const rawBody = await req.json().catch(() => null);
@@ -104,6 +105,9 @@ export async function POST(req: Request) {
   if (!projectId) {
     return json({ ok: false, status: 'invalid_project', error: { code: 'invalid_project', message: 'projectId is required.' } }, 400);
   }
+
+  const currentAuth = await refreshStudioMemberAuth(req, auth, 'draft');
+  if (!currentAuth.ok) return authErrorResponse(currentAuth);
 
   const result = await createStudioExport({
     projectId,
