@@ -271,6 +271,24 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
             previous?.model !== 'contract-only') {
           throw new Error('studio_idempotency_conflict');
         }
+        // A reusable receipt must not outlive its owner-bound source records.
+        // A deleted/reassigned project or brief invalidates the replay.
+        const priorProject = await transaction.get(
+          adminDb.collection(COLLECTIONS.projects).doc(previous.projectId));
+        const projectData = priorProject.data();
+        if (!priorProject.exists || projectData?.tenantId !== tenantId ||
+            projectData?.userId !== userId) {
+          throw new Error('studio_idempotency_conflict');
+        }
+        if (previous.briefId) {
+          const priorBrief = await transaction.get(
+            adminDb.collection(COLLECTIONS.briefs).doc(previous.briefId));
+          const briefData = priorBrief.data();
+          if (!priorBrief.exists || briefData?.tenantId !== tenantId ||
+              briefData?.userId !== userId || briefData?.projectId !== previous.projectId) {
+            throw new Error('studio_idempotency_conflict');
+          }
+        }
         return { job: previous, replayed: true };
       }
     }
