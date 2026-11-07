@@ -70,3 +70,12 @@ The R856 source and test documentation was written only to this existing R854/R8
 - [R859 source-wiring and dependency ledger](STUDIO_R859_RUNS_DLQ_JOB_WIRING_HANDOFF_20261107.md) records **23/23 source assertions** showing the different Next.js `studioJobs` state model, Functions `jobs` worker state model and unexported legacy finalization job shape. Checks are static source assertions, not production bridge.
 - Data-rights implementation indexes `studioJobs` but omits generic `jobs`, `jobRuns` and `deadLetters` from its enumerated owner collections; actual owner rights/export/deletion need native reconciliation. The Functions `createJob` record lacks `studioId` while client Firestore membership readers require it, a separate compatibility bug to test rather than silently changing old records.
 - Jobs #252 post-revocation Storage-level fence and Privacy C6 positive consent remain HARD OFF. True private Life Movie→protected Replay→revocation/deletion and physical device acceptance are still unverified. **Release HOLD.**
+
+
+## R860 — truthful contract-only draft receipts and genuine worker gap (2026-11-07 UTC)
+
+- New isolated [Studio draft PR #184](https://github.com/LifeLoggerAI/urai-studio/pull/184), head `085573ca9ac36cc594a3b0bf267aff5255c43e3c`, built from source #179, changes Studio generation/export *new records* from misleading `queued` to `draft` and adds explicit no-worker/no-render/no-consent JSON receipts. Replay Teaser UI checks that receipt before claiming a saved draft.
+- [Full source-integrity and remaining acceptance ledger](STUDIO_R860_CONTRACT_DRAFT_HANDOFF_20261107.md) documents the historical unbuilt dummy `studioJobs` worker, current configured `functions/src/index.ts` output, separated Jobs Life Movie authority and 15/15 connected-source consistency assertions (**not native test execution**).
+- New standard Studio test file on #184 is auto-discovered by `apps/studio/tests/all.test.mjs`. Node20/pnpm9.7.0 native full app/Functions build, actual authenticated emulator job persistence and private-media acceptance remain **not run in this pass**.
+- Additional pending integration risks: API compatibility for legacy queued records; `createStudioJob`'s non-atomic job-then-prompt-brief writes; three separate job collections; separate owner-deletion inventory. R858 #182 and R859 #183 security reviews remain unmerged.
+- Hard-off private film consent and Jobs #252 storage-enforced post-revoke future-write fence remain unresolved. Nothing merged, deployed or activated. **Release HOLD.**
