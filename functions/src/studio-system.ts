@@ -1,4 +1,5 @@
 import * as admin from "firebase-admin";
+import { createHash } from "node:crypto";
 import { HttpsError, onCall, type CallableRequest } from "firebase-functions/v2/https";
 
 type StudioMode = "demo" | "user" | "campaign" | "therapeutic" | "vr" | "social";
@@ -82,15 +83,39 @@ function nowFields() {
   };
 }
 
-function assertAdmin(request: CallableRequest<unknown>): void {
+// A callable JWT is a signed *snapshot*, not durable admin authority.
+async function requireCurrentStudioAdmin(request: CallableRequest<unknown>): Promise<string> {
   const authenticated = requireAuth(request);
-  if (authenticated.auth.token.admin !== true) {
-    throw new HttpsError(
-      "permission-denied",
-      "This URAI Studio action requires an admin custom claim."
-    );
+  const uid = authenticated.auth.uid;
+  const idToken = request.rawRequest?.get("authorization")?.match(/^Bearer\\s+(\\S+)$/i)?.[1];
+  if (!uid || authenticated.auth.token.admin !== true || !idToken) {
+    throw new HttpsError("permission-denied", "Current Studio administrator authority is required.");
   }
+
+  try {
+    const auth = admin.auth();
+    const first = await auth.verifyIdToken(idToken, true);
+    const account = await auth.getUser(uid);
+    // A role downgrade or token revocation may happen during the account lookup.
+    const second = await auth.verifyIdToken(idToken, true);
+    if (first.uid !== uid || second.uid !== uid
+      || first.admin !== true || second.admin !== true
+      || account.disabled || account.customClaims?.admin !== true) {
+      throw new HttpsError("permission-denied", "Current Studio administrator authority is required.");
+    }
+  } catch (error) {
+    if (error instanceof HttpsError) throw error;
+    throw new HttpsError("permission-denied", "Current Studio administrator authority is unavailable.");
+  }
+
+  return uid;
 }
+
+const STUDIO_DELETION_LEASE_FIELDS = [
+  "deletionPlanningLeaseToken", "deletionPlanningLeaseUntil",
+  "deletionPlanningLeaseRequestId", "deletionPlanningLeaseOperation",
+  "deletionPlanningLeaseBy",
+] as const;
 
 export const ping = onCall(async () => ({
   ok: true,
@@ -374,23 +399,64 @@ export const createAssetJob = onCall(async (request) => {
 });
 
 export const markAssetReady = onCall(async (request) => {
-  assertAdmin(request);
+  const actorUid = await requireCurrentStudioAdmin(request);
   const db = getDb();
   const data = asRecord(request.data);
   const assetId = requireString(data.assetId, "");
-  if (!assetId) {
-    throw new HttpsError("invalid-argument", "assetId is required.");
+  if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$/.test(assetId)) {
+    throw new HttpsError("invalid-argument", "A bounded assetId is required.");
   }
+  const assetRef = db.collection("studioAssets").doc(assetId);
 
-  await db.collection("studioAssets").doc(assetId).set(
-    {
+  await db.runTransaction(async (transaction) => {
+    // Admin SDK writes bypass Firestore client rules. Authorization must be
+    // read within this exact transaction, not only before its first await.
+    const [actorSnap, assetSnap] = await Promise.all([
+      transaction.get(db.collection("studioUsers").doc(actorUid)),
+      transaction.get(assetRef),
+    ]);
+    const actor = actorSnap.data();
+    const asset = assetSnap.data();
+    if (!actorSnap.exists || actor?.uid !== actorUid
+      || (actor.role !== "owner" && actor.role !== "admin")
+      || actor.disabled === true || actor.revoked === true || actor.active === false) {
+      throw new HttpsError("permission-denied", "Current Studio administrator role is required.");
+    }
+    const ownerUid = asset?.uid;
+    if (!assetSnap.exists || typeof ownerUid !== "string"
+      || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$/.test(ownerUid)) {
+      throw new HttpsError("failed-precondition", "An existing owner-bound asset is required.");
+    }
+
+    // Refuse completion for deleted or deletion-planning actors AND assets.
+    // These reads remain in the transaction read-set at commit time.
+    for (const uid of new Set([actorUid, ownerUid])) {
+      const fenceId = createHash("sha256").update("urai-studio-data-rights:" + uid).digest("hex");
+      const [fenceSnap, tombstoneSnap] = await Promise.all([
+        transaction.get(db.collection("studioDataRightsOwnerFences").doc(fenceId)),
+        transaction.get(db.collection("privacyDeletionTombstones").doc(uid)),
+      ]);
+      const fence = fenceSnap.data();
+      const tombstone = tombstoneSnap.data();
+      if (fenceSnap.exists && (!fence || fence.uid !== uid
+        || typeof fence.requestId !== "string" || !fence.requestId
+        || fence.active !== false || fence.permanent !== false)) {
+        throw new HttpsError("failed-precondition", "Studio owner deletion fence is active or invalid.");
+      }
+      if (tombstoneSnap.exists && (!tombstone || tombstone.uid !== uid
+        || tombstone.active !== false
+        || STUDIO_DELETION_LEASE_FIELDS.some((field) => Object.hasOwn(tombstone, field)))) {
+        throw new HttpsError("failed-precondition", "Studio owner deletion fence is active or invalid.");
+      }
+    }
+
+    transaction.update(assetRef, {
       status: "ready",
       publicUrl: optionalString(data.publicUrl),
       thumbnailUrl: optionalString(data.thumbnailUrl),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    },
-    { merge: true }
-  );
+    });
+  });
 
   return { ok: true, assetId };
 });
