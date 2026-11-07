@@ -58,7 +58,7 @@ export default function StudioVideoFactoryPage() {
         <article className="card">
           <p className="eyebrow">Exports</p>
           <h2>{template.requestedExports.join(' · ')}</h2>
-          <p>Video Factory requests video, subtitle, and manifest outputs through the Studio job contract.</p>
+          <p>This draft requests video, subtitle, and manifest outputs. No render, verified file, or download is created by saving the draft.</p>
         </article>
       </div>
 
@@ -121,9 +121,9 @@ export default function StudioVideoFactoryPage() {
       <section className="section-panel">
         <div className="section-heading">
           <p className="eyebrow">Queue contract</p>
-          <h2>Use the existing Studio API to queue the job.</h2>
+          <h2>Save the manifest as an unexecuted Studio draft.</h2>
           <p>
-            The API endpoint validates this manifest, builds the canonical prompt, and queues through createStudioJob.
+            The API validates this manifest and persists a draft through createStudioJob. Execution stays disabled until an independently verified worker and consent boundary are connected.
           </p>
         </div>
         <pre className="card code-block" aria-label="Video Factory queue payload">

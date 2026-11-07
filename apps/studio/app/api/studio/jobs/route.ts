@@ -128,5 +128,5 @@ export async function POST(req: Request) {
     );
   }
 
-  return json({ ok: true, status: 'queued', persisted: true, authMode: auth.authMode, tenantId: auth.tenantId, store: runtimeStoreStatus(), data: result.data });
+  return json({ ok: true, status: 'draft', persisted: true, authMode: auth.authMode, tenantId: auth.tenantId, store: runtimeStoreStatus(), execution: runtimeStoreStatus().execution, data: result.data }, 202);
 }

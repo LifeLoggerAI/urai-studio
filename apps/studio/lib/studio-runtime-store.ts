@@ -24,6 +24,17 @@ const COLLECTIONS = {
 const DEFAULT_TENANT_ID = 'public-studio';
 const DEFAULT_USER_ID = 'anonymous-studio-user';
 
+// Persistence is not worker admission. This Store currently records contracts
+// but does not dispatch generation, validate media, or authorize private render.
+// Expose one unambiguous receipt across jobs, exports and Video Factory.
+export const STUDIO_CONTRACT_EXECUTION = Object.freeze({
+  mode: 'contract-only',
+  workerDispatched: false,
+  outputVerified: false,
+  mediaRendered: false,
+  privateRenderConsentAuthorized: false,
+} as const);
+
 export type RuntimeStoreMode = 'firebase' | 'unconfigured';
 
 export type CreateStudioJobInput = {
@@ -74,6 +85,7 @@ export function runtimeStoreStatus() {
     firebaseAdmin: firebaseAdminStatus,
     collections: COLLECTIONS,
     tenantScoped: true,
+    execution: STUDIO_CONTRACT_EXECUTION,
   } as const;
 }
 
@@ -140,7 +152,7 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
     projectId,
     briefId: input.briefId,
     kind: input.kind ?? 'asset_bundle_export',
-    status: 'queued',
+    status: 'draft',
     provider: 'feature-gated',
     model: 'contract-only',
     inputAssetIds: [],
@@ -181,7 +193,7 @@ export async function createStudioExport(input: CreateStudioExportInput): Promis
     jobId: input.jobId,
     assetIds: input.assetIds ?? [],
     kind: input.kind,
-    status: 'queued' satisfies StudioJobStatus,
+    status: 'draft' satisfies StudioJobStatus,
     storagePath: undefined,
     downloadUrl: undefined,
     expiresAt: undefined,
