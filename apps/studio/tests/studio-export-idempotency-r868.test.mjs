@@ -179,6 +179,30 @@ test('revoked membership denies existing receipt replay', async () => {
   await assert.rejects(rt.create(base), /studio_current_membership_required/);
   assert.equal(rt.writes, 1);
 });
+test('altered stored export kind cannot replay as original request', async () => {
+  const rt = runtime();
+  const first = await rt.create(base);
+  const path = 'studioExports/' + first.data.id;
+  rt.rows.set(path, { ...rt.rows.get(path), kind: 'mp4' });
+  const result = await rt.create(base);
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'studio_idempotency_conflict');
+  assert.equal(rt.writes, 1);
+});
+test('altered stored export asset references cannot replay as original request', async () => {
+  const rt = runtime({ seed: {
+    ...seeded(), ['studioAssets/a1']: { tenantId, userId, projectId },
+  } });
+  const input = { ...base, assetIds: ['a1'] };
+  const first = await rt.create(input);
+  const path = 'studioExports/' + first.data.id;
+  rt.rows.set(path, { ...rt.rows.get(path), assetIds: [] });
+  const result = await rt.create(input);
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'studio_idempotency_conflict');
+  assert.equal(rt.writes, 1);
+});
+
 test('no raw idempotency key stored, no generated media', async () => {
   const rt = runtime(); const r = await rt.create(base);
   const stored = rt.rows.get('studioExports/' + r.data.id);

@@ -203,6 +203,34 @@ test('replay fails when the original brief changes owner', async () => {
   assert.equal(r.rows.size, 3);
 });
 
+test('altered stored job kind cannot reuse an otherwise valid draft receipt', async () => {
+  const r = createRuntime();
+  const first = await r.create(base);
+  const path = 'studioJobs/' + first.data.id;
+  r.rows.set(path, { ...r.rows.get(path), kind: 'different_type' });
+  const result = await r.create(base);
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'studio_idempotency_conflict');
+});
+test('fabricated output references cannot pass as unexecuted draft', async () => {
+  const r = createRuntime();
+  const first = await r.create(base);
+  const path = 'studioJobs/' + first.data.id;
+  r.rows.set(path, { ...r.rows.get(path), outputAssetIds: ['fabricated_mp4'] });
+  const result = await r.create(base);
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'studio_idempotency_conflict');
+});
+test('changed prompt brief blocks replay despite matching stored job digest', async () => {
+  const r = createRuntime();
+  const first = await r.create(base);
+  const path = 'studioBriefs/' + first.data.briefId;
+  r.rows.set(path, { ...r.rows.get(path), prompt: 'replaced prompt' });
+  const result = await r.create(base);
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'studio_idempotency_conflict');
+});
+
 test('raw key is not stored in draft document', async () => {
   const r = createRuntime(); const result = await r.create(base);
   const stored = r.rows.get('studioJobs/' + result.data.id);
