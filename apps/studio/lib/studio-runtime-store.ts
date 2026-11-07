@@ -1,4 +1,5 @@
 import { adminDb, firebaseAdminStatus } from '@/lib/firebase-admin';
+import { assertStudioDraftAuthorityInTransaction } from '@/lib/studio-member-auth';
 import {
   consentRequired,
   type ConsentRequirement,
@@ -151,6 +152,7 @@ export async function createStudioBrief(input: Partial<StudioBrief> & { projectI
   const projectRef = adminDb.collection(COLLECTIONS.projects).doc(projectId);
   try {
     await adminDb.runTransaction(async transaction => {
+      await assertStudioDraftAuthorityInTransaction(transaction, userId, tenantId);
       const currentProject = await transaction.get(projectRef);
       const data = currentProject.data();
       if (!currentProject.exists || data?.tenantId !== tenantId || data?.userId !== userId) {
@@ -237,6 +239,7 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
     ? adminDb.collection(COLLECTIONS.briefs).doc(input.briefId)
     : undefined;
   await adminDb.runTransaction(async transaction => {
+      await assertStudioDraftAuthorityInTransaction(transaction, userId, tenantId);
     const currentProject = project ? undefined : await transaction.get(projectRef);
     const currentBrief = existingBriefRef ? await transaction.get(existingBriefRef) : undefined;
 
@@ -306,6 +309,7 @@ export async function createStudioExport(input: CreateStudioExportInput): Promis
   const assetRefs = assetIds.map(id => adminDb.collection(COLLECTIONS.assets).doc(id));
   try {
     await adminDb.runTransaction(async transaction => {
+      await assertStudioDraftAuthorityInTransaction(transaction, userId, tenantId);
       const projectSnap = await transaction.get(projectRef);
       const project = projectSnap.data();
       if (!projectSnap.exists || project?.tenantId !== tenantId || project?.userId !== userId) {
