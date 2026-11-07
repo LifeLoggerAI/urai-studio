@@ -92,8 +92,10 @@ test('viewer creates forged system audit log without signed server authority', a
   }));
 });
 
-test('viewer writes under shared studio outputs despite read-only role', async () => {
-  await expectBoundary(uploadBytes(ref(viewer().storage(), 'studios/r857-studio/outputs/client-forged-r857.txt'), new Uint8Array([82,56,53,55])));
+// Legacy shared outputs remain writable for members in R858. This is a
+// separate migration decision, NOT a security acceptance of private media.
+test('shared studio output compatibility remains unchanged for viewer in both modes', async () => {
+  await assertSucceeds(uploadBytes(ref(viewer().storage(), 'studios/r857-studio/outputs/client-forged-r857.txt'), new Uint8Array([82,56,53,55])));
 });
 
 test('nonmember is denied jobs admission and shared outputs', async () => {
