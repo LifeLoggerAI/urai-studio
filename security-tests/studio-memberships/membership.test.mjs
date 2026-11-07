@@ -149,7 +149,29 @@ test('legitimate owner can update their studio; creator cannot claim owner power
   await assertSucceeds(updateDoc(doc(ctx('owner-a').firestore(), 'studios/studio-a'), { name: 'Owner edit' }));
   await assertFails(updateDoc(doc(ctx('creator-a').firestore(), 'studios/studio-a'), { name: 'Escalation' }));
 });
-for (const collection of ['clipRequests', 'jobs', 'jobRuns', 'assets', 'outputs', 'deadLetters']) {
+test('studio tenant creation is server-only even for signed-in owner and creator', async () => {
+  for (const uid of ['owner-a', 'creator-a', 'outsider']) {
+    await assertFails(setDoc(doc(ctx(uid).firestore(), 'studios/client-created-' + uid),
+      { name: 'Client forged tenant', ownerUid: uid }));
+  }
+  await env.withSecurityRulesDisabled(async admin => {
+    await setDoc(doc(admin.firestore(), 'studios/server-provisioned-r887'), { name: 'Server provisioned' });
+  });
+  // Trusted server provisioning leaves existing authorized studio reads intact.
+  await assertSucceeds(getDoc(doc(ctx('owner-a').firestore(), 'studios/studio-a')));
+});
+for (const role of ['owner', 'creator', 'viewer']) {
+  test('server-owned output metadata rejects client create, update, delete for ' + role, async () => {
+    const db = ctx(role + '-a').firestore();
+    const target = doc(db, 'outputs/a');
+    await assertFails(setDoc(doc(db, 'outputs/forged-' + role),
+      { studioId: 'studio-a', status: 'completed', outputUrl: 'forged' }));
+    await assertFails(updateDoc(target, { status: 'completed', outputUrl: 'forged' }));
+    await assertFails(deleteDoc(target));
+    await assertSucceeds(getDoc(target));
+  });
+}
+for (const collection of ['clipRequests', 'jobs', 'jobRuns', 'assets', 'deadLetters']) {
   test(`${collection} updates require the existing tenant and cannot change or remove studioId`, async () => {
     const db = ctx('creator-a').firestore();
     const own = doc(db, `${collection}/a`);
