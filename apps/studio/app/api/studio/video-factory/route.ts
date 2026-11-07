@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { requireStudioMemberAuth, refreshStudioMemberAuth } from '@/lib/studio-member-auth';
 import type { requireStudioAuth } from '@/lib/studio-auth';
+import { STUDIO_DRAFT_KEY_HEADER, validStudioDraftKey } from '@/lib/studio-draft-idempotency';
 import { createStudioJob, runtimeStoreStatus } from '@/lib/studio-runtime-store';
 import {
   DEFAULT_VIDEO_FACTORY_TEMPLATE_ID,
@@ -78,10 +79,19 @@ export async function POST(req: Request) {
     prompt: optionalText(body.prompt),
   });
 
+  const idempotencyKey = req.headers.get(STUDIO_DRAFT_KEY_HEADER);
+  if (!validStudioDraftKey(idempotencyKey)) {
+    return json({ ok: false, status: 'studio_idempotency_key_required', error: {
+      code: 'studio_idempotency_key_required',
+      message: 'A valid draft idempotency key is required for safe retries.',
+    } }, 400);
+  }
+
   const currentAuth = await refreshStudioMemberAuth(req, auth, 'draft');
   if (!currentAuth.ok) return authErrorResponse(currentAuth);
 
   const result = await createStudioJob({
+    idempotencyKey,
     projectId: jobRequest.projectId,
     kind: jobRequest.kind,
     prompt: jobRequest.prompt,
@@ -89,6 +99,14 @@ export async function POST(req: Request) {
     tenantId: auth.tenantId,
     userId: auth.uid,
   });
+
+  if (!result.ok && result.error === 'studio_idempotency_conflict') {
+    return json({
+      ok: false, status: 'studio_idempotency_conflict',
+      error: { code: 'studio_idempotency_conflict',
+        message: 'This request key was already used for a different draft.' },
+    }, 409);
+  }
 
   if (!result.ok) {
     return json(
@@ -118,6 +136,7 @@ export async function POST(req: Request) {
     ok: true,
     status: 'draft',
     persisted: true,
+    replayed: result.replayed === true,
     execution: runtimeStoreStatus().execution,
     authMode: auth.authMode,
     tenantId: auth.tenantId,

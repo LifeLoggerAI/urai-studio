@@ -17,6 +17,8 @@ export function QueueReplayTeaserButton({ templateId, prompt }: { templateId: st
   const [state, setState] = useState<QueueState>('idle');
   const [message, setMessage] = useState('Create a Replay Teaser draft. Rendering and provider execution are not enabled.');
   const inFlight = useRef(false);
+  // Reuse the same key after a timed-out/lost response for this exact payload.
+  const pendingDraft = useRef<{ body: string; key: string } | null>(null);
   const activeRequest = useRef<AbortController | null>(null);
   const ready = useSyncExternalStore(subscribeToReady, clientReady, serverReady);
 
@@ -28,14 +30,19 @@ export function QueueReplayTeaserButton({ templateId, prompt }: { templateId: st
     const controller = new AbortController();
     activeRequest.current = controller;
     const timer = setTimeout(() => controller.abort(), 15_000);
+    const body = JSON.stringify({ templateId, prompt });
+    if (!pendingDraft.current || pendingDraft.current.body !== body) {
+      pendingDraft.current = { body, key: crypto.randomUUID() };
+    }
+    const idempotencyKey = pendingDraft.current.key;
     setState('queueing');
     setMessage('Saving Replay Teaser draft...');
 
     try {
       const response = await fetch('/api/studio/video-factory/', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ templateId, prompt }),
+        headers: { 'content-type': 'application/json', 'x-urai-studio-idempotency-key': idempotencyKey },
+        body,
         cache: 'no-store',
         signal: controller.signal,
       });
@@ -66,6 +73,7 @@ export function QueueReplayTeaserButton({ templateId, prompt }: { templateId: st
         || execution.mediaRendered !== false || execution.privateRenderConsentAuthorized !== false) {
         throw new Error('Studio returned an unverified execution receipt. No render is confirmed.');
       }
+      pendingDraft.current = null;
       setState('draft');
       setMessage(`Saved Replay Teaser draft: ${data.id}. No renderer or provider was dispatched.`);
     } catch (error) {
