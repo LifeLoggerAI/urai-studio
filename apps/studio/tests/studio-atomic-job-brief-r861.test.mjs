@@ -56,6 +56,9 @@ function runtime({ seed = {}, failCommit = false, withAdmin = true } = {}) {
     DEFAULT_TENANT_ID: 'public-studio', DEFAULT_USER_ID: 'anonymous-studio-user',
     COLLECTIONS: { projects: 'studioProjects', jobs: 'studioJobs', briefs: 'studioBriefs' },
     defaultConsentRequirements: () => [{ purpose: 'generated_assets' }],
+    // The existing focused persistence mock isolates project/brief/export behavior.
+    // R866 separately tests the real transaction-bound authority function.
+    assertStudioDraftAuthorityInTransaction: async () => {},
   };
   vm.runInNewContext(compiled, context, { timeout: 1000 });
   return { create: module.exports.createStudioJob, rows, get commits() { return commits; } };
