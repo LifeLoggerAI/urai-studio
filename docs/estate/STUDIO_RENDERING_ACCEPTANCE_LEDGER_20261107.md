@@ -1,0 +1,23 @@
+# Studio exact-source rendering and certification ledger — 2026-11-07
+
+**Auditor:** independent review of connected GitHub public source, current PRs, branch and archive metadata; original stdout and media not independently rematerialized in this pass. **Production HOLD**.
+
+| Evidence | Source/ref | Actual claim and evidence class | This review's independent observation | Accepted scope |
+| --- | --- | --- | --- | --- |
+| Life Movie contract route source | Studio #179 `153d6c35557c66a8b9f8629778ca796b83730464`, file blob `907ebfea4e96c8b50e12fa052bc727cb5e96f090` | Request validation, source-set hash, explicit false authority | **Directly read** | Source implementation, NOT private end-to-end |
+| Deterministic fingerprint | Blob `afca955d63a6ce928d2a6b6aa456b508a6134893` | Exact source generation included in selection and plan hashes | **Directly read** | Source semantics, no consent |
+| Native original Studio full suite | PR #177 parent `c8283a6328c08df20706236b0226bec6de778e45` | 151/151 test + typecheck PASS on historical exact parent | PR historical claim | Historical source-only; not successor #179 |
+| Focused consent hardening | Studio #178 `e0e3c9f6de652243f6dd0d34ce5e66c22d5ae1f7` | Local original 7/7 consent descriptors PASS; source blobs checked | PR metadata+exact #179 source read | Focused isolated local, not CI/private |
+| Real TCP Jobs double | Studio #179 original test `apps/studio/tests/life-movie-jobs-transport-runtime.test.mjs`, blob `aa0c9c66447d57b44b5eeb86a7838c925fde84d4` | Prior local 6/6 PASS with **synthetic Jobs HTTP endpoint** | PR #179 metadata checked | Negative/transport only |
+| Actual Studio→Jobs HTTP negative | Studio #179 R823 comment `#issuecomment-6699091202` | Workers report real four Firebase emulators and denial end-to-end with Jobs `4755101eb1182ead9e89b5effcd91adef3e7b8aa` | Original stdout not recovered here | Historical negative-path report, not positive authorization |
+| Current combined Runpod native stage set | Studio #179 R843 comment `#issuecomment-6702281128`, Jobs #320 `ea8f0165ac74511a4e4196919ddd3109d0c1ff2e` | Worker reports 16/16 stages: frozen Studio install/test/typecheck/build/Functions build and Jobs native suites PASS. Explicit `privilegedBypassObserved=true`, `storageLevelFenceVerified=false` | Reviewed prior Studio knowledge pack and source refs; no raw Runpod logs downloaded | **Successful diagnosis of P0**; not authorized media rendering |
+| Hosted GitHub Actions | Studio #179 runs `42170388747`, `42170388645`, `42170388617` | FAILURE, inspected jobs showed **zero recorded steps** | R854 original worker recorded GitHub job inspection; no re-execution in this pass | Neither app failure nor certified CI pass |
+| Fallback lease donor | Studio #175 `aeac000487bb79d3f2e7ea1af406fb96c1a2a1ba` | 5/5 lease + 6/6 modeled runner checks PASS, transpile checks, per PR | Source/path divergence confirmed; original suites not rerun | Narrow synthetic historical checks; not merged and not GCS fence |
+| Video Factory rendered public diagnostics | Prior historic Video Factory 32-file MP4/WebM/screenshots ZIP and six route captures | Actual sample/demo outputs reportedly decoded | Artifact bytes NOT recovered in this pass | Historical non-private visual diagnostics |
+| Contract render endpoint | Studio #179 `/api/studio/video-factory/render`, blob `2b75fdbc9507b6784497683e21c62ce8bd9cfa4e` | Returns planned JSON package; code does not execute FFmpeg | **Directly read** | Planned render instructions only |
+| Real private Life Movie / authorized C6 | Jobs #320 `lifeMovieConsentAuthorityAvailable():false` | Deliberate hard-off | **Directly read** | NOT ACCEPTED |
+| Revocation proof | [Jobs issue #252](https://github.com/LifeLoggerAI/urai-jobs/issues/252), open | Storage-level future-write denial not achieved; R843 privileged bypass found | **Directly read** issue and review-only write prototype | P0 FAIL/HOLD |
+| Protected owner-only Replay, independent physical device | Studio/Spatial source | Implemented validation/proxies | **Directly read** selected source | Runtime unverified |
+| New independent local native suite in this audit | Studio #179 | NONE — local container Node 22.16.0 vs declared Node20, no pnpm, GitHub clone DNS unavailable | Host capability observed | **NOT RUN**, do not infer PASS or project bug |
+
+**Non-transfer rule:** Parent SHA tests do not certify descendant SHA. Genuine emulator denials do not prove positive C6, private render creation, finished decoded movie, or post-revocation Storage denial. Every artifact requires SHA256 of actual bytes and runnable source pin; Git object SHA is not an output/media SHA256.
