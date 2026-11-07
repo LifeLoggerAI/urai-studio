@@ -96,6 +96,9 @@ export async function createStudioProject(input: Partial<StudioProject> = {}): P
 
   const timestamp = nowIso();
   const id = input.id ?? newId('project');
+  if (typeof id !== 'string' || !/^[A-Za-z0-9_-]{1,160}$/.test(id)) {
+    return { ok: false, mode: 'firebase', error: 'studio_reference_unavailable' };
+  }
   const project: StudioProject = {
     id,
     tenantId: cleanString(input.tenantId, DEFAULT_TENANT_ID),
