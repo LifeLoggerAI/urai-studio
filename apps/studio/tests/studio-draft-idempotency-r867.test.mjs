@@ -183,6 +183,26 @@ test('existing digest-less job under deterministic key is rejected, not silently
   assert.equal(result.error, 'studio_idempotency_conflict');
   assert.equal(r.rows.size, 1);
 });
+test('replay fails after the linked project is removed', async () => {
+  const r = createRuntime();
+  const first = await r.create(base);
+  r.rows.delete('studioProjects/' + first.data.projectId);
+  const result = await r.create(base);
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'studio_idempotency_conflict');
+  assert.equal(r.rows.size, 2);
+});
+test('replay fails when the original brief changes owner', async () => {
+  const r = createRuntime();
+  const first = await r.create(base);
+  const path = 'studioBriefs/' + first.data.briefId;
+  r.rows.set(path, { ...r.rows.get(path), userId: 'other-owner' });
+  const result = await r.create(base);
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'studio_idempotency_conflict');
+  assert.equal(r.rows.size, 3);
+});
+
 test('raw key is not stored in draft document', async () => {
   const r = createRuntime(); const result = await r.create(base);
   const stored = r.rows.get('studioJobs/' + result.data.id);
