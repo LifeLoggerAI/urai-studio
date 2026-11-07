@@ -62,3 +62,11 @@ The R856 source and test documentation was written only to this existing R854/R8
 - Still OPEN: `jobRuns`, `deadLetters`, shared output metadata write authority; historical forged memberships; Jobs #252 privileged Storage future-write denial; trusted C6 issuer, real protected MP4/SRT generation, device Replay, deletion and production GO.
 
 **Genesis production HOLD stays in force.**
+
+
+## R859 — worker attempt/DLQ evidence + split Studio job architectures (2026-11-07 UTC)
+
+- Draft stacked engineering [Studio #183](https://github.com/LifeLoggerAI/urai-studio/pull/183), head `c0f21ff57ad2f6b3525f1f756df6ae7126c4dfc4`, restricts direct client writes to `jobRuns` and `deadLetters` while retaining member reads. Its test suite adds 7 role-based denial/read cases; **15/15 source-structure checks**, **NO native emulator**. It is stacked on unmerged R858 #182 and does not alter real private media.
+- [R859 source-wiring and dependency ledger](STUDIO_R859_RUNS_DLQ_JOB_WIRING_HANDOFF_20261107.md) records **23/23 source assertions** showing the different Next.js `studioJobs` state model, Functions `jobs` worker state model and unexported legacy finalization job shape. Checks are static source assertions, not production bridge.
+- Data-rights implementation indexes `studioJobs` but omits generic `jobs`, `jobRuns` and `deadLetters` from its enumerated owner collections; actual owner rights/export/deletion need native reconciliation. The Functions `createJob` record lacks `studioId` while client Firestore membership readers require it, a separate compatibility bug to test rather than silently changing old records.
+- Jobs #252 post-revocation Storage-level fence and Privacy C6 positive consent remain HARD OFF. True private Life Movie→protected Replay→revocation/deletion and physical device acceptance are still unverified. **Release HOLD.**
