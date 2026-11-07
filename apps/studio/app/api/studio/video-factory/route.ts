@@ -112,8 +112,9 @@ export async function POST(req: Request) {
 
   return json({
     ok: true,
-    status: 'queued',
+    status: 'draft',
     persisted: true,
+    execution: runtimeStoreStatus().execution,
     authMode: auth.authMode,
     tenantId: auth.tenantId,
     store: runtimeStoreStatus(),
@@ -121,5 +122,5 @@ export async function POST(req: Request) {
     manifestId: template.id,
     validation,
     data: result.data,
-  });
+  }, 202);
 }
