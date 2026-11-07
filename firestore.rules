@@ -61,7 +61,9 @@ service cloud.firestore {
 
     match /studios/{studioId} {
       allow read: if isStudioMember(studioId);
-      allow create: if isSignedIn();
+      // Tenant identities and owner membership are provisioned together
+      // by a trusted server, never by arbitrary authenticated clients.
+      allow create: if false;
       allow update, delete: if roleIs(studioId, "owner");
     }
 
@@ -111,10 +113,10 @@ service cloud.firestore {
     }
 
     match /outputs/{id} {
+      // Preserve authorized member reads of server-generated output receipts.
+      // A client may not forge output location, completion or delivery fields.
       allow read: if isStudioMember(resource.data.studioId);
-      allow create: if isStudioMember(request.resource.data.studioId);
-      allow update: if studioUpdateScoped();
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      allow create, update, delete: if false;
     }
 
     match /deadLetters/{id} {
