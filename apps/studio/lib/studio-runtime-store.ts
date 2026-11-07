@@ -144,12 +144,26 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
   }
 
   const timestamp = nowIso();
-  const projectId = cleanString(input.projectId, newId('project'));
+  const requestedProjectId = typeof input.projectId === 'string' ? input.projectId.trim() : '';
+  const projectId = requestedProjectId || newId('project');
   const tenantId = cleanString(input.tenantId, DEFAULT_TENANT_ID);
   const userId = cleanString(input.userId, DEFAULT_USER_ID);
 
-  // A prompt brief is part of the SAME persisted draft, not a separate
-  // best-effort follow-up write. Neither record exists if the batch fails.
+  // An implicit project is an actual owned StudioProject, not a dangling ID.
+  const project: StudioProject | undefined = requestedProjectId
+    ? undefined
+    : {
+        id: projectId,
+        tenantId,
+        userId,
+        name: 'URAI Studio Project',
+        ownerSystem: 'urai-studio',
+        linkedSystems: ['urai-studio'],
+        capabilityKeys: ['V1_GENESIS_HOME'],
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      };
+
   const brief: StudioBrief | undefined = input.prompt
     ? {
         id: newId('brief'),
@@ -186,15 +200,37 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
     updatedAt: timestamp,
   };
 
-  // Firebase Admin batch commits are atomic: a failed prompt write cannot
-  // leave an orphaned job that the API mistakenly reports as unpersisted.
-  // This does NOT dispatch a worker or make client retries idempotent.
-  const batch = adminDb.batch();
-  batch.create(adminDb.collection(COLLECTIONS.jobs).doc(job.id), job);
-  if (brief) {
-    batch.create(adminDb.collection(COLLECTIONS.briefs).doc(brief.id), brief);
-  }
-  await batch.commit();
+  // All project/brief authorization reads happen within the SAME Firestore
+  // transaction as draft creation, preventing a change between check/write.
+  // No renderer, source media or Jobs worker is admitted here.
+  const projectRef = adminDb.collection(COLLECTIONS.projects).doc(projectId);
+  const existingBriefRef = !brief && input.briefId
+    ? adminDb.collection(COLLECTIONS.briefs).doc(input.briefId)
+    : undefined;
+  await adminDb.runTransaction(async transaction => {
+    const currentProject = project ? undefined : await transaction.get(projectRef);
+    const currentBrief = existingBriefRef ? await transaction.get(existingBriefRef) : undefined;
+
+    if (!project) {
+      if (!currentProject?.exists) throw new Error('studio_project_not_found');
+      const persisted = currentProject.data();
+      if (persisted?.tenantId !== tenantId || persisted?.userId !== userId) {
+        throw new Error('studio_project_forbidden');
+      }
+    }
+    if (existingBriefRef) {
+      if (!currentBrief?.exists) throw new Error('studio_brief_not_found');
+      const persistedBrief = currentBrief.data();
+      if (persistedBrief?.tenantId !== tenantId || persistedBrief?.userId !== userId ||
+          persistedBrief?.projectId !== projectId) {
+        throw new Error('studio_brief_forbidden');
+      }
+    }
+
+    if (project) transaction.create(projectRef, project);
+    if (brief) transaction.create(adminDb.collection(COLLECTIONS.briefs).doc(brief.id), brief);
+    transaction.create(adminDb.collection(COLLECTIONS.jobs).doc(job.id), job);
+  });
 
   return { ok: true, mode: 'firebase', data: job };
 }
