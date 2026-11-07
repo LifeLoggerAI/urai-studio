@@ -1,0 +1,15 @@
+# R854 Studio historical and worker lineage
+
+**Studio source history is substantial, not a proposed app.** The prior audit reported a reachable main history back to December 2025. The Studio repository itself was created in February 2026; tracing LifeLogger/LifeOS original 2024–2025 creative ancestry requires older source/Drive artifacts, not guessed attribution.
+
+**Current Git refs:** 160 branch names, 152 distinct HEAD commits in [BRANCH_REFS_20261107.json](BRANCH_REFS_20261107.json), each compared via GitHub at an exact immutable commit SHA to #179 (results [BRANCH_COMPARISONS_20261107.json](BRANCH_COMPARISONS_20261107.json)). Comparison outcomes: **95 diverged, 64 behind (ancestral), 1 identical**; 160/160 comparisons returned successfully. These are branch-tip ancestry results, NOT proof that 95 valuable changes are omitted. Diff lists can be insufficient for full historical source review.
+
+The latest [Studio #159](https://github.com/LifeLoggerAI/urai-studio/pull/159) controller has source `63396c151322278ed631fb252145dd728433e918` and remains draft. [#177](https://github.com/LifeLoggerAI/urai-studio/pull/177) `50c0354521cb63aa197327865ea2231d2ddbee18` is an ancestor of [#178](https://github.com/LifeLoggerAI/urai-studio/pull/178) `e0e3c9f6de652243f6dd0d34ce5e66c22d5ae1f7` which is the exact parent of [#179](https://github.com/LifeLoggerAI/urai-studio/pull/179) `153d6c35557c66a8b9f8629778ca796b83730464` (one added transport test file). Preserve these nested donor repairs without duplicates. Current #159 is an ancestor of #179 (38 behind, zero ahead at observed tips).
+
+**Separate critical independent branch:** [#175](https://github.com/LifeLoggerAI/urai-studio/pull/175) `aeac000487bb79d3f2e7ea1af406fb96c1a2a1ba` and #179 share older merge base `70abb2481e133af7e595385c4fe2d59b1de2cf9c`; #175 is **2 ahead / 55 behind** #179, and introduces five distinct changed paths. See [exact donor conflict](10_FALLBACK_LEASE_DONOR_RECONCILIATION.md) for field-level source evidence.
+
+**Git historical tags:** `v1.0.0-studio` annotated Git tag object `69e8c7743fff3df7920387182932e26ddd2e3572` targets commit `59ab6056f598dca5ac8798d0621036f2665f25ce`. `v1.0.0-studio-internal` targets `f5c3ff936f9a60dc0e6c18c7592ecb2fee7c6d1e`. `v1.0.0-studio-static` targets `9d5e68c720f34e20048434ee09f2710a469f20ef`; this tree is 160,017,868 Git-reported bytes. Tag locks preserve history, not current production approval.
+
+Earlier [Generic World Library PR #154](https://github.com/LifeLoggerAI/urai-studio/pull/154) was reported closed/unmerged but its source tree matched #179 in a prior audit; this is **earlier worker reporting, not a new complete revalidation**. Original Video Factory diagnostics remain significant historical proof (real MP4 route captures), but distinct from completed production Life Movies.
+
+**Open archaeology:** all unique commits/parents/patch equivalences, 95 divergent-source dispositions, archive member bytes, old tagged 160 MB assets, worker attribution, original 2024–present cross-repo history, independent source runtime.
