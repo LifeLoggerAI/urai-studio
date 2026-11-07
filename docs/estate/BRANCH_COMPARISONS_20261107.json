@@ -1,0 +1,6152 @@
+{
+  "schema": "one-urai-studio-exact-160-branch-tip-comparisons-v1",
+  "recorded_date_utc": "2026-11-07",
+  "repository": "LifeLoggerAI/urai-studio",
+  "source_candidate": "153d6c35557c66a8b9f8629778ca796b83730464",
+  "source": "GitHub compare_commits, 160 exact listed branches, selected filenames and full ancestry summaries",
+  "total": 160,
+  "distinct_head_sha": 152,
+  "classification": {
+    "diverged": 95,
+    "behind": 64,
+    "identical": 1
+  },
+  "limitations": [
+    "This is branch-tip commit ancestry, NOT all individual commits or raw byte examination",
+    "Some diff lists may be limited by API; selected file paths are not exhaustive",
+    "Diverged ancestry does not prove missing implemented functionality",
+    "No runtime tests in this pass"
+  ],
+  "records": [
+    {
+      "branch": "agent/capture-factory-20260812",
+      "head": "25e1506cf37b2e79068d604066ee0185627a3510",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 273,
+      "merge_base": "3b19357bfba5765ce4a3bcf897d8ee34642f6213",
+      "returned_files": 4,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/tests/media-master-capture-contract.test.mjs",
+          "status": "added"
+        },
+        {
+          "path": "productions/media-master/product-capture.production.json",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "agent/finite-time-current-base-20260812",
+      "head": "68f5c043e50ee0c0700f5be694be3b6d82df8352",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 271,
+      "merge_base": "0f3a80d99dfe37909a122c7f271340fda70d36dc",
+      "returned_files": 2,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/tests/finite-time-film-foundry-contract.test.mjs",
+          "status": "added"
+        },
+        {
+          "path": "productions/finite-time/film-foundry.production.json",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "agent/fix-video-factory-dev-command-20260813",
+      "head": "89f511e5450ed493b459bebf20e9ea503140a9da",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 269,
+      "merge_base": "c3097dda99ec38b5caf63df80cf7b6fa46842566",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "agent/media-factory-lanes-20260812",
+      "head": "166e052eb77cd06dadbbbee793c4a7ad8b625cf1",
+      "status": "diverged",
+      "ahead": 13,
+      "behind": 272,
+      "merge_base": "1bd4692cda3f3c45920f3aba61d00519f4f2bee8",
+      "returned_files": 7,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/tests/media-master-production-lanes-contract.test.mjs",
+          "status": "added"
+        },
+        {
+          "path": "productions/before-the-rest-of-the-world/cinema-factory-bindings.production.json",
+          "status": "added"
+        },
+        {
+          "path": "productions/media-master/audio-reconciliation.production.json",
+          "status": "added"
+        },
+        {
+          "path": "productions/media-master/capture-state-drivers.production.json",
+          "status": "added"
+        },
+        {
+          "path": "productions/media-master/launch-output-templates.production.json",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "agent/night-shift-urai-cinema-binding",
+      "head": "d8b3d155f1094aa40c25518cf56612eba12f9fd1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 266,
+      "merge_base": "d8b3d155f1094aa40c25518cf56612eba12f9fd1",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "agent/restack-private-memory-film-on-de480-20260904",
+      "head": "7d64ab8e9b88cbc877e2a288f86e5bb3d70eedef",
+      "status": "diverged",
+      "ahead": 93,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 65,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/lib/firebase-admin.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-auth.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-spatial-handoff.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-video-renderer.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/system/spatial-handoff.discovery.json",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "agent/studio-release-evidence-and-artifact-truth-20260801",
+      "head": "abd19d5b68f334c9d95b3c5fe928e4027b68c927",
+      "status": "diverged",
+      "ahead": 21,
+      "behind": 276,
+      "merge_base": "6ebaebe0bfb4ce0a37220cb0ff228e2f73611142",
+      "returned_files": 16,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/all-runner.test.mjs",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/release-evidence-schema.test.mjs",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/root-release-scripts.test.mjs",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/video-render-artifact-truth.test.mjs",
+          "status": "added"
+        },
+        {
+          "path": "docs/URAI_STUDIO_RELEASE_EVIDENCE.md",
+          "status": "modified"
+        },
+        {
+          "path": "docs/URAI_STUDIO_RELEASE_EVIDENCE.schema.json",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "agent/urai-v1-v5-media-master-20260812",
+      "head": "bb46a27649149bb93489221e85c6a59e5a1352e6",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 274,
+      "merge_base": "da297dec003eddb0deeea76a78810daeab09ef85",
+      "returned_files": 4,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/tests/media-master-contract.test.mjs",
+          "status": "added"
+        },
+        {
+          "path": "productions/media-master/90-day-media-jobs.json",
+          "status": "added"
+        },
+        {
+          "path": "productions/media-master/README.md",
+          "status": "added"
+        },
+        {
+          "path": "productions/media-master/urai-v1-v5-media-master.production.json",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "assets/generic-world-library-batch1-20261007",
+      "head": "da11465dcaf77f07e8d65ed8d473e55681b16c7e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 185,
+      "merge_base": "da11465dcaf77f07e8d65ed8d473e55681b16c7e",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "audit/ci-green-studio-build",
+      "head": "215a21d114287310aa99b48a4d002b10251b5bdc",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 730,
+      "merge_base": "215a21d114287310aa99b48a4d002b10251b5bdc",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "audit/fix-pnpm-react-lock-alignment",
+      "head": "4a7720ed888f6c12ee5151bcb1508f2d50438376",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 813,
+      "merge_base": "4a7720ed888f6c12ee5151bcb1508f2d50438376",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "audit/fix-studio-lint-module-var",
+      "head": "165870cb04f6964182bf4f33a166783b158a2370",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 813,
+      "merge_base": "165870cb04f6964182bf4f33a166783b158a2370",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "audit/forms-production-polish",
+      "head": "d59085ede88f3031f86e9f180af1251680b42fd4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 758,
+      "merge_base": "d59085ede88f3031f86e9f180af1251680b42fd4",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "audit/harden-firebase-admin-build",
+      "head": "45f97b11f819372c2c2ef82bab85f6c31bd7a320",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 781,
+      "merge_base": "45f97b11f819372c2c2ef82bab85f6c31bd7a320",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "audit/production-readiness-cleanup",
+      "head": "384d95ff94b521fd71a6006b32ab446a98ceb2d7",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 797,
+      "merge_base": "d8804ea098ed6bf39878a07411c17f403a29c18b",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "audit/production-website-polish",
+      "head": "3bb3b90be0746da2b9a8fd1ca8b47c232f0d3ecf",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 735,
+      "merge_base": "3bb3b90be0746da2b9a8fd1ca8b47c232f0d3ecf",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "audit/shell-a11y-route-polish",
+      "head": "ad7fdecfb8a17e389c43ff76f238e914840b05d1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 758,
+      "merge_base": "ad7fdecfb8a17e389c43ff76f238e914840b05d1",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "audit/studio-readiness-copy-20261009",
+      "head": "94eb5243d49405fed67c987421497e6fee6ca1d6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 113,
+      "merge_base": "94eb5243d49405fed67c987421497e6fee6ca1d6",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "audit/urai-studio-v50-v200-20260706",
+      "head": "fdd485c6b04fae03d9e1d17776a14ca1d5a6b158",
+      "status": "diverged",
+      "ahead": 56,
+      "behind": 278,
+      "merge_base": "4a1ce1bf39c821212f5b7565453761d85aad545c",
+      "returned_files": 42,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-auth.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/all-runner.test.mjs",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/all.test.mjs",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/deploy-evidence-template.test.mjs",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/docs-index.test.mjs",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/job-runner-max-attempts.test.mjs",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/tests/readme-proof-path.test.mjs",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/studio-api-kind-validation.test.mjs",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/tests/studio-auth-tenant-binding.test.mjs",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/tests/studio-membership-lifecycle.test.mjs",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/tests/studio-membership-rules.test.mjs",
+          "status": "added"
+        },
+        {
+          "path": "docs/architecture/ADR-005-STUDIO-MEMBERSHIP-AUTHORITY.md",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "canon/stage1-repo-cleanup",
+      "head": "791eac5b14eef0854645a9c8552c9d65a1228e46",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 824,
+      "merge_base": "8f4c891c4782e95d835b490fa3dc0503347cdae1",
+      "returned_files": 3,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "canon/upstream-authority-20260924",
+      "head": "c8f510e230537d52fac0f878de8c67fb4f1d90bd",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "docs/CROSS_SYSTEM_CANON_AUTHORITY.md",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "chatgpt/urai-product-polish-20260812",
+      "head": "8f10290acdd1235e5f78fea3ebd4488e7b07d346",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 270,
+      "merge_base": "ae4f16aeddbd0307b00e6dcfb381f75cf93d4a24",
+      "returned_files": 6,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/app/error.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/layout.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/loading.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/not-found.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/production-polish.css",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "ci/runtime-smoke-and-cleanup-controls",
+      "head": "1d9dd7f587918e427eda1e30280b4a3c33cd473b",
+      "status": "diverged",
+      "ahead": 10,
+      "behind": 795,
+      "merge_base": "1b83fa3af1a59d5d946c2c2f4bc7e46997ba38cf",
+      "returned_files": 9,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/components/studio/ModuleOverviewPage.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/assets/client.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/firebaseClient.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/firestoreStudio.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/package.json",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "cleanup/noncanonical-inventory",
+      "head": "8b367c3d8f990c258251138243e5ca066fe6506d",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 795,
+      "merge_base": "1b83fa3af1a59d5d946c2c2f4bc7e46997ba38cf",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "docs/REPO_CLEANUP_INVENTORY.md",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "cleanup/noncanonical-inventory-v2",
+      "head": "856e7689f6023657a2fd91f704fd28e6025379bc",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 794,
+      "merge_base": "e0bd006705eed137c7273fb0fd5d47ed4f9b1e7c",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "docs/REPO_CLEANUP_INVENTORY.md",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "cleanup/remove-confirmed-src-app-duplicates",
+      "head": "0ad47f251065abfef3e084c045a4a9d73bf5f5ab",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 792,
+      "merge_base": "9483009e8c3d4e6fc4f97c0a16b4f6809b77bb5c",
+      "returned_files": 3,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/src/app/layout.tsx",
+          "status": "removed"
+        },
+        {
+          "path": "apps/studio/src/app/page.tsx",
+          "status": "removed"
+        },
+        {
+          "path": "apps/studio/src/app/studio/page.tsx",
+          "status": "removed"
+        }
+      ]
+    },
+    {
+      "branch": "cleanup/remove-more-src-duplicates",
+      "head": "23a86decde6c4edb24a00ece65fa4de8cc9ee33d",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 791,
+      "merge_base": "6c4eb4e3939e7aaf0bb101c54dfa54fcf16e3cd0",
+      "returned_files": 3,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/src/app/login/page.tsx",
+          "status": "removed"
+        },
+        {
+          "path": "apps/studio/src/app/studio/[contentId]/page.tsx",
+          "status": "removed"
+        },
+        {
+          "path": "apps/studio/src/lib/firebaseClient.ts",
+          "status": "removed"
+        }
+      ]
+    },
+    {
+      "branch": "cleanup/remove-orphan-upload-and-bak",
+      "head": "4a91178b80e86840795283e053780df9252c328b",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 790,
+      "merge_base": "eff7c068497b43b2bd67cfae909f7a0a9a8c7493",
+      "returned_files": 2,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/src/components/FileUpload.tsx",
+          "status": "removed"
+        }
+      ]
+    },
+    {
+      "branch": "cleanup/remove-stale-audit-discovery",
+      "head": "b4ab65c9410d0a302f701f9af784b70cdcb82f1c",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 788,
+      "merge_base": "6378f4881bf2e6bc57ce9f23d1ab48343da19842",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "cleanup/remove-stale-lock-scripts",
+      "head": "95f4421b862613e7d4239932182a26225d3859e7",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 789,
+      "merge_base": "d6e7e3fad0360ab2daa8ec2c8ae4efa9094d1d6b",
+      "returned_files": 2,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "cleanup/remove-stale-staging-lock",
+      "head": "c9fd9098c51ed08b087292f5acfc3bb8bfd17fe0",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 783,
+      "merge_base": "47a37d7701cbe90b456cdf5ade3eb262c2e7f294",
+      "returned_files": 2,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "cleanup/remove-stale-staging-lock-v2",
+      "head": "cd2ea387caae23ff42ea0dea3eae2a46994377cb",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 647,
+      "merge_base": "cd2ea387caae23ff42ea0dea3eae2a46994377cb",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "cleanup/remove-stale-studio-artifacts",
+      "head": "f9edf21d31e29d7bc6edd40b25092145d286c8e9",
+      "status": "diverged",
+      "ahead": 11,
+      "behind": 793,
+      "merge_base": "c3168971be908daaaa5c766cb7957acd68d8ef5e",
+      "returned_files": 11,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/app/API_DISABLED_FOR_STATIC_EXPORT.md",
+          "status": "removed"
+        },
+        {
+          "path": "apps/studio/src/app/API_DISABLED_FOR_STATIC_EXPORT.md",
+          "status": "removed"
+        }
+      ]
+    },
+    {
+      "branch": "cleanup/remove-stale-uraiapp-deploy-artifacts",
+      "head": "f390979b2e4b5d636c90ed3137e18ad143a996ea",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 784,
+      "merge_base": "f390979b2e4b5d636c90ed3137e18ad143a996ea",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "codex/add-studio-ci-20260507",
+      "head": "5a987d33f154ccdea7dc5ed6b0092cf1c9ab95a9",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 815,
+      "merge_base": "7dc93227276230acdf8b67ef1c9ec62815b8f258",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "codex/conduct-discovery-for-urai-studio",
+      "head": "ba55a8a5d72213a0f94c8c84c75b6549ea7a210e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 823,
+      "merge_base": "ba55a8a5d72213a0f94c8c84c75b6549ea7a210e",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "codex/conduct-discovery-for-urai-studio-kluw57",
+      "head": "6fbc29850a65e16e08b771127dd64698b6d6779f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 820,
+      "merge_base": "6fbc29850a65e16e08b771127dd64698b6d6779f",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "codex/conduct-discovery-for-urai-studio-o1g1jo",
+      "head": "4e3904b82bdccd163e527d8be06224247f6e9ea5",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 824,
+      "merge_base": "8f4c891c4782e95d835b490fa3dc0503347cdae1",
+      "returned_files": 92,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/.gitignore",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/admin/page.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/analytics/page.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/contact/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/health/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/integrations/asset-factory/health/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/integrations/asset-factory/manifest/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/system/capabilities/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/system/integration-contract/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/system/openapi/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/waitlist/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/asset-factory/page.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/assets/[id]/page.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/assets/page.tsx",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "codex/ecosystem-integration-hardening",
+      "head": "1ccde2ee7df3b47bc22a62e1414c16576584106d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 496,
+      "merge_base": "1ccde2ee7df3b47bc22a62e1414c16576584106d",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "codex/fix-privacy-link-sitemap-20260507",
+      "head": "bedf8b1f3a465a59c716238ed39169870dffad22",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 814,
+      "merge_base": "bedf8b1f3a465a59c716238ed39169870dffad22",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "codex/launch-polish-uraistudio-20260506",
+      "head": "3c6074bd51674ecfa47f1946e113dae51bfd1939",
+      "status": "diverged",
+      "ahead": 11,
+      "behind": 819,
+      "merge_base": "05ab7f51fe8f955b75431ec7bd309e8b6ad82448",
+      "returned_files": 11,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/.env.example",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/DEPLOYMENT.md",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/layout.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/manifest.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/og/route.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/robots.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/sitemap.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/components/site/Footer.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/components/site/Header.tsx",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "codex/stabilize-studio-safety-e2e",
+      "head": "f2a4aad542873bb42fb6f88a2a5dd705c51beaac",
+      "status": "diverged",
+      "ahead": 10,
+      "behind": 819,
+      "merge_base": "05ab7f51fe8f955b75431ec7bd309e8b6ad82448",
+      "returned_files": 10,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/app/api/contact/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/waitlist/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/privacy/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/assets/page.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/terms/page.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/components/site/Footer.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/assets/client.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/lib/firebaseClient.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/next.config.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "codex/studio-current-working-capture-source-20261007",
+      "head": "ab96aa55f8c55b57bfba050206f9ae93f1aa3129",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 154,
+      "merge_base": "ab96aa55f8c55b57bfba050206f9ae93f1aa3129",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "codex/studio-dispatch-current-authority-20261010",
+      "head": "057da49ef28bef78fcd65e6fd22a2537acc725f1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 110,
+      "merge_base": "057da49ef28bef78fcd65e6fd22a2537acc725f1",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "cold-vault-2026-08-16",
+      "head": "7aa707024da68522e3e90362bc62f20d12ea1ef0",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 268,
+      "merge_base": "7aa707024da68522e3e90362bc62f20d12ea1ef0",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "completion/studio-adam-presence-adapter-20261003",
+      "head": "d840b9cfec08cd882d032747e46c0defbcf08d70",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 243,
+      "merge_base": "d840b9cfec08cd882d032747e46c0defbcf08d70",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "completion/studio-legal-sitemap-20261003",
+      "head": "b38fd0c33def491bb7ad201f34d0061dd1ebdb9c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 245,
+      "merge_base": "b38fd0c33def491bb7ad201f34d0061dd1ebdb9c",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "control/studio-data-model-convergence-20260923",
+      "head": "6227470e6c4a62583e1f4b8e23c0c22e015d4df6",
+      "status": "diverged",
+      "ahead": 148,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 123,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "control/studio-future-system-registry-20260923",
+      "head": "e1821b64f44911a94d618d1419f96e504488646c",
+      "status": "diverged",
+      "ahead": 133,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 113,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "control/studio-hard-off-future-rails-20260923",
+      "head": "f8e12b128472f21a9f3ec32086f4a672966d3784",
+      "status": "diverged",
+      "ahead": 150,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 145,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "control/studio-hard-off-future-rails-v2-20260924",
+      "head": "403909073ecf071c78837b9c74db9e0afa3c9321",
+      "status": "diverged",
+      "ahead": 153,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 146,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "control/studio-observed-readiness-20260923",
+      "head": "dba0ff65d66595d0c7010843f2253794e37ff64c",
+      "status": "diverged",
+      "ahead": 154,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 127,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/status/page.tsx",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "control/studio-release-evidence-reconcile-20260923",
+      "head": "6b37c9f87fa174a99002def527e536524a669008",
+      "status": "diverged",
+      "ahead": 139,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 114,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "control/studio-repository-hygiene-20260923",
+      "head": "d23a8d1d409e52da33f7831286dd79b40ff1595a",
+      "status": "diverged",
+      "ahead": 137,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 155,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "control/studio-spatial-contract-v0-2-20260923",
+      "head": "e1821b64f44911a94d618d1419f96e504488646c",
+      "status": "diverged",
+      "ahead": 133,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 113,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "control/studio-spatial-contract-v020-20260923",
+      "head": "287d9cb61bf816a6ff8240180a7e45da112036dc",
+      "status": "diverged",
+      "ahead": 151,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 128,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "control/studio-spatial-handoff-v0-2-20260923",
+      "head": "8b642fc67229dde62612c5f4d0ad25672b4957ea",
+      "status": "diverged",
+      "ahead": 146,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 114,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "control/studio-spatial-handoff-v020-20260923",
+      "head": "e1821b64f44911a94d618d1419f96e504488646c",
+      "status": "diverged",
+      "ahead": 133,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 113,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "converge/captured-reality-current-20260927",
+      "head": "586815ebe7f67fc41a44e41030e75d7ea0a516b7",
+      "status": "diverged",
+      "ahead": 256,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 248,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/integrations/asset-factory/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "converge/content-ecosystem-schema-v1-20260923",
+      "head": "7575bca6c33fd3b8cb6142b69690da59e75ee01f",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 2,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "docs/contracts/URAI_ECOSYSTEM_SCHEMA_V1.json",
+          "status": "modified"
+        },
+        {
+          "path": "docs/contracts/URAI_ECOSYSTEM_SCHEMA_V1.source.json",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "converge/life-model-studio-terminal-20261003",
+      "head": "294c1cff9e125584022ae4f8fc85bf3c3764fa95",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 246,
+      "merge_base": "294c1cff9e125584022ae4f8fc85bf3c3764fa95",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "converge/life-movie-motion-proof-main-20261005",
+      "head": "a867c0034136848bcfaa5c009d6be27f6c0ef0d3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 222,
+      "merge_base": "a867c0034136848bcfaa5c009d6be27f6c0ef0d3",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "converge/life-movies-launch-system-20260924",
+      "head": "56557d375769b4a69e21c39cbd8d177e7a2598a4",
+      "status": "diverged",
+      "ahead": 172,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 138,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/life-movies/page.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/studio/page.tsx",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "converge/life-movies-launch-system-v2-20260924",
+      "head": "b39ed7fb5358ba25b22d958c2ebf354b7d9b40ca",
+      "status": "diverged",
+      "ahead": 162,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 152,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/life-movies/page.tsx",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "converge/life-movies-launch-system-v3-20260924",
+      "head": "f5af77500b1021ae76b45b032aaffccf771dbb35",
+      "status": "diverged",
+      "ahead": 167,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 153,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/life-movies/page.tsx",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "converge/spatial1598-head-782a5a0-20261005",
+      "head": "3f8584b0e8a5111016dd7cfa22361b21b2ed06c0",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 219,
+      "merge_base": "8d67dcd2819c343803fe680349beda62b231157f",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "converge/spatial-1598-099470-video-proof",
+      "head": "77c08c5d8c29af85de46ae88bf9af6411237dfe4",
+      "status": "diverged",
+      "ahead": 11,
+      "behind": 219,
+      "merge_base": "8d67dcd2819c343803fe680349beda62b231157f",
+      "returned_files": 6,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/live-smoke.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "converge/spatial-1598-ff6f3df-post-hardening",
+      "head": "eaf085c9fe212ac971fce679bf941327df00a714",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 202,
+      "merge_base": "eaf085c9fe212ac971fce679bf941327df00a714",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "converge/spatial-1601-eb6f57c0-video-proof",
+      "head": "1fdc845449e50518b1cbc5e6e0e32a133a7ef50b",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 190,
+      "merge_base": "854477d80b1a7aa718edb60d1ed4c1cf22dbed9d",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "converge/studio-terminal-design-hardening-20260914",
+      "head": "32943570f7968eea21741d2e8914de48edd0b73a",
+      "status": "diverged",
+      "ahead": 117,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 107,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/lib/firebase-admin.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-auth.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "converge/studio-terminal-hygiene-20260924",
+      "head": "7e3e885fe28ee1f7676a1bebd9567a4cb7942492",
+      "status": "diverged",
+      "ahead": 198,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 213,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "converge/studio-terminal-release-line-20260924",
+      "head": "16c71285117ceaeaed6f97daaee620e0af0aa1b3",
+      "status": "diverged",
+      "ahead": 197,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 171,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "converge/studio-terminal-release-line-hygiene-20260924",
+      "head": "6dbc86b1810f458c624dd5e036f80b3d9e7b85c6",
+      "status": "diverged",
+      "ahead": 240,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 213,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "converge/video-factory-spatial-1598-current-head-20261005",
+      "head": "0ff08548f78e70d327d27567876696879cb81ee4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 220,
+      "merge_base": "0ff08548f78e70d327d27567876696879cb81ee4",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "design/studio-composition-v1",
+      "head": "40c341aea7bdc6b24991af64e959bb5cb74370e8",
+      "status": "diverged",
+      "ahead": 114,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 105,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/lib/firebase-admin.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-auth.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "design/studio-creative-workstation-reconcile-20260921",
+      "head": "9480510c05bcfa788e57b9dce170020e95590a61",
+      "status": "diverged",
+      "ahead": 131,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 111,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "docs/genesis-estate-handoff-20261106",
+      "head": "241d9b1ccb3b8f72951827a70f2c8860d51483c6",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 190,
+      "merge_base": "854477d80b1a7aa718edb60d1ed4c1cf22dbed9d",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "docs/estate/00_START_HERE.md",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "donor/life-movie-source-interval-20261009",
+      "head": "94eb5243d49405fed67c987421497e6fee6ca1d6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 113,
+      "merge_base": "94eb5243d49405fed67c987421497e6fee6ca1d6",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "expand/life-movie-jobs-bridge-20261001",
+      "head": "a05ab54d20ec73ab9ccdfd14e1bff5471ce26d92",
+      "status": "diverged",
+      "ahead": 266,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 265,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/integrations/asset-factory/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/jobs-contract/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "expand/life-movie-jobs-dispatcher-20261001",
+      "head": "a5dc77e7cb3df8f63db3ec4a176ff01b7385ce01",
+      "status": "diverged",
+      "ahead": 269,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 268,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/integrations/asset-factory/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/jobs-contract/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/jobs-dispatch/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "expand/life-movie-motion-capture-20261001",
+      "head": "f917cc96b194ebdb6e405978a57b8dbba2fde472",
+      "status": "diverged",
+      "ahead": 271,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 266,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/integrations/asset-factory/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "feat/finite-time-film-foundry-20260721",
+      "head": "815130295960747f0e1f386cce57fe777052e64c",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 278,
+      "merge_base": "4a1ce1bf39c821212f5b7565453761d85aad545c",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "docs/finite-time/FILM_FOUNDRY_ORCHESTRATION_CONTRACT.md",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "feat/life-media-aaa-acceptance-20260927",
+      "head": "1189ec63474ec381f6ed6551f67e3d90647c541b",
+      "status": "diverged",
+      "ahead": 283,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 262,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/integrations/asset-factory/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "feat/life-movie-audio-authoring-20260927",
+      "head": "fc2940d9e25d2175cab93e294156a4de649e247b",
+      "status": "diverged",
+      "ahead": 280,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 261,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/integrations/asset-factory/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "feat/life-movie-private-player-20260927",
+      "head": "c07a64d2ff4056d0a006ef5b25d299b2e25eea0a",
+      "status": "diverged",
+      "ahead": 279,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 261,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/integrations/asset-factory/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "feature/adam-presence-entry-20261001",
+      "head": "ad413d95c782155d277002adf215c6cb854cf6c4",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/components/site/Header.tsx",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "feature/captured-reality-orchestration-20260925",
+      "head": "a8f670fa1c023835cd8ba280ef788fcd3e10ca40",
+      "status": "diverged",
+      "ahead": 256,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 248,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/integrations/asset-factory/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "feature/creative-timeline-authority-20260925",
+      "head": "7699412a8fa2b4887b3b0ea031cc04b6446d59d0",
+      "status": "diverged",
+      "ahead": 255,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 248,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/integrations/asset-factory/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "feature/life-movies-launch-v1-20260923",
+      "head": "e4b8024c41f51f4bf64b7fa752a3a1df61480fa3",
+      "status": "diverged",
+      "ahead": 163,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 137,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "film/before-rest-world-full-master-20260801",
+      "head": "275b374d30774ecb501004f4dadc860c75c9fe81",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 278,
+      "merge_base": "4a1ce1bf39c821212f5b7565453761d85aad545c",
+      "returned_files": 5,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "productions/before-rest-world/FULL_MASTER_EXECUTION_PLAN.md",
+          "status": "added"
+        },
+        {
+          "path": "productions/before-rest-world/full-master.production.json",
+          "status": "added"
+        },
+        {
+          "path": "productions/before-rest-world/provider-shot-manifest.json",
+          "status": "added"
+        },
+        {
+          "path": "productions/before-the-rest-of-the-world/README.md",
+          "status": "added"
+        },
+        {
+          "path": "productions/before-the-rest-of-the-world/full-master.production.json",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "film/before-you-advise-me",
+      "head": "58ab890611c39c4e6bc616d368796f1c18dea67a",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 276,
+      "merge_base": "6ebaebe0bfb4ce0a37220cb0ff228e2f73611142",
+      "returned_files": 3,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "docs/private-memory-film/HANDOFF.md",
+          "status": "added"
+        },
+        {
+          "path": "productions/private-memory-film/README.md",
+          "status": "added"
+        },
+        {
+          "path": "productions/private-memory-film/render-contract.json",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "film/built-from-survival-001",
+      "head": "f5a151e7247a04ad6c0ee98473c4bcb0921ddb74",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 259,
+      "merge_base": "f5a151e7247a04ad6c0ee98473c4bcb0921ddb74",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "film/private-memory-film-contract-v2-20260801",
+      "head": "7d64ab8e9b88cbc877e2a288f86e5bb3d70eedef",
+      "status": "diverged",
+      "ahead": 93,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 65,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/lib/firebase-admin.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-auth.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-spatial-handoff.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-video-renderer.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/system/spatial-handoff.discovery.json",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "film-001-complete-runtime-capture-set-20260829",
+      "head": "09df8f74981399248f52e66a6013f3aa0978b528",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 256,
+      "merge_base": "09df8f74981399248f52e66a6013f3aa0978b528",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "final/aaa-studio-system-lock",
+      "head": "1aba86b6007c94a3059744113712a4b5695ae867",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 500,
+      "merge_base": "1aba86b6007c94a3059744113712a4b5695ae867",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "fix/emotional-weather-display-canon-20261005",
+      "head": "c223a381ca28aecdd51f497cec477de846651423",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 191,
+      "merge_base": "9967fef1677bf6f789e4b0a0c03f9caa6ef917c1",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/lib/studio/system-of-systems.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "fix/emotional-weather-public-canon-20261005",
+      "head": "ef5cd0cf122e967b62058d24e2d3c97a946cc3b9",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 193,
+      "merge_base": "ef5cd0cf122e967b62058d24e2d3c97a946cc3b9",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "fix/production-polish",
+      "head": "ec920d1d9e296518318585a46dddb9f5a89cc74e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 499,
+      "merge_base": "ec920d1d9e296518318585a46dddb9f5a89cc74e",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "fix/production-verifier-pnpm-options-20261005",
+      "head": "cde2647df6978196b7e2920e2350b495b4027483",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 236,
+      "merge_base": "cde2647df6978196b7e2920e2350b495b4027483",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "fix/public-48px-targets-20261005",
+      "head": "77d72c0e9dcbc3f01ab6c7e65ec8904546a3e711",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 192,
+      "merge_base": "77d72c0e9dcbc3f01ab6c7e65ec8904546a3e711",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "fix/public-contact-email-20261005",
+      "head": "d52796239f62251dd4c13a269106ce7ebff4116a",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 200,
+      "merge_base": "d52796239f62251dd4c13a269106ce7ebff4116a",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "fix/public-creative-constellation-20260830",
+      "head": "8fe39ebfd8415b0917346bd8960b02a8113fbda2",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 255,
+      "merge_base": "802f909ecad2bd000e4c8011a14bc3340fe88950",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "fix/public-trust-boundaries-20261005",
+      "head": "c0e0056d6e7b7a15b75297496d41a776b7a7708f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 194,
+      "merge_base": "c0e0056d6e7b7a15b75297496d41a776b7a7708f",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "fix/r307-studio-immutable-media-contract-20261101",
+      "head": "50c0354521cb63aa197327865ea2231d2ddbee18",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 12,
+      "merge_base": "50c0354521cb63aa197327865ea2231d2ddbee18",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "fix/r313-life-movie-audio-seek-budget-20261102",
+      "head": "e0e3c9f6de652243f6dd0d34ce5e66c22d5ae1f7",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1,
+      "merge_base": "e0e3c9f6de652243f6dd0d34ce5e66c22d5ae1f7",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "fix/short-movie-consent-transport-20261007",
+      "head": "9eb440c8e27337380a1f953a9651e8d44f1805e0",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 173,
+      "merge_base": "9eb440c8e27337380a1f953a9651e8d44f1805e0",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "fix/studio-current-video-evidence-20261007",
+      "head": "ca4d0edbedf79a59588fdf672200eda05776e899",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 170,
+      "merge_base": "ca4d0edbedf79a59588fdf672200eda05776e899",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "fix/studio-longform-private-bridge-20261007",
+      "head": "1318417db613af7774d892e1e0490236d0f03d05",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 187,
+      "merge_base": "1318417db613af7774d892e1e0490236d0f03d05",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "fix/studio-managed-runtime-project-id-20260924",
+      "head": "d0e1667ec88420e125f50ddeb4079b19bf4b1048",
+      "status": "diverged",
+      "ahead": 204,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 218,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "fix/studio-private-life-movie-transport-20261007",
+      "head": "77364c6e17a30633d870c5604410a37ac1fc27b3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 171,
+      "merge_base": "77364c6e17a30633d870c5604410a37ac1fc27b3",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "fix/studio-spatial-wire-compat-20260903",
+      "head": "13aad716c0b68f338999b55a14b26d873217214d",
+      "status": "diverged",
+      "ahead": 94,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 59,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/lib/firebase-admin.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-auth.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-spatial-handoff.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-video-renderer.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/system/spatial-handoff.discovery.json",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/system/spatial-handoff.openapi.json",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/export-handoff.test.mjs",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "hardening/pin-studio-workflow-actions-20261005",
+      "head": "36000dab23f0464cae8e552a68d8e6aca22226c3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 204,
+      "merge_base": "36000dab23f0464cae8e552a68d8e6aca22226c3",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "hardening/studio-frozen-repair-paths-20260913",
+      "head": "e897b90b030fdd148b76e0d2e35595d87f6ca409",
+      "status": "diverged",
+      "ahead": 116,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 106,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/lib/firebase-admin.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-auth.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-spatial-handoff.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "hardening/studio-stacked-ci-evidence-20260914",
+      "head": "6fbe507719e9a03840583afe5e641b34f93efa0b",
+      "status": "diverged",
+      "ahead": 130,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 110,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "hygiene/remove-studio-scaffold-backups-20260911",
+      "head": "12c803750ec366bc76d85bd1bf36023964a1d215",
+      "status": "diverged",
+      "ahead": 109,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 102,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/lib/firebase-admin.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-auth.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-spatial-handoff.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "hygiene/studio-canonical-root-cleanup-20260923",
+      "head": "98d4d54798ef30ebabbfdc01ac50d1e6a5480fc0",
+      "status": "diverged",
+      "ahead": 180,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 155,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/globals.css",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "integration/life-movie-terminal-20261001",
+      "head": "77cf8594339b12ea936651bc018400efcfdb689e",
+      "status": "diverged",
+      "ahead": 270,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 268,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/integrations/asset-factory/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/jobs-contract/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/jobs-dispatch/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "life-model-contract-v1-20261002",
+      "head": "ab5507cdf7d694045aa046f9ab12efb401ebcee5",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 247,
+      "merge_base": "ab5507cdf7d694045aa046f9ab12efb401ebcee5",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "main",
+      "head": "854477d80b1a7aa718edb60d1ed4c1cf22dbed9d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 190,
+      "merge_base": "854477d80b1a7aa718edb60d1ed4c1cf22dbed9d",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "privacy/studio-data-rights-lifecycle-20261003",
+      "head": "e75f27a219df975ec883542eeea3466f582a8427",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 238,
+      "merge_base": "e75f27a219df975ec883542eeea3466f582a8427",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "private-memory-film/current-studio86-20260905",
+      "head": "6e2f90fd893b9ae2eb353ccfc2a614348f627a2d",
+      "status": "diverged",
+      "ahead": 98,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 65,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/lib/firebase-admin.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-auth.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-spatial-handoff.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-video-renderer.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/system/spatial-handoff.discovery.json",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "private-memory-film/current-studio86-guardfix-20260905",
+      "head": "05b6692a7fbea940ae8d97503c1d94193663db51",
+      "status": "diverged",
+      "ahead": 106,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 68,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/lib/firebase-admin.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-auth.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-spatial-handoff.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-video-renderer.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "production/night-shift-nurse-short",
+      "head": "841315ff42c57232fbf67289d2d2e8e37e043554",
+      "status": "diverged",
+      "ahead": 7,
+      "behind": 269,
+      "merge_base": "c3097dda99ec38b5caf63df80cf7b6fa46842566",
+      "returned_files": 4,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "productions/night-shift-nurse/night-shift-cinema-motion-final-receipt.json",
+          "status": "added"
+        },
+        {
+          "path": "productions/night-shift-nurse/night-shift-nurse-render-receipt.json",
+          "status": "added"
+        },
+        {
+          "path": "productions/night-shift-nurse/night-shift-nurse-short.production.json",
+          "status": "added"
+        },
+        {
+          "path": "productions/night-shift-nurse/urai-motion-remake-v2.production.json",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "production/private-memory-corpus-delta-20261001",
+      "head": "58e6ff3b70945763d21f213f8025e72d4a0bd586",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 248,
+      "merge_base": "58e6ff3b70945763d21f213f8025e72d4a0bd586",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "production/private-memory-proof-20261001",
+      "head": "ab5507cdf7d694045aa046f9ab12efb401ebcee5",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 247,
+      "merge_base": "ab5507cdf7d694045aa046f9ab12efb401ebcee5",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "public-authority-disambiguation-20260905",
+      "head": "d4699e3f4de3f9cad73ba99059603f115e07e5a9",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "rebind/spatial-1600-video-proof-20261005",
+      "head": "d9817d0431524c2309c4fd2734e3cf01d55907ac",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 190,
+      "merge_base": "854477d80b1a7aa718edb60d1ed4c1cf22dbed9d",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "reconcile/asset-factory-provider-contract-20260925",
+      "head": "ca5d147657db1490ac9d0de0eddbb04c6fd50e62",
+      "status": "diverged",
+      "ahead": 237,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 237,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/integrations/asset-factory/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "reconcile/studio66-current-86-20260905",
+      "head": "930cf13949c992c733fad9a0d0cfae22dbfed1a2",
+      "status": "diverged",
+      "ahead": 100,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 65,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/lib/firebase-admin.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-auth.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-spatial-handoff.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-video-renderer.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/system/spatial-handoff.discovery.json",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "reconcile/studio68-current-84-20260905",
+      "head": "ac4aabc5c5347fe65636940d97f23f346c41bd5a",
+      "status": "diverged",
+      "ahead": 104,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 64,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/lib/firebase-admin.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-auth.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-spatial-handoff.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-video-renderer.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "reconcile/studio-release-truth-current-main-20260811",
+      "head": "de48069f6a9358accbe9ebb5df702badb05eac4a",
+      "status": "diverged",
+      "ahead": 89,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 61,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/lib/firebase-admin.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-auth.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-spatial-handoff.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-video-renderer.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/system/spatial-handoff.discovery.json",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "release/studio-terminal-candidate-20260924",
+      "head": "db9dfe30dea8c2908664916af7e78bd86eee1f41",
+      "status": "diverged",
+      "ahead": 263,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 262,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/integrations/asset-factory/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "release/urai-studio-polish-e2e",
+      "head": "78be857499d5a6c8c06e717be19ca8c53a7c550f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 769,
+      "merge_base": "78be857499d5a6c8c06e717be19ca8c53a7c550f",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "release/urai-studio-production-lock",
+      "head": "87289fcf663c558bbf7722e3d9abef5d261b9b48",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 705,
+      "merge_base": "87289fcf663c558bbf7722e3d9abef5d261b9b48",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "repair/canon-locked-memory-to-media-20261001",
+      "head": "ab5507cdf7d694045aa046f9ab12efb401ebcee5",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 247,
+      "merge_base": "ab5507cdf7d694045aa046f9ab12efb401ebcee5",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "repair/full-completion-studio-privacy-20261008",
+      "head": "765723fd24828a66599a7fb8aed79cb7ce841630",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 149,
+      "merge_base": "765723fd24828a66599a7fb8aed79cb7ce841630",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "repair/studio-active-java21-20261008",
+      "head": "74cbefd47e04496ab9c90828400796f568010fae",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 124,
+      "merge_base": "74cbefd47e04496ab9c90828400796f568010fae",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "repair/studio-client-deletion-fence-62ed-20261008",
+      "head": "3ea612536ac0c05bcb0bdaa0f038924cfe86a8b4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 145,
+      "merge_base": "3ea612536ac0c05bcb0bdaa0f038924cfe86a8b4",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "repair/studio-convergence-20261007",
+      "head": "63396c151322278ed631fb252145dd728433e918",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 38,
+      "merge_base": "63396c151322278ed631fb252145dd728433e918",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "repair/studio-deletion-completion-authority-20261008",
+      "head": "086d6c9fabf9355a064229dfa347cff99ee4d31d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 147,
+      "merge_base": "086d6c9fabf9355a064229dfa347cff99ee4d31d",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "repair/studio-dependency-locks-20261007",
+      "head": "d373cf0ec5b73db286eb4ef2955f6d5d1f6a051b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 182,
+      "merge_base": "d373cf0ec5b73db286eb4ef2955f6d5d1f6a051b",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "repair/studio-fallback-lease-expiry-20261019",
+      "head": "aeac000487bb79d3f2e7ea1af406fb96c1a2a1ba",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 55,
+      "merge_base": "70abb2481e133af7e595385c4fe2d59b1de2cf9c",
+      "returned_files": 5,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/tests/fallback-job-lease-authority.test.mjs",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/fallback-job-query-contract.test.mjs",
+          "status": "added"
+        },
+        {
+          "path": "functions/src/fallback-job-lease.ts",
+          "status": "modified"
+        },
+        {
+          "path": "functions/src/job-runner.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "repair/studio-life-movie-render-budget-20260927",
+      "head": "8f294a5bbe9c95d189637af6212a7e252cb450c9",
+      "status": "diverged",
+      "ahead": 286,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 262,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/integrations/asset-factory/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "repair/studio-membership-authority-20261007",
+      "head": "4ddb4d2611208506c8bd5b5a2c66754d1fc8d37c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 189,
+      "merge_base": "4ddb4d2611208506c8bd5b5a2c66754d1fc8d37c",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "repair/studio-normalized-jobs-plan-20261010",
+      "head": "94eb5243d49405fed67c987421497e6fee6ca1d6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 113,
+      "merge_base": "94eb5243d49405fed67c987421497e6fee6ca1d6",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "repair/studio-original-plan-continuation-20261008",
+      "head": "780ddaec7a5d65f4f64390461a7c74fa49673f19",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 148,
+      "merge_base": "780ddaec7a5d65f4f64390461a7c74fa49673f19",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "repair/studio-provider-config-truth-20261007",
+      "head": "f53e85dd3c8e39e486f7b7cc40521546e1608141",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 189,
+      "merge_base": "f53e85dd3c8e39e486f7b7cc40521546e1608141",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "repair/studio-public-form-storage-20261007",
+      "head": "59950eb1484ceb7732c677970badd311e37c6726",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 160,
+      "merge_base": "641d3a53a25ea431c25f6f7325e866f01d368409",
+      "returned_files": 6,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/app/api/contact/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/waitlist/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/contact/ContactForm.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/waitlist/WaitlistForm.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/public-submission-response.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/tests/public-submission-runtime.test.mjs",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "repair/studio-review-20260927",
+      "head": "b0fc4468bd853965a5e45532a0c1b589d7e21b9f",
+      "status": "diverged",
+      "ahead": 260,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 262,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-visual-proof.yml",
+          "status": "added"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/integrations/asset-factory/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/feature-policy/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/life-movies/route.ts",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/health/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/integrations/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "repair/studio-spatial-segment-order-20261020",
+      "head": "10c506ca57455ab116861a7a4285cc0fbff1cb87",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 42,
+      "merge_base": "10c506ca57455ab116861a7a4285cc0fbff1cb87",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "repair/studio-subtitle-admission-20261010",
+      "head": "94eb5243d49405fed67c987421497e6fee6ca1d6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 113,
+      "merge_base": "94eb5243d49405fed67c987421497e6fee6ca1d6",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "repair/video-factory-server-args-20260901",
+      "head": "2be4b5baabee9badb836585c70ddf169a1e4ce41",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 254,
+      "merge_base": "def202e3384d07aed105e7b4e1d3e61ed5a8cec8",
+      "returned_files": 1,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/video-factory-verification.yml",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "review/chalk-studio-bridge-local-transport-20261106",
+      "head": "153d6c35557c66a8b9f8629778ca796b83730464",
+      "status": "identical",
+      "ahead": 0,
+      "behind": 0,
+      "merge_base": "153d6c35557c66a8b9f8629778ca796b83730464",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "runtime/studio-node22-20260913",
+      "head": "2bcb1dad398b1e33d132940d2d37416d0aba0abb",
+      "status": "diverged",
+      "ahead": 113,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 104,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/lib/firebase-admin.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-auth.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-spatial-handoff.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "security/adc-only-firebase-admin-2026-08-11",
+      "head": "d99db34a9780e271f9650f608643172ae21f3726",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 275,
+      "merge_base": "2ec41609c60964de7f68a51eb4c1a311b0adef53",
+      "returned_files": 4,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/firebase-admin.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/firebase-admin-auth-contract.test.mjs",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "security/current-membership-authority-20260830",
+      "head": "a3c87b3016756d0f2a704372de2ce565db1db454",
+      "status": "diverged",
+      "ahead": 90,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 45,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/lib/firebase-admin.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-auth.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-video-renderer.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/firebase-admin-auth-contract.test.mjs",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/job-runner-max-attempts.test.mjs",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/tests/release-evidence-schema.test.mjs",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/studio-api-auth-gate.test.mjs",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/studio-api-kind-validation.test.mjs",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/tests/studio-auth-tenant-binding.test.mjs",
+          "status": "added"
+        }
+      ]
+    },
+    {
+      "branch": "security/env-containment-2026-08-11",
+      "head": "2264a319f942044cf684a78f86907ba249f6c19d",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 276,
+      "merge_base": "6ebaebe0bfb4ce0a37220cb0ff228e2f73611142",
+      "returned_files": 5,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/tests/all-runner.test.mjs",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "security/readiness-response-redaction-20260911",
+      "head": "e3426a63bbbd57b4e10673955e3ba815652962ab",
+      "status": "diverged",
+      "ahead": 107,
+      "behind": 253,
+      "merge_base": "cae4ddc6fd2c3ec64664ed628f74434a93b4497c",
+      "returned_files": 66,
+      "possibly_capped": false,
+      "selected_changed_paths": [
+        {
+          "path": ".github/workflows/studio-audit.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-ci.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/studio-health-guard.yml",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/urai-production-verify.yml",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/.env.example",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/exports/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/jobs/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/render/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/studio/video-factory/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/manifest/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/api/system/spatial-handoff/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/readyz/route.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/settings/page.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderArtifactPanel.tsx",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/app/studio/video-factory/RenderPackageButton.tsx",
+          "status": "added"
+        },
+        {
+          "path": "apps/studio/lib/firebase-admin.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-auth.ts",
+          "status": "modified"
+        },
+        {
+          "path": "apps/studio/lib/studio-spatial-handoff.ts",
+          "status": "modified"
+        }
+      ]
+    },
+    {
+      "branch": "security/server-owned-memberships-20260706",
+      "head": "4a1ce1bf39c821212f5b7565453761d85aad545c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 278,
+      "merge_base": "4a1ce1bf39c821212f5b7565453761d85aad545c",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    },
+    {
+      "branch": "urai-immersive-life-map-polish",
+      "head": "227689a4d32dc19364daf1ef58ef4dc41694522e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 558,
+      "merge_base": "227689a4d32dc19364daf1ef58ef4dc41694522e",
+      "returned_files": 0,
+      "possibly_capped": false,
+      "selected_changed_paths": []
+    }
+  ]
+}
