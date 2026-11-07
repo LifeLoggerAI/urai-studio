@@ -42,7 +42,12 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/memberships/$(request.auth.uid + "_" + studioId))
         && membershipDoc(studioId).data.uid == request.auth.uid
         && membershipDoc(studioId).data.studioId == studioId
-        && membershipDoc(studioId).data.role in ["owner", "creator", "viewer"];
+        && membershipDoc(studioId).data.role in ["owner", "creator", "viewer"]
+        // Old membership documents may omit flags; explicit revocation,
+        // disablement or inactivity must immediately withdraw client access.
+        && (!("revoked" in membershipDoc(studioId).data) || membershipDoc(studioId).data.revoked == false)
+        && (!("disabled" in membershipDoc(studioId).data) || membershipDoc(studioId).data.disabled == false)
+        && (!("active" in membershipDoc(studioId).data) || membershipDoc(studioId).data.active == true);
     }
 
     function membershipDoc(studioId) {
