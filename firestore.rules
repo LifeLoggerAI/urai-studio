@@ -93,16 +93,14 @@ service cloud.firestore {
 
     match /jobs/{id} {
       allow read: if isStudioMember(resource.data.studioId);
-      allow create: if studioScoped() && isStudioMember(request.resource.data.studioId);
-      allow update: if studioUpdateScoped();
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      // Job admission, state and priority are trusted-server authority.
+      allow create, update, delete: if false;
     }
 
     match /jobRuns/{id} {
       allow read: if isStudioMember(resource.data.studioId);
-      allow create: if isStudioMember(request.resource.data.studioId);
-      allow update: if studioUpdateScoped();
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      // Worker attempt and lease receipts are trusted-server authority.
+      allow create, update, delete: if false;
     }
 
     match /assets/{id} {
@@ -121,15 +119,14 @@ service cloud.firestore {
 
     match /deadLetters/{id} {
       allow read: if isStudioMember(resource.data.studioId);
-      allow create: if isStudioMember(request.resource.data.studioId);
-      allow update: if studioUpdateScoped();
-      allow delete: if roleIs(resource.data.studioId, "owner");
+      // Failure and retry receipts are trusted-server authority.
+      allow create, update, delete: if false;
     }
 
     match /auditLogs/{id} {
       allow read: if isStudioMember(resource.data.studioId);
-      allow create: if isStudioMember(request.resource.data.studioId);
-      allow update, delete: if false;
+      // Clients cannot forge actor identities or audit decisions.
+      allow create, update, delete: if false;
     }
 
     match /users/{uid} {
