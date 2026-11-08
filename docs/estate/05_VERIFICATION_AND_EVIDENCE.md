@@ -1,0 +1,15 @@
+# R854 Studio verification and original evidence
+
+**Primary current candidate:** [Studio #179](https://github.com/LifeLoggerAI/urai-studio/pull/179) `153d6c35557c66a8b9f8629778ca796b83730464`. This pass independently inspected GitHub CI run metadata, job step counts, Studio worker PR comments, and source/Docs; it did **not** execute a new frozen build or download the archived original Runpod stdout.
+
+## Native/source and cross-service receipts
+- [Studio #179 run 42170388747](https://github.com/LifeLoggerAI/urai-studio/actions/runs/42170388747) Video Factory, [42170388645](https://github.com/LifeLoggerAI/urai-studio/actions/runs/42170388645) production verify, [42170388617](https://github.com/LifeLoggerAI/urai-studio/actions/runs/42170388617) authenticated rights: GitHub FAILURE, but all inspected jobs have **0 execution steps**. This does not show that an original code test failed; status still NOT PASS.
+- [#175 original PR](https://github.com/LifeLoggerAI/urai-studio/pull/175) reports local 5/5 focused lease and 6/6 synthetic runner interaction with transpile checks. Its GitHub failed workflow similarly has 0 executed steps in inspected job. **No original full-source/native acceptance** of #175.
+- [#179 R823 discussion](https://github.com/LifeLoggerAI/urai-studio/pull/179#issuecomment-6699091202) records actual Jobs four-emulator and actual Studio client→Jobs Functions HTTP **denial** end-to-end; source Studio `153d6c35557c66a8b9f8629778ca796b83730464`, older Jobs `4755101eb1182ead9e89b5effcd91adef3e7b8aa`. Worker-pinned original stdout SHA-256 and zero exits are external execution claims (this pass did not re-run).
+- [#179 R843 discussion](https://github.com/LifeLoggerAI/urai-studio/pull/179#issuecomment-6702281128) records latest current Jobs `ea8f0165ac74511a4e4196919ddd3109d0c1ff2e`, Studio `153d6c35557c66a8b9f8629778ca796b83730464`; **16/16 bounded Runpod stages, actual frozen Studio test/typecheck/build/Functions build PASS**, Jobs native Auth/Firestore/Storage suites. Critically, the native Storage diagnostic explicitly states `privilegedBypassObserved=true`, `storageLevelFenceVerified=false`. The success is successful diagnosis of a genuine P0 risk, NOT a PASS that authorizes private rendering.
+- Previous Studio audit worker reportedly recovered October 5 Video Factory 32-file ZIP with playable diagnostic MP4s and six semantic route captures; not independently re-materialized here. Historic `main` CI had success with `--no-frozen-lockfile`, not a frozen current candidate build.
+
+## CI and proof boundary
+An actually executed native private movie positive run, trusted current-owner Privacy consent C6, secure Jobs service identity, production-equivalent privileged write fence, protected outputs and their owner-only Spatial Replay, physical-device art/accessibility, independent review, cloud deploy and founder GO remain OPEN. Source `lifeMovieConsentAuthorityAvailable(): false` remains deliberate; changing a boolean to fake positive acceptance is prohibited.
+
+**No new tests were executed in this documentation-only audit pass.**
