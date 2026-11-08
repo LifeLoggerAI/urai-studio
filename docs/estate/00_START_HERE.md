@@ -1,5 +1,7 @@
 # One UrAi Genesis — Studio evidence knowledge pack, R854
 
+**NEXT CHALK — MOST RECENT CONSOLIDATED HANDOFF (R872):** Read [STUDIO_R872_NEXT_CHALK_COMPLETE_HANDOFF_20261107.md](STUDIO_R872_NEXT_CHALK_COMPLETE_HANDOFF_20261107.md) first. It includes current unmerged PR heads, R854–R871 evidence, GitHub Actions billing-admission blocker, exact native runner, and release HOLD. Then follow this original R854 index and complete audit. Do not treat source-matched synthetic tests as a certified private movie.
+
 **Recorded:** 2026-11-07 UTC. **Repository:** `LifeLoggerAI/urai-studio` (public). **Classification:** review-only, selected-source metadata / historical comparison / evidence provenance; **not comprehensive raw-byte forensics or production release.**
 
 ## Exact current source identities
