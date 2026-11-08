@@ -171,7 +171,7 @@ for (const role of ['owner', 'creator', 'viewer']) {
     await assertSucceeds(getDoc(target));
   });
 }
-for (const collection of ['clipRequests', 'jobs', 'jobRuns', 'assets', 'deadLetters']) {
+for (const collection of ['clipRequests', 'assets']) {
   test(`${collection} updates require the existing tenant and cannot change or remove studioId`, async () => {
     const db = ctx('creator-a').firestore();
     const own = doc(db, `${collection}/a`);
@@ -195,6 +195,67 @@ for (const kind of ['uploads', 'outputs']) {
     });
   }
 }
+for (const role of ['owner', 'creator', 'viewer']) {
+  test('server-only jobs reject direct ' + role + ' create/update/delete', async () => {
+    const db = ctx(role + '-a').firestore();
+    const job = doc(db, 'jobs/a');
+    await assertFails(setDoc(doc(db, 'jobs/client-forged-' + role), {
+      studioId: 'studio-a', projectId: 'foreign-project', kind: 'clip_render',
+      state: 'queued', priority: 100, createdBy: role + '-a',
+    }));
+    await assertFails(updateDoc(job, {
+      state: 'succeeded', priority: 100, projectId: 'foreign-project',
+      output: { path: 'synthetic-forged-output', readyForExternalUse: true },
+    }));
+    await assertFails(deleteDoc(job));
+    await assertSucceeds(getDoc(job));
+  });
+  test('server-only audit receipts reject direct ' + role + ' author spoof', async () => {
+    const db = ctx(role + '-a').firestore();
+    await assertFails(setDoc(doc(db, 'auditLogs/client-forged-' + role), {
+      studioId: 'studio-a', actorUid: 'system', action: 'synthetic_forged_approval',
+      target: 'jobs/a',
+    }));
+    await assertSucceeds(getDoc(doc(db, 'auditLogs/a')));
+  });
+}
+test('trusted Admin seed for job and audit remains present and readable to member', async () => {
+  const db = ctx('creator-a').firestore();
+  const job = await getDoc(doc(db, 'jobs/a'));
+  const receipt = await getDoc(doc(db, 'auditLogs/a'));
+  assert.equal(job.data()?.studioId, 'studio-a');
+  assert.equal(receipt.data()?.studioId, 'studio-a');
+});
+
+
+for (const collection of ['jobRuns', 'deadLetters']) {
+  for (const role of ['owner', 'creator', 'viewer']) {
+    test('worker-owned ' + collection + ' rejects client ' + role + ' create/update/delete while allowing member read', async () => {
+      const db = ctx(role + '-a').firestore();
+      const existing = doc(db, collection + '/a');
+      await assertFails(setDoc(doc(db, collection + '/client-forged-' + role), {
+        studioId: 'studio-a', jobId: 'jobs/a', status: 'succeeded',
+        attempt: 0, source: 'untrusted-client-r859',
+      }));
+      await assertFails(updateDoc(existing, {
+        status: 'succeeded', attempt: 99, lastError: null,
+        source: 'untrusted-client-r859',
+      }));
+      await assertFails(deleteDoc(existing));
+      const current = await getDoc(existing);
+      assert.equal(current.data()?.studioId, 'studio-a');
+    });
+  }
+}
+test('member can still read server-created jobRuns/deadLetters but outsider cannot', async () => {
+  for (const collection of ['jobRuns', 'deadLetters']) {
+    const refA = doc(ctx('creator-a').firestore(), collection + '/a');
+    const refB = doc(ctx('member-b').firestore(), collection + '/a');
+    await assertSucceeds(getDoc(refA));
+    await assertFails(getDoc(refB));
+  }
+});
+
 test('client cannot create or change the separate server-owned studioUsers bootstrap authority', async () => {
   const db = ctx('bootstrap-owner').firestore();
   await assertFails(getDoc(doc(db, 'studioUsers/bootstrap-owner')));
