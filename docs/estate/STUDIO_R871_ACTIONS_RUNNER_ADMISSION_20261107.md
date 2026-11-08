@@ -1,0 +1,26 @@
+# One UrAi Genesis — Studio R871 GitHub Actions admission forensics and no-cost native route
+
+**2026-11-07 CST · read-only production posture · HOLD.** Source candidate remains [Studio #196](https://github.com/LifeLoggerAI/urai-studio/pull/196), SHA `638e5cbebe98d8af15561a35f142baca14c94d25`. All R858–R869 engineering reviews remain subject to independent integration. This report does not promote an unmerged change or authorize any private media.
+
+## New exact evidence (distinct from R870)
+- The Genesis document branch's previously verified SHA `d8dc95abe096de28d93306ac98b810c4369cb956` has **four** actual failed GitHub Actions check runs. GitHub REST jobs readback confirms `runner_name=""`, `steps=[]`, each **2 seconds**, status `completed`, conclusion `failure`. Each check exposes `annotations_count=2` but the connector refuses the annotation-text endpoint. No code-test failure message can be attributed to these jobs:
+  - Studio CI: run `42432736509`, job `128584965485`.
+  - Studio Health Guard: run `42432736476`, job `128584965470`.
+  - Studio Audit: run `42432736469`, job `128584965410`.
+  - URAI Production Verify: run `42432736484`, job `128584965359`.
+- This corroborates R870's three prior R869 SHA workflow failures (runs `42422397884`, `42422398093`, `42422397924`), also lacking executed steps and retrievable logs. **Neither group proves the original Studio tests, Next.js build, Functions build or emulator ran.**
+- **Account-wide evidence:** GitHub's October 18, 2026 billing email to the repository owner explicitly stated overdue subscriptions had been cancelled and **access to metered usage restricted**. A separate original GitHub Actions provider annotation for public `LifeLoggerAI/asset-factory` run `41792607935`, job `126449246409`, was previously copied verbatim into existing GitHub Support case **#4889576**: "The job was not started because your account is locked due to a billing issue." This is **confirmed as a cited historical annotation for Asset Factory**, not directly retrieved as the current Studio job annotation; a shared billing admission restriction is the strongest supported hypothesis for the matching pattern. The GitHub account support case was escalated October 29 and already received this billing evidence; no new ticket, payment, card removal, resubscription, private-repo visibility change, 2FA bypass or Actions retry is authorized.
+- No newer incoming GitHub Support message was found in the narrow November 4–7 search. Thus the supported owner-controlled route to recover free/hosted Actions remains unresolved. GitHub's October 18 mail offered the *possibility* of a free-features payment-method-removal procedure **only if no paid products remain**, requiring GitHub confirmation and owner action; this report does not authorize it.
+
+## Original source / no-cost local acceptance truth
+- The existing committed `docs/estate/STUDIO_R870_NATIVE_ACCEPTANCE.sh` was reconstructed locally from the connected GitHub blob and verified **byte-for-byte**: **3,640 bytes**, Git blob `88732f9b26b2094a3136796b88a3655f20f3cb9c`, raw SHA256 `622faa837cfc0e6d4ce74063b114d615c7cfc21f39748f74f4575237e1e91524`.
+- Actual local `bash -n` **exit 0**. Actual invocation **exit 77**, `R870 PRECHECK FAIL: missing required local binary: pnpm`. Local Node is 22.16.0 rather than the source-required 20; `git ls-remote` cannot resolve GitHub host. No native Studio checkout, frozen install or build was executed; these restrictions have not improved since R870.
+- A further targeted **textual** examination of the 91 `apps/studio/tests/*.test.mjs` files at R869 found no matches for the two obsolete exact snippets `requireStudioAuth(req)` and `listTenantJobs(auth.tenantId)`. This is a limited grep-style check, not proof of runtime compatibility, tests passing, or complete historical audit.
+
+## What may proceed and what cannot
+1. **No-cost supported execution:** the exact R870 runner is ready for a clean locally obtained R869 checkout using Git Bash/WSL/Linux with Node20 and pnpm9.7.0. It refuses wrong source/versions/credentials, runs only frozen test/typecheck/lint/app+Functions build and retains hashed logs. It has **not actually executed those stages** here. Keep its permanent production-HOLD output.
+2. **GitHub provider admission:** GitHub Support case #4889576 must determine the billing/account eligibility and zero-charge restoration path. Do not repeatedly rerun doomed hosted workflows, delete artifacts, change settings or bypass the full release tests to get a green badge.
+3. **Native code and security:** once an unblocked runner exists, run real exact-source Node20/pnpm9.7.0 acceptance, then disposable Auth+Firestore+Storage+Functions concurrency/revocation tests. Distinguish code failures from runner admission. Independently review/merge R858–R869 rather than bypassing them.
+4. **Private film P0:** signed Privacy C6 positive consent and Jobs #252 privileged Storage post-revocation future-write denial remain separate, unreleased requirements; no private source→real MP4/SRT→owner-only Replay→revocation/deletion/device certification.
+
+**No production deploy, new cloud charges, private-media processing, account changes, GitHub workflow reruns or engineering merges performed. One UrAi Genesis production HOLD.**
