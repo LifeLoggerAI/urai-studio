@@ -13,11 +13,26 @@ const SOURCE_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const RECEIPT_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const BUCKET = /^[a-z0-9][a-z0-9._-]+[a-z0-9]$/;
 const SAFE_PROJECT = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
+const SOURCE_GENERATION = /^[1-9][0-9]{0,19}$/;
+const SOURCE_MIME_TYPES = new Set([
+  'image/jpeg', 'image/png', 'image/webp',
+  'video/mp4', 'video/quicktime', 'video/webm',
+  'audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/x-wav', 'audio/webm', 'audio/ogg',
+]);
+const SOURCE_PROVENANCE = new Set([
+  'original-source', 'user-provided-fact', 'verified-metadata', 'user-recorded-memory',
+  'inferred', 'reconstructed', 'generated', 'artistic-interpretation', 'unknown',
+]);
+const SOURCE_KEYS = new Set([
+  'id', 'bucket', 'objectPath', 'generation', 'mimeType', 'provenance',
+  'sourceRefs', 'consentRef', 'ownerOrRightsRef',
+]);
 
 export type JobsLifeMovieSource = {
   id: string;
   bucket: string;
   objectPath: string;
+  generation: string;
   mimeType:
     | 'image/jpeg' | 'image/png' | 'image/webp'
     | 'video/mp4' | 'video/quicktime' | 'video/webm'
@@ -119,15 +134,31 @@ export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInpu
   const allowedSourcePrefixes = [`studios/${tenantId}/`, `tenants/${tenantId}/`];
   const sourceIds = new Set<string>();
   const sources = input.sources.map((source) => {
+    // The Studio HTTP caller casts untrusted JSON to JobsLifeMovieSource[];
+    // TypeScript types are not a runtime authorization or shape check.
+    if (!source || typeof source !== 'object' || Array.isArray(source)
+      || Reflect.ownKeys(source).length !== SOURCE_KEYS.size
+      || Reflect.ownKeys(source).some((key) => typeof key !== 'string' || !SOURCE_KEYS.has(key))) {
+      fail('life_movie_invalid_source_shape');
+    }
     if (!SOURCE_ID.test(source.id) || sourceIds.has(source.id)) fail('life_movie_invalid_source_id');
     sourceIds.add(source.id);
     if (!BUCKET.test(source.bucket)) fail('life_movie_invalid_bucket');
+    if (typeof source.generation !== 'string' || !SOURCE_GENERATION.test(source.generation)
+      || !Number.isSafeInteger(Number(source.generation))) fail('life_movie_invalid_source_generation');
+    if (!SOURCE_MIME_TYPES.has(source.mimeType)) fail('life_movie_invalid_source_mime');
+    if (!SOURCE_PROVENANCE.has(source.provenance)) fail('life_movie_invalid_source_provenance');
     const objectPath = safeObjectPath(source.objectPath, 'life_movie_invalid_source_path');
     if (!allowedSourcePrefixes.some((prefix) => objectPath.startsWith(prefix))) fail('life_movie_source_outside_tenant');
     if (!Array.isArray(source.sourceRefs) || source.sourceRefs.length < 1 || source.sourceRefs.length > 32 || source.sourceRefs.some((ref) => typeof ref !== 'string' || !ref.trim() || ref.length > 512)) fail('life_movie_invalid_source_refs');
     if (!RECEIPT_ID.test(source.consentRef)) fail('life_movie_invalid_consent_ref');
     if (!RECEIPT_ID.test(source.ownerOrRightsRef)) fail('life_movie_invalid_rights_ref');
-    return { ...source, objectPath };
+    // Build the exact Jobs strict source schema; never propagate surplus keys.
+    return {
+      id: source.id, bucket: source.bucket, objectPath, generation: source.generation,
+      mimeType: source.mimeType, provenance: source.provenance, sourceRefs: [...source.sourceRefs],
+      consentRef: source.consentRef, ownerOrRightsRef: source.ownerOrRightsRef,
+    };
   });
 
   const timeline = [...input.timeline].map((item) => {
