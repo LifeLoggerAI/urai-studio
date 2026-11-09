@@ -1,0 +1,95 @@
+Studio Adam presence adapter contract passed
+admin route gate coverage passed
+all-test runner coverage passed: auto-discovers every .test.mjs file
+create-job validation coverage passed
+docs-index: ok
+deploy evidence template coverage passed
+export spatial handoff response coverage passed
+✔ Studio data-rights source contract is explicit and production execution is not claimed (1.598953ms)
+✔ Studio export packages are private checksum-bound records (1.781044ms)
+✔ Studio deletion requires restore window, verified backup, admin authority, and legal-hold clearance (32.093893ms)
+✔ Studio owner cancellation remains available only inside the restore window (0.93834ms)
+✔ Studio data-rights callables are exported and control-plane collections deny client SDK access (484.989236ms)
+✔ deploy evidence template records required proof fields (272.104853ms)
+✔ env example documents public ecosystem integration urls used by Studio (26.713306ms)
+✔ FINITE TIME remains private, provenance-bound and no-spend by default (2.639016ms)
+✔ FINITE TIME preserves the eight-stage governed production path and proof chapter (4.992035ms)
+firebase admin auth contract passed
+✔ FINITE TIME receipts and advancement rule stay fail closed (1.356071ms)
+functions index export regression passed
+health summary response coverage passed
+ecosystem integration diagnostics coverage passed
+job-runner fallback output coverage passed
+legacy root workspace coverage passed: urai-studio canonical app root
+legal page posture coverage passed
+✔ private canon broker is implemented and exported (0.279089ms)
+✔ SceneTruth receipts mint only from accepted fail-closed packets (0.999397ms)
+✔ SceneTruth receipt authority is HMAC bound and expiring (1.405741ms)
+✔ private canon broker does not expose private source pointers in receipt (3.852863ms)
+Life Movie Jobs bridge contract passed
+✔ SceneTruth digest is deterministic for nested canon packets (1.525249ms)
+✔ Studio pins the canonical Life Model contract (1.679437ms)
+Life Movie Jobs dispatcher contract passed
+✔ Studio canonical SceneTruth has fail-closed contradiction and occlusion states (1.791002ms)
+✔ generated media cannot become archival source authority (6.483122ms)
+R931 Studio→Jobs constructed output-prefix boundary: 35 checks PASS; no consent issued or dispatch enabled
+Life Movie SceneTruth dispatch binding passed
+✔ sceneTruthReceiptRef rejects JSON array coercion (1.685713ms)
+✔ sceneTruthReceiptRef rejects object coercion without invoking toString (3.470666ms)
+R926 Studio generation-pinned strict-source contract passed
+✔ sceneTruthDigest rejects JSON array coercion (146.823037ms)
+✔ sceneTruthDigest rejects object coercion without invoking toString (24.619934ms)
+R927 Life Movie timeline sourceStartMs strict parity passed
+✔ valid scene truth strings remain exact and non-authorizing (79.162699ms)
+media master capture contract passed: 14 governed surfaces + exact-SHA fail-closed planner
+media master contract passed: 213 semantic assets + 90 fail-closed calendar jobs
+✔ audio reconciliation preserves accepted assets and spend gates (1.291311ms)
+✔ launch templates are reusable, canonical and fail closed (3.499586ms)
+✔ capture executor requires exact preview binding and deterministic canonical state drivers (2.707781ms)
+✔ Before the Rest binds canonical capture slots without weakening film gates (0.638228ms)
+✔ memory-to-media contract is fail-closed before generation (0.593484ms)
+✔ memory-to-media contract encodes the known regression classes (1.326393ms)
+module copy posture coverage passed
+✔ provider success and photorealism can never equal acceptance (1.020282ms)
+✔ identifiable people and continuity require visible evidence and receipts (0.816496ms)
+module registry coverage passed
+✔ public repository contract contains only abstract production policy (0.841259ms)
+✔ exact scene dimensions must be individually source locked (1.447648ms)
+new Studio route file regression passed 3
+✔ time, season, vehicle and metadata inference regressions stay blocked (2.962345ms)
+openapi contract passed
+provider readiness mode regression passed
+public submission security coverage passed
+README proof-path navigation checks passed
+release evidence schema coverage passed
+root release scripts coverage passed
+security surface presence checks passed
+✔ source evidence keeps originals immutable and derivatives separate (1.050427ms)
+✔ metadata supports canon without silently becoming truth (0.575302ms)
+source-hygiene: scanned 181 files
+✔ GPS and private identity stay private by default (35.214824ms)
+✔ same-event clustering is evidence driven and fail closed (1.215303ms)
+spatial handoff discovery coverage passed
+spatial handoff openapi fragment and canonical route passed
+public status copy coverage passed
+storage rules security coverage passed
+studio action panel gate regression passed
+studio API auth gate regression passed
+studio export route smoke regression passed
+studio runtime store contract regression passed
+Studio-Spatial handoff contract coverage passed
+✔ system manifest exposes the Studio Spatial handoff contract block (0.296228ms)
+V1 magical home coverage passed
+video factory semantic motion contract passed
+video factory page regression passed
+video factory regression passed
+video render package smoke passed
+all Studio regression tests passed 57
+ℹ tests 39
+ℹ suites 0
+ℹ pass 39
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2955.775043
