@@ -49,6 +49,8 @@ export type JobsLifeMovieTimelineItem = {
   sourceId: string;
   startMs: number;
   endMs: number;
+  // Optional offset into original video/audio bytes; never default into plan hashing.
+  sourceStartMs?: number;
 };
 
 export type JobsLifeMovieAudioCue = {
@@ -166,7 +168,18 @@ export function buildJobsLifeMovieEnvelope(input: BuildJobsLifeMovieEnvelopeInpu
     const startMs = nonnegativeInteger(item.startMs, 'life_movie_invalid_timeline_start');
     const endMs = positiveInteger(item.endMs, 'life_movie_invalid_timeline_end');
     if (endMs <= startMs) fail('life_movie_invalid_timeline_duration');
-    return { sourceId:item.sourceId, startMs, endMs };
+    const sourceStartMs = item.sourceStartMs;
+    if (sourceStartMs !== undefined) {
+      nonnegativeInteger(sourceStartMs, 'life_movie_invalid_timeline_source_start');
+      if (sourceStartMs > 45 * 60 * 1000) fail('life_movie_invalid_timeline_source_start');
+      const source = sources.find((candidate) => candidate.id === item.sourceId)!;
+      if (source.mimeType.startsWith('image/') && sourceStartMs !== 0) fail('life_movie_image_source_offset_not_allowed');
+    }
+    // Jobs' optional field is absent when not explicitly supplied: an undefined
+    // or defaulted zero value would silently change the canonical render hash.
+    return sourceStartMs === undefined
+      ? { sourceId:item.sourceId, startMs, endMs }
+      : { sourceId:item.sourceId, startMs, endMs, sourceStartMs };
   }).sort((a,b) => a.startMs - b.startMs);
 
   for (let index = 1; index < timeline.length; index += 1) {
