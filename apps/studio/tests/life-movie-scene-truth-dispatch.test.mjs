@@ -30,6 +30,7 @@ const base = {
     id: 'source-1',
     bucket: 'private-fixture-bucket',
     objectPath: 'tenants/tenant-fixture/source.png',
+    generation: '17',
     mimeType: 'image/png',
     provenance: 'original-source',
     sourceRefs: ['fixture-source'],
