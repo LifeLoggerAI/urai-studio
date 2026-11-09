@@ -82,7 +82,7 @@ function fail(code: string): never {
 }
 
 function safeSegment(value: string, code: string) {
-  if (typeof value !== 'string' || !value || value.trim() !== value || value === '.' || value === '..' || value.includes('/') || value.includes('\\') || Buffer.byteLength(value, 'utf8') > 256) fail(code);
+  if (typeof value !== 'string' || !value || value.trim() !== value || value.includes('..') || value.includes('/') || value.includes('\\') || Buffer.byteLength(value, 'utf8') > 256) fail(code);
   return value;
 }
 
