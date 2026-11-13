@@ -1,0 +1,4 @@
+PASS sceneTruthReceiptRef: original accepted JSON array; real Jobs Zod rejected; repaired producer rejected
+PASS sceneTruthDigest: original accepted JSON array; real Jobs Zod rejected; repaired producer rejected
+PASS valid envelope byte-identical; real Jobs Zod parse and render digest verified; authority remains false
+3/3 actual producer-consumer contract cases PASS; synthetic inputs, no authenticated runtime

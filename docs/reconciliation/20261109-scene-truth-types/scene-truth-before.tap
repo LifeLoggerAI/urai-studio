@@ -1,0 +1,98 @@
+TAP version 13
+# Subtest: sceneTruthReceiptRef rejects JSON array coercion
+not ok 1 - sceneTruthReceiptRef rejects JSON array coercion
+  ---
+  duration_ms: 10.63445
+  type: 'test'
+  location: '/workspace/scratch/3d63ee587280/studio-source/apps/studio/tests/life-movie-scene-truth-types.test.mjs:33:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/3d63ee587280/studio-source/apps/studio/tests/life-movie-scene-truth-types.test.mjs:37:12)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.start (node:internal/test_runner/test:1262:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+  ...
+# Subtest: sceneTruthReceiptRef rejects object coercion without invoking toString
+not ok 2 - sceneTruthReceiptRef rejects object coercion without invoking toString
+  ---
+  duration_ms: 0.894267
+  type: 'test'
+  location: '/workspace/scratch/3d63ee587280/studio-source/apps/studio/tests/life-movie-scene-truth-types.test.mjs:39:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/3d63ee587280/studio-source/apps/studio/tests/life-movie-scene-truth-types.test.mjs:44:12)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: sceneTruthDigest rejects JSON array coercion
+not ok 3 - sceneTruthDigest rejects JSON array coercion
+  ---
+  duration_ms: 2.658098
+  type: 'test'
+  location: '/workspace/scratch/3d63ee587280/studio-source/apps/studio/tests/life-movie-scene-truth-types.test.mjs:33:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/3d63ee587280/studio-source/apps/studio/tests/life-movie-scene-truth-types.test.mjs:37:12)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: sceneTruthDigest rejects object coercion without invoking toString
+not ok 4 - sceneTruthDigest rejects object coercion without invoking toString
+  ---
+  duration_ms: 4.783599
+  type: 'test'
+  location: '/workspace/scratch/3d63ee587280/studio-source/apps/studio/tests/life-movie-scene-truth-types.test.mjs:39:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/3d63ee587280/studio-source/apps/studio/tests/life-movie-scene-truth-types.test.mjs:44:12)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: valid scene truth strings remain exact and non-authorizing
+ok 5 - valid scene truth strings remain exact and non-authorizing
+  ---
+  duration_ms: 1.201223
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 1
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 806.962124

@@ -21,6 +21,7 @@ const build=mutate=>{const x=fixture();if(mutate)mutate(x);return buildEnvelope(
 const deny=(mutate,code)=>assert.throws(()=>build(mutate),new RegExp(code));
 const checks=[
  ['tenant whitespace',x=>{x.tenantId='tenant one';x.sources[0].objectPath='tenants/tenant one/raw/source01.mp4';},'life_movie_invalid_tenant'],
+ ['tenant embedded dot-dot rejected',x=>{x.tenantId='tenant..one';x.sources[0].objectPath='tenants/tenant..one/raw/source01.mp4';},'life_movie_invalid_tenant'],
  ['tenant length',x=>{x.tenantId='t'.repeat(129);x.sources[0].objectPath='tenants/'+x.tenantId+'/raw/source01.mp4';},'life_movie_invalid_tenant'],
  ['idempotency overflow',x=>{x.projectId='p'.repeat(117);},'life_movie_invalid_idempotency_key'],
  ['bucket length',x=>{x.sources[0].bucket='a'.repeat(256);},'life_movie_invalid_bucket'],
@@ -68,4 +69,4 @@ deny(x=>{x.audioCues=[];x.sources[0].mimeType='image/jpeg';x.timeline[0].sourceS
 const mutated=fixture();const built=buildEnvelope(mutated);
 mutated.sources[0].sourceRefs[0]='changed-after-hash';
 assert.equal(built.payload.sources[0].sourceRefs[0],'source-proof-001');
-console.log('R930 Studio→Jobs strict normalization boundary: 34 checks PASS; no consent issued or dispatch enabled');
+console.log('R931 Studio→Jobs constructed output-prefix boundary: 35 checks PASS; no consent issued or dispatch enabled');
