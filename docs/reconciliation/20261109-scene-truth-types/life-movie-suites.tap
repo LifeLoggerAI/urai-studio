@@ -1,0 +1,82 @@
+TAP version 13
+# Life Movie Jobs bridge contract passed
+# Subtest: apps/studio/tests/life-movie-jobs-bridge.test.mjs
+ok 1 - apps/studio/tests/life-movie-jobs-bridge.test.mjs
+  ---
+  duration_ms: 103.318143
+  type: 'test'
+  ...
+# Life Movie Jobs dispatcher contract passed
+# Subtest: apps/studio/tests/life-movie-jobs-dispatcher.test.mjs
+ok 2 - apps/studio/tests/life-movie-jobs-dispatcher.test.mjs
+  ---
+  duration_ms: 135.983356
+  type: 'test'
+  ...
+# R931 Studio→Jobs constructed output-prefix boundary: 35 checks PASS; no consent issued or dispatch enabled
+# Subtest: apps/studio/tests/life-movie-jobs-parser-normalization-boundary.test.mjs
+ok 3 - apps/studio/tests/life-movie-jobs-parser-normalization-boundary.test.mjs
+  ---
+  duration_ms: 1533.683233
+  type: 'test'
+  ...
+# Life Movie SceneTruth dispatch binding passed
+# Subtest: apps/studio/tests/life-movie-scene-truth-dispatch.test.mjs
+ok 4 - apps/studio/tests/life-movie-scene-truth-dispatch.test.mjs
+  ---
+  duration_ms: 877.858331
+  type: 'test'
+  ...
+# Subtest: sceneTruthReceiptRef rejects JSON array coercion
+ok 5 - sceneTruthReceiptRef rejects JSON array coercion
+  ---
+  duration_ms: 2.43305
+  type: 'test'
+  ...
+# Subtest: sceneTruthReceiptRef rejects object coercion without invoking toString
+ok 6 - sceneTruthReceiptRef rejects object coercion without invoking toString
+  ---
+  duration_ms: 0.551871
+  type: 'test'
+  ...
+# Subtest: sceneTruthDigest rejects JSON array coercion
+ok 7 - sceneTruthDigest rejects JSON array coercion
+  ---
+  duration_ms: 0.506984
+  type: 'test'
+  ...
+# Subtest: sceneTruthDigest rejects object coercion without invoking toString
+ok 8 - sceneTruthDigest rejects object coercion without invoking toString
+  ---
+  duration_ms: 0.282998
+  type: 'test'
+  ...
+# Subtest: valid scene truth strings remain exact and non-authorizing
+ok 9 - valid scene truth strings remain exact and non-authorizing
+  ---
+  duration_ms: 2.140269
+  type: 'test'
+  ...
+# R926 Studio generation-pinned strict-source contract passed
+# Subtest: apps/studio/tests/life-movie-source-generation-contract.test.mjs
+ok 6 - apps/studio/tests/life-movie-source-generation-contract.test.mjs
+  ---
+  duration_ms: 1571.57231
+  type: 'test'
+  ...
+# R927 Life Movie timeline sourceStartMs strict parity passed
+# Subtest: apps/studio/tests/life-movie-timeline-offset-contract.test.mjs
+ok 7 - apps/studio/tests/life-movie-timeline-offset-contract.test.mjs
+  ---
+  duration_ms: 492.024706
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1619.229954
