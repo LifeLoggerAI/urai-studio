@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 
 import { requireStudioAuth } from '@/lib/studio-auth';
+import { readStudioLongformJson, StudioLongformError } from '@/lib/studio-life-movie-longform-contract';
 import {
   buildJobsLifeMovieEnvelope,
+  deriveStudioLifeMovieRenderScope,
   type JobsLifeMovieAudioCue,
   type JobsLifeMovieSource,
   type JobsLifeMovieTimelineItem,
@@ -22,7 +24,8 @@ function authErrorResponse(auth: Awaited<ReturnType<typeof requireStudioAuth>>) 
 }
 
 function record(value: unknown): Record<string, unknown> {
-  return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('life_movie_invalid_request');
+  return value as Record<string, unknown>;
 }
 
 export async function GET(request: Request) {
@@ -41,7 +44,7 @@ export async function GET(request: Request) {
     providerGenerationAuthorized:false,
     publicReleaseAuthorized:false,
     requiredSceneFields:['sceneTruthReceiptRef','sceneTruthDigest'],
-    requiredSourceFields:['id','bucket','objectPath','mimeType','provenance','sourceRefs','consentRef','ownerOrRightsRef'],
+    requiredSourceFields:['id','bucket','objectPath','generation','mimeType','provenance','sourceRefs','consentRef','ownerOrRightsRef'],
     note:'This endpoint builds a governed Jobs request envelope only. It does not dispatch work or authorize providers/public release.',
   });
 }
@@ -50,10 +53,15 @@ export async function POST(request: Request) {
   const auth = await requireStudioAuth(request);
   if (!auth.ok) return authErrorResponse(auth);
 
-  const body = record(await request.json().catch(() => null));
-  const projectId = typeof body.projectId === 'string' ? body.projectId : '';
-
   try {
+    // Contract preparation must honor the same bounded private-plan admission
+    // as the actual Jobs dispatch route. Never parse unbounded request.json().
+    const body = record(await readStudioLongformJson(request, 512 * 1024));
+    const allowedFields = ['projectId', 'sceneTruthReceiptRef', 'sceneTruthDigest', 'sources', 'timeline', 'audioCues', 'subtitleText', 'width', 'height', 'fps'];
+    if (Object.keys(body).some((key) => !allowedFields.includes(key))) {
+      throw new Error('life_movie_unknown_request_field');
+    }
+    const projectId = typeof body.projectId === 'string' ? body.projectId : '';
     const envelope = buildJobsLifeMovieEnvelope({
       tenantId: auth.tenantId,
       projectId,
@@ -68,23 +76,33 @@ export async function POST(request: Request) {
       fps: typeof body.fps === 'number' ? body.fps as 24 | 25 | 30 | 50 | 60 : undefined,
     });
 
+    // This fingerprint is a source-selection identifier, never a grant.
+    // The trusted Privacy issuer must separately verify owner approval,
+    // immutable source rights and the current deletion/consent state.
+    const renderScope = deriveStudioLifeMovieRenderScope(envelope.payload);
     return json({
       ok:true,
       status:'jobs-contract-built',
       authMode:auth.authMode,
       tenantId:auth.tenantId,
       envelope,
+      renderScope,
+      renderConsentAuthorized:false,
+      consentGrantIssued:false,
     });
   } catch (error) {
+    const rawCode = error instanceof StudioLongformError ? error.code
+      : error instanceof Error ? error.message : 'life_movie_jobs_contract_rejected';
+    const code = /^[a-z0-9_]{1,120}$/.test(rawCode) ? rawCode : 'life_movie_jobs_contract_rejected';
     return json({
       ok:false,
       status:'jobs-contract-rejected',
       authMode:auth.authMode,
       tenantId:auth.tenantId,
       error:{
-        code:error instanceof Error ? error.message : 'life_movie_jobs_contract_rejected',
+        code,
         message:'Life Movie render request did not satisfy the governed urai-jobs contract.',
       },
-    }, 400);
+    }, error instanceof StudioLongformError ? error.status : 400);
   }
 }

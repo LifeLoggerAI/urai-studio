@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { requireStudioAuth } from '@/lib/studio-auth';
+import { requireStudioMemberAuth, refreshStudioMemberAuth } from '@/lib/studio-member-auth';
+import type { requireStudioAuth } from '@/lib/studio-auth';
 import { createStudioJob, listTenantJobs, runtimeStoreStatus } from '@/lib/studio-runtime-store';
 import type { StudioExportKind, StudioJobKind } from '@/lib/urai-system-contract';
 
@@ -49,10 +50,10 @@ function authErrorResponse(auth: Awaited<ReturnType<typeof requireStudioAuth>>) 
 }
 
 export async function GET(req: Request) {
-  const auth = await requireStudioAuth(req);
+  const auth = await requireStudioMemberAuth(req, 'read');
   if (!auth.ok) return authErrorResponse(auth);
 
-  const result = await listTenantJobs(auth.tenantId);
+  const result = await listTenantJobs(auth.tenantId, auth.uid);
 
   if (!result.ok) {
     return json(
@@ -74,7 +75,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const auth = await requireStudioAuth(req);
+  const auth = await requireStudioMemberAuth(req, 'draft');
   if (!auth.ok) return authErrorResponse(auth);
 
   const rawBody = await req.json().catch(() => null);
@@ -92,6 +93,9 @@ export async function POST(req: Request) {
   if (prompt.length < 8) {
     return json({ ok: false, status: 'invalid_prompt', error: { code: 'invalid_prompt', message: 'Prompt must be at least 8 characters.' } }, 400);
   }
+
+  const currentAuth = await refreshStudioMemberAuth(req, auth, 'draft');
+  if (!currentAuth.ok) return authErrorResponse(currentAuth);
 
   const result = await createStudioJob({
     projectId,
@@ -128,5 +132,5 @@ export async function POST(req: Request) {
     );
   }
 
-  return json({ ok: true, status: 'queued', persisted: true, authMode: auth.authMode, tenantId: auth.tenantId, store: runtimeStoreStatus(), data: result.data });
+  return json({ ok: true, status: 'draft', persisted: true, authMode: auth.authMode, tenantId: auth.tenantId, store: runtimeStoreStatus(), execution: runtimeStoreStatus().execution, data: result.data }, 202);
 }

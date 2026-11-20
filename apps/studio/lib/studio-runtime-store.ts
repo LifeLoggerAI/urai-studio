@@ -1,4 +1,5 @@
 import { adminDb, firebaseAdminStatus } from '@/lib/firebase-admin';
+import { assertStudioDraftAuthorityInTransaction } from '@/lib/studio-member-auth';
 import {
   consentRequired,
   type ConsentRequirement,
@@ -23,6 +24,17 @@ const COLLECTIONS = {
 
 const DEFAULT_TENANT_ID = 'public-studio';
 const DEFAULT_USER_ID = 'anonymous-studio-user';
+
+// Persistence is not worker admission. This Store currently records contracts
+// but does not dispatch generation, validate media, or authorize private render.
+// Expose one unambiguous receipt across jobs, exports and Video Factory.
+export const STUDIO_CONTRACT_EXECUTION = Object.freeze({
+  mode: 'contract-only',
+  workerDispatched: false,
+  outputVerified: false,
+  mediaRendered: false,
+  privateRenderConsentAuthorized: false,
+} as const);
 
 export type RuntimeStoreMode = 'firebase' | 'unconfigured';
 
@@ -74,6 +86,7 @@ export function runtimeStoreStatus() {
     firebaseAdmin: firebaseAdminStatus,
     collections: COLLECTIONS,
     tenantScoped: true,
+    execution: STUDIO_CONTRACT_EXECUTION,
   } as const;
 }
 
@@ -84,6 +97,9 @@ export async function createStudioProject(input: Partial<StudioProject> = {}): P
 
   const timestamp = nowIso();
   const id = input.id ?? newId('project');
+  if (typeof id !== 'string' || !/^[A-Za-z0-9_-]{1,160}$/.test(id)) {
+    return { ok: false, mode: 'firebase', error: 'studio_reference_unavailable' };
+  }
   const project: StudioProject = {
     id,
     tenantId: cleanString(input.tenantId, DEFAULT_TENANT_ID),
@@ -97,50 +113,115 @@ export async function createStudioProject(input: Partial<StudioProject> = {}): P
     updatedAt: timestamp,
   };
 
-  await adminDb.collection(COLLECTIONS.projects).doc(project.id).set(project, { merge: true });
+  // Creation is never a caller-selected upsert into another owner's ID.
+  // Existing IDs must fail rather than silently replacing historical records.
+  await adminDb.collection(COLLECTIONS.projects).doc(project.id).create(project);
   return { ok: true, mode: 'firebase', data: project };
 }
 
 export async function createStudioBrief(input: Partial<StudioBrief> & { projectId: UraiId }): Promise<RuntimeStoreResponse<StudioBrief>> {
-  if (!adminDb) {
+  const db = adminDb;
+  if (!db) {
     return { ok: false, mode: 'unconfigured', error: 'firebase_admin_unconfigured' };
   }
 
   const timestamp = nowIso();
+  const tenantId = cleanString(input.tenantId, DEFAULT_TENANT_ID);
+  const userId = cleanString(input.userId, DEFAULT_USER_ID);
+  const projectId = input.projectId.trim();
   const brief: StudioBrief = {
     id: input.id ?? newId('brief'),
-    tenantId: cleanString(input.tenantId, DEFAULT_TENANT_ID),
-    userId: cleanString(input.userId, DEFAULT_USER_ID),
-    projectId: input.projectId,
+    tenantId,
+    userId,
+    projectId,
     title: cleanString(input.title, 'URAI Studio Brief'),
     prompt: cleanString(input.prompt, ''),
     intendedOutputs: input.intendedOutputs ?? ['image', 'script', 'scene_manifest'],
     requestedExports: input.requestedExports ?? ['json'],
     consentRequirements: input.consentRequirements ?? defaultConsentRequirements(),
     safetyBoundaries: input.safetyBoundaries ?? [{ requiredLanguage: 'none', humanReviewRequired: false }],
-    createdAt: input.createdAt ?? timestamp,
+    createdAt: timestamp,
     updatedAt: timestamp,
   };
 
-  await adminDb.collection(COLLECTIONS.briefs).doc(brief.id).set(brief, { merge: true });
+  // Existing projects must belong to this exact tenant AND user before a
+  // standalone brief is created. No implicit legacy uid->userId conversion.
+  if (!/^[A-Za-z0-9_-]{1,160}$/.test(projectId) ||
+      !/^[A-Za-z0-9_-]{1,160}$/.test(brief.id)) {
+    return { ok: false, mode: 'firebase', error: 'studio_reference_unavailable' };
+  }
+  const projectRef = db.collection(COLLECTIONS.projects).doc(projectId);
+  try {
+    await db.runTransaction(async transaction => {
+      await assertStudioDraftAuthorityInTransaction(transaction, userId, tenantId);
+      const currentProject = await transaction.get(projectRef);
+      const data = currentProject.data();
+      if (!currentProject.exists || data?.tenantId !== tenantId || data?.userId !== userId) {
+        throw new Error('studio_reference_unavailable');
+      }
+      transaction.create(db.collection(COLLECTIONS.briefs).doc(brief.id), brief);
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'studio_reference_unavailable') {
+      return { ok: false, mode: 'firebase', error: 'studio_reference_unavailable' };
+    }
+    throw error;
+  }
   return { ok: true, mode: 'firebase', data: brief };
 }
 
 export async function createStudioJob(input: CreateStudioJobInput): Promise<RuntimeStoreResponse<StudioJob>> {
-  if (!adminDb) {
+  const db = adminDb;
+  if (!db) {
     return { ok: false, mode: 'unconfigured', error: 'firebase_admin_unconfigured' };
   }
 
   const timestamp = nowIso();
-  const projectId = cleanString(input.projectId, newId('project'));
+  const requestedProjectId = typeof input.projectId === 'string' ? input.projectId.trim() : '';
+  const projectId = requestedProjectId || newId('project');
+  const tenantId = cleanString(input.tenantId, DEFAULT_TENANT_ID);
+  const userId = cleanString(input.userId, DEFAULT_USER_ID);
+
+  // An implicit project is an actual owned StudioProject, not a dangling ID.
+  const project: StudioProject | undefined = requestedProjectId
+    ? undefined
+    : {
+        id: projectId,
+        tenantId,
+        userId,
+        name: 'URAI Studio Project',
+        ownerSystem: 'urai-studio',
+        linkedSystems: ['urai-studio'],
+        capabilityKeys: ['V1_GENESIS_HOME'],
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      };
+
+  const brief: StudioBrief | undefined = input.prompt
+    ? {
+        id: newId('brief'),
+        tenantId,
+        userId,
+        projectId,
+        title: 'URAI Studio Brief',
+        prompt: cleanString(input.prompt, ''),
+        intendedOutputs: ['image', 'script', 'scene_manifest'],
+        requestedExports: input.requestedExports ?? ['json'],
+        consentRequirements: defaultConsentRequirements(),
+        safetyBoundaries: [{ requiredLanguage: 'none', humanReviewRequired: false }],
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }
+    : undefined;
+
   const job: StudioJob = {
     id: newId('job'),
-    tenantId: cleanString(input.tenantId, DEFAULT_TENANT_ID),
-    userId: cleanString(input.userId, DEFAULT_USER_ID),
+    tenantId,
+    userId,
     projectId,
-    briefId: input.briefId,
+    ...(brief ? { briefId: brief.id } : input.briefId ? { briefId: input.briefId } : {}),
     kind: input.kind ?? 'asset_bundle_export',
-    status: 'queued',
+    status: 'draft',
     provider: 'feature-gated',
     model: 'contract-only',
     inputAssetIds: [],
@@ -152,36 +233,72 @@ export async function createStudioJob(input: CreateStudioJobInput): Promise<Runt
     updatedAt: timestamp,
   };
 
-  await adminDb.collection(COLLECTIONS.jobs).doc(job.id).set(job, { merge: true });
+  // All project/brief authorization reads happen within the SAME Firestore
+  // transaction as draft creation, preventing a change between check/write.
+  // No renderer, source media or Jobs worker is admitted here.
+  const projectRef = db.collection(COLLECTIONS.projects).doc(projectId);
+  const existingBriefRef = !brief && input.briefId
+    ? db.collection(COLLECTIONS.briefs).doc(input.briefId)
+    : undefined;
+  await db.runTransaction(async transaction => {
+      await assertStudioDraftAuthorityInTransaction(transaction, userId, tenantId);
+    const currentProject = project ? undefined : await transaction.get(projectRef);
+    const currentBrief = existingBriefRef ? await transaction.get(existingBriefRef) : undefined;
 
-  if (input.prompt) {
-    await createStudioBrief({
-      projectId,
-      tenantId: job.tenantId,
-      userId: job.userId,
-      prompt: input.prompt,
-      requestedExports: input.requestedExports ?? ['json'],
-    });
-  }
+    if (!project) {
+      if (!currentProject?.exists) throw new Error('studio_project_not_found');
+      const persisted = currentProject.data();
+      if (persisted?.tenantId !== tenantId || persisted?.userId !== userId) {
+        throw new Error('studio_project_forbidden');
+      }
+    }
+    if (existingBriefRef) {
+      if (!currentBrief?.exists) throw new Error('studio_brief_not_found');
+      const persistedBrief = currentBrief.data();
+      if (persistedBrief?.tenantId !== tenantId || persistedBrief?.userId !== userId ||
+          persistedBrief?.projectId !== projectId) {
+        throw new Error('studio_brief_forbidden');
+      }
+    }
+
+    if (project) transaction.create(projectRef, project);
+    if (brief) transaction.create(db.collection(COLLECTIONS.briefs).doc(brief.id), brief);
+    transaction.create(db.collection(COLLECTIONS.jobs).doc(job.id), job);
+  });
 
   return { ok: true, mode: 'firebase', data: job };
 }
 
 export async function createStudioExport(input: CreateStudioExportInput): Promise<RuntimeStoreResponse<StudioExport>> {
-  if (!adminDb) {
+  const db = adminDb;
+  if (!db) {
     return { ok: false, mode: 'unconfigured', error: 'firebase_admin_unconfigured' };
+  }
+
+  const projectId = typeof input.projectId === 'string' ? input.projectId.trim() : '';
+  const tenantId = cleanString(input.tenantId, DEFAULT_TENANT_ID);
+  const userId = cleanString(input.userId, DEFAULT_USER_ID);
+  const jobId = typeof input.jobId === 'string' && input.jobId.trim()
+    ? input.jobId.trim() : undefined;
+  const assetIds = input.assetIds ?? [];
+  const validId = (id: string) => /^[A-Za-z0-9_-]{1,160}$/.test(id);
+  // Never let arbitrary caller path fragments escape their intended collection.
+  if (!validId(projectId) || (jobId !== undefined && !validId(jobId)) ||
+      assetIds.length > 25 || assetIds.some(id => typeof id !== 'string' || !validId(id)) ||
+      new Set(assetIds).size !== assetIds.length) {
+    return { ok: false, mode: 'firebase', error: 'studio_reference_unavailable' };
   }
 
   const timestamp = nowIso();
   const studioExport: StudioExport = {
     id: newId('export'),
-    tenantId: cleanString(input.tenantId, DEFAULT_TENANT_ID),
-    userId: cleanString(input.userId, DEFAULT_USER_ID),
-    projectId: input.projectId,
-    jobId: input.jobId,
-    assetIds: input.assetIds ?? [],
+    tenantId,
+    userId,
+    projectId,
+    jobId,
+    assetIds,
     kind: input.kind,
-    status: 'queued' satisfies StudioJobStatus,
+    status: 'draft' satisfies StudioJobStatus,
     storagePath: undefined,
     downloadUrl: undefined,
     expiresAt: undefined,
@@ -190,11 +307,43 @@ export async function createStudioExport(input: CreateStudioExportInput): Promis
     updatedAt: timestamp,
   };
 
-  await adminDb.collection(COLLECTIONS.exports).doc(studioExport.id).set(studioExport, { merge: true });
+  const projectRef = db.collection(COLLECTIONS.projects).doc(projectId);
+  const jobRef = jobId ? db.collection(COLLECTIONS.jobs).doc(jobId) : undefined;
+  const assetRefs = assetIds.map(id => db.collection(COLLECTIONS.assets).doc(id));
+  try {
+    await db.runTransaction(async transaction => {
+      await assertStudioDraftAuthorityInTransaction(transaction, userId, tenantId);
+      const projectSnap = await transaction.get(projectRef);
+      const project = projectSnap.data();
+      if (!projectSnap.exists || project?.tenantId !== tenantId || project?.userId !== userId) {
+        throw new Error('studio_reference_unavailable');
+      }
+
+      const jobSnap = jobRef ? await transaction.get(jobRef) : undefined;
+      const assetSnaps = await Promise.all(assetRefs.map(ref => transaction.get(ref)));
+      if (jobRef && (!jobSnap?.exists || jobSnap.data()?.tenantId !== tenantId ||
+          jobSnap.data()?.userId !== userId || jobSnap.data()?.projectId !== projectId)) {
+        throw new Error('studio_reference_unavailable');
+      }
+      for (const assetSnap of assetSnaps) {
+        const asset = assetSnap.data();
+        if (!assetSnap.exists || asset?.tenantId !== tenantId ||
+            asset?.userId !== userId || asset?.projectId !== projectId) {
+          throw new Error('studio_reference_unavailable');
+        }
+      }
+      transaction.create(db.collection(COLLECTIONS.exports).doc(studioExport.id), studioExport);
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'studio_reference_unavailable') {
+      return { ok: false, mode: 'firebase', error: 'studio_reference_unavailable' };
+    }
+    throw error;
+  }
   return { ok: true, mode: 'firebase', data: studioExport };
 }
 
-export async function listTenantJobs(tenantId = DEFAULT_TENANT_ID): Promise<RuntimeStoreResponse<StudioJob[]>> {
+export async function listTenantJobs(tenantId: UraiId, userId: UraiId): Promise<RuntimeStoreResponse<StudioJob[]>> {
   if (!adminDb) {
     return { ok: false, mode: 'unconfigured', error: 'firebase_admin_unconfigured' };
   }
@@ -202,6 +351,7 @@ export async function listTenantJobs(tenantId = DEFAULT_TENANT_ID): Promise<Runt
   const snapshot = await adminDb
     .collection(COLLECTIONS.jobs)
     .where('tenantId', '==', tenantId)
+    .where('userId', '==', userId)
     .orderBy('createdAt', 'desc')
     .limit(25)
     .get();
