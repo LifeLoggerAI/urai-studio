@@ -4,21 +4,72 @@ service firebase.storage {
 
     function isSignedIn() { return request.auth != null; }
 
+    function canonicalDeletionAllowsMutation(path, uid) {
+      let marker = firestore.get(path).data;
+      let keys = marker.keys();
+      return marker.uid == uid
+        && !keys.hasAny(["deletionPlanningLeaseToken", "deletionPlanningLeaseUntil",
+          "deletionPlanningLeaseRequestId", "deletionPlanningLeaseOperation", "deletionPlanningLeaseBy"])
+        && ((("active" in marker) && marker.active == false)
+          || (!("active" in marker) && keys.hasOnly(["uid", "updatedAt"]) && marker.updatedAt is timestamp));
+    }
+
+    function canMutateStudioOwner(uid) {
+      let fenceId = hashing.sha256("urai-studio-data-rights:" + uid).toHexString().lower();
+      let fencePath = /databases/(default)/documents/studioDataRightsOwnerFences/$(fenceId);
+      let deletionPath = /databases/(default)/documents/privacyDeletionTombstones/$(uid);
+      return isSignedIn() && request.auth.uid == uid
+        && (!firestore.exists(fencePath) || (firestore.get(fencePath).data.uid == uid
+          && firestore.get(fencePath).data.requestId is string && firestore.get(fencePath).data.requestId.size() > 0
+          && firestore.get(fencePath).data.active == false && firestore.get(fencePath).data.permanent == false))
+        && (!firestore.exists(deletionPath) || canonicalDeletionAllowsMutation(deletionPath, uid));
+    }
+
+    function membershipDoc(studioId) {
+      return firestore.get(/databases/(default)/documents/memberships/$(request.auth.uid + "_" + studioId));
+    }
+
+    // Historical membership documents may omit state flags; any explicitly
+    // revoked, disabled or inactive state must fail closed at read/write time.
+    function currentMembershipState(studioId) {
+      let member = membershipDoc(studioId).data;
+      return (!("revoked" in member) || member.revoked == false)
+        && (!("disabled" in member) || member.disabled == false)
+        && (!("active" in member) || member.active == true);
+    }
+
     function isStudioMember(studioId) {
       return isSignedIn()
-        && exists(/databases/(default)/documents/memberships/$(request.auth.uid + "_" + studioId));
+        && studioId is string
+        && firestore.exists(/databases/(default)/documents/memberships/$(request.auth.uid + "_" + studioId))
+        && membershipDoc(studioId).data.uid == request.auth.uid
+        && membershipDoc(studioId).data.studioId == studioId
+        && membershipDoc(studioId).data.role in ["owner", "creator", "viewer"]
+        && currentMembershipState(studioId);
+    }
+
+    function mayUploadToStudio(studioId) {
+      return isStudioMember(studioId)
+        && membershipDoc(studioId).data.role in ["owner", "creator"];
     }
 
     match /studios/{studioId}/uploads/{allPaths=**} {
-      allow read, write: if isStudioMember(studioId);
+      allow read: if isStudioMember(studioId);
+      // Viewer is read-only. A private source upload also needs separate
+      // server consent/source-rights admission before use by a renderer.
+      allow write: if mayUploadToStudio(studioId);
     }
 
     match /studios/{studioId}/outputs/{allPaths=**} {
-      allow read, write: if isStudioMember(studioId);
+      allow read: if isStudioMember(studioId);
+      // A rendered output is never authored by a direct client Storage write.
+      // Privileged producers must independently verify consent and revocation.
+      allow write: if false;
     }
 
     match /user-uploads/{uid}/studio/{allPaths=**} {
-      allow read, write: if isSignedIn() && request.auth.uid == uid;
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow write: if canMutateStudioOwner(uid);
     }
 
     match /generated/{uid}/studio/{allPaths=**} {

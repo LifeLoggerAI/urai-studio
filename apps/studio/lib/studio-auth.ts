@@ -15,6 +15,7 @@ export type StudioAuthContext = {
 
 const DEFAULT_LOCAL_UID = 'anonymous-studio-user';
 const DEFAULT_LOCAL_TENANT = 'public-studio';
+const VERIFIED_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 
 function header(req: Request, name: string): string | null {
   return req.headers.get(name);
@@ -35,6 +36,8 @@ function safeTenant(value: string | null | undefined, fallback: string) {
 
 export async function requireStudioAuth(req: Request): Promise<StudioAuthContext> {
   const production = process.env.NODE_ENV === 'production';
+  // Untrusted headers are only meaningful for the explicit LOCAL no-token fallback.
+  // A verified bearer must always supply tenant binding from signed claims.
   const requestedTenant = safeTenant(header(req, 'x-urai-tenant-id'), DEFAULT_LOCAL_TENANT);
   const token = bearerToken(req);
 
@@ -77,15 +80,26 @@ export async function requireStudioAuth(req: Request): Promise<StudioAuthContext
   }
 
   try {
-    const decoded = await adminAuth.verifyIdToken(token);
-    const tenantId = safeTenant(
-      typeof decoded.tenantId === 'string'
-        ? decoded.tenantId
-        : typeof decoded.studioId === 'string'
-          ? decoded.studioId
-          : requestedTenant,
-      requestedTenant,
-    );
+    // A token revoked since issuance must not grant new Studio owner access.
+    const decoded = await adminAuth.verifyIdToken(token, true);
+    const signedTenant = typeof decoded.tenantId === 'string' ? decoded.tenantId : undefined;
+    const signedStudio = typeof decoded.studioId === 'string' ? decoded.studioId : undefined;
+    const tenantId = signedTenant ?? signedStudio;
+    if (typeof decoded.uid !== 'string' || !VERIFIED_ID.test(decoded.uid) ||
+        !tenantId || !VERIFIED_ID.test(tenantId) ||
+        (signedTenant && signedStudio && signedTenant !== signedStudio)) {
+      return {
+        ok: false,
+        production,
+        uid: '',
+        tenantId: DEFAULT_LOCAL_TENANT,
+        authMode: 'firebase_id_token',
+        error: {
+          code: 'studio_verified_tenant_required',
+          message: 'A current, unambiguous signed Studio tenant identity is required.',
+        },
+      };
+    }
 
     return {
       ok: true,
@@ -95,16 +109,16 @@ export async function requireStudioAuth(req: Request): Promise<StudioAuthContext
       email: typeof decoded.email === 'string' ? decoded.email : undefined,
       authMode: 'firebase_id_token',
     };
-  } catch (error) {
+  } catch {
     return {
       ok: false,
       production,
       uid: '',
-      tenantId: requestedTenant,
+      tenantId: DEFAULT_LOCAL_TENANT,
       authMode: 'firebase_id_token',
       error: {
         code: 'invalid_bearer_token',
-        message: error instanceof Error ? error.message : 'Invalid Firebase ID token.',
+        message: 'The Firebase ID token is invalid, expired, or revoked.',
       },
     };
   }
