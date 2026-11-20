@@ -2,12 +2,10 @@ import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
 
-export const alt = 'URAI Studio cinematic AI systems for memory, media, and spatial intelligence';
-export const size = {
+const size = {
   width: 1200,
   height: 630,
 };
-export const contentType = 'image/png';
 
 export function GET() {
   return new ImageResponse(
