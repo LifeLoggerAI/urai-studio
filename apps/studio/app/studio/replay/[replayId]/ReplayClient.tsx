@@ -74,11 +74,21 @@ export default function ReplayClient() {
     const uid = user.uid, epoch = ++generation.current;
     pending.current?.abort();
     const controller = new AbortController(); pending.current = controller;
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    // Bound token acquisition separately: aborting a controller does not cancel Firebase getIdToken().
+    // Racing the abort signal guarantees the UI can leave its pending state.
+    let timeout = setTimeout(() => controller.abort(), 15000);
     setLoading(true); setMedia(null); setMessage("Checking current owner and render authorization.");
     try {
-      const token = await user.getIdToken();
+      const token = await Promise.race([
+        user.getIdToken(),
+        new Promise<never>((_, reject) => {
+          if (controller.signal.aborted) { reject(new Error("authorization-aborted")); return; }
+          controller.signal.addEventListener("abort", () => reject(new Error("authorization-aborted")), { once: true });
+        })
+      ]);
       if (controller.signal.aborted || epoch !== generation.current || auth.currentUser?.uid !== uid || owner.current !== uid) return;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => controller.abort(), 15000);
       const response = await fetch("/api/studio/video-factory/jobs-playback?jobId=" + encodeURIComponent(jobId), {
         method: "GET", cache: "no-store", credentials: "same-origin", redirect: "error",
         headers: { authorization: "Bearer " + token, accept: "application/json" }, signal: controller.signal
@@ -90,8 +100,11 @@ export default function ReplayClient() {
       setMedia(result.playback);
       setMessage("Private media authorized for this session; link expires shortly.");
     } catch {
-      if (controller.signal.aborted || epoch !== generation.current) return;
-      setMedia(null); setMessage("Private Replay unavailable. No cached or demo media substituted.");
+      if (epoch !== generation.current) return;
+      setMedia(null);
+      setMessage(controller.signal.aborted
+        ? "Authorization timed out. Retry to request fresh permission."
+        : "Private Replay unavailable. No cached or demo media substituted.");
     } finally {
       clearTimeout(timeout);
       if (pending.current === controller) pending.current = null;
