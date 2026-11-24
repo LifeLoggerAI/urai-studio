@@ -9,7 +9,7 @@
   "dependencies": {
     "firebase-admin": "12.7.0",
     "firebase-functions": "5.1.1",
-    "sharp": "0.33.5"
+    "sharp": "0.35.5"
   },
   "devDependencies": {
     "@types/node": "20.19.31",
@@ -18,5 +18,22 @@
   "private": true,
   "engines": {
     "node": "20"
+  },
+  "overrides": {
+    "firebase-admin@12.7.0": {
+      "uuid": "11.1.1"
+    },
+    "google-gax@4.6.1": {
+      "uuid": "11.1.1"
+    },
+    "gaxios@6.7.1": {
+      "uuid": "11.1.1"
+    },
+    "teeny-request@9.0.0": {
+      "uuid": "11.1.1"
+    },
+    "express@4.22.2": {
+      "qs": "6.16.2"
+    }
   }
 }
