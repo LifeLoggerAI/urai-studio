@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { StudioOwnerExport } from '@/components/studio/StudioOwnerExport';
 
 export const metadata: Metadata = {
   title: 'Studio Settings',
@@ -34,6 +35,8 @@ export default function StudioSettingsPage() {
       <p className="hero-lede">
         URAI Studio settings document the exact environment and release gates required before the system can be called verified.
       </p>
+
+      <StudioOwnerExport />
 
       <div className="grid">
         {settings.map((setting) => (
