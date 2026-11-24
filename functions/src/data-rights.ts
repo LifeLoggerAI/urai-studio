@@ -1,5 +1,9 @@
 import { createHash, randomUUID } from "node:crypto";
 import * as admin from "firebase-admin";
+import {
+  DocumentReference, FieldPath, FieldValue, GeoPoint, Timestamp, getFirestore,
+  type Query, type QueryDocumentSnapshot, type Transaction,
+} from "firebase-admin/firestore";
 import { HttpsError, onCall, onRequest, type CallableRequest } from "firebase-functions/v2/https";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
@@ -52,7 +56,7 @@ const STUDIO_COLLECTIONS: readonly StudioCollectionSpec[] = [
 ] as const;
 
 function db() {
-  return admin.firestore();
+  return getFirestore();
 }
 
 function requireAuth(request: CallableRequest<unknown>): AuthenticatedRequest {
@@ -128,9 +132,9 @@ function privateObjectPath(uid: string, requestId: string) {
 }
 
 function normalizeForJson(value: unknown): unknown {
-  if (value instanceof admin.firestore.Timestamp) return value.toDate().toISOString();
-  if (value instanceof admin.firestore.GeoPoint) return { latitude: value.latitude, longitude: value.longitude };
-  if (value instanceof admin.firestore.DocumentReference) return { documentPath: value.path };
+  if (value instanceof Timestamp) return value.toDate().toISOString();
+  if (value instanceof GeoPoint) return { latitude: value.latitude, longitude: value.longitude };
+  if (value instanceof DocumentReference) return { documentPath: value.path };
   if (Array.isArray(value)) return value.map(normalizeForJson);
   if (value && typeof value === "object") {
     const output: Record<string, unknown> = {};
@@ -143,14 +147,14 @@ function normalizeForJson(value: unknown): unknown {
 }
 
 async function queryOwned(spec: StudioCollectionSpec, uid: string) {
-  const found = new Map<string, admin.firestore.QueryDocumentSnapshot>();
+  const found = new Map<string, QueryDocumentSnapshot>();
   for (const ownerField of spec.ownerFields) {
-    let cursor: admin.firestore.QueryDocumentSnapshot | undefined;
+    let cursor: QueryDocumentSnapshot | undefined;
     for (;;) {
-      let query: admin.firestore.Query = db()
+      let query: Query = db()
         .collection(spec.collection)
         .where(ownerField, "==", uid)
-        .orderBy(admin.firestore.FieldPath.documentId())
+        .orderBy(FieldPath.documentId())
         .limit(PAGE_SIZE);
       if (cursor) query = query.startAfter(cursor);
       const snapshot = await query.get();
@@ -273,7 +277,7 @@ async function writeAudit(event: {
   subjectUid: string;
   action: string;
   detail?: Record<string, unknown>;
-}, transaction?: admin.firestore.Transaction, auditId?: string) {
+}, transaction?: Transaction, auditId?: string) {
   const ref = auditId ? db().collection("studioDataRightsAudit").doc(auditId) : db().collection("studioDataRightsAudit").doc();
   const record = {
     schemaVersion: DATA_RIGHTS_SCHEMA_VERSION,
@@ -283,7 +287,7 @@ async function writeAudit(event: {
     subjectHash: subjectHash(event.subjectUid),
     action: event.action,
     detail: event.detail ?? {},
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    createdAt: FieldValue.serverTimestamp(),
   };
   if (transaction) transaction.create(ref, record);
   else await ref.set(record);
@@ -298,7 +302,7 @@ export const requestStudioDataExport = onCall({ timeoutSeconds: 120, memory: "25
       schemaVersion: DATA_RIGHTS_SCHEMA_VERSION, requestId, uid, subjectHash: subjectHash(uid),
       type: "export", status: "preparing", privatePackageIntent: privateObjectPath(uid, requestId),
       exportConsentReceiptHash: current.receiptHash, exportConsentExpiresAt: current.expiresAt,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(), updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
     });
     return current;
   });
@@ -331,9 +335,9 @@ export const requestStudioDataExport = onCall({ timeoutSeconds: 120, memory: "25
     packageExpiresAt: Math.min(Date.parse(packageReceipt.generatedAt) + EXPORT_PACKAGE_TTL_MS, authority.expiresAt),
     exportConsentReceiptHash: authority.receiptHash,
     exportConsentExpiresAt: authority.expiresAt,
-    privatePackageIntent: admin.firestore.FieldValue.delete(),
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    privatePackageIntent: FieldValue.delete(),
+    createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
     }, { merge: true });
   });
   await writeAudit({
@@ -367,11 +371,11 @@ export const requestStudioDataDeletion = onCall(async (request) => {
     if (fence?.active === true || fence?.permanent === true) throw new HttpsError("failed-precondition", "A Studio deletion fence is already active.");
     await requireCurrentExportActor(request);
     transaction.set(studioOwnerFence(uid), { uid, requestId, active: true, permanent: false,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+      updatedAt: FieldValue.serverTimestamp() });
     transaction.create(requestRef(requestId), { schemaVersion: DATA_RIGHTS_SCHEMA_VERSION, requestId, uid,
       subjectHash: subjectHash(uid), type: "delete", status: "preparing_deletion_backup", legalHold: false,
       restoreUntil, purgeAfter, privatePackageIntent: privateObjectPath(uid, requestId),
-      createdAt: admin.firestore.FieldValue.serverTimestamp(), updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+      createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() });
   });
   const preparationCheckpoint = async () => {
     await requireCurrentExportActor(request);
@@ -406,9 +410,9 @@ export const requestStudioDataDeletion = onCall(async (request) => {
     restoreUntil,
     purgeAfter,
     backupReceipt: packageReceipt,
-    privatePackageIntent: admin.firestore.FieldValue.delete(),
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    privatePackageIntent: FieldValue.delete(),
+    createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
     }, { merge: true });
   });
   await writeAudit({
@@ -443,9 +447,9 @@ export const cancelStudioDataDeletion = onCall(async (request) => {
     if (!Number.isFinite(restoreUntilMs) || Date.now() > restoreUntilMs) throw new HttpsError("failed-precondition", "Deletion restore window has expired.");
     if (fence && (fence.uid !== uid || fence.requestId !== requestId || fence.permanent === true)) throw new HttpsError("failed-precondition", "Studio deletion fence changed.");
     await requireCurrentExportActor(request);
-    transaction.set(ref, { status: "cancelled", cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
-    if (fence) transaction.set(fenceRef, { active: false, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    transaction.set(ref, { status: "cancelled", cancelledAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    if (fence) transaction.set(fenceRef, { active: false, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
   });
   await writeAudit({
     requestId,
@@ -473,8 +477,8 @@ export const setStudioDataDeletionLegalHold = onCall(async (request) => {
     transaction.set(ref, {
     legalHold: active,
     legalHoldReason: reason,
-    legalHoldUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    legalHoldUpdatedAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
     }, { merge: true });
     return String(value.uid || "");
   });
@@ -562,7 +566,7 @@ function readStudioDeletionProgress(value: unknown, targets: readonly DeletionTa
  * checksum-bound generation in this owner's exact private package namespace.
  * An uncertain preparation intent stays durable for later reconciliation. */
 async function purgeStudioExportPackage(requestId: string, expectedUid?: string,
-  checkpoint?: (transaction?: admin.firestore.Transaction) => Promise<void>) {
+  checkpoint?: (transaction?: Transaction) => Promise<void>) {
   await checkpoint?.();
   const ref = requestRef(requestId);
   const before = (await ref.get()).data();
@@ -580,10 +584,10 @@ async function purgeStudioExportPackage(requestId: string, expectedUid?: string,
     await checkpoint?.(transaction);
     const current = (await transaction.get(ref)).data();
     if (!current || sha256(JSON.stringify(current)) !== basis) throw new HttpsError("failed-precondition", "Studio package cleanup authority changed.");
-    transaction.set(ref, { status: "package_purge_pending", packageCleanupAttemptToken: cleanupAttemptToken, cleanupStartedAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    transaction.set(ref, { status: "package_purge_pending", packageCleanupAttemptToken: cleanupAttemptToken, cleanupStartedAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp() }, { merge: true });
   });
-  const currentCleanup = async (transaction: admin.firestore.Transaction) => {
+  const currentCleanup = async (transaction: Transaction) => {
     await checkpoint?.(transaction);
     const current = (await transaction.get(ref)).data();
     if (current?.uid !== uid || current.type !== "export" || current.status !== "package_purge_pending"
@@ -605,11 +609,11 @@ async function purgeStudioExportPackage(requestId: string, expectedUid?: string,
   catch (error) {
     if ((error as { code?: number }).code !== 404 || !hasReceipt) return { deleted: 0, pending: 1 };
     // A completed receipt cannot later publish another immutable generation.
-    await finishCleanup({ status: "package_purged", packageReceipt: admin.firestore.FieldValue.delete(),
-      privatePackageIntent: admin.firestore.FieldValue.delete(), packagePurgeReceipt: {
+    await finishCleanup({ status: "package_purged", packageReceipt: FieldValue.delete(),
+      privatePackageIntent: FieldValue.delete(), packagePurgeReceipt: {
         scope: "exact_studio_export_generation", objectPathHash: sha256(objectPath), generation: knownGeneration ?? null,
         checksum: receipt.checksum, observedAbsent: true, completedAt: nowIso(), globalErasureVerified: false,
-      }, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+      }, updatedAt: FieldValue.serverTimestamp() });
     return { deleted: 0, pending: 0 };
   }
   const generation = String(metadata.generation || ""), bytes = Number(metadata.size), tags = asRecord(metadata.metadata);
@@ -624,19 +628,19 @@ async function purgeStudioExportPackage(requestId: string, expectedUid?: string,
   await db().runTransaction(currentCleanup);
   await checkpoint?.();
   await pinned.delete({ ignoreNotFound: true, ifGenerationMatch: generation });
-  await finishCleanup({ status: "package_purged", packageReceipt: admin.firestore.FieldValue.delete(),
-    privatePackageIntent: admin.firestore.FieldValue.delete(), packagePurgeReceipt: {
+  await finishCleanup({ status: "package_purged", packageReceipt: FieldValue.delete(),
+    privatePackageIntent: FieldValue.delete(), packagePurgeReceipt: {
       scope: "exact_studio_export_generation", objectPathHash: sha256(objectPath), generation, checksum: tags.checksum,
       bytes, completedAt: nowIso(), globalErasureVerified: false,
-    }, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+    }, updatedAt: FieldValue.serverTimestamp() });
   return { deleted: 1, pending: 0 };
 }
 
-async function purgeOwnedStudioExportPackages(uid: string, checkpoint?: (transaction?: admin.firestore.Transaction) => Promise<void>) {
-  let cursor: admin.firestore.QueryDocumentSnapshot | undefined, deleted = 0, pending = 0;
+async function purgeOwnedStudioExportPackages(uid: string, checkpoint?: (transaction?: Transaction) => Promise<void>) {
+  let cursor: QueryDocumentSnapshot | undefined, deleted = 0, pending = 0;
   for (;;) {
     let query = db().collection("studioDataRightsRequests").where("uid", "==", uid)
-      .orderBy(admin.firestore.FieldPath.documentId()).limit(PAGE_SIZE);
+      .orderBy(FieldPath.documentId()).limit(PAGE_SIZE);
     if (cursor) query = query.startAfter(cursor);
     const snapshot = await query.get();
     for (const document of snapshot.docs) {
@@ -663,11 +667,11 @@ async function purgeStudioDeletionBackup(requestId: string, before: Record<strin
   let metadata: { generation?: unknown; size?: unknown; metadata?: unknown };
   try { [metadata] = await file.getMetadata(); } catch (error) {
     if ((error as { code?: number }).code === 404 && generation && before.backupPurgeState === "purging") {
-      await requestRef(requestId).set({ backupPurgeState: "purged", backupReceipt: admin.firestore.FieldValue.delete(),
-        privatePackageIntent: admin.firestore.FieldValue.delete(), backupPurgeReceipt: {
+      await requestRef(requestId).set({ backupPurgeState: "purged", backupReceipt: FieldValue.delete(),
+        privatePackageIntent: FieldValue.delete(), backupPurgeReceipt: {
           scope: "exact_studio_deletion_backup_generation", objectPathHash: sha256(objectPath), generation,
           checksum: receipt.checksum, observedAbsent: true, completedAt: nowIso(), globalErasureVerified: false,
-        }, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        }, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
     }
     return;
   }
@@ -685,14 +689,14 @@ async function purgeStudioDeletionBackup(requestId: string, before: Record<strin
       || current.legalHold === true || current.purgeAfter !== before.purgeAfter || Date.now() < Date.parse(String(current.purgeAfter))
       || JSON.stringify(current.backupReceipt ?? null) !== JSON.stringify(before.backupReceipt ?? null)
       || current.privatePackageIntent !== before.privatePackageIntent) throw new HttpsError("failed-precondition", "Studio backup purge authority changed.");
-    transaction.set(ref, { backupPurgeState: "purging", updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    transaction.set(ref, { backupPurgeState: "purging", updatedAt: FieldValue.serverTimestamp() }, { merge: true });
   });
   await pinned.delete({ ignoreNotFound: true, ifGenerationMatch: observed });
-  await ref.set({ backupPurgeState: "purged", backupReceipt: admin.firestore.FieldValue.delete(),
-    privatePackageIntent: admin.firestore.FieldValue.delete(), backupPurgeReceipt: {
+  await ref.set({ backupPurgeState: "purged", backupReceipt: FieldValue.delete(),
+    privatePackageIntent: FieldValue.delete(), backupPurgeReceipt: {
       scope: "exact_studio_deletion_backup_generation", objectPathHash: sha256(objectPath), generation: observed,
       checksum: tags.checksum, bytes: size, completedAt: nowIso(), globalErasureVerified: false,
-    }, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    }, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
 }
 
 // A rotating server-owned cursor bounds every run without starving later
@@ -701,7 +705,7 @@ export const reconcileStudioDataExportPackages = onSchedule({ schedule: "every 1
   const cursorRef = db().collection("studioDataRightsMaintenance").doc("exportPackages");
   const cursor = (await cursorRef.get()).data()?.cursor;
   let query = db().collection("studioDataRightsRequests")
-    .orderBy(admin.firestore.FieldPath.documentId()).limit(50);
+    .orderBy(FieldPath.documentId()).limit(50);
   if (typeof cursor === "string" && /^[A-Za-z0-9_-]{1,160}$/.test(cursor)) query = query.startAfter(cursor);
   const snapshot = await query.get();
   for (const document of snapshot.docs) {
@@ -720,7 +724,7 @@ export const reconcileStudioDataExportPackages = onSchedule({ schedule: "every 1
     if (eligible) { try { await purgeStudioExportPackage(document.id); } catch { /* Durable pending intent is retried on the next rotation. */ } }
   }
   await cursorRef.set({ cursor: snapshot.size === 50 ? snapshot.docs[snapshot.docs.length - 1].id : null,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+    updatedAt: FieldValue.serverTimestamp() });
 });
 
 export const executeStudioDataDeletion = onCall({ timeoutSeconds: 540, memory: "256MiB" }, async request => {
@@ -793,16 +797,16 @@ export const executeStudioDataDeletion = onCall({ timeoutSeconds: 540, memory: "
     }
     const retained = readStudioDeletionProgress(current.deletionProgress, plan.targets);
     await requireCurrentDeletionAdmin(request);
-    transaction.set(fenceRef, { uid, requestId, active: true, permanent: true, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    transaction.set(fenceRef, { uid, requestId, active: true, permanent: true, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
     transaction.set(ref, { status: "executing", executionAttemptToken, executionLeaseExpiresAt,
       deletionPlanHash: plan.hash, deletionTargetCount: plan.targets.length, deletionProgress: retained,
       deletionFailureAttempts: failures, deletionContinuationDeliveries: continuations,
       executionAttemptNumber: counter(current.executionAttemptNumber) + 1,
-      executionStartedAt: admin.firestore.FieldValue.serverTimestamp(), executedByHash: subjectHash(actor.auth.uid),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      executionStartedAt: FieldValue.serverTimestamp(), executedByHash: subjectHash(actor.auth.uid),
+      updatedAt: FieldValue.serverTimestamp() }, { merge: true });
     return retained;
   });
-  const currentExecution = async (transaction: admin.firestore.Transaction) => {
+  const currentExecution = async (transaction: Transaction) => {
     const current = (await transaction.get(ref)).data(), fence = (await transaction.get(studioOwnerFence(uid))).data();
     if (current?.uid !== uid || current.type !== "delete" || current.status !== "executing"
       || current.subjectHash !== subjectHash(uid) || current.restoreUntil !== value.restoreUntil || current.purgeAfter !== value.purgeAfter
@@ -819,14 +823,14 @@ export const executeStudioDataDeletion = onCall({ timeoutSeconds: 540, memory: "
     await requireCurrentDeletionAdmin(request);
     return current;
   };
-  const checkpoint = async (transaction?: admin.firestore.Transaction) => { if (transaction) await currentExecution(transaction); else await db().runTransaction(currentExecution); };
+  const checkpoint = async (transaction?: Transaction) => { if (transaction) await currentExecution(transaction); else await db().runTransaction(currentExecution); };
   const continueExecution = async (reason: string) => {
     await db().runTransaction(async transaction => {
       const current = await currentExecution(transaction);
       transaction.set(ref, { status: "execution_continuation_required", executionLeaseExpiresAt: 0,
-        executionAttemptToken: admin.firestore.FieldValue.delete(), deletionContinuationReason: reason,
+        executionAttemptToken: FieldValue.delete(), deletionContinuationReason: reason,
         deletionContinuationDeliveries: counter(current.deletionContinuationDeliveries) + 1,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        updatedAt: FieldValue.serverTimestamp() }, { merge: true });
     });
     return { ok: true, requestId, status: "execution_continuation_required", progress, globalErasureVerified: false };
   };
@@ -852,7 +856,7 @@ export const executeStudioDataDeletion = onCall({ timeoutSeconds: 540, memory: "
           const fields = current.data()!, spec = STUDIO_COLLECTIONS.find(spec => spec.collection === entry.collection);
           const owned = entry.collection === "users" ? entry.path === `users/${uid}` && (!fields.uid || fields.uid === uid) && (!fields.userId || fields.userId === uid)
             : !!spec && spec.ownerFields.some(field => fields[field] === uid) && spec.ownerFields.every(field => !fields[field] || fields[field] === uid);
-          if (!owned || !current.updateTime?.isEqual(new admin.firestore.Timestamp(entry.version.seconds, entry.version.nanoseconds))) {
+          if (!owned || !current.updateTime?.isEqual(new Timestamp(entry.version.seconds, entry.version.nanoseconds))) {
             throw new HttpsError("failed-precondition", "Studio deletion original target ownership or exact version changed.");
           }
           targets.push({ entry, current }); counts[entry.collection][entry.deletion === "anonymize" ? "anonymized" : "deleted"]++;
@@ -860,11 +864,11 @@ export const executeStudioDataDeletion = onCall({ timeoutSeconds: 540, memory: "
         await requireCurrentDeletionAdmin(request);
         for (const { entry, current } of targets) {
           if (entry.deletion === "anonymize") transaction.set(current.ref, { schemaVersion: "urai-studio-anonymized-audit-v1",
-            subjectHash: subjectHash(uid), eventRetainedForAudit: true, anonymizedAt: admin.firestore.FieldValue.serverTimestamp() });
+            subjectHash: subjectHash(uid), eventRetainedForAudit: true, anonymizedAt: FieldValue.serverTimestamp() });
           else transaction.delete(current.ref, { lastUpdateTime: current.updateTime! });
         }
         const next = { schemaVersion: DELETION_PROGRESS_SCHEMA, nextTargetIndex: progress.nextTargetIndex + slice.length, counts };
-        transaction.set(ref, { deletionProgress: next, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        transaction.set(ref, { deletionProgress: next, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
         return next;
       });
       progress = next;
@@ -910,8 +914,8 @@ export const executeStudioDataDeletion = onCall({ timeoutSeconds: 540, memory: "
         detail: { purgeReceiptId: purgeReceipt.receiptId, purgeChecksum: purgeReceipt.checksum, deletionPlanHash: plan.hash, counts } },
         transaction, `studio_deletion_completed_${sha256(JSON.stringify({ requestId, deletionPlanHash: plan.hash }))}`);
       transaction.set(ref, { status: "completed", purgeReceipt, purgeReceiptDigest: stableStudioDigest(purgeReceipt), completedAt,
-        executionAttemptToken: admin.firestore.FieldValue.delete(), executionLeaseExpiresAt: 0,
-        uid: admin.firestore.FieldValue.delete(), updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        executionAttemptToken: FieldValue.delete(), executionLeaseExpiresAt: 0,
+        uid: FieldValue.delete(), updatedAt: FieldValue.serverTimestamp() }, { merge: true });
     });
     await requireCurrentDeletionAdmin(request);
     return { ok: true, requestId, status: "completed", purgeReceipt, replay: false };
@@ -923,9 +927,9 @@ export const executeStudioDataDeletion = onCall({ timeoutSeconds: 540, memory: "
       const current = (await transaction.get(ref)).data();
       if (current?.uid !== uid || current.status !== "executing" || current.executionAttemptToken !== executionAttemptToken
         || current.deletionPlanHash !== plan.hash || current.backupReceipt?.checksum !== backupChecksum) return;
-      transaction.set(ref, { status: "execution_retryable", executionAttemptToken: admin.firestore.FieldValue.delete(),
+      transaction.set(ref, { status: "execution_retryable", executionAttemptToken: FieldValue.delete(),
         executionLeaseExpiresAt: 0, deletionFailureAttempts: counter(current.deletionFailureAttempts) + 1,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        updatedAt: FieldValue.serverTimestamp() }, { merge: true });
     });
     throw error;
   }
@@ -964,7 +968,7 @@ function exportMillis(value: unknown): number | null {
 function studioOwnerFence(uid: string) {
   return db().collection("studioDataRightsOwnerFences").doc(subjectHash(uid));
 }
-async function readStudioExportConsent(transaction: admin.firestore.Transaction, uid: string) {
+async function readStudioExportConsent(transaction: Transaction, uid: string) {
   if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(uid) || uid.includes("..")) throw new HttpsError("failed-precondition", "Studio export subject is invalid.");
   const [consentSnapshot, deletionSnapshot, studioSnapshot] = await Promise.all([
     transaction.get(db().collection("consentRecords").doc(`${uid}_data_export`)),
@@ -982,7 +986,7 @@ async function readStudioExportConsent(transaction: admin.firestore.Transaction,
   }
   return { receiptHash: String(consent.receiptHash), expiresAt };
 }
-async function readStudioExportAuthority(transaction: admin.firestore.Transaction, uid: string, requestId: string) {
+async function readStudioExportAuthority(transaction: Transaction, uid: string, requestId: string) {
   if (!/^[A-Za-z0-9_-]{1,160}$/.test(requestId)) throw new HttpsError("invalid-argument", "A valid Studio export request is required.");
   const current = await readStudioExportConsent(transaction, uid);
   const snapshot = await transaction.get(requestRef(requestId)), value = snapshot.data();

@@ -7,11 +7,13 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "firebase-admin": "^12.0.0",
-    "firebase-functions": "^5.0.0"
+    "firebase-admin": "12.7.0",
+    "firebase-functions": "5.1.1",
+    "sharp": "0.33.5"
   },
   "devDependencies": {
-    "typescript": "^5.4.5"
+    "@types/node": "20.19.31",
+    "typescript": "5.9.3"
   },
   "private": true,
   "engines": {

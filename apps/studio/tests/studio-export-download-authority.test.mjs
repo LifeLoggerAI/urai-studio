@@ -58,8 +58,8 @@ function harness() {
       const writes = []; return { delete: ref => writes.push(() => documents.delete(ref.path)),
         set: (ref, value) => writes.push(() => patch(ref.path, value, false)), async commit() { for (const write of writes) write(); } };
     } };
-  const firestore = Object.assign(() => db, { FieldValue: { delete: () => fieldDelete, serverTimestamp: () => fieldServer },
-    FieldPath: { documentId: () => '__name__' }, Timestamp: class { constructor(seconds, nanoseconds) { this.seconds = seconds; this.nanoseconds = nanoseconds; } isEqual(other) { return other?.seconds === this.seconds && other?.nanoseconds === this.nanoseconds; } }, GeoPoint: class {}, DocumentReference: class {} });
+  const firestoreModule = { getFirestore: () => db, FieldValue: { delete: () => fieldDelete, serverTimestamp: () => fieldServer },
+    FieldPath: { documentId: () => '__name__' }, Timestamp: class { constructor(seconds, nanoseconds) { this.seconds = seconds; this.nanoseconds = nanoseconds; } isEqual(other) { return other?.seconds === this.seconds && other?.nanoseconds === this.nanoseconds; } }, GeoPoint: class {}, DocumentReference: class {} };
   const storage = { bucket: () => ({ file: (path, options) => ({
     async save(bytes, settings) { assert.equal(settings.preconditionOpts.ifGenerationMatch, 0); assert.equal(objects.has(path), false);
       objects.set(path, { body: Buffer.from(bytes), generation: '1', metadata: settings.metadata.metadata }); await state.onSave?.(path); },
@@ -73,13 +73,14 @@ function harness() {
       assert.equal(settings.ifGenerationMatch, options.generation); assert.equal(object.generation, settings.ifGenerationMatch);
       objects.delete(path); },
   }) }) };
-  const admin = { firestore, storage: () => storage, app: () => ({ options: { projectId } }),
+  const admin = { storage: () => storage, app: () => ({ options: { projectId } }),
     auth: () => ({ async verifyIdToken(token, revoked) { state.verifyCalls++; assert.equal(revoked, true);
       if (token !== 'synthetic-current-token' || state.revoked) throw new Error('private credential details'); return { uid, admin: state.adminRole }; }, async getUser(userId) { assert.equal(userId, uid); return { uid, disabled: state.disabled, customClaims: { admin: state.adminRole } }; } }) };
   class HttpsError extends Error { constructor(code, message) { super(message); this.code = code; } }
   const exports = {};
   vm.runInNewContext(output, { exports, Buffer, Date: FixtureDate, URL, AbortController, setTimeout, clearTimeout,
     process: { env: {} }, require(name) { if (name === 'firebase-admin') return admin;
+      if (name === 'firebase-admin/firestore') return firestoreModule;
       if (name === 'firebase-functions/v2/https') return { HttpsError, onCall: (options, callback) => callback || options, onRequest: (_options, callback) => callback };
       if (name === 'firebase-functions/v2/scheduler') return { onSchedule: (_options, callback) => callback };
       return require(name); } });
