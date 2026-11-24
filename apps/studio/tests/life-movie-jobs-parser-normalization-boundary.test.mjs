@@ -6,9 +6,9 @@ const require=createRequire(new URL('../package.json',import.meta.url));
 const ts=require('typescript');
 const text=fs.readFileSync(new URL('../lib/studio-life-movie-jobs-bridge.ts',import.meta.url),'utf8');
 const code=ts.transpileModule(text,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-const module={exports:{}};
-vm.runInNewContext(code,{module,exports:module.exports,require,Buffer,console});
-const {buildJobsLifeMovieEnvelope:buildEnvelope}=module.exports;
+const fixtureModule={exports:{}};
+vm.runInNewContext(code,{module: fixtureModule,exports:fixtureModule.exports,require,Buffer,console});
+const {buildJobsLifeMovieEnvelope:buildEnvelope}=fixtureModule.exports;
 const fixture=()=>({
  tenantId:'tenant1',projectId:'project1',
  sceneTruthReceiptRef:'str_'+'A'.repeat(16)+'_'+'a'.repeat(8)+'_'+'B'.repeat(40),
@@ -46,7 +46,7 @@ const checks=[
  ['surplus field',x=>{x.sources[0].adminApproval=true;},'life_movie_invalid_source_shape'],
  ['timeline offset max',x=>{x.timeline[0].sourceStartMs=2700001;},'life_movie_invalid_timeline_source_start'],
 ];
-for(const [name,mutate,code] of checks)deny(mutate,code);
+for(const [,mutate,code] of checks)deny(mutate,code);
 const original=build();
 assert.equal(original.payload.sources[0].generation,'17');
 assert.equal(original.payload.timeline[0].sourceStartMs,100);

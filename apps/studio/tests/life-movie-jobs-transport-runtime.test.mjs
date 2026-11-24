@@ -31,17 +31,17 @@ const compiled = ts.transpileModule([...declarations, ...functions,
 }).outputText;
 const runtime = { env: { NODE_ENV: 'development', URAI_STUDIO_JOBS_DISPATCH_ENABLED: 'true',
   URAI_STUDIO_JOBS_BRIDGE_TOKEN: 'synthetic-test-only-token' } };
-const module = { exports: {} };
+const fixtureModule = { exports: {} };
 async function parseStub(response, maxBytes) {
   // The actual production longform parser is separately tested in Studio.
   const raw = await response.text();
   if (Buffer.byteLength(raw, 'utf8') > maxBytes) throw Error('body_too_large');
   return JSON.parse(raw);
 }
-vm.runInNewContext(compiled, { module, exports: module.exports, process: runtime, URL, Error, Array,
+vm.runInNewContext(compiled, { module: fixtureModule, exports: fixtureModule.exports, process: runtime, URL, Error, Array,
   Object, Reflect, Buffer, AbortController, setTimeout, clearTimeout, fetch,
   readStudioLongformJson: parseStub });
-const { callStudioJobsBridge: call, studioJobsBridgeStatus: status } = module.exports;
+const { callStudioJobsBridge: call, studioJobsBridgeStatus: status } = fixtureModule.exports;
 const consent = () => ({purpose: 'life-movie.render', policyVersion: '1.1.0', decisionReceiptId: 'a'.repeat(64)});
 const request = () => ({action: 'create', tenantId: 'synthetic-tenant', userId: 'synthetic-owner',
   idempotencyKey: 'synthetic-key', consent: consent(), payload: {renderPlanDigest: 'b'.repeat(64)}});

@@ -47,9 +47,9 @@ function runtime({ seed = {}, failCommit = false, withAdmin = true } = {}) {
       return result;
     },
   };
-  const module = { exports: {} };
+  const fixtureModule = { exports: {} };
   const context = {
-    module, exports: module.exports, adminDb: withAdmin ? db : null,
+    module: fixtureModule, exports: fixtureModule.exports, adminDb: withAdmin ? db : null,
     nowIso: () => '2026-11-07T08:00:00Z',
     newId: prefix => prefix + '_synthetic_' + (++sequence),
     cleanString: (value, fallback) => typeof value === 'string' && value.trim() ? value.trim() : fallback,
@@ -61,7 +61,7 @@ function runtime({ seed = {}, failCommit = false, withAdmin = true } = {}) {
     assertStudioDraftAuthorityInTransaction: async () => {},
   };
   vm.runInNewContext(compiled, context, { timeout: 1000 });
-  return { create: module.exports.createStudioJob, rows, get commits() { return commits; } };
+  return { create: fixtureModule.exports.createStudioJob, rows, get commits() { return commits; } };
 }
 const tenant = 'tenant-a', owner = 'owner-a', projectId = 'project-a';
 const ownedProject = { id: projectId, tenantId: tenant, userId: owner };

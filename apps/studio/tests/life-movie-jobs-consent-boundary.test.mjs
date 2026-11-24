@@ -17,9 +17,9 @@ const compiled = ts.transpileModule(clauses.join('\n') + '\nmodule.exports={requ
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
 }).outputText;
 const runtime = { env: { NODE_ENV: 'development' } };
-const module = { exports: {} };
-vm.runInNewContext(compiled, { module, exports: module.exports, process: runtime, URL, Error, Array, Object, Reflect });
-const { requireStudioJobsRenderConsent: parse, validateBridgeUrl: allowedUrl } = module.exports;
+const fixtureModule = { exports: {} };
+vm.runInNewContext(compiled, { module: fixtureModule, exports: fixtureModule.exports, process: runtime, URL, Error, Array, Object, Reflect });
+const { requireStudioJobsRenderConsent: parse, validateBridgeUrl: allowedUrl } = fixtureModule.exports;
 const good = () => ({ purpose: 'life-movie.render', policyVersion: '1.1.0', decisionReceiptId: 'a'.repeat(64) });
 
 test('plain and null-prototype consent records accept only the exact policy', () => {

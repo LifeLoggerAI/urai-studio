@@ -25,9 +25,9 @@ function runtime(changes = {}, offline = false) {
   const records = { ...seed(), ...changes };
   const reads = [];
   const adminDb = { doc: path => ({ path }) };
-  const module = { exports: {} };
+  const fixtureModule = { exports: {} };
   vm.runInNewContext(js, {
-    module, exports: module.exports, String, Object, Promise, Set,
+    module: fixtureModule, exports: fixtureModule.exports, String, Object, Promise, Set,
     require(name) {
       if (name === 'server-only') return {};
       if (name === 'node:crypto') return { createHash };
@@ -46,7 +46,7 @@ function runtime(changes = {}, offline = false) {
       return { exists, data: () => records[reference.path] };
     },
   };
-  return { authorize: () => module.exports.assertStudioDraftAuthorityInTransaction(transaction, uid, tenant), reads };
+  return { authorize: () => fixtureModule.exports.assertStudioDraftAuthorityInTransaction(transaction, uid, tenant), reads };
 }
 
 test('owner draft authority reads all four canonical documents inside one transaction', async () => {
