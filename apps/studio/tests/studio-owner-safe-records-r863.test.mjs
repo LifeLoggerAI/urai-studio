@@ -58,10 +58,10 @@ function runtime({ records = {}, failCommit = false } = {}) {
       return outcome;
     },
   };
-  const module = { exports: {} };
+  const fixtureModule = { exports: {} };
   const context = {
-    module,
-    exports: module.exports,
+    module: fixtureModule,
+    exports: fixtureModule.exports,
     adminDb: db,
     nowIso: () => '2026-11-07T12:00:00Z',
     newId: prefix => prefix + '-synthetic-' + ++sequence,
@@ -78,7 +78,7 @@ function runtime({ records = {}, failCommit = false } = {}) {
     },
   };
   vm.runInNewContext(js, context, { timeout: 1000 });
-  return { ...module.exports, rows, get commits() { return commits; } };
+  return { ...fixtureModule.exports, rows, get commits() { return commits; } };
 }
 const seeded = (more = {}) => ({ [key('studioProjects', projectId)]: project, ...more });
 

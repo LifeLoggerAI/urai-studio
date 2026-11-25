@@ -2,6 +2,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { getStorage } from "firebase-admin/storage";
+import { validateSignedUploadRequest } from "./upload-url-validation";
 
 const db = admin.firestore();
 const storage = getStorage();
@@ -11,18 +12,16 @@ export const createUploadUrl = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError("unauthenticated", "User must be logged in.");
   }
 
-  const { fileName, mimeType, bytes, title, description } = data;
-  const uid = context.auth.uid;
-
-  // Basic validation
-  if (!fileName || !mimeType || !bytes) {
-    throw new functions.https.HttpsError("invalid-argument", "Missing required parameters.");
+  // R1738: validation is pre-signing only. It does NOT enforce a GCS body-size cap.
+  let validated: ReturnType<typeof validateSignedUploadRequest>;
+  try {
+    validated = validateSignedUploadRequest(data, context.auth.uid);
+  } catch (error) {
+    throw new functions.https.HttpsError("invalid-argument",
+      error instanceof Error ? error.message : "invalid_upload_request");
   }
-
-  // Size limit (500MB)
-  if (bytes > 500 * 1024 * 1024) {
-    throw new functions.https.HttpsError("invalid-argument", "File size exceeds 500MB limit.");
-  }
+  const { uid, fileName, mimeType, bytes } = validated;
+  const { title, description } = data;
 
   const contentRef = db.collection("contentItems").doc();
   const contentId = contentRef.id;

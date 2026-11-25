@@ -18,7 +18,13 @@ test('Studio export packages are private checksum-bound records', () => {
   assert.match(source, /cacheControl: "private, no-store, max-age=0"/);
   assert.match(source, /checksum = sha256\(body\)/);
   assert.match(source, /getStudioDataExportDownload/);
-  assert.match(source, /expiresAtMs = Date\.now\(\) \+ 5 \* 60 \* 1000/);
+  assert.match(source, /expiresAtMs = Math\.min\(Date\.now\(\) \+ EXPORT_DOWNLOAD_TTL_MS/);
+  assert.match(source, /downloadStudioDataExport = onRequest/);
+  assert.match(source, /verifyIdToken\(token, true\)/);
+  assert.match(source, /requiresAuthorization: true/);
+  assert.match(source, /readStudioExportAuthority/);
+  assert.match(source, /generation: String\(authority\.receipt\.generation\)/);
+  assert.doesNotMatch(source, /getSignedUrl/);
 });
 
 test('Studio deletion requires restore window, verified backup, admin authority, and legal-hold clearance', () => {
@@ -42,4 +48,5 @@ test('Studio data-rights callables are exported and control-plane collections de
   assert.match(index, /export \* from "\.\/data-rights"/);
   assert.match(rules, /match \/studioDataRightsRequests\/\{id\} \{\s*allow read, write: if false;/);
   assert.match(rules, /match \/studioDataRightsAudit\/\{id\} \{\s*allow read, write: if false;/);
+  assert.match(rules, /match \/studioDataRightsOwnerFences\/\{id\} \{\s*allow read, write: if false;/);
 });

@@ -3,7 +3,7 @@
 Status: canonical production hardening contract
 Owner: URAI Studio
 Canonical app: `apps/studio`
-Runtime: Node `>=20 <21`, pnpm `9.7.0`
+Runtime: Node `>=22 <23`, pnpm `9.7.0`
 
 This file is the repo-level lock for what it means for URAI Studio to be done-done. It intentionally separates the current production shell from the full URAI system-of-systems target so the repository cannot drift into calling incomplete, feature-gated, or duplicated systems complete.
 

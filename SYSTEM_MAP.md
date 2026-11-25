@@ -7,7 +7,7 @@
 - Backend: `functions` Firebase Cloud Functions.
 - Rules: `firestore.rules` and `storage.rules`.
 - Indexes: `firestore.indexes.json`.
-- Smoke test: `scripts/studio-smoke-test.js`.
+- Release smoke test: `scripts/studio-smoke-v1.js`, run by `pnpm studio:smoke`.
 
 ## Main Flows
 

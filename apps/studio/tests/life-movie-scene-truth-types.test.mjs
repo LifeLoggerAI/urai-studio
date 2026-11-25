@@ -7,11 +7,11 @@ import { test } from 'node:test';
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
 const source = readFileSync(new URL('../lib/studio-life-movie-jobs-bridge.ts', import.meta.url), 'utf8');
-const module = { exports: {} };
+const fixtureModule = { exports: {} };
 runInNewContext(ts.transpileModule(source, { compilerOptions: {
   module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022,
-} }).outputText, { module, exports: module.exports, require, Buffer });
-const build = module.exports.buildJobsLifeMovieEnvelope;
+} }).outputText, { module: fixtureModule, exports: fixtureModule.exports, require, Buffer });
+const build = fixtureModule.exports.buildJobsLifeMovieEnvelope;
 
 function fixture() {
   return {

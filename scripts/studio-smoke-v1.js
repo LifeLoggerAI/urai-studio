@@ -116,7 +116,9 @@ has('apps/studio/components/site/MagicalHomeExperience.tsx', [
 has('apps/studio/app/page.tsx', ['MagicalHomeExperience', '<MagicalHomeExperience />']);
 has('apps/studio/app/admin/page.tsx', ['adminQaEnabled', 'NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLED', 'admin-gated']);
 has('apps/studio/app/studio/admin/page.tsx', ['adminQaEnabled', 'NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLED', 'studio-admin-gated']);
-has('apphosting.yaml', ['runtime: nodejs20', 'NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLED', 'value: "false"']);
+has('apps/studio/package.json', ['"node": "22"']);
+has('functions/package.json', ['"node": "22"']);
+has('apphosting.yaml', ['runConfig:', 'NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLED', 'value: "false"']);
 has('apps/studio/app/api/contact/route.ts', ["collection('contactRequests')", "collection('projectRequests')", "collection('integrationRequests')", 'bot_rejected', 'invalid_json']);
 has('apps/studio/app/api/waitlist/route.ts', ["collection('waitlist')", 'bot_rejected', 'invalid_json']);
 has('apps/studio/lib/urai-system-contract.ts', ['URAI_SYSTEM_CONTRACT', 'StudioJob', 'StudioAsset', 'StudioExport', 'UraiPassport', 'V1_GENESIS_HOME', 'V2_COGNITIVE_MIRROR', 'V3_PATTERN_REFLECTION', 'V4_WEBXR_HANDOFF', 'V5_MIRROR_OF_BECOMING']);
@@ -138,7 +140,7 @@ has('docs/URAI_STUDIO_RELEASE_EVIDENCE.schema.json', ['URAI Studio release evide
 has('firestore.rules', ['match /waitlist/{id}', 'match /contactRequests/{id}', 'match /projectRequests/{id}', 'match /integrationRequests/{id}', 'match /studioBriefs/{id}', 'match /studioJobs/{id}', 'match /studioExports/{id}', 'allow read, write: if false;']);
 has('firestore.indexes.json', ['"collectionGroup": "studioBriefs"', '"collectionGroup": "studioJobs"', '"collectionGroup": "studioExports"', '"fieldPath": "tenantId"']);
 has('storage.rules', ['match /generated/{uid}/studio', 'match /public/studio-assets', 'allow write: if false;', 'request.auth.uid == uid', 'isStudioMember(studioId)']);
-has('.github/workflows/studio-audit.yml', ['pnpm private-family-film:guard', 'pnpm done-done:guard', 'pnpm lint', 'pnpm typecheck', 'pnpm test', 'pnpm build', 'pnpm --dir functions build', 'pnpm studio:smoke']);
+has('.github/workflows/studio-audit.yml', ['pnpm private-family-film:guard', 'pnpm done-done:guard', 'pnpm lint', 'pnpm typecheck', 'pnpm test', 'pnpm build', 'npm --prefix functions ci --include=dev', 'npm --prefix functions run build', 'pnpm studio:smoke']);
 has('functions/src/studio-system.ts', ['export const ping', 'export const seedStudioDemo', 'export const getStudioDashboard', 'firebase-functions/v2/https']);
 
 archivedBackupsAreNeutralized('apps/studio/src');

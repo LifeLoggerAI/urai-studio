@@ -22,10 +22,10 @@ echo "[preflight] app build"
 pnpm build
 
 echo "[preflight] functions install"
-pnpm --dir functions install --no-frozen-lockfile
+npm --prefix functions ci --include=dev
 
 echo "[preflight] functions build"
-pnpm --dir functions build
+npm --prefix functions run build
 
 echo "[preflight] smoke"
 pnpm studio:smoke

@@ -17,9 +17,9 @@ jobs:
           version: 9.7.0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
-      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm install --frozen-lockfile
       - run: pnpm private-family-film:guard
       - run: pnpm done-done:guard
       - run: node scripts/evidence-schema-guard.mjs
@@ -29,6 +29,6 @@ jobs:
       - run: node apps/studio/tests/integrations.test.mjs
       - run: node apps/studio/tests/create-job-validation.test.mjs
       - run: pnpm build
-      - run: pnpm --dir functions install --no-frozen-lockfile
-      - run: pnpm --dir functions build
+      - run: npm --prefix functions ci --include=dev
+      - run: npm --prefix functions run build
       - run: pnpm studio:smoke

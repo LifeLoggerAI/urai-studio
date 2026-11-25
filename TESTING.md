@@ -41,12 +41,12 @@ The workflow at `.github/workflows/studio-audit.yml` is expected to run the audi
 
 ## Static Smoke Test
 
-`pnpm studio:smoke` runs `scripts/studio-smoke-test.js` and verifies the static contract surface, including:
+The release command `pnpm studio:smoke` runs `scripts/studio-smoke-v1.js`. The separate legacy checker `scripts/studio-smoke-test.js` checks the following static contracts:
 
 - Required repository files exist.
 - Firebase Studio recovery files exist: `.idx/dev.nix`, `scripts/firebase-studio-repair.sh`, and `docs/firebase-studio-recovery.md`.
-- Firebase App Hosting config exists at `apphosting.yaml` and references Node 20 runtime.
-- Root package metadata pins Node 20, pnpm 9.7.0, React 19 overrides, and Studio recovery scripts.
+- Firebase App Hosting config exists at `apphosting.yaml` and defines the Cloud Run service limits. The Firebase App Hosting backend selects its Node 22 runtime separately.
+- Root package metadata pins Node 22, pnpm 9.7.0, React 19 overrides, and Studio recovery scripts.
 - Studio app package aligns Next 16 with React 19.
 - Studio callable exports exist in `functions/src/studio-system.ts`.
 - Functions use Firebase Functions v2 callable APIs.

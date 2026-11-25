@@ -22,33 +22,41 @@ function validPlayback(value: unknown, id: string): value is Playback {
 export default function ReplayClient() {
   const params = useParams();
   const jobId = typeof params?.replayId === "string" ? params.replayId : "";
+  return <ReplaySession key={jobId} jobId={jobId} />;
+}
+
+function ReplaySession({ jobId }: { jobId: string }) {
   const [user, setUser] = useState<User | null>(null);
-  const [initialized, setInitialized] = useState(false);
+  const [initialized, setInitialized] = useState(!auth);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("Sign in and request fresh owner authorization.");
+  const [message, setMessage] = useState(auth
+    ? "Sign in and request fresh owner authorization."
+    : "Firebase authentication is unavailable.");
   const [media, setMedia] = useState<Playback | null>(null);
   const generation = useRef(0);
   const pending = useRef<AbortController | null>(null);
   const owner = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!auth) { setInitialized(true); setMessage("Firebase authentication is unavailable."); return; }
+    if (!auth) return;
+    function invalidateRequest() {
+      generation.current++;
+      pending.current?.abort();
+      pending.current = null;
+    }
     const unsubscribe = onIdTokenChanged(auth, next => {
-      generation.current++; pending.current?.abort(); pending.current = null;
+      invalidateRequest();
       owner.current = next?.uid ?? null;
       setUser(next); setInitialized(true); setLoading(false); setMedia(null);
       setMessage(next ? "Authorize playback of a completed private render." : "Sign in to access private Replay.");
     }, () => {
-      generation.current++; pending.current?.abort(); owner.current = null;
+      invalidateRequest();
+      owner.current = null;
       setUser(null); setLoading(false); setMedia(null); setInitialized(true);
       setMessage("Current authentication could not be verified.");
     });
-    return () => { generation.current++; pending.current?.abort(); unsubscribe(); };
+    return () => { invalidateRequest(); unsubscribe(); };
   }, []);
-
-  useEffect(() => {
-    generation.current++; pending.current?.abort(); setMedia(null); setLoading(false);
-  }, [jobId]);
 
   useEffect(() => {
     if (!media) return;

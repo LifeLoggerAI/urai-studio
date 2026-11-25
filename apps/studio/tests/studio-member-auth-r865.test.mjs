@@ -29,9 +29,9 @@ function harness({ records = seed(), auth = principal, dbFail = false, dbPresent
       return { exists: Object.hasOwn(records, path), data: () => records[path] };
     } };
   } } : null;
-  const module = { exports: {} };
+  const fixtureModule = { exports: {} };
   vm.runInNewContext(js, {
-    module, exports: module.exports, Set, String, Object, Promise,
+    module: fixtureModule, exports: fixtureModule.exports, Set, String, Object, Promise,
     require(name) {
       if (name === 'server-only') return {};
       if (name === 'node:crypto') return { createHash };
@@ -41,7 +41,7 @@ function harness({ records = seed(), auth = principal, dbFail = false, dbPresent
     },
   }, { timeout: 1000 });
   return {
-    ...module.exports,
+    ...fixtureModule.exports,
     changeActor(value) { actor = value; },
   };
 }
