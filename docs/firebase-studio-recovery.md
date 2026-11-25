@@ -4,7 +4,7 @@ Use this when Firebase Studio gets stuck on **Building environment** or asks you
 
 ## What this repo expects
 
-- Node 20
+- Node 22
 - pnpm 9.7.0 through Corepack
 - Next app source: `apps/studio`
 - Firebase Hosting source: `apps/studio`

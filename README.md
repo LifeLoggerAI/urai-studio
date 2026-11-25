@@ -30,7 +30,7 @@ Canonical status documents:
 
 ## Runtime
 
-- Node `>=20 <21`
+- Node `>=22 <23`. Select `nodejs22` on the Firebase App Hosting backend before rollout so its runtime matches the Studio package.
 - pnpm `9.7.0`
 - Next app: `apps/studio`
 - Firebase Hosting source: `apps/studio`

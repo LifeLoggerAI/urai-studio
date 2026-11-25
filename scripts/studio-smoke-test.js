@@ -125,10 +125,12 @@ for (const [filePath, canonical] of [
   requireTokens(filePath, ['Metadata', 'metadata', `canonical: '${canonical}'`], `${canonical} page metadata`);
 }
 
-requireTokens('package.json', ['"node": ">=20 <21"', '"pnpm": "9.7.0"', 'studio:doctor', 'studio:repair', 'studio:preview', 'firebase:emulators', 'react-dom'], 'root package.json');
-requireTokens('apps/studio/package.json', ['"next": "16.1.6"', '"react": "^19.0.0"', '"react-dom": "^19.0.0"', 'tests/v1-home.test.mjs'], 'apps/studio package.json');
-requireTokens('apphosting.yaml', ['runtime: nodejs20', 'NEXT_PUBLIC_SITE_URL', 'NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLED', 'value: "false"', 'maxInstances'], 'apphosting.yaml');
-requireTokens('.idx/dev.nix', ['nodejs_20', 'pnpm install --no-frozen-lockfile', 'pnpm -C apps/studio dev', 'workspace'], '.idx/dev.nix');
+requireTokens('package.json', ['"node": ">=22 <23"', '"pnpm": "9.7.0"', 'studio:doctor', 'studio:repair', 'studio:preview', 'firebase:emulators', 'react-dom'], 'root package.json');
+requireTokens('apps/studio/package.json', ['"next": "16.4.6"', '"react": "^19.0.0"', '"react-dom": "^19.0.0"', 'tests/all.test.mjs'], 'apps/studio package.json');
+requireTokens('functions/package.json', ['"node": "22"'], 'Functions runtime');
+requireTokens('apps/studio/package.json', ['"node": "22"'], 'Studio web runtime');
+requireTokens('apphosting.yaml', ['runConfig:', 'NEXT_PUBLIC_SITE_URL', 'NEXT_PUBLIC_STUDIO_ADMIN_QA_ENABLED', 'value: "false"', 'maxInstances'], 'apphosting.yaml');
+requireTokens('.idx/dev.nix', ['nodejs_22', 'pnpm install --no-frozen-lockfile', 'pnpm -C apps/studio dev', 'workspace'], '.idx/dev.nix');
 requireTokens('scripts/firebase-studio-repair.sh', ['pnpm@9.7.0', 'pnpm install --no-frozen-lockfile', 'pnpm --filter studio build', 'pnpm studio:smoke'], 'firebase-studio-repair.sh');
 requireTokens('scripts/firebase-studio-doctor.sh', ['workspace doctor', 'node', 'pnpm', 'apphosting.yaml', 'studio:doctor'], 'firebase-studio-doctor.sh');
 requireTokens('docs/firebase-studio-recovery.md', ['pnpm run studio:repair', 'pnpm run studio:preview', 'pnpm run firebase:emulators', 'apphosting.yaml'], 'Firebase Studio recovery docs');

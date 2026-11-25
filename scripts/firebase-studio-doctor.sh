@@ -58,27 +58,28 @@ check_file functions/package.json
 check_dir apps/studio/app
 check_dir functions/src
 
-check_contains package.json '"node": ">=20 <21"'
+check_contains package.json '"node": ">=22 <23"'
 check_contains package.json '"pnpm": "9.7.0"'
 check_contains package.json 'studio:repair'
 check_contains package.json 'studio:preview'
 check_contains package.json 'studio:doctor'
 check_contains package.json '"react": "^19.0.0"'
 check_contains package.json '"react-dom": "^19.0.0"'
-check_contains apps/studio/package.json '"next": "16.1.6"'
+check_contains apps/studio/package.json '"next": "16.4.6"'
 check_contains apps/studio/package.json '"react": "^19.0.0"'
 check_contains apps/studio/package.json '"react-dom": "^19.0.0"'
 check_contains .idx/dev.nix 'pnpm install --no-frozen-lockfile'
 check_contains .idx/dev.nix 'pnpm -C apps/studio dev'
-check_contains apphosting.yaml 'runtime: nodejs20'
+check_contains apps/studio/package.json '"node": "22"'
+check_contains functions/package.json '"node": "22"'
 check_contains firebase.json '"source": "apps/studio"'
 check_contains firebase.json '"source": "functions"'
 
 if command -v node >/dev/null 2>&1; then
   node_major="$(node -v | sed 's/^v//' | cut -d. -f1)"
   echo "[doctor] node: $(node -v)"
-  if [[ "$node_major" != "20" ]]; then
-    echo "[doctor] expected Node 20.x, got $(node -v)"
+  if [[ "$node_major" != "22" ]]; then
+    echo "[doctor] expected Node 22.x, got $(node -v)"
     failures=$((failures + 1))
   fi
 else
